@@ -1,10 +1,9 @@
 #if os(watchOS)
 import WatchKit
-#elseif canImport(UIKit)
-import UIKit
-#else
 #endif
-
+#if canImport(UIKit)
+import UIKit
+#endif
 #if canImport(SwiftUI)
 import SwiftUI // for Color
 #endif

@@ -9,7 +9,7 @@
  - Heath Hall
  */
 
-#if os(iOS) || targetEnvironment(macCatalyst) || os(tvOS) || os(visionOS)
+#if canImport(UIKit)
 import UIKit
 #endif
 

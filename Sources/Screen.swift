@@ -1,7 +1,3 @@
-#if os(iOS) && !os(visionOS)
-import UIKit
-#endif
-
 public struct Screen {
     public var diagonal: Double?
     public var resolution: (Int,Int)? // width, height in pixels

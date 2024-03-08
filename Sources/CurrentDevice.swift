@@ -1,5 +1,8 @@
 import Foundation
-#if os(iOS) && !os(visionOS)
+#if os(watchOS)
+import WatchKit
+#endif
+#if canImport(UIKit)
 import UIKit
 #endif
 
