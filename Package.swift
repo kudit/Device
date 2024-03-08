@@ -8,7 +8,7 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "DeviceTestApp",
+    name: "Device",
     platforms: [
         .iOS("15.2"),
         .macOS("14.3"),

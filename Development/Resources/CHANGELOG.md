@@ -1,6 +1,7 @@
 # Device
 Value type replacement for device information on all platforms with a consistent API.
 
+v1.0.5 3/8/2024 Fixed so name that appears in Package List is Device not DeviceTestApp.
 v1.0.4 3/8/2024 Fixed so UIDevice is available on visionOS (UIKit wasn't being included on that platform.)
 v1.0.3 3/8/2024 Tested for compatibility.  Updated Readme.  Fixed so previews work.  Added Test code.
 v1.0.2 3/5/2024 Re-worked so Disk functions are available even before iOS 11 by moving availability checks into functions.
