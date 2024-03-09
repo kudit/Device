@@ -89,6 +89,11 @@ final class ActualHardwareDevice: CurrentDevice {
         device = Device(identifier: identifier)
     }
     
+    /// Description (includes current identifier since device might have multiple).
+    public var description: String {
+        return "\(device.description) (\(identifier))"
+    }
+    
     /// Returns `true` if running on the simulator vs actual device.
     public var isSimulator: Bool {
 #if targetEnvironment(simulator)
@@ -129,7 +134,16 @@ final class ActualHardwareDevice: CurrentDevice {
     
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String = {
-//        print(ProcessInfo().environment)
+#if targetEnvironment(macCatalyst)
+        var size = 0
+        sysctlbyname("hw.model", nil, &size, nil, 0)
+        
+        var modelIdentifier: [CChar] = Array(repeating: 0, count: size)
+        sysctlbyname("hw.model", &modelIdentifier, &size, nil, 0)
+        
+        return String(cString: modelIdentifier)
+#else
+        //        print(ProcessInfo().environment)
         if let identifier = ProcessInfo().environment["SIMULATOR_MODEL_IDENTIFIER"] {
             // machine value is likely just arm64 so return the simulator identifier
             return identifier
@@ -143,6 +157,7 @@ final class ActualHardwareDevice: CurrentDevice {
             return identifier + String(UnicodeScalar(UInt8(value)))
         }
         return identifier
+#endif
     }()
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.

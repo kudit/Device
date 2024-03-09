@@ -29,6 +29,8 @@ Value type replacement for device information on all platforms with a consistent
 - iOS 11.0+
 - tvOS 11.0+
 - watchOS 4.0+
+- macOS 10.10.3+
+- macCatalyst 13.1+
 - visionOS 1.0+
 
 ## Installation

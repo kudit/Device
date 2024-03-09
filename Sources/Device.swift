@@ -342,7 +342,7 @@ public struct Device: CustomStringConvertible, IdiomType {
     
     /// A textual representation of the device.
     public var description: String {
-        return "\(self.name) (\(self.idiom), \(self.identifiers), \(self.cpu))"
+        return self.name
     }
     
     /// A safe version of `description`.

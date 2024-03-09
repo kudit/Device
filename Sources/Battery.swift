@@ -7,6 +7,9 @@ import UIKit
 #if canImport(SwiftUI)
 import SwiftUI // for Color
 #endif
+#if canImport(IOKit.ps)
+import IOKit.ps
+#endif
 
 // MARK: Battery
 public class Battery {
@@ -42,19 +45,19 @@ public class Battery {
     /// Allows fetching or setting whether battery monitoring is enabled.
     public var monitoring: Bool {
         get {
-#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
-            return UIDevice.current.isBatteryMonitoringEnabled
-#elseif os(watchOS)
+#if os(watchOS)
             return WKInterfaceDevice.current().isBatteryMonitoringEnabled
+#elseif canImport(UIKit)
+            return UIDevice.current.isBatteryMonitoringEnabled
 #else
             return false // If we don't have access to UIDevice or WKInterfaceDevice, just return false
 #endif
         }
         set {
-#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
-            UIDevice.current.isBatteryMonitoringEnabled = newValue
-#elseif os(watchOS)
+#if os(watchOS)
             WKInterfaceDevice.current().isBatteryMonitoringEnabled = newValue
+#elseif canImport(UIKit)
+            UIDevice.current.isBatteryMonitoringEnabled = newValue
 #else
             // If we don't have access to UIDevice or WKInterfaceDevice, this gets ignored
 #endif
@@ -66,7 +69,9 @@ public class Battery {
         monitors.append(monitor)
         monitoring = true // enable monitoring from this point forward
         // create an observer for changes
-#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
+#if os(watchOS)
+        // Apparently this can't be observed on watchOS :(
+#elseif canImport(UIKit)
         NotificationCenter.default.addObserver(
             forName: UIDevice.batteryLevelDidChangeNotification,
             object: nil,
@@ -77,8 +82,6 @@ public class Battery {
                 monitor()
             }
         }
-#elseif os(watchOS)
-        // Apparently this can't be observed on watchOS :(
 #else
         // If we don't have access to UIDevice or WKInterfaceDevice, this will be undefined
 #endif
@@ -91,11 +94,29 @@ public class Battery {
         defer {
             monitoring = currentMonitoring
         }
-#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
-        return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
-        // but maybe that changes in the future.
-#elseif os(watchOS)
+#if os(watchOS)
         return Int(round(WKInterfaceDevice.current().batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
+        // but maybe that changes in the future.
+#elseif os(macOS) || targetEnvironment(macCatalyst)
+        // thanks to https://github.com/thebarbican19/BatteryBoi
+        let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
+        let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
+        for source in sources {
+            if let description = IOPSGetPowerSourceDescription(snapshot, source).takeUnretainedValue() as? [String: Any] {
+                
+                if description["Type"] as? String == kIOPSInternalBatteryType {
+                    return description[kIOPSCurrentCapacityKey] as? Int ?? -1
+                    
+                }
+                
+            }
+            
+        }
+        return 100
+#elseif canImport(UIKit)
+        UIDevice.current.isBatteryMonitoringEnabled = true
+        print(UIDevice.current.batteryLevel)
+        return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
         // but maybe that changes in the future.
 #else
         // If we don't have access to UIDevice or WKInterfaceDevice, this will be undefined
@@ -109,8 +130,8 @@ public class Battery {
         defer {
             monitoring = currentMonitoring
         }
-#if os(iOS) || targetEnvironment(macCatalyst) || os(visionOS)
-        switch UIDevice.current.batteryState {
+#if os(watchOS)
+        switch WKInterfaceDevice.current().batteryState {
         case .charging: return .charging
         case .full: return .full
         case .unplugged: return .unplugged
@@ -118,8 +139,8 @@ public class Battery {
         @unknown default:
             return .unknown // To cover any future additions for which DeviceKit might not have updated yet.
         }
-#elseif os(watchOS)
-        switch WKInterfaceDevice.current().batteryState {
+#elseif canImport(UIKit)
+        switch UIDevice.current.batteryState {
         case .charging: return .charging
         case .full: return .full
         case .unplugged: return .unplugged
@@ -171,23 +192,6 @@ public class Battery {
         return .primary // should be black if in light mode and white in dark mode.
     }
 #endif
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     /// The user enabled Low Power mode
     public var lowPowerMode: Bool {
