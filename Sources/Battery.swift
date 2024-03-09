@@ -114,8 +114,8 @@ public class Battery {
         }
         return 100
 #elseif canImport(UIKit)
-        UIDevice.current.isBatteryMonitoringEnabled = true
-        print(UIDevice.current.batteryLevel)
+//        UIDevice.current.isBatteryMonitoringEnabled = true
+//        print(UIDevice.current.batteryLevel)
         return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
         // but maybe that changes in the future.
 #else

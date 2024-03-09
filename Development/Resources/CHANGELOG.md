@@ -1,6 +1,7 @@
 # Device
 Value type replacement for device information on all platforms with a consistent API.
 
+v1.0.7 3/9/2024 Removed accidentally left in debugging code.
 v1.0.6 3/8/2024 Replaced checks for OSes with canImport(UIKit).  Added some code so battery level works on macOS Catalyst.  Updated readme to indicate macOS support.  Updated Description of Current Device.  Fixed so identifier works correctly in macCatalyst.
 v1.0.5 3/8/2024 Fixed so name that appears in Package List is Device not DeviceTestApp.
 v1.0.4 3/8/2024 Fixed so UIDevice is available on visionOS (UIKit wasn't being included on that platform.)
