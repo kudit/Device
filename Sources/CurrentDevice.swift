@@ -38,7 +38,7 @@ public protocol CurrentDevice: DeviceType {
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String { get }
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return `nil`.
-    var battery: Battery? { get }
+    var battery: DeviceBattery? { get }
     /// Returns if the screen is zoomed in.
     var isZoomed: Bool? { get }
     /// Returns the screen orientation if applicable or `nil`
@@ -161,9 +161,9 @@ final class ActualHardwareDevice: CurrentDevice {
     }()
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
-    var battery: Battery? {
+    var battery: DeviceBattery? {
         if device.hasBattery {
-            return Battery.current
+            return DeviceBattery.current
         }
         return nil
     }

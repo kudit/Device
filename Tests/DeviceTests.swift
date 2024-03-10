@@ -11,7 +11,7 @@ final class DeviceTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
         if let battery = Device.current.battery {
-            XCTAssertEqual(String(describing: battery), String(describing: Battery.current))
+            XCTAssertEqual(String(describing: battery), String(describing: DeviceBattery.current))
         }
     }
 }

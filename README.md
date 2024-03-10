@@ -15,6 +15,7 @@ Value type replacement for device information on all platforms with a consistent
 - [x] Battery level
 - [x] Battery symbol
 - [x] Battery color
+- [x] BatteryView
 - [x] Low Power Mode detection
 - [x] Guided Access Session detection
 - [x] Screen brightness

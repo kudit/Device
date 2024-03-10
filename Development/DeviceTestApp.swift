@@ -1,5 +1,7 @@
 import SwiftUI
-import Device
+//#if canImport(Device)
+//import Device
+//#endif
 
 @main
 struct DeviceTestApp: App {

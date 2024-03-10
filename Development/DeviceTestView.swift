@@ -36,7 +36,12 @@ struct TimeClockView: View {
     var body: some View {
         VStack {
             Text("Current time: \(time.formatted(date: .long, time: .complete))")
-            Text("Battery Info: \(Device.current.battery?.description ?? "no battery")")
+            if let battery = Device.current.battery {
+                Text("Battery Info: \(battery.description)")
+                BatteryView(battery: battery)
+            } else {
+                Text("No Battery")
+            }
         }
         .onReceive(timer, perform: { _ in
             //debug("updating \(time)")
@@ -83,7 +88,7 @@ public struct DeviceTestView: View {
             Text("Identifier: \(Device.current.identifier)")
             Text("Device Name: \(Device.current.name ?? "nil")")
             Text("System Name: \(Device.current.systemName ?? "nil")")
-            VStack {
+            Group {
                 HStack {
                     TestCard(
                         label: "Preview",
@@ -102,16 +107,20 @@ public struct DeviceTestView: View {
                         visible: Device.current.isRealDevice,
                         color: .green)
                 }
-                ForEach(Device.Idiom.allCases) { idiom in
-                    TestCard(label: idiom.description, visible: Device.current.idiom == idiom, color: Device.current.idiom.color)
+                .frame(height: 44)
+                HStack {
+                    VStack {
+                        ForEach(Device.Idiom.allCases) { idiom in
+                            TestCard(label: idiom.description, visible: Device.current.idiom == idiom, color: Device.current.idiom.color)
+                        }
+                    }
+                    VStack {
+                        BatteryTestView()
+                    }
                 }
             }
             .padding()
             Spacer()
         }
     }
-}
-
-#Preview {
-    DeviceTestView()
 }

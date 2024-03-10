@@ -11,35 +11,155 @@ import SwiftUI // for Color
 import IOKit.ps
 #endif
 
-// MARK: Battery
-public class Battery {
-    public static var current = Battery()
+/// This enum describes the state of the battery.
+public enum BatteryState: CustomStringConvertible { // automatically conforms to Equatable since no associated/raw value
+    /// The battery state for the device can’t be determined.
+    case unknown
+    /// The device is not plugged into power; the battery is discharging.
+    case unplugged
+    /// The device is plugged into power and the battery is less than 100% charged.
+    case charging
+    /// The device is plugged into power and the battery is 100% charged or the device is the iOS Simulator.
+    case full
     
-    /// This enum describes the state of the battery.
-    public enum BatteryState: CustomStringConvertible { // automatically conforms to Equatable since no associated/raw value
-        /// The battery state for the device can’t be determined.
-        case unknown
-        /// The device is not plugged into power; the battery is discharging.
-        case unplugged
-        /// The device is plugged into power and the battery is less than 100% charged.
-        case charging
-        /// The device is plugged into power and the battery is 100% charged or the device is the iOS Simulator.
-        case full
-        
-        public var description: String {
-            switch self {
-            case .unknown:
-                return "Unknown"
-            case .unplugged:
-                return "Unplugged"
-            case .charging:
-                return "Charging"
-            case .full:
-                return "Full"
-            }
+    public var description: String {
+        switch self {
+        case .unknown:
+            return "Unknown"
+        case .unplugged:
+            return "Unplugged"
+        case .charging:
+            return "Charging"
+        case .full:
+            return "Full"
         }
     }
-    public typealias BatteryMonitor = () -> Void
+}
+
+public protocol Battery: ObservableObject, CustomStringConvertible, Identifiable {
+    /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.
+    var currentLevel: Int { get }
+    /// The current state of the battery.
+    var currentState: BatteryState { get }
+    /// The user enabled Low Power mode
+    var lowPowerMode: Bool { get }
+    /// Change Monitoring
+    typealias BatteryMonitor = (any Battery) -> Void
+    /// Allows fetching or setting whether battery monitoring is enabled.
+    var monitoring: Bool { get set }
+    func add(monitor: @escaping BatteryMonitor)
+}
+public extension Battery {
+    var isCharging: Bool { currentState == .charging }
+    
+    /// System Image used to render a symbol representing the current state/charge level
+    var symbolName: String {
+        let percent = currentLevel
+        if currentState == .charging {
+            return "battery.100percent.bolt"
+        } else if percent > 87 {
+            return "battery.100percent"
+        } else if percent > 63 {
+            return "battery.75percent"
+        } else if percent > 38 {
+            return "battery.50percent"
+        } else if percent > 10 {
+            return "battery.25percent"
+        } else {
+            return "battery.0percent"
+        }
+    }
+
+#if canImport(SwiftUI)
+    /// Color for the battery icon.  Should mirror the system battery icon.
+    var systemColor: Color {
+        if lowPowerMode {
+            return .yellow
+        }
+        var redLevel = 20
+        // for some reason, iPad only warns at 10% (maybe because the battery is larger?)
+        if Device.current.idiom == .pad { //  || Device.current.idiom == .mac // do we need to do this for Macs as well?
+            redLevel = 10
+        }
+        if currentLevel <= redLevel {
+            return .red // even when charging
+        }
+        if currentState == .charging {
+            return .green
+        }
+        return .primary // should be black if in light mode and white in dark mode.
+    }
+    
+    /// Expanded colors so there is always a background color for contrast.
+    var color: Color {
+        // since this is just for visionOS, assume no lowPowerMode
+        if currentLevel <= 20 {
+            return .red
+        }
+        if currentLevel <= 40 {
+            return .orange
+        }
+        if currentLevel <= 60 {
+            return .yellow
+        }
+        if currentLevel <= 80 {
+            // GreenYellow
+            return Color(red: 173.0/255, green: 1, blue: 47.0/255)
+        }
+        return .green
+    }
+#endif
+    
+    /// Provides a textual representation of the battery state.
+    /// Examples:
+    /// ```
+    /// Battery level: 90%, device is plugged in.
+    /// Battery level: 100 % (Full), device is plugged in.
+    /// Battery level: \(batteryLevel)%, device is unplugged.
+    /// ```
+    var description: String {
+        let level = currentLevel
+        switch currentState {
+        case .charging: return "Battery level: \(level)%, device is charging."
+        case .full: return "Battery level: \(level)% (Full), device is plugged in."
+        case .unplugged: return "Battery level: \(level)%, device is unplugged."
+        default: return "Battery is unknown/unsupported."
+        }
+    }
+    var id: String { description }
+}
+
+public class MockBattery: Battery {
+    public var currentLevel: Int = 82
+    public var currentState: BatteryState = .unplugged
+    public var lowPowerMode: Bool = false
+    public var monitoring: Bool = false // add observers to trigger changes?
+    private var monitors = [BatteryMonitor]()
+    public func add(monitor: @escaping BatteryMonitor) {
+        monitors.append(monitor)
+    }
+    
+    init(currentLevel: Int = 82, currentState: BatteryState = .unplugged, lowPowerMode: Bool = false) {
+        self.currentLevel = currentLevel
+        self.currentState = currentState
+        self.lowPowerMode = lowPowerMode
+    }
+
+    public static var mocks = [
+        MockBattery(currentLevel: 2, currentState: .charging),
+        MockBattery(currentLevel: 5),
+        MockBattery(currentLevel: 15),
+        MockBattery(currentLevel: 25),
+        MockBattery(currentLevel: 50),
+        MockBattery(currentLevel: 75),
+        MockBattery(currentState: .charging),
+        MockBattery(currentLevel: 100, currentState: .full),
+    ]
+}
+
+public class DeviceBattery: Battery {
+    public static var current = DeviceBattery()
+    
     private var monitors: [BatteryMonitor] = []
     
     /// Allows fetching or setting whether battery monitoring is enabled.
@@ -79,7 +199,7 @@ public class Battery {
         ) { (notification) in
             // Do your work after received notification
             for monitor in self.monitors {
-                monitor()
+                monitor(self)
             }
         }
 #else
@@ -130,6 +250,7 @@ public class Battery {
         defer {
             monitoring = currentMonitoring
         }
+        // TODO: Figure out why it reports as .full when it's actually .charging and 76%...
 #if os(watchOS)
         switch WKInterfaceDevice.current().batteryState {
         case .charging: return .charging
@@ -154,64 +275,8 @@ public class Battery {
 #endif
     }
     
-    /// System Image used to render a symbol representing the current state/charge level
-    public var symbolName: String {
-        let percent = currentLevel
-        if currentState == .charging {
-            return "battery.100percent.bolt"
-        } else if percent > 87 {
-            return "battery.100percent"
-        } else if percent > 63 {
-            return "battery.75percent"
-        } else if percent > 38 {
-            return "battery.50percent"
-        } else if percent > 10 {
-            return "battery.25percent"
-        } else {
-            return "battery.0percent"
-        }
-    }
-    
-#if canImport(SwiftUI)
-    /// Color for the battery icon.
-    public var color: Color {
-        if lowPowerMode {
-            return .yellow
-        }
-        var redLevel = 20
-        // for some reason, iPad only warns at 10% (maybe because the battery is larger?)
-        if Device.current.idiom == .pad { //  || Device.current.idiom == .mac // do we need to do this for Macs as well?
-            redLevel = 10
-        }
-        if currentLevel <= redLevel {
-            return .red // even when charging
-        }
-        if currentState == .charging {
-            return .green
-        }
-        return .primary // should be black if in light mode and white in dark mode.
-    }
-#endif
-    
     /// The user enabled Low Power mode
     public var lowPowerMode: Bool {
         return ProcessInfo.processInfo.isLowPowerModeEnabled
-    }
-    
-    /// Provides a textual representation of the battery state.
-    /// Examples:
-    /// ```
-    /// Battery level: 90%, device is plugged in.
-    /// Battery level: 100 % (Full), device is plugged in.
-    /// Battery level: \(batteryLevel)%, device is unplugged.
-    /// ```
-    public var description: String {
-        let level = currentLevel
-        switch currentState {
-        case .charging: return "Battery level: \(level)%, device is charging."
-        case .full: return "Battery level: 100 % (Full), device is plugged in."
-        case .unplugged: return "Battery level: \(level)%, device is unplugged."
-        default: return "Battery is unknown/unsupported."
-        }
     }
 }
