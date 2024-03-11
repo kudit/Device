@@ -37,7 +37,7 @@ public enum BatteryState: CustomStringConvertible { // automatically conforms to
 }
 
 public protocol Battery: ObservableObject, CustomStringConvertible, Identifiable {
-    /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % :-(
+    /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
     var currentState: BatteryState { get }

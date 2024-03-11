@@ -8,29 +8,37 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
+// support relative font
+// https://malauch.com/posts/auto-resizable-text-size-in-swiftui/
+/*
+ let font = Font.custom("SF Pro", size: 8, relativeTo: .caption2)
+.system(size:) should support relativeTo:
+ .font(.system(size: 200))  // 1
+ .minimumScaleFactor(0.01)  // 2
+ */
+
 public struct BatteryView<B: Battery>: View {
     @ObservedObject public var battery: B
     // Making these state variables means they wouldn't be updated or set by the initializer.
     public var useSystemColors = false
     public var includePercent = true
+    public var fontSize: CGFloat = 16
     
     @State private var percent: Int = -1
     @State private var state: BatteryState = .unplugged
 
     @Environment(\.colorScheme) var colorScheme
-    
-    @State private var lastUpdate = Date()
-    
-    public init(battery: B = DeviceBattery.current, useSystemColors: Bool = false, includePercent: Bool = true) {
+        
+    public init(battery: B = DeviceBattery.current, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16) {
         self.battery = battery
         self.useSystemColors = useSystemColors
         self.includePercent = includePercent
+        self.fontSize = fontSize
     }
     
     func update() {
         percent = battery.currentLevel
         state = battery.currentState
-        lastUpdate = Date()
     }
         
     var background: Color {
@@ -50,44 +58,33 @@ public struct BatteryView<B: Battery>: View {
     }
 
     public var body: some View {
-//        VStack {
-            ZStack {
-                // add back fill to improve contrast
-                Image(systemName: "battery.100percent")
-#if os(visionOS)
-                    .font(.extraLargeTitle)
-#else
-                    .font(.largeTitle)
-#endif
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(
-                        battery.isCharging ? .clear : background,
-                        .clear,
-                        .pink)
-                // Symbol colored
-                Image(systemName: battery.symbolName)
-#if os(visionOS)
-                    .font(.extraLargeTitle)
-#else
-                    .font(.largeTitle)
-#endif
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(
-                        battery.isCharging ? .yellow : color,
-                        .foreground,
-                        color)
+        ZStack {
+            // add back fill to improve contrast
+            Image(systemName: "battery.100percent")
+                .font(.system(size: fontSize))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(
+                    battery.isCharging ? .clear : background,
+                    .clear,
+                    .pink)
+            // Symbol colored
+            Image(systemName: battery.symbolName)
+                .font(.system(size: fontSize))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(
+                    battery.isCharging ? .yellow : color,
+                    .foreground,
+                    color)
+                .shadow(color: background, radius: 1)
+            if includePercent {
+                Text("\(battery.currentLevel)%  ")
+                    .font(.system(size: fontSize * 0.3))
+                    .bold()
                     .shadow(color: background, radius: 1)
-                if includePercent {
-                    Text("\(battery.currentLevel)%  ")
-                        .font(.caption)
-                        .bold()
-                        .shadow(color: background, radius: 1)
-                        .shadow(color: background, radius: 1)
-                        .shadow(color: background, radius: 1)
-                }
+                    .shadow(color: background, radius: 1)
+                    .shadow(color: background, radius: 1)
             }
-//            Text("LU: \(lastUpdate.formatted(date: .omitted, time: .complete))")
-//        }
+        }
         .task {
             update()
             battery.add { _ in
@@ -100,13 +97,15 @@ public struct BatteryView<B: Battery>: View {
 public struct BatteryTestView: View {
     public var useSystemColors = false
     public var includePercent = true
-    public init(useSystemColors: Bool = false, includePercent: Bool = true) {
+    public var fontSize: CGFloat = 100
+    public init(useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 100) {
         self.useSystemColors = useSystemColors
         self.includePercent = includePercent
+        self.fontSize = fontSize
     }
     public var body: some View {
         ForEach(MockBattery.mocks) { mock in
-            BatteryView(battery: mock, useSystemColors: useSystemColors, includePercent: includePercent)
+            BatteryView(battery: mock, useSystemColors: useSystemColors, includePercent: includePercent, fontSize: fontSize)
         }
     }
 }
@@ -114,10 +113,10 @@ public struct BatteryTestView: View {
 #Preview("Batteries") {
     HStack {
         VStack {
-            BatteryTestView()
+            BatteryTestView(includePercent: false)
         }
         VStack {
-            BatteryTestView(useSystemColors: true, includePercent: false)
+            BatteryTestView(useSystemColors: true)
         }
     }
 }

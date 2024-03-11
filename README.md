@@ -1,11 +1,13 @@
 <img src="/Development/Assets.xcassets/AppIcon.appiconset/Icon%20Design.1024.png" height="128">
 
 # Device.swiftpm
-Value type replacement for device information on all platforms with a consistent API.  Designed primarily for maintainability and compatibility.
+Device is a value-type replacement for device information on all supported platforms.  The primary goals are to be easily maintainable and employ a consistent API that can be used across platforms.  API is present even on platforms that don't support all features so that availability checks do not have to be performed on external code and can just unwrap optionals.  Device definitions include clear initializers so anyone can add new devices and contribute to the project even on an iPad using Swift Playgrounds rather than requiring Xcode.
+
+This is actively maintained so if there is a feature request or change, we will strive to address within a week.
 
 ## Features
 
-- [x] Device identification
+- [x] Clearly labeled device identification
 - [x] Device idiom detection
 - [x] Simulator detection
 - [x] Playground detection
@@ -114,7 +116,7 @@ if Device.current.isRealDevice {
 ### Get the Current Battery State
 **Note:**
 
-> When getting the current battery state, battery monitoring enabled will be temporarily set to true and then restored to whatever it was beforehand, so no need to manage monitoring separately.  If you want to continuously monitor the battery state or level, you can add a monitor that will continuously call your code whenever the level changes.
+> When getting the current battery state, battery monitoring enabled will be temporarily set to true and then restored to whatever it was beforehand, so no need to manage monitoring separately.  If you need to be notified when the battery state or level changes, you can add a monitor that will call your code whenever the level changes.  However, typically this can just be dropped in as the DeviceBattery is an ObservableObject.
 
 ```swift
 

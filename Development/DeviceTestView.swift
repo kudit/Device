@@ -13,7 +13,7 @@ extension Device.Idiom {
         case .pod:
                 .mint
         case .phone:
-                .gray
+                .red
         case .pad:
                 .purple
         case .tv:
@@ -38,7 +38,7 @@ struct TimeClockView: View {
             Text("Current time: \(time.formatted(date: .long, time: .complete))")
             if let battery = Device.current.battery {
                 Text("Battery Info: \(battery.description)")
-                BatteryView(battery: battery)
+                BatteryView(battery: battery, fontSize: 80)
             } else {
                 Text("No Battery")
             }
@@ -81,13 +81,13 @@ struct TestCard: View {
 public struct DeviceTestView: View {
     public var body: some View {
         VStack {
-            Text("Hello, Device world!")
-            TimeClockView()
-            Text("Current device: \(Device.current.description)")
-            Text("Simulator Model Identifier: \(ProcessInfo().environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "none")")
-            Text("Identifier: \(Device.current.identifier)")
-            Text("Device Name: \(Device.current.name ?? "nil")")
-            Text("System Name: \(Device.current.systemName ?? "nil")")
+            Group { // so not more than 7 items
+                TimeClockView()
+                Text("Current device: \(Device.current.description)")
+                Text("Identifier: \(Device.current.identifier)")
+                Text("Device Name: \(Device.current.name ?? "nil")")
+                Text("System Name: \(Device.current.systemName ?? "nil")")
+            }
             Group {
                 HStack {
                     TestCard(
@@ -110,7 +110,7 @@ public struct DeviceTestView: View {
                 .frame(height: 44)
                 HStack {
                     VStack {
-                        BatteryTestView(useSystemColors: true, includePercent: false)
+                        BatteryTestView(useSystemColors: true, fontSize: 40)
                     }
                     VStack {
                         ForEach(Device.Idiom.allCases) { idiom in
@@ -118,7 +118,7 @@ public struct DeviceTestView: View {
                         }
                     }
                     VStack {
-                        BatteryTestView()
+                        BatteryTestView(includePercent: false, fontSize: 40)
                     }
                 }
             }
