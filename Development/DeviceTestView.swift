@@ -110,6 +110,9 @@ public struct DeviceTestView: View {
                 .frame(height: 44)
                 HStack {
                     VStack {
+                        BatteryTestView(useSystemColors: true, includePercent: false)
+                    }
+                    VStack {
                         ForEach(Device.Idiom.allCases) { idiom in
                             TestCard(label: idiom.description, visible: Device.current.idiom == idiom, color: Device.current.idiom.color)
                         }

@@ -10,8 +10,9 @@ import SwiftUI
 
 public struct BatteryView<B: Battery>: View {
     @ObservedObject public var battery: B
-    @State public var useSystemColors = false
-    @State public var includePercent = true
+    // Making these state variables means they wouldn't be updated or set by the initializer.
+    public var useSystemColors = false
+    public var includePercent = true
     
     @State private var percent: Int = -1
     @State private var state: BatteryState = .unplugged
@@ -97,26 +98,28 @@ public struct BatteryView<B: Battery>: View {
 }
 
 public struct BatteryTestView: View {
-    public init() {}
+    public var useSystemColors = false
+    public var includePercent = true
+    public init(useSystemColors: Bool = false, includePercent: Bool = true) {
+        self.useSystemColors = useSystemColors
+        self.includePercent = includePercent
+    }
     public var body: some View {
         ForEach(MockBattery.mocks) { mock in
-            BatteryView(battery: mock)
+            BatteryView(battery: mock, useSystemColors: useSystemColors, includePercent: includePercent)
         }
     }
 }
 
-#if os(visionOS)
-#Preview("Batteries", windowStyle: .plain) {
-    VStack {
-        BatteryTestView()
-    }
-}
-#else
 #Preview("Batteries") {
-    VStack {
-        BatteryTestView()
+    HStack {
+        VStack {
+            BatteryTestView()
+        }
+        VStack {
+            BatteryTestView(useSystemColors: true, includePercent: false)
+        }
     }
 }
-#endif
 
 #endif
