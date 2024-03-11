@@ -263,7 +263,13 @@ public class DeviceBattery: Battery {
 #elseif canImport(UIKit)
         switch UIDevice.current.batteryState {
         case .charging: return .charging
-        case .full: return .full
+        case .full:
+#if os(macOS) || targetEnvironment(macCatalyst)
+            // for some reason, this reports charging state as full.
+            return .charging
+#else
+            return .full
+#endif
         case .unplugged: return .unplugged
         case .unknown: return .unknown // Should never happen since `batteryMonitoring` is enabled.
         @unknown default:

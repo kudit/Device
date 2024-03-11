@@ -35,6 +35,7 @@ This is actively maintained so if there is a feature request or change, we will 
 - macOS 10.10.3+
 - macCatalyst 13.1+
 - visionOS 1.0+
+(Note: built for macOS "Designed for iPad" does not return expected results.)
 
 ## Installation
 Install by adding this as a package dependency to your code.  This can be done in XCode or Swift Playgrounds!

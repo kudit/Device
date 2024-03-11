@@ -27,6 +27,9 @@ public struct BatteryView<B: Battery>: View {
     @State private var percent: Int = -1
     @State private var state: BatteryState = .unplugged
 
+    /// This allows this view to update when connected.  Not actually used though.
+    @State private var lastUpdate = Date()
+
     @Environment(\.colorScheme) var colorScheme
         
     public init(battery: B = DeviceBattery.current, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16) {
@@ -39,6 +42,7 @@ public struct BatteryView<B: Battery>: View {
     func update() {
         percent = battery.currentLevel
         state = battery.currentState
+        lastUpdate = Date()
     }
         
     var background: Color {
@@ -88,6 +92,7 @@ public struct BatteryView<B: Battery>: View {
         .task {
             update()
             battery.add { _ in
+                // use monitor callback to force UI to update since can't necessarily depend on observable updates
                 update()
             }
         }

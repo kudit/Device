@@ -1,5 +1,6 @@
 # ChangeLog
 
+v1.0.11 3/11/2024 Fixed BatteryView to make sure it updates when DeviceBattery updates.  Fixed so macOS reports charging instead of full when charging.
 v1.0.10 3/11/2024 Updated documentation.  Changed phone test color to red since gray is not very obvious.  Re-worked BatteryView so that it can be scaled.
 v1.0.9 3/11/2024 Fixed so that BatteryView actually uses the initialization parameters (formerly, would not because they were marked @State).
 v1.0.8 3/9/2024 Updated Battery to be protocol instead of just a class so that it can be Mocked.  Added Mocks.  Added BatteryView for displaying battery indicator.
@@ -18,10 +19,12 @@ Known issues that need to be addressed.
 [ ] Fix so that previews consistently work in Swift Playgrounds.
     - Does not show #Preview("Battery") in Playgrounds on macOS or on iPad Swift Playgrounds.  App Preview is shown.
     - All Previews work in Xcode.
+[ ] Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.  Need to test in visionOS (Designed for iPad) to see if there are similar issues in that configuration.
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
+[ ] Add weight option for primary text (title originally was bold and now that we're doing font size, add weight parameter)
 [ ] Add macOS devices (ongoing).
 [ ] Add new devices (ongoing).
 [ ] Improve test app user interface/layout.

@@ -82,6 +82,7 @@ public struct DeviceTestView: View {
     public var body: some View {
         VStack {
             Group { // so not more than 7 items
+                Text("Kudit/Device v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] ?? "Unknown")")
                 TimeClockView()
                 Text("Current device: \(Device.current.description)")
                 Text("Identifier: \(Device.current.identifier)")
