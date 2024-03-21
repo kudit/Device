@@ -34,6 +34,8 @@ public struct Screen {
     public static var i4 = Screen(diagonal: 4, resolution: (640,1136), ppi: 326)
     // iPhone 6
     public static var i47 = Screen(diagonal: 4.7, resolution: (750,1334), ppi: 326)
+    // iPhone 12 mini
+    public static var i54 = Screen(diagonal: 5.4, resolution: (1080,2340), ppi: 476)
     // iPhone 6 Plus
     public static var i55 = Screen(diagonal: 5.5, resolution: (1080,1920), ppi: 401)
     // iPhone X
@@ -42,14 +44,14 @@ public struct Screen {
     public static var i65 = Screen(diagonal: 6.5, resolution: (1242,2688), ppi: 458)
     // iPhone Xʀ
     public static var i61 = Screen(diagonal: 6.1, resolution: (828,1792), ppi: 326)
-    // iPhone 12 mini
-    public static var i54 = Screen(diagonal: 5.4, resolution: (1080,2340), ppi: 476)
-    // iPhone 12 Pro
+    // iPhone 12 Pro, 13 Pro, 14
     public static var i61p = Screen(diagonal: 6.1, resolution: (1170,2532), ppi: 460)
+    // iPhone 14 Pro
+    public static var i61x1179 = Screen(diagonal: 6.1, resolution: (1179,2556), ppi: 460)
     // iPhone 12 Pro Max, iPhone 14 Plus
     public static var i67 = Screen(diagonal: 6.7, resolution: (1284,2778), ppi: 458)
-    // iPhone 15 Pro Max
-    public static var i67s = Screen(diagonal: 6.7, resolution: (1290,2796), ppi: 460)
+    // iPhone 14,15 Pro Max
+    public static var i67x1290 = Screen(diagonal: 6.7, resolution: (1290,2796), ppi: 460)
     // MARK: iPads
     // iPad 2
     public static var i97 = Screen(diagonal: 9.7, resolution: (768,1024), ppi: 132)

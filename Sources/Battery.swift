@@ -167,7 +167,7 @@ public class DeviceBattery: Battery {
         get {
 #if os(watchOS)
             return WKInterfaceDevice.current().isBatteryMonitoringEnabled
-#elseif canImport(UIKit)
+#elseif canImport(UIKit) && !os(tvOS)
             return UIDevice.current.isBatteryMonitoringEnabled
 #else
             return false // If we don't have access to UIDevice or WKInterfaceDevice, just return false
@@ -176,7 +176,7 @@ public class DeviceBattery: Battery {
         set {
 #if os(watchOS)
             WKInterfaceDevice.current().isBatteryMonitoringEnabled = newValue
-#elseif canImport(UIKit)
+#elseif canImport(UIKit) && !os(tvOS)
             UIDevice.current.isBatteryMonitoringEnabled = newValue
 #else
             // If we don't have access to UIDevice or WKInterfaceDevice, this gets ignored
@@ -191,7 +191,7 @@ public class DeviceBattery: Battery {
         // create an observer for changes
 #if os(watchOS)
         // Apparently this can't be observed on watchOS :(
-#elseif canImport(UIKit)
+#elseif canImport(UIKit) && !os(tvOS)
         NotificationCenter.default.addObserver(
             forName: UIDevice.batteryLevelDidChangeNotification,
             object: nil,
@@ -233,7 +233,7 @@ public class DeviceBattery: Battery {
             
         }
         return 100
-#elseif canImport(UIKit)
+#elseif canImport(UIKit) && !os(tvOS)
 //        UIDevice.current.isBatteryMonitoringEnabled = true
 //        print(UIDevice.current.batteryLevel)
         return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
@@ -260,7 +260,7 @@ public class DeviceBattery: Battery {
         @unknown default:
             return .unknown // To cover any future additions for which DeviceKit might not have updated yet.
         }
-#elseif canImport(UIKit)
+#elseif canImport(UIKit) && !os(tvOS)
         switch UIDevice.current.batteryState {
         case .charging: return .charging
         case .full:

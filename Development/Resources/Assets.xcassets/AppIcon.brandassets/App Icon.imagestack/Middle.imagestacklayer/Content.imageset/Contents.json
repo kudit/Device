@@ -1,0 +1,18 @@
+{
+  "images" : [
+    {
+      "filename" : "Icon Design tvOS.003.png",
+      "idiom" : "tv",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Icon Design tvOS.003 1.png",
+      "idiom" : "tv",
+      "scale" : "2x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

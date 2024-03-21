@@ -1,3 +1,14 @@
+// String constants for SF Symbols
+public extension String {
+    static let symbolUnknownEnvironment = "questionmark.circle"
+    static let symbolSimulator = "squareshape.squareshape.dotted"
+    static let symbolPlayground = "swift"
+    static let symbolPreview = "curlybraces.square"
+    static let symbolRealDevice = "square.fill"
+    static let symbolDesignedForiPad = "ipad.badge.play"
+    static let symbolUnknownDevice = "questionmark.square.dashed"
+}
+
 // MARK: CPU
 // https://en.wikipedia.org/wiki/List_of_Mac_models_grouped_by_CPU_type
 public enum CPU: Comparable {

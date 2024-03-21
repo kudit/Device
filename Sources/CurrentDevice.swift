@@ -35,6 +35,8 @@ public protocol CurrentDevice: DeviceType {
     var isPreview: Bool { get }
     /// Returns `true` if NOT running in preview, playground, or simulator.
     var isRealDevice: Bool { get }
+    /// Returns `true` if Built for iPad mode not a native mode (for macOS and visionOS)
+    var isDesignedForiPad: Bool { get }
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String { get }
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return `nil`.
@@ -132,6 +134,16 @@ final class ActualHardwareDevice: CurrentDevice {
         return !isPreview && !isPlayground && !isSimulator
     }
     
+    /// Returns `true` if Built for iPad mode not a native mode (for macOS and visionOS)
+    var isDesignedForiPad: Bool {
+        // Check for mismatch between systemName and expected idiom based on identifier.
+        if Device.current.idiom == .vision && Device.current.systemName == "iPadOS" {
+            return true
+        }
+        // Note: this will be "false" under Catalyst which is what we want.
+        return ProcessInfo().isiOSAppOnMac
+    }
+
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String = {
 #if targetEnvironment(macCatalyst)
@@ -325,24 +337,35 @@ final class ActualHardwareDevice: CurrentDevice {
     
     /// The volume’s available capacity in bytes for storing important resources.
     public var volumeAvailableCapacityForImportantUsage: Int64? {
+#if os(tvOS) || os(watchOS)
+            return nil
+#else
         if #available(iOS 11.0, *) {
             return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage
         } else {
             return nil
         }
+#endif
     }
     
     /// The volume’s available capacity in bytes for storing nonessential resources.
     public var volumeAvailableCapacityForOpportunisticUsage: Int64? {
+#if os(tvOS) || os(watchOS)
+            return nil
+#else
         if #available(iOS 11.0, *) {
             return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForOpportunisticUsageKey]))?.volumeAvailableCapacityForOpportunisticUsage
         } else {
             return nil
         }
+#endif
     }
     
     /// All volumes capacity information in bytes.
     public var volumes: [URLResourceKey: Int64]? {
+#if os(tvOS) || os(watchOS)
+            return nil
+#else
         if #available(iOS 11.0, *) {
             do {
                 let values = try rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey,
@@ -365,5 +388,6 @@ final class ActualHardwareDevice: CurrentDevice {
         } else {
             return nil
         }
+#endif
     }
 }

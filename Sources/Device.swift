@@ -16,6 +16,8 @@ import UIKit
 /// Type for inheritance of specific idiom structs which use a Device as a backing store but allows for idiom-specific variables and functions and acts like a sub-class of Device but still having value-type backing.  TODO: Make this private so we don't access DeviceType outside of here?
 public protocol DeviceType: CustomStringConvertible {
     var device: Device { get }
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    var symbolName: String { get } // include here so that we use the idiomatic implementation rather than the default implementation below.
 }
 public extension DeviceType {
     var idiom: Device.Idiom { device.idiom }
@@ -42,6 +44,17 @@ public extension DeviceType {
     /// A textual representation of the device.
     var description: String { device.description }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    var symbolName: String {
+        // convert to idiomatic device so we can reference the correct implementation of symbolName.
+        guard let idiomatic = device.idiom.type.init(device: device) else {
+//            print("Unable to idomatic device. \(device)")
+            return device.symbolName // use default if we can't convert for some reason
+        }
+//        print(idiomatic.symbolName)
+        return idiomatic.symbolName
+    }
+        
     /// A safe version of `description`.
     /// Example:
     /// Device.iPhoneXR.description:     iPhone Xʀ
@@ -110,7 +123,7 @@ public struct Device: CustomStringConvertible, IdiomType {
             case .carPlay:
                 return .carPlay
             case .vision:
-                if #available(iOS 17.0, *) {
+                if #available(iOS 17.0, visionOS 1.0, *) {
                     return .vision
                 } else {
                     // Fallback on earlier versions
@@ -184,6 +197,8 @@ public struct Device: CustomStringConvertible, IdiomType {
             switch self {
             case .mac:
                 return Mac.self
+            case .pod:
+                return iPod.self
             case .phone:
                 return iPhone.self
             case .pad:
@@ -203,6 +218,13 @@ public struct Device: CustomStringConvertible, IdiomType {
             default:
                 return Device.self
             }
+        }
+        
+        /// Return a prototypical symbol for this idiom.
+        public var symbolName: String {
+            let prototypical = self.type.init(identifier: "Prototype") // create a dummy version but don't include prefix or it will recursively loop.
+//            print(String(describing: prototypical))
+            return prototypical.symbolName
         }
     }
     
@@ -306,7 +328,12 @@ public struct Device: CustomStringConvertible, IdiomType {
             image: nil,
             cpu: .unknown)
     }
-    
+
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        return .symbolUnknownDevice
+    }
+
     /// A list of all known devices (devices with identifiers and descriptions).
     public static var all: [Device] = {
         var allKnownDevices = [Device]()
@@ -358,18 +385,35 @@ public struct Device: CustomStringConvertible, IdiomType {
 
 // MARK: - Device Idiom Types
 public struct Mac: IdiomType {
+    public enum Form: String {
+        case macProGen1 = "macpro.gen1"
+        case macProGen2 = "macpro.gen2"
+        case macProGen3 = "macpro.gen3"
+        case macBook = "macbook"
+        case macBookGen1 = "macbook.gen1"
+        case macBookGen2 = "macbook.gen2"
+        case macMini = "macmini"
+        case macStudio = "macstudio"
+    }
+    
     public var device: Device
+    static let form = "form"
+    public var form: Form {
+        device.idiomProperties[Self.form] as! Form
+    }
+
     public init(
         name: String,
         identifiers: [String],
         supportId: String,
+        form: Form,
         image: String?,
         cpu: CPU,
         hasBattery: Bool,
         hasUSBCConnectivity: Bool = true
     )
     {
-        device = Device(idiom: .mac, name: name, identifiers: identifiers, image: image, cpu: cpu, hasBattery: hasBattery, hasUSBCConnectivity: hasUSBCConnectivity)
+        device = Device(idiom: .mac, name: name, identifiers: identifiers, image: image, cpu: cpu, hasBattery: hasBattery, hasUSBCConnectivity: hasUSBCConnectivity, idiomProperties: [Self.form: form])
     }
     
     init(identifier: String) {
@@ -377,6 +421,7 @@ public struct Mac: IdiomType {
             name: "Unknown Mac",
             identifiers: [identifier],
             supportId: "UNKNOWN",
+            form: .macBook,
             image: nil,
             cpu: .unknown,
             hasBattery: true,
@@ -384,19 +429,42 @@ public struct Mac: IdiomType {
         )
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        return self.form.rawValue
+    }
+
     static var all = [
         // TODO: We need a lot more of the macs here!  Please help fill these out via a pull request.
+        Mac(
+            name: "MacBook Pro (14-inch, 2023)",
+            identifiers: ["Mac14,9"],
+            supportId: "SP889",
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
+            cpu: .m2pro,
+            hasBattery: true,
+            hasUSBCConnectivity: true),
         Mac(
             name: "MacBook Pro 16-Inch, M2 Pro, 2023",
             identifiers: ["Mac14,10"],
             supportId: "SP890",
+            form: .macBookGen2,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP890/macbook-pro-2023-16in_2x.png",
             cpu: .m2pro,
             hasBattery: true,
             hasUSBCConnectivity: true),
+        Mac(
+            name: "Mac mini (2023)",
+            identifiers: ["Mac14,3"],
+            supportId: "SP891",
+            form: .macMini,
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111837_mac-mini-2023-m2-pro.png",
+            cpu: .m2,
+            hasBattery: false,
+            hasUSBCConnectivity: true),
     ]
 }
-// TODO: Add MacLaptop and MacDesktop as "subclasses" so that we can default battery state?  Also have various classes of device like iMac, MacPro, MacBook, MacBookPro, etc as further subclasses?
     
 public struct iPod: IdiomType {
     public var device: Device
@@ -426,6 +494,11 @@ public struct iPod: IdiomType {
             cpu: .unknown)
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        return "ipodtouch"
+    }
+    
     static var all = [
         iPod(name: "iPod touch (5th generation)",
              identifiers: ["iPod5,1"],
@@ -450,9 +523,12 @@ public struct iPhone: IdiomType {
     // TODO: Should we have isMiniFormFactor?
     static let isPlusFormFactor = "isPlusFormFactor"
     public var isPlusFormFactor: Bool {
-        device.idiomProperties[Self.isPlusFormFactor] != nil
+        device.idiomProperties[Self.isPlusFormFactor].boolValue
     }
-    // TODO: Do we want to have a property for hasDynamicIsland or should we just encourage a check for Live Activity as Apple does? 
+    static let hasDynamicIsland = "hasDynamicIsland"
+    public var hasDynamicIsland: Bool {
+        device.idiomProperties[Self.hasDynamicIsland].boolValue
+    }
     
     public init(
         name: String,
@@ -469,6 +545,7 @@ public struct iPhone: IdiomType {
         cameras: Int,
         isPlusFormFactor: Bool = false,
         hasLidarSensor: Bool = false,
+        hasDynamicIsland: Bool = false,
         hasUSBCConnectivity: Bool = false
     ) {
         device = Device(
@@ -488,7 +565,10 @@ public struct iPhone: IdiomType {
             hasLidarSensor: hasLidarSensor,
             hasUSBCConnectivity: hasUSBCConnectivity,
             screen: screen,
-            idiomProperties: [Self.isPlusFormFactor:isPlusFormFactor]
+            idiomProperties: [
+                Self.isPlusFormFactor: isPlusFormFactor,
+                Self.hasDynamicIsland: hasDynamicIsland,
+            ]
         )
     }
     
@@ -505,6 +585,17 @@ public struct iPhone: IdiomType {
             cameras: 3, // front + back 2
             hasUSBCConnectivity: true // assume all phones going forward will have USBCConnectivity
         )
+    }
+
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        if hasDynamicIsland {
+            return "iphone.gen3"
+        } else if biometrics == .faceID {
+            return "iphone.gen2"
+        } else {
+            return "iphone.gen1"
+        }
     }
     
     static var all = [
@@ -827,7 +918,7 @@ public struct iPhone: IdiomType {
             isPro: true,
             cpu: .a14,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61p,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             cameras: 4, // four cameras, three rear 12mp, front 12mp,
@@ -857,7 +948,7 @@ public struct iPhone: IdiomType {
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1092/en_US/iphone-13-240.png",
             cpu: .a15,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61p,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             cameras: 3, // three cameras, two rear 12mp, front 12mp,
@@ -884,7 +975,7 @@ public struct iPhone: IdiomType {
             isPro: true,
             cpu: .a15,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61p,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             cameras: 4, // four cameras, three rear 12mp, front 12mp,
@@ -906,11 +997,11 @@ public struct iPhone: IdiomType {
         iPhone(
             name: "iPhone 14",
             identifiers: ["iPhone14,7"],
-            supportId: "SP867",
+            supportId: "SP873",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1136/en_US/iphone-se-3rd-gen-colors-240.png",
             cpu: .a15,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61p,
             supportsWirelessCharging: true,
             biometrics: .touchID,
             cameras: 3, // three cameras, two rear 12mp, front 12mp,
@@ -937,76 +1028,96 @@ public struct iPhone: IdiomType {
             isPro: true,
             cpu: .a16,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61x1179,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             cameras: 4, // three cameras, three rear 12mp, front 12mp,
-            isPlusFormFactor: false
+            isPlusFormFactor: false,
+            hasDynamicIsland: true
+        ),
+        iPhone(
+            name: "iPhone 14 Pro Max",
+            identifiers: ["iPhone15,3"],
+            supportId: "SP876",
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
+            isPro: true,
+            cpu: .a16,
+            cellular: .fiveG,
+            screen: .i67x1290,
+            supportsWirelessCharging: true,
+            biometrics: .faceID,
+            cameras: 4, // three cameras, three rear 12mp, front 12mp,
+            isPlusFormFactor: false,
+            hasDynamicIsland: true
         ),
         
         iPhone(
             name: "iPhone 15",
             identifiers: ["iPhone15,4"],
-            supportId: "https://www.apple.com/iphone-15/",
+            supportId: "SP901",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-colors.jpg",
             isPro: false,
             cpu: .a16,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61x1179,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             hasForce3dTouchSupport: false,
             cameras: 3, // 2 back cameras + 1 front camera
             isPlusFormFactor: false,
             hasLidarSensor: false, // will say on support page
+            hasDynamicIsland: true,
             hasUSBCConnectivity: true), // 15x models should all support USBC
         iPhone(
             name: "iPhone 15 Plus",
             identifiers: ["iPhone15,5"],
-            supportId: "https://www.apple.com/iphone-15/",
+            supportId: "SP902",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-plus-colors.jpg",
             isPro: false,
             cpu: .a16,
             cellular: .fiveG,
-            screen: .i67,
+            screen: .i67x1290,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             hasForce3dTouchSupport: false,
             cameras: 3, // 2 back cameras + front camera
             isPlusFormFactor: false,
             hasLidarSensor: true, // will say on support page
+            hasDynamicIsland: true,
             hasUSBCConnectivity: true), // 15x models should all support USBC
         iPhone(
             name: "iPhone 15 Pro",
             identifiers: ["iPhone16,1"],
-            supportId: "https://www.apple.com/iphone-15-pro/",
+            supportId: "SP903",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-colors.jpg",
             isPro: true,
             cpu: .a17pro,
             cellular: .fiveG,
-            screen: .i61,
+            screen: .i61x1179,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             hasForce3dTouchSupport: false,
             cameras: 4, // 3 back cameras + 1 front camera
             isPlusFormFactor: false,
             hasLidarSensor: true, // will say on support page
+            hasDynamicIsland: true,
             hasUSBCConnectivity: true), // 15x models should all support USBC
         iPhone(
             name: "iPhone 15 Pro Max",
             identifiers: ["iPhone16,2"],
-            supportId: "https://www.apple.com/iphone-15-pro/",
+            supportId: "SP904",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-max-colors.jpg",
             isPro: true,
             cpu: .a17pro,
             cellular: .fiveG,
-            screen: .i67,
+            screen: .i67x1290,
             supportsWirelessCharging: true,
             biometrics: .faceID,
             hasForce3dTouchSupport: false,
             cameras: 4, // 3 back cameras + 1 front camera
             isPlusFormFactor: false,
             hasLidarSensor: true, // will say on support page
+            hasDynamicIsland: true,
             hasUSBCConnectivity: true), // 15x models should all support USBC
     ]
 }
@@ -1021,7 +1132,7 @@ public struct iPad: IdiomType {
     static let isMini = "isMini"
     public var isMini: Bool // equivalent to isPadMiniFormFactor
     {
-        device.idiomProperties[Self.isMini] != nil
+        device.idiomProperties[Self.isMini].boolValue
     }
     
     public enum ApplePencil {
@@ -1065,6 +1176,15 @@ public struct iPad: IdiomType {
             screen: .i97)
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        if biometrics == .faceID {
+            return "ipad.gen2"
+        } else {
+            return "ipad.gen1"
+        }
+    }
+
     static var all = [
         /*
         iPad( // TODO: Remove once below is complete
@@ -1390,7 +1510,7 @@ public struct iPad: IdiomType {
             name: "iPad Pro 12.9-inch (6th generation)",
             identifiers: ["iPad14,5", "iPad14,6"],
             supportId: "SP883",
-            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP882/ipad-pro-4gen-mainimage_2x.png",
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111841_ipad-pro-4gen-mainimage.png",
             cpu: .m2,
             screen: .i129,
             supportedPencils: [.secondGeneration, .usbC]),
@@ -1418,6 +1538,11 @@ public struct AppleTV: IdiomType {
             cpu: .unknown)
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        return "appletv"
+    }
+
     static var all = [ // https://support.apple.com/en-us/101605
         AppleTV(
             name: "Apple TV HD (4th Generation, Siri)",
@@ -1448,14 +1573,20 @@ public struct AppleTV: IdiomType {
 
 public struct HomePod: IdiomType {
     public var device: Device
+    static let isMini = "isMini"
+    public var isMini: Bool {
+        device.idiomProperties[Self.isMini].boolValue
+    }
+
     public init(
         name: String,
         identifiers: [String],
         supportId: String,
         image: String?,
-        cpu: CPU)
+        cpu: CPU,
+        isMini: Bool = false)
     {
-        device = Device(idiom: .homePod, name: name, identifiers: identifiers, cpu: cpu, hasBattery: false, screen: .w38)
+        device = Device(idiom: .homePod, name: name, identifiers: identifiers, cpu: cpu, hasBattery: false, screen: .w38, idiomProperties: [Self.isMini: isMini])
     }
     
     init(identifier: String) {
@@ -1468,8 +1599,33 @@ public struct HomePod: IdiomType {
         )
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        if isMini {
+            return "homepodmini"
+        }
+        return "homepod"
+    }
+
     static var all = [
-        HomePod(name: "HomePod", identifiers: ["AudioAccessory1,1"], supportId: "SP773", image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP773/homepod_space_gray_large_2x.jpg", cpu: .a8)
+        HomePod(
+            name: "HomePod",
+            identifiers: ["AudioAccessory1,1"],
+            supportId: "SP773",
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP773/homepod_space_gray_large_2x.jpg",
+            cpu: .a8),
+        HomePod(
+            name: "HomePod mini",
+            identifiers: ["AudioAccessory5,1"],
+            supportId: "SP834",
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111914_homepod-mini-colours.png",
+            cpu: .s5),
+        HomePod(
+            name: "HomePod (2nd generation)",
+            identifiers: ["AudioAccessory6,1"],
+            supportId: "SP888",
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111843_homepod-2gen.png",
+            cpu: .s7),
     ]
 }
 
@@ -1552,6 +1708,11 @@ public struct AppleWatch: IdiomType {
             size: .unknown)
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        return "applewatch"
+    }
+
     static var all = [
         AppleWatch(
             name: "Apple Watch (1st generation) 38mm",
@@ -1796,6 +1957,11 @@ public struct AppleVision: IdiomType {
             cpu: .unknown)
     }
     
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        return "visionpro"
+    }
+
     static var all = [
         AppleVision(
             name: "Apple Vision Pro",
@@ -1804,4 +1970,14 @@ public struct AppleVision: IdiomType {
             image: "https://www.apple.com/newsroom/images/media/Apple-WWCD23-Vision-Pro-glass-230605_big.jpg.large.jpg",
             cpu: .m2),
     ]
+}
+
+// support bool value with generic property lists for device structs.  The previous suggestions to test against nil doesn't work if we're defaulting to a `false` value that is not nil.
+extension Any? {
+    var boolValue: Bool {
+        if let bool = self as? Bool {
+            return bool
+        }
+        return false
+    }
 }
