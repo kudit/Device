@@ -1,5 +1,6 @@
 # ChangeLog
 
+v1.1.2 3/21/2024 Fixed problem where rounded display corners was left in the vision definition.  Preparing for re-write of the capabilities engine.
 v1.1.1 3/20/2024 Fixed so readme icon works again due to moved assets to Resources folder.  Added isApplePencilCapable flag for iPads.  Removed legacy unused screen attributes (should add those back in under capabilities once we switch models in v2).
 v1.1.0 3/20/2024 Added symbols for device idiom icons and various build modes.  Fixed TestView Any to String conversion issue.  Added dynamicIsland configuration parameter.  Added in missing iPhone 14 Pro Max and updated several screen sizes and some wrong support IDs.  Added isMini flag for HomePods.  Added Mac forms. Created test for (Designed for iPad) mode vs native mode.  Added XCode test project so that we can build on visionOS and tvOS and watchOS and various mac targets.  visionOS (Designed for iPad) properly reports the new isDesignedForiPad flag when using a compatibility app.  Added scroll view so visible on watchOS or in iPhone landscape.  Added tvOS, visionOS, macOS, and watchOS icons.
 v1.0.11 3/11/2024 Fixed BatteryView to make sure it updates when DeviceBattery updates.  Fixed so macOS reports charging instead of full when charging.
@@ -22,13 +23,14 @@ Known issues that need to be addressed.
     - Does not show #Preview("Battery") in Playgrounds on macOS or on iPad Swift Playgrounds.  App Preview is shown.
     - All Previews work in Xcode.
 [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.
+[ ] Make so low power mode colors yellow when not red for system icon.  For colorful version, have low power mode color the outline in yellow.
 [ ] Need help getting identifier when buildling for macOS (not catalyst)
 [ ] Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
-[ ] Rework features like rounded corners, dynamic island, action button, plus form factor, each camera type, usbc, etc. as `capabilities` variable (option set?).  Have `sensors` variable to have things like lidar, etc.  Implement queries as checks for various capability flags.  Flags can then be added to devices without having to have a separate parameter.
+[ ] Rework features like rounded corners, dynamic island, action button, plus form factor, each camera type, usbc, etc. as `capabilities` variable (option set?).  Have `sensors` variable to have things like lidar, etc.  Implement queries as checks for various capability flags.  Flags can then be added to devices without having to have a separate parameter.  Should group sensors and capabilities.  Perhaps have separate `attributes` so that we can add things like color which should be MaterialColor enum.
 [ ] Add weight option for battery text/symbol (title originally was bold and now that we're doing font size, add weight parameter)
 [ ] Add macOS devices (ongoing).  Pull from here: https://github.com/voyager-software/MacLookup/blob/master/Sources/MacLookup/Resources/all-macs.json
 [ ] Add new devices (ongoing).

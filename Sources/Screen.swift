@@ -16,7 +16,7 @@ public struct Screen {
     public static var tv = Screen(resolution: (16,9))
     public static var p720 = Screen(resolution: (1280,720))
     public static var p1080 = Screen(resolution: (1920,1080))
-    public static var vision = Screen(resolution: (3660,3200), hasRoundedDisplayCorners: true)
+    public static var vision = Screen(resolution: (3660,3200))
     // MARK: iPhones
     // iPhone 4
     public static var i35 = Screen(diagonal: 3.5, resolution: (640,960), ppi: 326)
