@@ -1,5 +1,6 @@
 # ChangeLog
 
+v1.1.1 3/20/2024 Fixed so readme icon works again due to moved assets to Resources folder.  Added isApplePencilCapable flag for iPads.  Removed legacy unused screen attributes (should add those back in under capabilities once we switch models in v2).
 v1.1.0 3/20/2024 Added symbols for device idiom icons and various build modes.  Fixed TestView Any to String conversion issue.  Added dynamicIsland configuration parameter.  Added in missing iPhone 14 Pro Max and updated several screen sizes and some wrong support IDs.  Added isMini flag for HomePods.  Added Mac forms. Created test for (Designed for iPad) mode vs native mode.  Added XCode test project so that we can build on visionOS and tvOS and watchOS and various mac targets.  visionOS (Designed for iPad) properly reports the new isDesignedForiPad flag when using a compatibility app.  Added scroll view so visible on watchOS or in iPhone landscape.  Added tvOS, visionOS, macOS, and watchOS icons.
 v1.0.11 3/11/2024 Fixed BatteryView to make sure it updates when DeviceBattery updates.  Fixed so macOS reports charging instead of full when charging.
 v1.0.10 3/11/2024 Updated documentation.  Changed phone test color to red since gray is not very obvious.  Re-worked BatteryView so that it can be scaled.
@@ -27,14 +28,17 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
+[ ] Rework features like rounded corners, dynamic island, action button, plus form factor, each camera type, usbc, etc. as `capabilities` variable (option set?).  Have `sensors` variable to have things like lidar, etc.  Implement queries as checks for various capability flags.  Flags can then be added to devices without having to have a separate parameter.
 [ ] Add weight option for battery text/symbol (title originally was bold and now that we're doing font size, add weight parameter)
-[ ] Add macOS devices (ongoing).
+[ ] Add macOS devices (ongoing).  Pull from here: https://github.com/voyager-software/MacLookup/blob/master/Sources/MacLookup/Resources/all-macs.json
 [ ] Add new devices (ongoing).
 [ ] Improve test app user interface/layout.
 [ ] Add tests to complete code coverage.
 [ ] Create tests in such a way that they can be run in Previews and in the example App (may require a project dependency).
+[ ] See if there's a way to automate tests on various platform combinations.
 [ ] Support landscape on iPhone for test view and use size classes to re-layout.
 [ ] For devices that support multiple orientations, automatically apply current orientation to the symbol name for current device.
+[ ] Create replacement for rounded display corners since faceID is a good proxy but misses modern touchID power button iPads.  Have as capability.
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
@@ -43,3 +47,4 @@ This is where proposals can be discussed for potential movement to the roadmap.
 [ ] Create better way of scaling battery so that it can scale with dynamic type?
 [ ] Add a way to check that privacy checks have been added when using APIs that need privacy permissions (have a configuration flag that needs to be set to ensure that privacy flags have been set).
 [ ] Convert SF Symbol names to an enum to allow version checking?
+[ ] If there's a way to fetch the actual model number (like MN572LL/A), then we can use this to give information of the state of the device (new, refurb, replaced, personalized, etc): https://osxdaily.com/2018/01/27/determine-iphone-new-refurbished-replaced/

@@ -1,7 +1,7 @@
-<img src="/Development/Assets.xcassets/AppIcon.appiconset/Icon%20Design.1024.png" height="128">
+<img src="/Development/Resources/Assets.xcassets/AppIcon.appiconset/Icon%20Design.1024.png" height="128">
 
 # Device.swiftpm
-Device is a value-type replacement for device information on all supported platforms.  The primary goals are to be easily maintainable and employ a consistent API that can be used across platforms.  API is present even on platforms that don't support all features so that availability checks do not have to be performed on external code and can just unwrap optionals.  Device definitions include clear initializers so anyone can add new devices and contribute to the project even on an iPad using Swift Playgrounds rather than requiring Xcode.
+Device is a value-type replacement for device information on all supported platforms.  The primary goals are to be easily maintainable by multiple individuals and employ a consistent API that can be used across platforms.  APIs are present even on platforms that don't support all features so that availability checks do not have to be performed in external code and where irrelevant, code can simply unwrap optionals.  Device definitions include clear initializers so anyone can add new devices and contribute to the project even on an iPad using Swift Playgrounds rather than requiring Xcode.  No need to memorize mapping schema or use additional build tools.
 
 This is actively maintained so if there is a feature request or change, we will strive to address within a week.
 

@@ -7,6 +7,7 @@
  Contributors:
  - Ben Ku
  - Heath Hall
+ - https://github.com/schickling/Device.swift
  */
 
 #if canImport(UIKit)
@@ -526,6 +527,7 @@ public struct iPhone: IdiomType {
         device.idiomProperties[Self.isPlusFormFactor].boolValue
     }
     static let hasDynamicIsland = "hasDynamicIsland"
+    /// Returns whether or not the device has the Dynamic Island.
     public var hasDynamicIsland: Bool {
         device.idiomProperties[Self.hasDynamicIsland].boolValue
     }
@@ -1185,6 +1187,11 @@ public struct iPad: IdiomType {
         }
     }
 
+    /// Returns whether or not the device is compatible with Apple Pencil
+    public var isApplePencilCapable: Bool {
+        supportedPencils.count > 0
+    }
+
     static var all = [
         /*
         iPad( // TODO: Remove once below is complete
@@ -1427,7 +1434,7 @@ public struct iPad: IdiomType {
         
         iPad(
             name: "iPad Pro 12-inch (2nd generation)",
-            identifiers: ["iPad7,1", "iPad7,2"],
+            identifiers: ["iPad7,1", "iPad7,2"], // 1 is wifi, 2 is cellular model
             supportId: "SP761",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-12in-hero-201706.png",
             cpu: .a10x,
@@ -1454,7 +1461,7 @@ public struct iPad: IdiomType {
         
         iPad(
             name: "iPad Pro 12.9-inch (3rd generation)",
-            identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"],
+            identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"], // wifi, wifi 1tb, cellular, cellular 1tb
             supportId: "SP784",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP785/ipad-pro-12-2018_2x.png",
             cpu: .a12x,

@@ -2,25 +2,15 @@ public struct Screen {
     public var diagonal: Double?
     public var resolution: (Int,Int)? // width, height in pixels
     public var ppi: Int?
-    // TODO: May want to create variants with and without rounded corners for devices?  Same for with/witout dynamic island?
-    public var hasRoundedDisplayCorners: Bool
-    public var hasSensorHousing: Bool // for faceID with the "notch", anything with sensor housing in the screen
-    public var hasDynamicIsland: Bool
     
     public init(
         diagonal: Double? = nil,
         resolution: (Int, Int),
-        ppi: Int? = nil,
-        hasRoundedDisplayCorners: Bool = false,
-        hasSensorHousing: Bool = false,
-        hasDynamicIsland: Bool = false
+        ppi: Int? = nil
     ) {
         self.diagonal = diagonal
         self.resolution = resolution
         self.ppi = ppi
-        self.hasRoundedDisplayCorners = hasRoundedDisplayCorners
-        self.hasSensorHousing = hasSensorHousing
-        self.hasDynamicIsland = hasDynamicIsland
     }
     
     public static var tv = Screen(resolution: (16,9))

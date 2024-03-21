@@ -58,15 +58,9 @@ extension Device {
     /// Returns whether or not the device has a screen with rounded corners.
     @available(*, deprecated, message: "If you need this, please explain the use-case.  If needed, we should probably mark it in the device definitions since this likely isn't available in the system.")
     public var hasRoundedDisplayCorners: Bool {
-        return true
+        return biometrics == .faceID
     }
-    
-    /// Returns whether or not the device has the Dynamic Island.
-    @available(*, deprecated, message: "If you need this, please explain the use-case rather than checking for LiveActivities.  If needed, we should probably mark it in the device definitions since this likely isn't available in the system.")
-    public var hasDynamicIsland: Bool {
-        return true
-    }
-    
+        
     /// Returns whether or not the device has 3D Touch support.
     @available(*, deprecated, renamed: "hasForce3dTouchSupport")
     public var has3dTouchSupport: Bool {
@@ -312,7 +306,7 @@ extension Device {
     /// Returns supported version of the Apple Pencil
     @available(*, deprecated, message: "This method is for legacy support and doesn't support newer Apple Pencils.  Cast to iPad and query supported pencils if this matters.")
     public var applePencilSupport: ApplePencilSupport {
-        guard idiom == .pad, let pad = iPad(device: self) else {
+        guard let pad = iPad(device: self) else { // will return nil if not an iPad device.
             return []
         }
         if pad.supportedPencils.contains(.secondGeneration) {
