@@ -14,6 +14,119 @@ extension Device {
     /// Gets the identifier from the system, such as "iPhone7,1".
     public static var identifier: String = Device.current.identifier
     
+    /// Ordered list of identifiers in DeviceKit definition file.  Used for migration export.
+    /// iOS iPods, iPhones, iPads, HomePods, Apple TV, Apple Watch (doesn't include vision or macs)
+    static let deviceKitOrder = [
+        "iPod5,1",
+        "iPod7,1",
+        "iPod9,1",
+        "iPhone3,1","iPhone3,2","iPhone3,3",
+        "iPhone4,1",
+        "iPhone5,1","iPhone5,2",
+        "iPhone5,3","iPhone5,4",
+        "iPhone6,1","iPhone6,2",
+        "iPhone7,2",
+        "iPhone7,1",
+        "iPhone8,1",
+        "iPhone8,2",
+        "iPhone9,1","iPhone9,3",
+        "iPhone9,2","iPhone9,4",
+        "iPhone8,4",
+        "iPhone10,1","iPhone10,4",
+        "iPhone10,2","iPhone10,5",
+        "iPhone10,3","iPhone10,6",
+        "iPhone11,2",
+        "iPhone11,4","iPhone11,6",
+        "iPhone11,8",
+        "iPhone12,1",
+        "iPhone12,3",
+        "iPhone12,5",
+        "iPhone12,8",
+        "iPhone13,2",
+        "iPhone13,1",
+        "iPhone13,3",
+        "iPhone13,4",
+        "iPhone14,5",
+        "iPhone14,4",
+        "iPhone14,2",
+        "iPhone14,3",
+        "iPhone14,6",
+        "iPhone14,7",
+        "iPhone14,8",
+        "iPhone15,2",
+        "iPhone15,3",
+        "iPhone15,4",
+        "iPhone15,5",
+        "iPhone16,1",
+        "iPhone16,2",
+        "iPad1,1",
+        "iPad2,1","iPad2,2","iPad2,3","iPad2,4",
+        "iPad3,1","iPad3,2","iPad3,3",
+        "iPad3,4","iPad3,5","iPad3,6",
+        "iPad4,1","iPad4,2","iPad4,3",
+        "iPad5,3","iPad5,4",
+        "iPad6,11","iPad6,12",
+        "iPad7,5","iPad7,6",
+        "iPad11,3","iPad11,4",
+        "iPad7,11","iPad7,12",
+        "iPad11,6","iPad11,7",
+        "iPad12,1","iPad12,2",
+        "iPad13,18","iPad13,19",
+        "iPad13,1","iPad13,2",
+        "iPad13,16","iPad13,17",
+        "iPad2,5","iPad2,6","iPad2,7",
+        "iPad4,4","iPad4,5","iPad4,6",
+        "iPad4,7","iPad4,8","iPad4,9",
+        "iPad5,1","iPad5,2",
+        "iPad11,1","iPad11,2",
+        "iPad14,1","iPad14,2",
+        "iPad6,3","iPad6,4",
+        "iPad6,7","iPad6,8",
+        "iPad7,1","iPad7,2",
+        "iPad7,3","iPad7,4",
+        "iPad8,1","iPad8,2","iPad8,3","iPad8,4",
+        "iPad8,5","iPad8,6","iPad8,7","iPad8,8",
+        "iPad8,9","iPad8,10",
+        "iPad8,11","iPad8,12",
+        "iPad13,4","iPad13,5","iPad13,6","iPad13,7",
+        "iPad13,8","iPad13,9","iPad13,10","iPad13,11",
+        "iPad14,3","iPad14,4",
+        "iPad14,5","iPad14,6",
+        "AudioAccessory1,1",
+        "AudioAccessory5,1",
+        "AudioAccessory6,1",
+        "AppleTV5,3",
+        "AppleTV6,2",
+        "AppleTV11,1",
+        "AppleTV14,1",
+        "Watch1,1",
+        "Watch1,2",
+        "Watch2,6",
+        "Watch2,7",
+        "Watch2,3",
+        "Watch2,4",
+        "Watch3,1","Watch3,3",
+        "Watch3,2","Watch3,4",
+        "Watch4,1","Watch4,3",
+        "Watch4,2","Watch4,4",
+        "Watch5,1","Watch5,3",
+        "Watch5,2","Watch5,4",
+        "Watch6,1","Watch6,3",
+        "Watch6,2","Watch6,4",
+        "Watch5,9","Watch5,11",
+        "Watch5,10","Watch5,12",
+        "Watch6,6","Watch6,8",
+        "Watch6,7","Watch6,9",
+        "Watch6,14","Watch6,16",
+        "Watch6,15","Watch6,17",
+        "Watch6,10","Watch6,12",
+        "Watch6,11","Watch6,13",
+        "Watch6,18",
+        "Watch7,3",
+        "Watch7,4",
+        "Watch7,5",
+    ]
+    
     /// Returns diagonal screen length in inches
     public var diagonal: Double {
         guard let screen = self.screen else {
@@ -24,11 +137,13 @@ extension Device {
     
     /// Returns screen ratio as a tuple.  May need to reduce as will return a resolution.
     @available(*, deprecated, message: "Please let us know how you're using this and why this might be necessary vs querying the screen dimensions.")
-    public var screenRatio: (width: Double, height: Double) {
-        guard let screen = self.screen, let resolution = screen.resolution else {
+    public var screenRatio: (Int, Int) {
+        guard let screen = self.screen else {
             return (-1,-1)
         }
-        return (Double(resolution.0), Double(resolution.1))
+        let resolution = screen.resolution
+        let ratio = resolution.ratio
+        return (ratio.width, ratio.height)
     }
     
     /// allX static functions not included.  If you have a use case that needs any of these rather than testing, please let us know.
@@ -47,7 +162,10 @@ extension Device {
     
     /// Returns whether or not the device has any biometric sensor (i.e. Touch ID or Face ID)
     public var hasBiometricSensor: Bool {
-        return biometrics != .none
+        if let biometrics, biometrics != .none {
+            return true
+        }
+        return false
     }
     
     /// Returns whether or not the device has a sensor housing.
@@ -309,10 +427,10 @@ extension Device {
         guard let pad = iPad(device: self) else { // will return nil if not an iPad device.
             return []
         }
-        if pad.supportedPencils.contains(.secondGeneration) {
+        if pad.pencils.contains(.secondGeneration) {
             return .secondGeneration
         }
-        if pad.supportedPencils.contains(.firstGeneration) {
+        if pad.pencils.contains(.firstGeneration) {
             return .firstGeneration
         }
         return []
@@ -323,7 +441,7 @@ extension Device {
 extension Device {
     /// Returns whether or not the current device has a camera
     public var hasCamera: Bool {
-        return cameras > 0
+        return capabilities.cameras.count > 0
     }
     
 }

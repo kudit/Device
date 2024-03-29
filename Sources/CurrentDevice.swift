@@ -174,7 +174,7 @@ final class ActualHardwareDevice: CurrentDevice {
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
     var battery: DeviceBattery? {
-        if device.hasBattery {
+        if device.has(.battery) {
             return DeviceBattery.current
         }
         return nil

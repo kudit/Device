@@ -1,6 +1,44 @@
-public struct Screen {
+import Foundation
+
+public struct Screen: Hashable {
+    public struct Size: Hashable {
+        var width: Int
+        var height: Int
+        /// Reduce the size into a ratio of whole numbers.
+        public var ratio: Size {
+            if Int(round(100 * Double(width) / Double(height))) == 75 {
+                return Size(width: 3, height: 4)
+            }
+            if Int(100 * Double(width) / Double(height)) == 56 {
+                return Size(width: 9, height: 16)
+            }
+            if Int(10 * Double(width) / Double(height)) == 8 {
+                return Size(width: 4, height: 5)
+            }
+
+            let min = min(width, height)
+            let max = Int(floor(Double(min) / 2.0))
+            guard max > 1 else {
+                return self // end condition when we can't divide any more
+            }
+            for divisor in 2...max {
+                if width % divisor == 0 && height % divisor == 0 {
+                    // even divisor
+                    return Size(width: width / divisor, height: height / divisor).ratio // recurse
+                }
+            }
+            // nothing divides evenly.  we're reduced as much as we can be
+            return self
+        }
+    }
+    public static func == (lhs: Screen, rhs: Screen) -> Bool {
+        lhs.diagonal == rhs.diagonal
+        && lhs.resolution == rhs.resolution
+        && lhs.ppi == rhs.ppi
+    }
+    
     public var diagonal: Double?
-    public var resolution: (Int,Int)? // width, height in pixels
+    public var resolution: Size // width, height in pixels
     public var ppi: Int?
     
     public init(
@@ -9,7 +47,7 @@ public struct Screen {
         ppi: Int? = nil
     ) {
         self.diagonal = diagonal
-        self.resolution = resolution
+        self.resolution = Size(width: resolution.0, height: resolution.1)
         self.ppi = ppi
     }
     
@@ -33,20 +71,22 @@ public struct Screen {
     // iPhone Xs Max
     public static var i65 = Screen(diagonal: 6.5, resolution: (1242,2688), ppi: 458)
     // iPhone Xʀ
-    public static var i61 = Screen(diagonal: 6.1, resolution: (828,1792), ppi: 326)
+    public static var i61x828 = Screen(diagonal: 6.1, resolution: (828,1792), ppi: 326)
+    // iPhone 11 Pro
+    public static var i61x1125 = Screen(diagonal: 6.1, resolution: (1125,2436), ppi: 458)
     // iPhone 12 Pro, 13 Pro, 14
-    public static var i61p = Screen(diagonal: 6.1, resolution: (1170,2532), ppi: 460)
+    public static var i61x1170 = Screen(diagonal: 6.1, resolution: (1170,2532), ppi: 460)
     // iPhone 14 Pro
     public static var i61x1179 = Screen(diagonal: 6.1, resolution: (1179,2556), ppi: 460)
     // iPhone 12 Pro Max, iPhone 14 Plus
-    public static var i67 = Screen(diagonal: 6.7, resolution: (1284,2778), ppi: 458)
+    public static var i67x1284 = Screen(diagonal: 6.7, resolution: (1284,2778), ppi: 458)
     // iPhone 14,15 Pro Max
     public static var i67x1290 = Screen(diagonal: 6.7, resolution: (1290,2796), ppi: 460)
     // MARK: iPads
     // iPad 2
-    public static var i97 = Screen(diagonal: 9.7, resolution: (768,1024), ppi: 132)
+    public static var i97x768 = Screen(diagonal: 9.7, resolution: (768,1024), ppi: 132)
     // iPad 3
-    public static var i97r = Screen(diagonal: 9.7, resolution: (1536,2048), ppi: 264)
+    public static var i97x1536 = Screen(diagonal: 9.7, resolution: (1536,2048), ppi: 264)
     // iPad Air 3rd gen
     public static var i105 = Screen(diagonal: 10.5, resolution: (1668,2224), ppi: 264)
     // iPad 7th gen
@@ -54,9 +94,9 @@ public struct Screen {
     // iPad 10th gen
     public static var i109 = Screen(diagonal: 10.9, resolution: (1640,2360), ppi: 264)
     // iPad mini
-    public static var i79 = Screen(diagonal: 7.9, resolution: (768,1024), ppi: 163)
+    public static var i79x768 = Screen(diagonal: 7.9, resolution: (768,1024), ppi: 163)
     // iPad mini 2
-    public static var i79r = Screen(diagonal: 7.9, resolution: (1536,2048), ppi: 326)
+    public static var i79x1536 = Screen(diagonal: 7.9, resolution: (1536,2048), ppi: 326)
     // iPad mini 6
     public static var i83 = Screen(diagonal: 8.3, resolution: (1488,2266), ppi: 326)
     // iPad Pro
@@ -81,7 +121,7 @@ public struct Screen {
      - Landscape: The device is in Landscape Orientation
      - Portrait:  The device is in Portrait Orientation
      */
-    public enum Orientation {
+    public enum Orientation: Hashable {
         case landscape
         case portrait
         

@@ -16,8 +16,12 @@
 		B52ED1E02BAB7F7400056A62 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1C82BAB7F7400056A62 /* Screen.swift */; };
 		B52ED1E42BAB7F7400056A62 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 		B52ED1E52BAB7F7400056A62 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
+		B53CC2A32BB728FF0000BAD0 /* DeviceInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53CC2A22BB728FF0000BAD0 /* DeviceInfoView.swift */; };
+		B53CC2A42BB728FF0000BAD0 /* DeviceInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53CC2A22BB728FF0000BAD0 /* DeviceInfoView.swift */; };
 		B5861A972BABC531002F0732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B58985FB2BAB99C3002B8E05 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
+		B5CDC3FE2BB206C30068A455 /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDC3FD2BB206C30068A455 /* Migration.swift */; };
+		B5CDC3FF2BB206C30068A455 /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDC3FD2BB206C30068A455 /* Migration.swift */; };
 		B5F0340C2BABA93700CA6396 /* DeviceWatchTest Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B5F033FF2BABA93500CA6396 /* DeviceWatchTest Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 		B5F034132BABB4AF00CA6396 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
@@ -69,9 +73,11 @@
 		B52ED1D52BAB7F7400056A62 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
 		B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTests.swift; sourceTree = "<group>"; };
 		B52ED1D82BAB7F7400056A62 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		B53CC2A22BB728FF0000BAD0 /* DeviceInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoView.swift; sourceTree = "<group>"; };
 		B58985F92BAB99C3002B8E05 /* DeviceTest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = DeviceTest.entitlements; sourceTree = "<group>"; };
 		B58985FA2BAB99C3002B8E05 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B5C1B61D2BAB7997001D5CFA /* DeviceTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5CDC3FD2BB206C30068A455 /* Migration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Migration.swift; sourceTree = "<group>"; };
 		B5F033FF2BABA93500CA6396 /* DeviceWatchTest Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DeviceWatchTest Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -98,8 +104,10 @@
 			children = (
 				B52ED1C22BAB7F7400056A62 /* Battery.swift */,
 				B52ED1C32BAB7F7400056A62 /* BatteryView.swift */,
+				B53CC2A22BB728FF0000BAD0 /* DeviceInfoView.swift */,
 				B52ED1C42BAB7F7400056A62 /* CurrentDevice.swift */,
 				B52ED1C52BAB7F7400056A62 /* Device.swift */,
+				B5CDC3FD2BB206C30068A455 /* Migration.swift */,
 				B52ED1C62BAB7F7400056A62 /* DeviceKitBridge.swift */,
 				B52ED1C72BAB7F7400056A62 /* Hardware.swift */,
 				B52ED1C82BAB7F7400056A62 /* Screen.swift */,
@@ -260,10 +268,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5CDC3FE2BB206C30068A455 /* Migration.swift in Sources */,
 				B52ED1E52BAB7F7400056A62 /* DeviceTestView.swift in Sources */,
 				B52ED1DB2BAB7F7400056A62 /* BatteryView.swift in Sources */,
 				B52ED1DE2BAB7F7400056A62 /* DeviceKitBridge.swift in Sources */,
 				B52ED1DF2BAB7F7400056A62 /* Hardware.swift in Sources */,
+				B53CC2A32BB728FF0000BAD0 /* DeviceInfoView.swift in Sources */,
 				B52ED1DC2BAB7F7400056A62 /* CurrentDevice.swift in Sources */,
 				B52ED1E42BAB7F7400056A62 /* DeviceTestApp.swift in Sources */,
 				B52ED1DA2BAB7F7400056A62 /* Battery.swift in Sources */,
@@ -276,10 +286,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5CDC3FF2BB206C30068A455 /* Migration.swift in Sources */,
 				B5F034132BABB4AF00CA6396 /* DeviceTestView.swift in Sources */,
 				B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */,
 				B5F034142BABB4B500CA6396 /* Battery.swift in Sources */,
 				B5F034152BABB4B500CA6396 /* DeviceKitBridge.swift in Sources */,
+				B53CC2A42BB728FF0000BAD0 /* DeviceInfoView.swift in Sources */,
 				B5F034162BABB4B500CA6396 /* CurrentDevice.swift in Sources */,
 				B5F034172BABB4B500CA6396 /* Device.swift in Sources */,
 				B5F034182BABB4B500CA6396 /* BatteryView.swift in Sources */,
@@ -442,7 +454,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
@@ -477,7 +489,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";

@@ -25,7 +25,7 @@ let package = Package(
             name: "DeviceTestApp",
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "1.1.1",
+            displayVersion: "2.0.0",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),

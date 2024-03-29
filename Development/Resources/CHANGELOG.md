@@ -1,5 +1,6 @@
 # ChangeLog
 
+v2.0.0 3/27/2024 Re-worked so there are capabilities rather than fixed parameters to make it easier to add features going forward.  Also created Migration code to convert old-format definitions into the new ones (allowing us to easily add definitions from other lists like older Macs).  Removed idiomProperties in favor of consistent capabilities.  Made Placard view apply stroke after fill so that it looks better.  Made supportId optional in most definitions to make it easier to address missing values.  Created function for reducing resolution into a ratio.  Reverted screenRatio legacy function to match DeviceKit implementation.  Added .air model tag.  Added MaterialColors to preserve color model information and allow coloring devices.  Made all hardware hashable so that Device could be Hashable for easy use in ForEach functions.  Added mac devices from https://github.com/voyager-software/MacLookup/blob/master/Sources/MacLookup/Resources/all-macs.json (thank you!).  Added symbol names for capabilities.  Added DeviceInfoView for testing and presentation.
 v1.1.2 3/21/2024 Fixed problem where rounded display corners was left in the vision definition.  Preparing for re-write of the capabilities engine.
 v1.1.1 3/20/2024 Fixed so readme icon works again due to moved assets to Resources folder.  Added isApplePencilCapable flag for iPads.  Removed legacy unused screen attributes (should add those back in under capabilities once we switch models in v2).
 v1.1.0 3/20/2024 Added symbols for device idiom icons and various build modes.  Fixed TestView Any to String conversion issue.  Added dynamicIsland configuration parameter.  Added in missing iPhone 14 Pro Max and updated several screen sizes and some wrong support IDs.  Added isMini flag for HomePods.  Added Mac forms. Created test for (Designed for iPad) mode vs native mode.  Added XCode test project so that we can build on visionOS and tvOS and watchOS and various mac targets.  visionOS (Designed for iPad) properly reports the new isDesignedForiPad flag when using a compatibility app.  Added scroll view so visible on watchOS or in iPhone landscape.  Added tvOS, visionOS, macOS, and watchOS icons.
@@ -30,9 +31,9 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
-[ ] Rework features like rounded corners, dynamic island, action button, plus form factor, each camera type, usbc, etc. as `capabilities` variable (option set?).  Have `sensors` variable to have things like lidar, etc.  Implement queries as checks for various capability flags.  Flags can then be added to devices without having to have a separate parameter.  Should group sensors and capabilities.  Perhaps have separate `attributes` so that we can add things like color which should be MaterialColor enum.
+[ ] Add support IDs for macs and anything that has one missing.
+[ ] Double check and update all device color sets. (right click on the color swatches and inspect element for the hex code)  https://www.apple.com/iphone/compare/?modelList=iphone-13-mini,iphone-13,iphone-15-pro
 [ ] Add weight option for battery text/symbol (title originally was bold and now that we're doing font size, add weight parameter)
-[ ] Add macOS devices (ongoing).  Pull from here: https://github.com/voyager-software/MacLookup/blob/master/Sources/MacLookup/Resources/all-macs.json
 [ ] Add new devices (ongoing).
 [ ] Improve test app user interface/layout.
 [ ] Add tests to complete code coverage.
@@ -46,7 +47,11 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 This is where proposals can be discussed for potential movement to the roadmap.
 
 [ ] Change Battery from Protocol to the DeviceBattery code and have MockBattery be a subclass that overrides functions?
+[ ] Add release date?
 [ ] Create better way of scaling battery so that it can scale with dynamic type?
 [ ] Add a way to check that privacy checks have been added when using APIs that need privacy permissions (have a configuration flag that needs to be set to ensure that privacy flags have been set).
 [ ] Convert SF Symbol names to an enum to allow version checking?
 [ ] If there's a way to fetch the actual model number (like MN572LL/A), then we can use this to give information of the state of the device (new, refurb, replaced, personalized, etc): https://osxdaily.com/2018/01/27/determine-iphone-new-refurbished-replaced/
+[ ] Help contribute to DeviceKit suggest ordering consistently with identifier order?
+[ ] Should forceTouch and touch3d be separated?
+[ ] Add volume controls and power button and home button capabilities?  Possibly with rumored camera button?
