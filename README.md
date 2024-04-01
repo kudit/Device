@@ -35,17 +35,17 @@ This is actively maintained so if there is a feature request or change, we will 
 - macOS 10.10.3+
 - macCatalyst 13.1+
 - visionOS 1.0+
-(Note: built for macOS "Designed for iPad" does not return expected results.)
+(Note: built for macOS "Designed for iPad" does not return expected device results.)
 
 ## Installation
-Install by adding this as a package dependency to your code.  This can be done in XCode or Swift Playgrounds!
+Install by adding this as a package dependency to your code.  This can be done in Xcode or Swift Playgrounds!
 
 ### Swift Package Manager
 
 #### Swift 5
 ```swift
 dependencies: [
-    .package(url: "https://github.com/device/Device.git", from: "1.0.0"),
+    .package(url: "https://github.com/kudit/Device.git", from: "2.0.0"),
     /// ...
 ]
 ```
@@ -66,12 +66,21 @@ let device = Device.current
 
 print(device) // prints, for example, "iPhone 6 Plus"
 
-if device.hasForce3dTouchSupport {
+if device.has(.force3dTouch) {
     // do something that needs force-touch.
 } else {
     // fallback for devices that do not support this.
 }
+
+if device.is(.plus) || device.is(.max) {
+    // do something only available for "Plus" model devices.
+}
+
+if device.has(.battery) && device.has(.lidar) && device.has(.headphoneJack) {
+    // do something only if there is a battery, lidar, and a headphoneJack
+}
 ```
+Get the full list of flags that can be queried for under the enum Capability in Hardware.swift.
 
 ### Get the device idiom
 ```swift
@@ -80,7 +89,7 @@ if device.idiom == .pad {
   // iPad
 } else if device.idiom == .phone {
   // iPhone
-} else if device.vision {
+} else if device.idiom == .vision {
   // Apple Vision device
 }
 ```
@@ -135,6 +144,12 @@ if let battery = Device.current.battery {
         showLowBatteryWarning()
     }
 
+    if battery.lowPowerMode {
+        print("Low Power mode is enabled! 🔋")
+    } else {
+        print("Low Power mode is disabled! 😊")
+    }
+
     // add monitor to do something whenever battery level changes (like updating UI)
     battery.addMonitor {
         localBatteryLevel = battery.currentLevel
@@ -151,15 +166,6 @@ if let level = Device.current.battery?.currentLevel, level >= 50 {
   install_iOS()
 } else {
   showError()
-}
-```
-
-### Get Low Power mode status
-```swift
-if battery.lowPowerMode {
-  print("Low Power mode is enabled! 🔋")
-} else {
-  print("Low Power mode is disabled! 😊")
 }
 ```
 
@@ -191,7 +197,7 @@ if Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000) {
 ```
 
 ## Source of Information
-Information has been sourced from the following:
+Some information has been sourced from the following:
 https://www.theiphonewiki.com/wiki/Models
 https://www.everymac.com
 https://github.com/devicekit/DeviceKit

@@ -648,7 +648,8 @@ extension [String] {
     var distilled: [String] {
         var items = [String]()
         for item in self {
-            items += item.split(separator: "; ").map { String($0) }
+//            items += item.split(separator: "; ").map { String($0) } // using the collection method rather than the string method which isn't available in iOS < 16
+            items += item.components(separatedBy: "; ")
         }
         return items
     }

@@ -38,6 +38,11 @@ extension Color {
 
 public struct DeviceInfoView: View {
     public var device: DeviceType
+
+    public init(device: any DeviceType) {
+        self.device = device
+    }
+
     public var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 10) {
@@ -86,6 +91,11 @@ public struct DeviceInfoView: View {
 
 public struct DeviceListView: View {
     public var devices: [DeviceType]
+    
+    public init(devices: [any DeviceType]) {
+        self.devices = devices
+    }
+
     // TODO: extract this out into KuditFrameworks as a way to section content with a callback for determining the header to group under.
     var sectioned: [(String,[DeviceType])] {
         var sections = [(String,[DeviceType])]()

@@ -68,16 +68,9 @@ struct StackedLabelStyle: LabelStyle {
 struct Placard: View {
     @State var color = Color.gray
     var body: some View {
-        // if platform missing, this causes crash.  Also, this needs the stroke(_:lineWidth:antialiased version which is only iOS 17+ to work in previews.
-        if #available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
-            return RoundedRectangle(cornerRadius: 10)
-                .fill(color)
-                .stroke(.primary, lineWidth: 3)
-        } else {
-            return RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(.primary, lineWidth: 3)
-                .background(RoundedRectangle(cornerRadius: 10).fill(color))
-        }
+        return RoundedRectangle(cornerRadius: 10)
+            .strokeBorder(.primary, lineWidth: 3)
+            .background(RoundedRectangle(cornerRadius: 10).fill(color))
     }
 }
 
@@ -114,75 +107,80 @@ public struct DeviceTestView: View {
         }
     }
     
-    public var body: some View {
-        NavigationStack {
-            VStack {
-                Group { // so not more than 7 items
-                    Text("Kudit/Device v\(version)")
-                    TimeClockView()
-                    Text("Current device: \(Device.current.description)")
-                    Text("Identifier: \(Device.current.identifier)")
-                    Text("Device Name: \(Device.current.name ?? "nil")")
-                    Text("System Name: \(Device.current.systemName ?? "nil")")
-                    NavigationLink("List All") {
-                        DeviceListView(devices: Device.all)
-                    }
+    var testView: some View {
+        VStack {
+            Group { // so not more than 7 items
+                Text("Kudit/Device v\(version)")
+                TimeClockView()
+                Text("Current device: \(Device.current.description)")
+                Text("Identifier: \(Device.current.identifier)")
+                Text("Device Name: \(Device.current.name ?? "nil")")
+                Text("System Name: \(Device.current.systemName ?? "nil")")
+                NavigationLink("List All") {
+                    DeviceListView(devices: Device.all)
                 }
-                Group {
-                    HStack {
-                        //                    TestCard(label: "TEST", highlighted: true, color: .yellow, symbolName: "star.fill")
-                        TestCard(
-                            label: "Preview",
-                            highlighted: Device.current.isPreview,
-                            color: .orange,
-                            symbolName: .symbolPreview
-                        )
-                        TestCard(
-                            label: "Playground",
-                            highlighted: Device.current.isPlayground,
-                            color: .pink,
-                            symbolName: .symbolPlayground)
-                        TestCard(
-                            label: "Simulator",
-                            highlighted: Device.current.isSimulator,
-                            color: .blue,
-                            symbolName: .symbolSimulator)
-                        TestCard(
-                            label: "Real Device",
-                            highlighted: Device.current.isRealDevice,
-                            color: .green,
-                            symbolName: .symbolRealDevice)
-                        if [.mac, .vision].contains(Device.current.idiom) {
-                            TestCard(
-                                label: "Designed for iPad",
-                                highlighted: Device.current.isDesignedForiPad,
-                                color: .purple,
-                                symbolName: .symbolDesignedForiPad)
-                        }
-                    }
-                    .labelStyle(StackedLabelStyle())
-                    .frame(height: 60)
-                    HStack {
-                        VStack {
-                            BatteryTestView(useSystemColors: true, fontSize: 40)
-                        }
-                        VStack {
-                            idiomList
-                        }
-                        VStack {
-                            BatteryTestView(includePercent: false, fontSize: 40)
-                        }
-                    }
-                }
-                .padding()
-                Spacer()
             }
+            Group {
+                HStack {
+                    //                    TestCard(label: "TEST", highlighted: true, color: .yellow, symbolName: "star.fill")
+                    TestCard(
+                        label: "Preview",
+                        highlighted: Device.current.isPreview,
+                        color: .orange,
+                        symbolName: .symbolPreview
+                    )
+                    TestCard(
+                        label: "Playground",
+                        highlighted: Device.current.isPlayground,
+                        color: .pink,
+                        symbolName: .symbolPlayground)
+                    TestCard(
+                        label: "Simulator",
+                        highlighted: Device.current.isSimulator,
+                        color: .blue,
+                        symbolName: .symbolSimulator)
+                    TestCard(
+                        label: "Real Device",
+                        highlighted: Device.current.isRealDevice,
+                        color: .green,
+                        symbolName: .symbolRealDevice)
+                    if [.mac, .vision].contains(Device.current.idiom) {
+                        TestCard(
+                            label: "Designed for iPad",
+                            highlighted: Device.current.isDesignedForiPad,
+                            color: .purple,
+                            symbolName: .symbolDesignedForiPad)
+                    }
+                }
+                .labelStyle(StackedLabelStyle())
+                .frame(height: 60)
+                HStack {
+                    VStack {
+                        BatteryTestView(useSystemColors: true, fontSize: 40)
+                    }
+                    VStack {
+                        idiomList
+                    }
+                    VStack {
+                        BatteryTestView(includePercent: false, fontSize: 40)
+                    }
+                }
+            }
+            .padding()
+            Spacer()
         }
     }
     
-    func importContent() {
-        Migration.migrate()
+    public var body: some View {
+        NavigationView {
+            testView
+        }
     }
+    
+    /// For testing and migrating code during development.
+//    func importContent() {
+//        Migration.migrate()
+//    }
 }
 
 #Preview("DeviceTestView") {
