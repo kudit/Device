@@ -143,6 +143,10 @@ struct HardwareListView: View {
     }
 }
 
+#Preview("DeviceList") {
+    DeviceListView(devices: Device.all)
+}
+
 
 public struct BatteryListView: View {
     public var fontSize: CGFloat = 40

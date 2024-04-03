@@ -638,10 +638,3 @@ public extension [MaterialColor] {
         homePodMini: "homePodMini",
     ]
 }
-
-#if canImport(SwiftUI)
-import SwiftUI
-#Preview {
-    HardwareListView()
-}
-#endif

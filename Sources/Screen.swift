@@ -2,8 +2,8 @@ import Foundation
 
 public struct Screen: Hashable {
     public struct Size: Hashable {
-        var width: Int
-        var height: Int
+        public var width: Int
+        public var height: Int
         /// Reduce the size into a ratio of whole numbers.
         public var ratio: Size {
             if Int(round(100 * Double(width) / Double(height))) == 75 {
