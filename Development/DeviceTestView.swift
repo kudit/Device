@@ -11,13 +11,13 @@ extension Device.Idiom {
         case .mac:
                 .blue
         case .pod:
-                .mint
+                .pink
         case .phone:
                 .red
         case .pad:
                 .purple
         case .tv:
-                .brown
+                .blue
         case .homePod:
                 .pink
         case .watch:
@@ -44,10 +44,21 @@ struct TimeClockView: View {
             }
         }
     }
-    
+
+    var stackDateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "E, dd MMM yyyy HH:mm:ss z"
+        return formatter
+    }
+
     var body: some View {
         VStack {
-            Text("Current time: \(time.formatted(date: .long, time: .complete))")
+            if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
+                Text("Current time: \(time.formatted(date: .long, time: .complete))")
+            } else {
+                // Fallback on earlier versions
+                Text("Current type: \(time, formatter: stackDateFormatter)")
+            }
             if let battery = Device.current.battery {
                 Text("Battery Info: \(battery.description)")
             } else {
@@ -81,7 +92,7 @@ struct Placard: View {
     @State var color = Color.gray
     var body: some View {
         return RoundedRectangle(cornerRadius: 10)
-            .strokeBorder(.primary, lineWidth: 3)
+            .strokeBorder(.foreground, lineWidth: 3)
             .background(RoundedRectangle(cornerRadius: 10).fill(color))
     }
 }
@@ -92,12 +103,21 @@ struct TestCard: View {
     @State var color = Color.gray
     @State var symbolName = String.symbolUnknownEnvironment
     var body: some View {
-        Placard(color: highlighted ? color : .clear)
-            .overlay {
+        if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
+            Placard(color: highlighted ? color : .clear)
+                .overlay {
+                    Label(label, symbolName: symbolName)
+                        .font(.caption)
+                        .symbolRenderingMode(highlighted ? .hierarchical : .monochrome)
+                }
+        } else {
+            // Fallback on earlier versions
+            ZStack {
+                Placard(color: highlighted ? color : .clear)
                 Label(label, symbolName: symbolName)
                     .font(.caption)
-                    .symbolRenderingMode(highlighted ? .hierarchical : .monochrome)
             }
+        }
     }
 }
 
@@ -105,7 +125,7 @@ struct HardwareListView: View {
     @State private var selection: Device.Idiom?
     var body: some View {
         List {
-            Section("Idioms") {
+            Section {
                 ForEach(Device.Idiom.allCases) { idiom in
                     let label = Label(idiom.description, symbolName: idiom.symbolName)
                         .foregroundColor(.primary)
@@ -117,8 +137,10 @@ struct HardwareListView: View {
                         label
                     }
                 }
+            } header: {
+                Text("Idioms")
             }
-            Section("Capabilities") {
+            Section {
                 ForEach(Capability.allCases, id: \.self) { capability in
                     let label = HStack {
                         Label(String(describing: capability), symbolName: capability.symbolName)
@@ -131,6 +153,8 @@ struct HardwareListView: View {
                         label
                     }
                 }
+            } header: {
+                Text("Capabilities")
             }
         }
         .navigationTitle("Hardware")

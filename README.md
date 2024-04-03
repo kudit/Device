@@ -29,11 +29,11 @@ This is actively maintained so if there is a feature request or change, we will 
 
 ## Requirements
 
-- iOS 11.0+
-- tvOS 11.0+
-- watchOS 4.0+
-- macOS 10.10.3+
-- macCatalyst 13.1+
+- iOS 14.0+
+- tvOS 14.0+
+- watchOS 6.0+
+- macOS 11.0+
+- macCatalyst 14.0+
 - visionOS 1.0+
 (Note: built for macOS "Designed for iPad" does not return expected device results.)
 

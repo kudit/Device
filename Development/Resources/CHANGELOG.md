@@ -1,5 +1,6 @@
 # ChangeLog
 
+v2.0.4 4/2/2024 Renamed project from DeviceTest to Device.  Fixed so supported on tvOS 14.  Added crash detection to newest Apple Watch models.  Backed minimum iOS version to iOS 14.  Changed watchOS minimum to 6.  Updated minimum deployment targets in README.  Added fallbacks for some iOS 15+ only features.
 v2.0.3 4/2/2024 Made screen size resolution width and height public.  Removed HardwareListView from Hardware.swift to prevent issues with integrations.
 v2.0.2 3/31/2024 Fixed so can run test app on iOS 15/16.  Added custom symbols for nicer UI and to make sure icons work on older iOS devices.  Added NFC, ApplePay, Barometer, and Ringer Switch to iPhones where missing.  Improved the display of the test view.
 v2.0.1 3/31/2024 Fixed version warning with String.split() not available on iOS < 16.  Improved package definition with annotations.  Added public initializers for Device views.  Fixed compatibility and buildling for iOS < 16 in test views.  Updated Readme to highlight the new syntax.

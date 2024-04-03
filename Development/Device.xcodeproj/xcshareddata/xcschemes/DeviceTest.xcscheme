@@ -18,7 +18,7 @@
                BlueprintIdentifier = "B5C1B61C2BAB7997001D5CFA"
                BuildableName = "DeviceTest.app"
                BlueprintName = "DeviceTest"
-               ReferencedContainer = "container:DeviceTest.xcodeproj">
+               ReferencedContainer = "container:Device.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "B5C1B61C2BAB7997001D5CFA"
             BuildableName = "DeviceTest.app"
             BlueprintName = "DeviceTest"
-            ReferencedContainer = "container:DeviceTest.xcodeproj">
+            ReferencedContainer = "container:Device.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "B5C1B61C2BAB7997001D5CFA"
             BuildableName = "DeviceTest.app"
             BlueprintName = "DeviceTest"
-            ReferencedContainer = "container:DeviceTest.xcodeproj">
+            ReferencedContainer = "container:Device.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

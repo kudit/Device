@@ -125,14 +125,19 @@ public struct DeviceInfoView: View {
             }
             Spacer()
             if let image = device.image {
-                AsyncImage(url: URL(string: image)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                } placeholder: {
-                    ProgressView()
+                if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
+                    AsyncImage(url: URL(string: image)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(width: 60, height: 60)
+                } else {
+                    // Fallback on earlier versions
+                    // Don't show the image on devices less than iOS 15
                 }
-                .frame(width: 60, height: 60)
             }
         }
     }
@@ -190,13 +195,21 @@ public struct DeviceListView: View {
     public var body: some View {
         List {
             ForEach(sectioned, id: \.0) { section in
-                Section(section.0) {
+                Section {
                     ForEach(section.1, id: \.device) { device in
-                        DeviceInfoView(device: device)
-                            .onTapGesture {
-                                print(device.description)
-                            }
+                        if #available(tvOS 16.0, *) {
+                            DeviceInfoView(device: device)
+                            // This is only for testing anyways
+                                .onTapGesture {
+                                    print(device.description)
+                                }
+                        } else {
+                            // Fallback on earlier versions
+                            DeviceInfoView(device: device)
+                        }
                     }
+                } header: {
+                    Text(section.0)
                 }
             }
         }

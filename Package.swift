@@ -11,10 +11,10 @@ import AppleProductTypes
 let package = Package(
     name: "Device",
     platforms: [
-        .iOS("15.2"),
-        .macOS("14.3"),
-        .tvOS("15.0"),
-        .watchOS("8.0"),
+        .iOS("14.0"),
+        .macOS("11.0"),
+        .tvOS("14.0"),
+        .watchOS("6.0"),
         .visionOS("1.0")
     ],
     products: [
@@ -27,7 +27,7 @@ let package = Package(
             name: "DeviceTestApp",
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "2.0.1",
+            displayVersion: "2.0.4",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),

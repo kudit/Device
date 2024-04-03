@@ -189,7 +189,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
             case .carPlay:
                 return .carPlay
             case .vision:
-                if #available(iOS 17.0, visionOS 1.0, *) {
+                if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10, *) {
                     return .vision
                 } else {
                     // Fallback on earlier versions
@@ -2762,7 +2762,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         capabilities: Capabilities = [],
         models: [String] = [],
         colors: [MaterialColor] = .default,
-        cpu: CPU,
+        cpu: CPU, // TODO: Add cellular?
         size: WatchSize
     ) {
         device = Device(
@@ -2771,7 +2771,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             identifiers: identifiers,
             supportId: supportId,
             image: image,
-            capabilities: capabilities.union([.battery, .wirelessCharging, .nfc, .applePay, .screen(size.screen), .watchSize(size)]),
+            capabilities: capabilities.union([.battery, .wirelessCharging, .nfc, .applePay, .screen(size.screen), .roundedCorners, .watchSize(size)]),
             models: models,
             colors: colors,
             cpu: cpu
@@ -2980,6 +2980,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             identifiers: ["Watch7,3"],
             supportId: "SP905",
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-series-9-gps.png",
+            capabilities: [.crashDetection],
             colors: .watch9,
             cpu: .s9,
             size: .mm41),
@@ -2988,6 +2989,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             identifiers: ["Watch7,4"],
             supportId: "SP905",
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-series-9-gps.png",
+            capabilities: [.crashDetection],
             colors: .watch9,
             cpu: .s9,
             size: .mm45),
@@ -2996,7 +2998,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             identifiers: ["Watch7,5"],
             supportId: "SP906",
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-ultra-2.png",
-            capabilities: [.actionButton],
+            capabilities: [.actionButton, .crashDetection],
             colors: .watchUltra2,
             cpu: .s9,
             size: .mm49),
