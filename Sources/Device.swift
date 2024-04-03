@@ -83,7 +83,7 @@ public extension DeviceType {
     
     /// A textual representation of the device.
     var description: String { device.description }
-    
+        
     internal var idiomatic: any IdiomType {
         // convert to idiomatic device so we can reference the correct implementation of symbolName.
         guard let idiomatic = device.idiom.type.init(device: device) else {
@@ -164,12 +164,12 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
         case pad
         /// An interface designed for tvOS and Apple TV.
         case tv
-        /// An interface designed for Home Pod
-        case homePod
-        /// An interface designed for Apple Watch
-        case watch
         /// An interface designed for an in-car experience.
         case carPlay
+        /// An interface designed for Apple Watch
+        case watch
+        /// An interface designed for Home Pod
+        case homePod
         /// An interface designed for visionOS and Apple Vision Pro.
         case vision
         
@@ -244,12 +244,12 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
                 return "iPad"
             case .tv:
                 return " TV"
-            case .homePod:
-                return "HomePod"
-            case .watch:
-                return " Watch"
             case .carPlay:
                 return "CarPlay"
+            case .watch:
+                return " Watch"
+            case .homePod:
+                return "HomePod"
             case .vision:
                 return " Vision"
                 //            @unknown default:
@@ -384,14 +384,14 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
         allKnownDevices += iPod.allDevices
         // iPhones
         allKnownDevices += iPhone.allDevices
-        //  Apple TVs
-        allKnownDevices += AppleTV.allDevices
         // iPads
         allKnownDevices += iPad.allDevices
-        // HomePods
-        allKnownDevices += HomePod.allDevices
+        //  Apple TVs
+        allKnownDevices += AppleTV.allDevices
         //  Watches
         allKnownDevices += AppleWatch.allDevices
+        // HomePods
+        allKnownDevices += HomePod.allDevices
         //  Vision devices
         allKnownDevices += AppleVision.allDevices
         
@@ -409,7 +409,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
     
     /// A textual representation of the device.
     public var description: String {
-        return self.name
+        return "\(self.name), (\(self.identifiers.definition)), \(self.capabilities.sorted.definition)"
     }
     
     /// A safe version of `description`.
@@ -1663,21 +1663,26 @@ public struct iPod: IdiomType, HasScreen {
     }
     
     static var all = [
-        iPod(name: "iPod touch (5th generation)",
-             identifiers: ["iPod5,1"],
-             supportId: "SP657",
-             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP657/sp657_ipod-touch_size.jpg",
-             cpu: .a5),
-        iPod(name: "iPod touch (6th generation)",
-             identifiers: ["iPod7,1"],
-             supportId: "SP720",
-             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP720/SP720-ipod-touch-specs-color-sg-2015.jpg",
-             cpu: .a8),
-        iPod(name: "iPod touch (7th generation)",
-             identifiers: ["iPod9,1"],
-             supportId: "SP796",
-             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP796/ipod-touch-7th-gen_2x.png",
-             cpu: .a10),
+    
+        iPod(
+            name: "iPod touch (5th generation)",
+            identifiers: ["iPod5,1"],
+            supportId: "SP657",
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP657/sp657_ipod-touch_size.jpg",
+            cpu: .a5),
+        iPod(
+            name: "iPod touch (6th generation)",
+            identifiers: ["iPod7,1"],
+            supportId: "SP720",
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP720/SP720-ipod-touch-specs-color-sg-2015.jpg",
+            cpu: .a8),
+        iPod(
+            name: "iPod touch (7th generation)",
+            identifiers: ["iPod9,1"],
+            supportId: "SP796",
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP796/ipod-touch-7th-gen_2x.png",
+            cpu: .a10),
+             
     ]
 }
 
@@ -1737,12 +1742,20 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
 
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
     public var symbolName: String {
-        if has(.dynamicIsland) {
-            return "iphone.gen3"
-        } else if biometrics == .faceID {
-            return "iphone.gen2"
+        if #available(iOS 16, macOS 13, macCatalyst 16, tvOS 16, watchOS 9,  *) {
+            if has(.dynamicIsland) {
+                return "iphone.gen3"
+            } else if biometrics == .faceID {
+                return "iphone.gen2"
+            } else {
+                return "iphone.gen1"
+            }
         } else {
-            return "iphone.gen1"
+            if !has(.notch) && !has(.dynamicIsland) {
+                return "iphone.homebutton"
+            } else {
+                return "iphone"
+            }
         }
     }
     
@@ -1753,6 +1766,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone3,1", "iPhone3,2", "iPhone3,3"],
             supportId: "SP587",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP643/sp643_iphone4s_color_black.jpg",
+            capabilities: [.ringerSwitch],
             cpu: .a4,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .threeG,
@@ -1762,6 +1776,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone4,1"],
             supportId: "SP643",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP643/sp643_iphone4s_color_black.jpg",
+            capabilities: [.ringerSwitch],
             cpu: .a5,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .threeG,
@@ -1771,6 +1786,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone5,1", "iPhone5,2"],
             supportId: "SP655",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP655/sp655_iphone5_color.jpg",
+            capabilities: [.ringerSwitch],
             cpu: .a6,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1780,6 +1796,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone5,3", "iPhone5,4"],
             supportId: "SP684",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP684/SP684-color_yellow.jpg",
+            capabilities: [.ringerSwitch],
             cpu: .a6,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1789,7 +1806,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone6,1", "iPhone6,2"],
             supportId: "SP685",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP685/SP685-color_black.jpg",
-            capabilities: [.biometrics(.touchID)],
+            capabilities: [.biometrics(.touchID), .ringerSwitch],
             cpu: .a7,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1799,7 +1816,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone7,2"],
             supportId: "SP705",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP705/SP705-iphone_6-mul.png",
-            capabilities: [.biometrics(.touchID)],
+            capabilities: [.biometrics(.touchID), .applePay, .ringerSwitch, .barometer],
             cpu: .a8,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1809,7 +1826,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone7,1"],
             supportId: "SP706",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP706/SP706-iphone_6_plus-mul.png",
-            capabilities: [.plus, .biometrics(.touchID)],
+            capabilities: [.plus, .biometrics(.touchID), .applePay, .ringerSwitch, .barometer],
             cpu: .a8,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1819,7 +1836,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone8,1"],
             supportId: "SP726",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP726/SP726-iphone6s-gray-select-2015.png",
-            capabilities: [.force3DTouch, .biometrics(.touchID)],
+            capabilities: [.biometrics(.touchID), .applePay, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a9,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1829,7 +1846,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone8,2"],
             supportId: "SP727",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP727/SP727-iphone6s-plus-gray-select-2015.png",
-            capabilities: [.plus, .force3DTouch, .biometrics(.touchID)],
+            capabilities: [.plus, .biometrics(.touchID), .applePay, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a9,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1839,7 +1856,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone8,4"],
             supportId: "SP738",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP738/SP738.png",
-            capabilities: [.biometrics(.touchID)],
+            capabilities: [.biometrics(.touchID), .applePay, .ringerSwitch],
             cpu: .a9,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1849,7 +1866,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone9,1", "iPhone9,3"],
             supportId: "SP743",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP743/iphone7-black.png",
-            capabilities: [.force3DTouch, .biometrics(.touchID)],
+            capabilities: [.biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a10,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1859,7 +1876,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone9,2", "iPhone9,4"],
             supportId: "SP744",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP744/iphone7-plus-black.png",
-            capabilities: [.plus, .force3DTouch, .biometrics(.touchID)],
+            capabilities: [.plus, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a10,
             cameras: [.iSight, .wide, .telephoto, .faceTimeHD720p, .faceTimeHD1080p],
             cellular: .lte,
@@ -1869,7 +1886,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone10,1", "iPhone10,4"],
             supportId: "SP767",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP767/iphone8.png",
-            capabilities: [.wirelessCharging, .force3DTouch, .biometrics(.touchID)],
+            capabilities: [.wirelessCharging, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a11,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1879,7 +1896,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone10,2", "iPhone10,5"],
             supportId: "SP768",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP768/iphone8plus.png",
-            capabilities: [.plus, .wirelessCharging, .force3DTouch, .biometrics(.touchID)],
+            capabilities: [.plus, .wirelessCharging, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a11,
             cameras: [.iSight, .wide, .telephoto, .faceTimeHD720p, .faceTimeHD1080p],
             cellular: .lte,
@@ -1889,7 +1906,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone10,3", "iPhone10,6"],
             supportId: "SP770",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP770/iphonex.png",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .force3DTouch, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a11,
             cameras: [.iSight, .wide, .telephoto, .faceTimeHD720p, .trueDepth],
             cellular: .lte,
@@ -1899,7 +1916,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone11,2"],
             supportId: "SP779",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP779/SP779-iphone-xs.jpg",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .force3DTouch, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a12,
             cameras: [.iSight, .wide, .telephoto, .faceTimeHD720p, .trueDepth],
             cellular: .lte,
@@ -1909,7 +1926,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone11,4", "iPhone11,6"],
             supportId: "SP780",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP780/SP780-iPhone-Xs-Max.jpg",
-            capabilities: [.max, .wirelessCharging, .notch, .roundedCorners, .force3DTouch, .biometrics(.faceID)],
+            capabilities: [.max, .wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a12,
             cameras: [.iSight, .wide, .telephoto, .faceTimeHD720p, .faceTimeHD1080p],
             cellular: .lte,
@@ -1919,7 +1936,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone11,8"],
             supportId: "SP781",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP781/SP781-iPhone-xr.jpg",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a12,
             cameras: [.iSight, .wide, .faceTimeHD720p],
             cellular: .lte,
@@ -1929,7 +1946,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone12,1"],
             supportId: "SP804",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP804/sp804-iphone11_2x.png",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a13,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .lte,
@@ -1939,7 +1956,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone12,3"],
             supportId: "SP805",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP805/sp805-iphone11pro_2x.png",
-            capabilities: [.pro, .wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.pro, .wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a13,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .lte,
@@ -1949,7 +1966,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone12,5"],
             supportId: "SP806",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP806/sp806-iphone11pro-max_2x.png",
-            capabilities: [.pro, .max, .wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.pro, .max, .wirelessCharging, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a13,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .lte,
@@ -1959,7 +1976,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone12,8"],
             supportId: "SP820",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP820/iphone-se-2nd-gen_2x.png",
-            capabilities: [.wirelessCharging, .biometrics(.touchID)],
+            capabilities: [.wirelessCharging, .biometrics(.touchID), .applePay, .nfc, .ringerSwitch, .barometer],
             cpu: .a13,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -1969,7 +1986,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone13,2"],
             supportId: "SP830",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP830/sp830-iphone12-ios14_2x.png",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a14,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .fiveG,
@@ -1979,7 +1996,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone13,1"],
             supportId: "SP829",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP829/sp829-iphone12mini-ios14_2x.png",
-            capabilities: [.mini, .wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.mini, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a14,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .fiveG,
@@ -1989,7 +2006,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone13,3"],
             supportId: "SP831",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP831/iphone12pro-ios14_2x.png",
-            capabilities: [.pro, .wirelessCharging, .notch, .roundedCorners, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             cpu: .a14,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .fiveG,
@@ -1999,7 +2016,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone13,4"],
             supportId: "SP832",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP832/iphone12promax-ios14_2x.png",
-            capabilities: [.pro, .max, .wirelessCharging, .notch, .roundedCorners, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .max, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             cpu: .a14,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .fiveG,
@@ -2009,7 +2026,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,5"],
             supportId: "SP851",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1092/en_US/iphone-13-240.png",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             colors: .iPhone13,
             cpu: .a15,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2020,7 +2037,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,4"],
             supportId: "SP847",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1091/en_US/iphone-13mini-240.png",
-            capabilities: [.mini, .wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.mini, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             colors: .iPhone13,
             cpu: .a15,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2031,7 +2048,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,2"],
             supportId: "SP852",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1093/en_US/iphone-13pro-240.png",
-            capabilities: [.pro, .wirelessCharging, .notch, .roundedCorners, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             colors: .iPhone13Pro,
             cpu: .a15,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2042,7 +2059,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,3"],
             supportId: "SP848",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1095/en_US/iphone-13promax-240.png",
-            capabilities: [.pro, .max, .wirelessCharging, .notch, .roundedCorners, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .max, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             colors: .iPhone13Pro,
             cpu: .a15,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2053,7 +2070,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,6"],
             supportId: "SP867",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1136/en_US/iphone-se-3rd-gen-colors-240.png",
-            capabilities: [.wirelessCharging, .biometrics(.touchID)],
+            capabilities: [.wirelessCharging, .magSafe, .biometrics(.touchID), .applePay, .nfc, .ringerSwitch, .barometer],
             colors: .iPhoneSE3,
             cpu: .a15,
             cameras: [.iSight, .faceTimeHD720p],
@@ -2064,7 +2081,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,7"],
             supportId: "SP873",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP873/iphone-14_1_2x.png",
-            capabilities: [.wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone14,
             cpu: .a15,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2075,7 +2092,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone14,8"],
             supportId: "SP874",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP873/iphone-14_1_2x.png",
-            capabilities: [.plus, .wirelessCharging, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.plus, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone14,
             cpu: .a15,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2086,7 +2103,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone15,2"],
             supportId: "SP875",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
-            capabilities: [.pro, .wirelessCharging, .roundedCorners, .dynamicIsland, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .lidar, .barometer, .crashDetection],
             colors: .iPhone14Pro,
             cpu: .a16,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2097,7 +2114,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone15,3"],
             supportId: "SP876",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
-            capabilities: [.pro, .max, .wirelessCharging, .roundedCorners, .dynamicIsland, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .max, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .lidar, .barometer, .crashDetection],
             colors: .iPhone14Pro,
             cpu: .a16,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2108,7 +2125,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone15,4"],
             supportId: "SP901",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-colors.jpg",
-            capabilities: [.usbC, .wirelessCharging, .roundedCorners, .dynamicIsland, .biometrics(.faceID)],
+            capabilities: [.usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone15,
             cpu: .a16,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2119,7 +2136,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone15,5"],
             supportId: "SP902",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-plus-colors.jpg",
-            capabilities: [.plus, .usbC, .wirelessCharging, .roundedCorners, .dynamicIsland, .biometrics(.faceID)],
+            capabilities: [.plus, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone15,
             cpu: .a16,
             cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2130,7 +2147,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone16,1"],
             supportId: "SP903",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-colors.jpg",
-            capabilities: [.pro, .usbC, .wirelessCharging, .roundedCorners, .dynamicIsland, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .lidar, .barometer, .crashDetection],
             colors: .iPhone15Pro,
             cpu: .a17pro,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2141,7 +2158,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPhone16,2"],
             supportId: "SP904",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-max-colors.jpg",
-            capabilities: [.pro, .max, .usbC, .wirelessCharging, .roundedCorners, .dynamicIsland, .lidar, .biometrics(.faceID)],
+            capabilities: [.pro, .max, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .lidar, .barometer, .crashDetection],
             colors: .iPhone15Pro,
             cpu: .a17pro,
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
@@ -2206,10 +2223,18 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
     
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
     public var symbolName: String {
-        if biometrics == .faceID {
-            return "ipad.gen2"
+        if #available(iOS 16, macOS 13, macCatalyst 16, tvOS 16, watchOS 9,  *) {
+            if biometrics == .faceID {
+                return "ipad.gen2"
+            } else {
+                return "ipad.gen1"
+            }
         } else {
-            return "ipad.gen1"
+            if biometrics == .faceID {
+                return "ipad"
+            } else {
+                return "ipad.homebutton"
+            }
         }
     }
 
@@ -2229,6 +2254,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad1,1"],
             supportId: "SP580",
             image: "https://everymac.com/images/ipod_pictures/apple-ipad.jpg",
+            capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
+            colors: [.silver],
             cpu: .a4,
             cameras: [.iSight],
             cellular: .threeG,
@@ -2238,8 +2265,10 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4"],
             supportId: "SP622",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP622/SP622_01-ipad2-mul.png",
+            capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
+            colors: [.white, .black],
             cpu: .a5,
-            cameras: [.iSight],
+            cameras: [.iSight, .vga],
             cellular: .threeG,
             screen: .i97x768),
         iPad(
@@ -2247,9 +2276,11 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad3,1", "iPad3,2", "iPad3,3"],
             supportId: "SP647",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP662/sp662_ipad-4th-gen_color.jpg",
+            capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
+            colors: [.white, .black],
             cpu: .a5x,
-            cameras: [.iSight],
-            cellular: .threeG,
+            cameras: [.iSight, .vga], // 5mpx
+            cellular: .lte,
             screen: .i97x1536),
         iPad(
             name: "iPad Mini",
@@ -2257,28 +2288,31 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP661",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP661/sp661_ipad_mini_color.jpg",
             capabilities: [.mini, .headphoneJack, .lightning, .ringerSwitch],
+            colors: [.white, .black],
             cpu: .a5,
             cameras: [.iSight, .faceTimeHD720p],
-            cellular: .threeG,
+            cellular: .lte,
             screen: .i79x768),
         iPad(
             name: "iPad (4th generation)",
             identifiers: ["iPad3,4", "iPad3,5", "iPad3,6"],
             supportId: "SP662",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP662/sp662_ipad-4th-gen_color.jpg",
-            capabilities: [.lightning],
+            capabilities: [.headphoneJack, .lightning, .ringerSwitch],
+            colors: [.white, .black],
             cpu: .a6x,
             cameras: [.iSight],
-            cellular: .threeG,
+            cellular: .lte,
             screen: .i97x1536),
         iPad(
             name: "iPad Air",
             identifiers: ["iPad4,1", "iPad4,2", "iPad4,3"],
             supportId: "SP692",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP692/SP692-specs_color-mul.png",
-            capabilities: [.lightning],
+            capabilities: [.headphoneJack, .lightning, .ringerSwitch],
+            colors: .iPadAir,
             cpu: .a7,
-            cameras: [.iSight],
+            cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
             screen: .i97x1536),
         iPad(
@@ -2287,6 +2321,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP693",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP693/SP693-specs_color-mul.png",
             capabilities: [.mini, .headphoneJack, .lightning, .ringerSwitch],
+            colors: .iPadAir,
             cpu: .a7,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -2296,7 +2331,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad4,7", "iPad4,8", "iPad4,9"],
             supportId: "SP709",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP709/SP709-space_gray.jpeg",
-            capabilities: [.mini, .headphoneJack, .lightning, .ringerSwitch, .biometrics(.touchID)],
+            capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID), .ringerSwitch],
+            colors: .iPhone6,
             cpu: .a7,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -2307,6 +2343,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP725",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP725/SP725ipad-mini-4.png",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID)],
+            colors: .iPhone6,
             cpu: .a8,
             cameras: [.iSight, .faceTimeHD720p],
             cellular: .lte,
@@ -2317,6 +2354,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP708",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP708/SP708-space_gray.jpeg",
             capabilities: [.lightning, .biometrics(.touchID)],
+            colors: .iPhone6,
             cpu: .a8x,
             cameras: [.iSight],
             cellular: .lte,
@@ -2327,6 +2365,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP751",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP751/ipad_5th_generation.png",
             capabilities: [.lightning, .biometrics(.touchID)],
+            colors: .iPhone6,
             cpu: .a9,
             cameras: [.iSight],
             cellular: .lte,
@@ -2337,6 +2376,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP739",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP739/SP739.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
+            colors: [.spaceGray6, .silver6, .gold6, .roseGoldA4],
             cpu: .a9x,
             cameras: [.iSight],
             cellular: .lte,
@@ -2348,6 +2388,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP723",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP723/SP723-iPad_Pro_2x.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
+            colors: .iPhone6,
             cpu: .a9x,
             cameras: [.iSight],
             cellular: .lte,
@@ -2359,10 +2400,23 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP761",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-12in-hero-201706.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
+            colors: .iPhone6,
             cpu: .a10x,
             cameras: [.iSight],
             cellular: .lte,
             screen: .i129,
+            pencils: [.firstGeneration]),
+        iPad(
+            name: "iPad (6th generation)",
+            identifiers: ["iPad7,5", "iPad7,6"],
+            supportId: "SP774",
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP774/sp774-ipad-6-gen_2x.png",
+            capabilities: [.lightning, .biometrics(.touchID)],
+            colors: [.spaceGray6, .silver6, .goldM5],
+            cpu: .a10,
+            cameras: [.iSight],
+            cellular: .lte,
+            screen: .i97x1536,
             pencils: [.firstGeneration]),
         iPad(
             name: "iPad (7th generation)",
@@ -2370,6 +2424,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP807",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP807/sp807-ipad-7th-gen_2x.png",
             capabilities: [.lightning, .biometrics(.touchID)],
+            colors: .iPadMini5,
             cpu: .a10,
             cameras: [.iSight],
             cellular: .lte,
@@ -2381,28 +2436,19 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP762",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-10in-hero-201706.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
+            colors: [.spaceGray6, .silver6, .gold6, .roseGoldSE],
             cpu: .a10x,
             cameras: [.iSight],
             cellular: .lte,
             screen: .i105,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad (6th generation)",
-            identifiers: ["iPad7,5", "iPad7,6"],
-            supportId: "SP774",
-            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP774/sp774-ipad-6-gen_2x.png",
-            capabilities: [.lightning, .biometrics(.touchID)],
-            cpu: .a10,
-            cameras: [.iSight],
-            cellular: .lte,
-            screen: .i97x1536,
-            pencils: [.firstGeneration]),
-        iPad(
             name: "iPad Pro 11-inch",
             identifiers: ["iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4"],
             supportId: "SP784",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP784/ipad-pro-11-2018_2x.png",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .a12x,
             cameras: [.iSight],
             cellular: .lte,
@@ -2413,7 +2459,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad8,11", "iPad8,12"],
             supportId: "SP815",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP815/ipad-pro-12-2020.jpeg",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .lidar, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .a12z,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .lte,
@@ -2424,7 +2471,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"],
             supportId: "SP785",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP785/ipad-pro-12-2018_2x.png",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .a12x,
             cameras: [.iSight],
             cellular: .lte,
@@ -2435,7 +2483,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad8,9", "iPad8,10"],
             supportId: "SP814",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP814/ipad-pro-11-2020.jpeg",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .lidar, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .a12z,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .lte,
@@ -2447,6 +2496,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP788",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP788/ipad-mini-2019.jpg",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID)],
+            colors: .iPadMini5,
             cpu: .a12,
             cameras: [.iSight, .faceTimeHD1080p],
             cellular: .lte,
@@ -2458,6 +2508,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP787",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP787/ipad-air-2019.jpg",
             capabilities: [.lightning, .biometrics(.touchID)],
+            colors: .iPadMini5,
             cpu: .a12,
             cameras: [.iSight],
             cellular: .lte,
@@ -2469,6 +2520,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP822",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP822/sp822-ipad-8gen_2x.png",
             capabilities: [.lightning, .biometrics(.touchID)],
+            colors: .iPadMini5,
             cpu: .a12,
             cameras: [.iSight],
             cellular: .lte,
@@ -2480,6 +2532,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             supportId: "SP849",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1096/en_US/ipad-9gen-240.png",
             capabilities: [.lightning, .biometrics(.touchID)],
+            colors: [.spaceGray9, .silver6],
             cpu: .a13,
             cameras: [.iSight],
             cellular: .lte,
@@ -2490,7 +2543,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,1", "iPad13,2"],
             supportId: "SP828",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP828/sp828ipad-air-ipados14-960_2x.png",
-            capabilities: [.usbC, .roundedCorners, .barometer, .biometrics(.touchID)],
+            capabilities: [.usbC, .biometrics(.touchID), .roundedCorners, .barometer],
+            colors: [.spaceGrayM5, .silver6, .roseGoldA4, .skyBlueA4, .greenA4],
             cpu: .a14,
             cameras: [.iSight, .wide, .faceTimeHD1080p],
             cellular: .lte,
@@ -2501,7 +2555,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,16", "iPad13,17"],
             supportId: "SP866",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP866/sp866-ipad-air-5gen_2x.png",
-            capabilities: [.usbC, .roundedCorners, .barometer, .biometrics(.touchID)],
+            capabilities: [.usbC, .biometrics(.touchID), .roundedCorners, .barometer],
+            colors: [.spaceGrayA5, .starlightA5, .pinkA5, .purpleA5, .blueA5],
             cpu: .m1,
             cameras: [.iSight, .wide, .faceTimeHD1080p],
             cellular: .fiveG,
@@ -2512,7 +2567,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,18", "iPad13,19"],
             supportId: "SP884",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP884/sp884-ipad-10gen-960_2x.png",
-            capabilities: [.usbC, .roundedCorners, .biometrics(.touchID)],
+            capabilities: [.usbC, .biometrics(.touchID), .roundedCorners],
+            colors: [.macbookSilver, .pink10, .blue10, .yellow10],
             cpu: .a14,
             cameras: [.iSight],
             cellular: .fiveG,
@@ -2523,7 +2579,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7"],
             supportId: "SP843",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP843/ipad-pro-11_2x.png",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .lidar, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .fiveG,
@@ -2534,7 +2591,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11"],
             supportId: "SP844",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP844/ipad-pro-12-9_2x.png",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .lidar, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .fiveG,
@@ -2545,7 +2603,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad14,1", "iPad14,2"],
             supportId: "SP850",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1097/en_US/ipad-mini-6gen-240.png",
-            capabilities: [.mini, .usbC, .roundedCorners, .biometrics(.touchID)],
+            capabilities: [.mini, .usbC, .biometrics(.touchID), .roundedCorners],
+            colors: [.spaceGrayA5, .starlightA5, .pinkA5, .purpleA5],
             cpu: .a15,
             cameras: [.iSight, .wide, .faceTimeHD1080p],
             cellular: .fiveG,
@@ -2556,7 +2615,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad14,3", "iPad14,4"],
             supportId: "SP882",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP882/ipad-pro-4gen-mainimage_2x.png",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .lidar, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .fiveG,
@@ -2567,7 +2627,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad14,5", "iPad14,6"],
             supportId: "SP883",
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111841_ipad-pro-4gen-mainimage.png",
-            capabilities: [.pro, .usbC, .notch, .roundedCorners, .lidar, .barometer, .biometrics(.faceID)],
+            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .fiveG,
@@ -2649,68 +2710,6 @@ public struct AppleTV: IdiomType {
     ]
 }
 
-public struct HomePod: IdiomType {
-    public var device: Device
-
-    public init(
-        name: String,
-        identifiers: [String],
-        supportId: String,
-        image: String?,
-        // TODO: Once converted, remove defaults for colors
-        capabilities: Capabilities = [],
-        models: [String] = [],
-        colors: [MaterialColor] = .default,
-        cpu: CPU)
-    {
-        device = Device(idiom: .homePod, name: name, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities.union([.screen(.w38)]), models: models, colors: colors, cpu: cpu)
-    }
-    
-    init(identifier: String) {
-        self.init(
-            name: "Unknown HomePod",
-            identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
-            image: nil,
-            cpu: .unknown
-        )
-    }
-    
-    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
-        if self.is(.mini) {
-            return "homepodmini"
-        }
-        return "homepod"
-    }
-
-    static var all = [
-        
-        HomePod(
-            name: "HomePod",
-            identifiers: ["AudioAccessory1,1"],
-            supportId: "SP773",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/homepod/2018-homepod-colors.png",
-            colors: [.spacegrayHome, .whiteHome],
-            cpu: .a8),
-        HomePod(
-            name: "HomePod mini",
-            identifiers: ["AudioAccessory5,1"],
-            supportId: "SP834",
-            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111914_homepod-mini-colours.png",
-            capabilities: [.mini],
-            colors: .homePodMini,
-            cpu: .s5),
-        HomePod(
-            name: "HomePod (2nd generation)",
-            identifiers: ["AudioAccessory6,1"],
-            supportId: "SP888",
-            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111843_homepod-2gen.png",
-            colors: .homePod,
-            cpu: .s7),
-        
-    ]
-}
 
 public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     public var device: Device
@@ -3005,6 +3004,71 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     ]
 }
 
+
+public struct HomePod: IdiomType {
+    public var device: Device
+
+    public init(
+        name: String,
+        identifiers: [String],
+        supportId: String,
+        image: String?,
+        // TODO: Once converted, remove defaults for colors
+        capabilities: Capabilities = [],
+        models: [String] = [],
+        colors: [MaterialColor] = .default,
+        cpu: CPU)
+    {
+        device = Device(idiom: .homePod, name: name, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities.union([.screen(.w38)]), models: models, colors: colors, cpu: cpu)
+    }
+    
+    init(identifier: String) {
+        self.init(
+            name: "Unknown HomePod",
+            identifiers: [identifier],
+            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            image: nil,
+            cpu: .unknown
+        )
+    }
+    
+    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    public var symbolName: String {
+        if self.is(.mini) {
+            return "homepodmini"
+        }
+        return "homepod"
+    }
+
+    static var all = [
+        
+        HomePod(
+            name: "HomePod",
+            identifiers: ["AudioAccessory1,1"],
+            supportId: "SP773",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/homepod/2018-homepod-colors.png",
+            colors: [.spacegrayHome, .whiteHome],
+            cpu: .a8),
+        HomePod(
+            name: "HomePod mini",
+            identifiers: ["AudioAccessory5,1"],
+            supportId: "SP834",
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111914_homepod-mini-colours.png",
+            capabilities: [.mini],
+            colors: .homePodMini,
+            cpu: .s5),
+        HomePod(
+            name: "HomePod (2nd generation)",
+            identifiers: ["AudioAccessory6,1"],
+            supportId: "SP888",
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111843_homepod-2gen.png",
+            colors: .homePod,
+            cpu: .s7),
+        
+    ]
+}
+
+
 public struct AppleVision: IdiomType, HasCameras {
     public var device: Device
     public init(
@@ -3054,14 +3118,4 @@ public struct AppleVision: IdiomType, HasCameras {
             cpu: .m2),
         
     ]
-}
-
-// support bool value with generic property lists for device structs.  The previous suggestions to test against nil doesn't work if we're defaulting to a `false` value that is not nil.
-extension Any? {
-    var boolValue: Bool {
-        if let bool = self as? Bool {
-            return bool
-        }
-        return false
-    }
 }

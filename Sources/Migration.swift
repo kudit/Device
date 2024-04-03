@@ -287,27 +287,40 @@ func =>(lhs: inout Int, rhs: Int) {
 // MARK: Device string definitions
 extension DeviceType {
     var definition: String {
-        let indentSpace = "        "
+        let indentSpace = "            "
         var idiomish = ""
         if idiom.type == Device.self {
             idiomish = "idiom: \(idiom.definition),\n\(indentSpace)"
         }
+
+        let control = idiom.type.init(identifier: .base) // create a base model (not the default model!)
+        var capabilities = capabilities
+        
         var macForm = ""
         if idiom == .mac, let form = capabilities.macForm { // second should never fail if .mac idiom
             macForm = "form: \(form.definition),\n\(indentSpace)"
+            // remove default form capabilities like battery
+            capabilities.subtract(form.capabilities)
         }
+        capabilities.subtract(control.capabilities) // do after so .macMini form isn't removed which is the default
         // strip out default capabilities
-        let control = idiom.type.init(identifier: .base) // create a base model (not the default model!)
-        var capabilities = capabilities.subtracting(control.capabilities)
+        // add in ringer switch to all non-iPhone 15 pro devices
+        if idiom == .phone && !identifiers.first!.contains("iPhone16") {
+            capabilities.insert(.ringerSwitch)
+        }
         // remove .macForm from capabilities
         capabilities.macForm = nil // remove so not appears in capabilities list
         var models = "models: \(models.definition),\n\(indentSpace)"
         if self.models.count == 0 { // don't do this if we want to always have models.  Remove once we've gone through and added all models.
             models = ""
         }
+        
         var colors = "colors: \(colors.definition),\n\(indentSpace)"
-        if self.colors.count == 0 || self.colors == .default || idiom == .vision { // don't do this if we want to always have models.  Remove once we've gone through and added all models.
+        if self.colors.count == 0 || self.colors == .default || idiom == .vision { // don't do this if we want to always have colors.  Remove once we've gone through and added all colors.
             colors = ""
+        }
+        if let key = [MaterialColor].colorSets[self.colors] {
+            colors = "colors: .\(key),\n\(indentSpace)"
         }
 
         var cameras = ",\n\(indentSpace)cameras: \(capabilities.cameras.sorted.definition)"
@@ -345,12 +358,12 @@ extension DeviceType {
             overrides = ""
         }
         return """
-            \(String(describing: idiom.type))(
-                \(idiomish)name: \(name.definition),
-                identifiers: \(identifiers.definition),
-                supportId: \(supportId.definition),
-                \(macForm)image: \(image.definition),
-                \(overrides)\(models)\(colors)cpu: \(cpu.definition)\(cameras)\(cellular)\(screen)\(pencils)\(watchSize)),
+                \(String(describing: idiom.type))(
+                    \(idiomish)name: \(name.definition),
+                    identifiers: \(identifiers.definition),
+                    supportId: \(supportId.definition),
+                    \(macForm)image: \(image.definition),
+                    \(overrides)\(models)\(colors)cpu: \(cpu.definition)\(cameras)\(cellular)\(screen)\(pencils)\(watchSize)),
         """
     }
     var deviceKitDefinition: String {

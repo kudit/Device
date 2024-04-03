@@ -33,20 +33,32 @@ extension Device.Idiom {
 struct TimeClockView: View {
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @State var time = Date()
+    
+    var battery: some View {
+        Group {
+            if let battery = Device.current.battery {
+                BatteryView(battery: battery, fontSize: 80)
+            } else {
+                Image(symbolName: "batteryblock.slash") // battery.slash
+                    .font(.system(size: 80))
+            }
+        }
+    }
+    
     var body: some View {
         VStack {
             Text("Current time: \(time.formatted(date: .long, time: .complete))")
             if let battery = Device.current.battery {
                 Text("Battery Info: \(battery.description)")
-                HStack {
-                    BatteryView(battery: battery, fontSize: 80)
-                    Image(systemName: Device.current.symbolName)
-                        .font(.system(size: 80))
-                }
             } else {
                 Text("No Battery")
-                Image(systemName: Device.current.symbolName)
-                    .font(.system(size: 80))
+            }
+            HStack {
+                NavigationLink {
+                    BatteryListView()
+                } label: {
+                    battery
+                }
             }
         }
         .onReceive(timer, perform: { _ in
@@ -82,12 +94,81 @@ struct TestCard: View {
     var body: some View {
         Placard(color: highlighted ? color : .clear)
             .overlay {
-                Label(label, systemImage: symbolName)
+                Label(label, symbolName: symbolName)
                     .font(.caption)
                     .symbolRenderingMode(highlighted ? .hierarchical : .monochrome)
             }
     }
 }
+
+struct HardwareListView: View {
+    @State private var selection: Device.Idiom?
+    var body: some View {
+        List {
+            Section("Idioms") {
+                ForEach(Device.Idiom.allCases) { idiom in
+                    let label = Label(idiom.description, symbolName: idiom.symbolName)
+                        .foregroundColor(.primary)
+                        .font(.headline)
+                    if Device.current.idiom == idiom {
+                        label
+                            .listRowBackground(idiom.color)
+                    } else {
+                        label
+                    }
+                }
+            }
+            Section("Capabilities") {
+                ForEach(Capability.allCases, id: \.self) { capability in
+                    let label = HStack {
+                        Label(String(describing: capability), symbolName: capability.symbolName)
+                        //                        .accessibilityLabel(capability.description)
+                    }
+                    if Device.current.has(capability) {
+                        label
+                            .listRowBackground(Color.green)
+                    } else {
+                        label
+                    }
+                }
+            }
+        }
+        .navigationTitle("Hardware")
+    }
+}
+
+#Preview("HardwareList") {
+    NavigationView {
+        HardwareListView()
+    }
+}
+
+
+public struct BatteryListView: View {
+    public var fontSize: CGFloat = 40
+    @State private var selection: Device.Idiom?
+    public var body: some View {
+        List {
+            ForEach(MockBattery.mocks) { mock in
+                HStack {
+                    BatteryView(battery: mock, useSystemColors: true, includePercent: true, fontSize: fontSize)
+                    BatteryView(battery: mock, useSystemColors: true, includePercent: false, fontSize: fontSize)
+                    Spacer()
+                    BatteryView(battery: mock, useSystemColors: false, includePercent: false, fontSize: fontSize)
+                    BatteryView(battery: mock, useSystemColors: false, includePercent: true, fontSize: fontSize)
+                }
+            }
+        }
+        .navigationTitle("Battery Mocks")
+    }
+}
+
+#Preview("BatteryList") {
+    NavigationView {
+        BatteryListView()
+    }
+}
+
 
 public struct DeviceTestView: View {
     @State var showList = false
@@ -108,67 +189,79 @@ public struct DeviceTestView: View {
     }
     
     var testView: some View {
-        VStack {
-            Group { // so not more than 7 items
-                Text("Kudit/Device v\(version)")
+        List {
+            Section {
                 TimeClockView()
-                Text("Current device: \(Device.current.description)")
-                Text("Identifier: \(Device.current.identifier)")
-                Text("Device Name: \(Device.current.name ?? "nil")")
-                Text("System Name: \(Device.current.systemName ?? "nil")")
-                NavigationLink("List All") {
-                    DeviceListView(devices: Device.all)
-                }
-            }
-            Group {
+            } header: {
                 HStack {
-                    //                    TestCard(label: "TEST", highlighted: true, color: .yellow, symbolName: "star.fill")
-                    TestCard(
-                        label: "Preview",
-                        highlighted: Device.current.isPreview,
-                        color: .orange,
-                        symbolName: .symbolPreview
-                    )
-                    TestCard(
-                        label: "Playground",
-                        highlighted: Device.current.isPlayground,
-                        color: .pink,
-                        symbolName: .symbolPlayground)
-                    TestCard(
-                        label: "Simulator",
-                        highlighted: Device.current.isSimulator,
-                        color: .blue,
-                        symbolName: .symbolSimulator)
-                    TestCard(
-                        label: "Real Device",
-                        highlighted: Device.current.isRealDevice,
-                        color: .green,
-                        symbolName: .symbolRealDevice)
-                    if [.mac, .vision].contains(Device.current.idiom) {
+                    Text("Device v\(version)")
+                    Spacer()
+                    Text(verbatim: "© \(Calendar.current.component(.year, from: Date())) Kudit, LLC")
+                }
+            }.buttonStyle(.plain)
+            NavigationLink(destination: {
+                HardwareListView()
+            }, label: {
+                VStack(alignment: .leading) {
+                    HStack {
+                        Image(symbolName: Device.current.symbolName)
+                            .font(.system(size: 80))
+                        VStack(alignment: .leading) {
+                            Text("Current device:")
+                                .font(.headline)
+                            Text("\(Device.current.identifier)")
+                                .italic()
+                            Text("\(Device.current.name ?? "nil")")
+                            Text("Running **\(Device.current.systemName ?? "nil")**")
+                        }
+                    }
+                    HStack {
+                        //                    TestCard(label: "TEST", highlighted: true, color: .yellow, symbolName: "star.fill")
                         TestCard(
-                            label: "Designed for iPad",
-                            highlighted: Device.current.isDesignedForiPad,
-                            color: .purple,
-                            symbolName: .symbolDesignedForiPad)
+                            label: "Preview",
+                            highlighted: Device.current.isPreview,
+                            color: .orange,
+                            symbolName: .symbolPreview
+                        )
+                        TestCard(
+                            label: "Playground",
+                            highlighted: Device.current.isPlayground,
+                            color: .pink,
+                            symbolName: .symbolPlayground)
+                        TestCard(
+                            label: "Simulator",
+                            highlighted: Device.current.isSimulator,
+                            color: .blue,
+                            symbolName: .symbolSimulator)
+                        TestCard(
+                            label: "Real Device",
+                            highlighted: Device.current.isRealDevice,
+                            color: .green,
+                            symbolName: .symbolRealDevice)
+                        if [.mac, .vision].contains(Device.current.idiom) {
+                            TestCard(
+                                label: "Designed for iPad",
+                                highlighted: Device.current.isDesignedForiPad,
+                                color: .purple,
+                                symbolName: .symbolDesignedForiPad)
+                        }
                     }
+                    .labelStyle(StackedLabelStyle())
+                    .frame(height: 60)
                 }
-                .labelStyle(StackedLabelStyle())
-                .frame(height: 60)
-                HStack {
-                    VStack {
-                        BatteryTestView(useSystemColors: true, fontSize: 40)
+            })
+            NavigationLink(destination: {
+                DeviceListView(devices: Device.all)
+                    .toolbar {
+                        Button("Migrate") {
+                            migrateContent()
+                        }
                     }
-                    VStack {
-                        idiomList
-                    }
-                    VStack {
-                        BatteryTestView(includePercent: false, fontSize: 40)
-                    }
-                }
-            }
-            .padding()
-            Spacer()
+            }, label: {
+                DeviceInfoView(device: Device.current)
+            })
         }
+        .navigationTitle("Device.swift")
     }
     
     public var body: some View {
@@ -178,9 +271,9 @@ public struct DeviceTestView: View {
     }
     
     /// For testing and migrating code during development.
-//    func importContent() {
-//        Migration.migrate()
-//    }
+    func migrateContent() {
+        Migration.migrate()
+    }
 }
 
 #Preview("DeviceTestView") {

@@ -64,7 +64,7 @@ public struct BatteryView<B: Battery>: View {
     public var body: some View {
         ZStack {
             // add back fill to improve contrast
-            Image(systemName: "battery.100percent")
+            Image(symbolName: "battery.100percent")
                 .font(.system(size: fontSize))
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(
@@ -72,7 +72,7 @@ public struct BatteryView<B: Battery>: View {
                     .clear,
                     .pink)
             // Symbol colored
-            Image(systemName: battery.symbolName)
+            Image(symbolName: battery.symbolName)
                 .font(.system(size: fontSize))
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(

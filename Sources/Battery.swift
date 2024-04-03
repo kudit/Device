@@ -55,18 +55,24 @@ public extension Battery {
     /// System Image used to render a symbol representing the current state/charge level
     var symbolName: String {
         let percent = currentLevel
-        if currentState == .charging {
-            return "battery.100percent.bolt"
-        } else if percent > 87 {
-            return "battery.100percent"
-        } else if percent > 63 {
-            return "battery.75percent"
-        } else if percent > 38 {
-            return "battery.50percent"
-        } else if percent > 10 {
-            return "battery.25percent"
+        var percentWord: String
+        if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10,  *) {
+            percentWord = "percent"
         } else {
-            return "battery.0percent"
+            percentWord = ""
+        }
+        if currentState == .charging {
+            return "battery.100\(percentWord).bolt"
+        } else if percent > 87 {
+            return "battery.100\(percentWord)"
+        } else if percent > 63 {
+            return "battery.75\(percentWord)"
+        } else if percent > 38 {
+            return "battery.50\(percentWord)"
+        } else if percent > 10 {
+            return "battery.25\(percentWord)"
+        } else {
+            return "battery.0\(percentWord)"
         }
     }
 

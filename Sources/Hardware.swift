@@ -11,35 +11,41 @@ public extension String {
 
 // MARK: Capabilities
 public typealias Capabilities = Set<Capability>
-public enum Capability: Hashable {
+public enum Capability: Hashable, CaseIterable {
     // model attributes
     case pro, air, mini, plus, max
     case macForm(Mac.Form)
     case watchSize(AppleWatch.WatchSize)
     // connections
-    case headphoneJack, lightning, usbC, wirelessCharging, nfc // iPhone 7+
-    // Should we add: wifi, bluetooth, bluetoothLE, 30pin, AC Power?, ethernet, HDMI, SDCard?
-    case cellular(Cellular)
-    // display
-    case screen(Screen)
-    case notch // newer macs and original faceID phones.
-    case roundedCorners
-    case dynamicIsland
-    // features
+    case headphoneJack, thirtyPin, lightning, usbC
+    // power
     case battery
-    case ringerSwitch // mini 2, 3, iPad up to 10"? iPhone up to iPhone 15 Pro
-    case applePay // iPhone 6+
-    case magSafe // circular qi phone
+    case wirelessCharging // qi charging
+    case magSafe // circular magnetically alligned qi charging (anything that has magSafe should also have wirelessCharging and a battery)
     // notebook magSafe connectors
     case magSafe1, magSafe2, magSafe3
-    case crashDetection // iPhone 14+
+    case biometrics(Biometrics)
+    case cameras(Set<Camera>)
+    case cellular(Cellular)
+    case applePay // iPhone 6+
+    case nfc // iPhone 7+
+    // Should we add: wifi, bluetooth, bluetoothLE, 30pin, AC Power?, ethernet, HDMI, SDCard?
+    // display
+    case screen(Screen)
+    case force3DTouch
+    case roundedCorners
+    case notch // newer macs and original faceID phones.
+    case dynamicIsland
+    // features
+    case ringerSwitch // mini 2, 3, iPad up to 10"? iPhone up to iPhone 15 Pro
     case actionButton // iPhone 15 Pro+, Apple Watch Ultra
     case pencils(Set<ApplePencil>)
     // sensors
-    case force3DTouch, lidar, barometer
-    case biometrics(Biometrics)
-    case cameras(Set<Camera>)
-    // TODO: Add static presets for things like .i2024Models which sets defaults on all and then we can add to it.union([
+    case lidar, barometer, crashDetection // iPhone 14+
+
+    /// Lists all non-associated value cases
+    public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
+
     public var symbolName: String {
         switch self {
         case .pro:
@@ -58,12 +64,14 @@ public enum Capability: Hashable {
             return "applewatch.side.right"
         case .headphoneJack:
             return "headphones"
+        case .thirtyPin:
+            return "cable.connector.30.pin"
         case .lightning:
-            return "cable.connector"
+            return "cable.connector.lightning"
         case .usbC:
-            return "bolt" // technically symbol for thunderbolt but missing this symbol :(
+            return "cable.connector.usbc"
         case .wirelessCharging:
-            return "bolt.brakesignal" // should be more of a wave
+            return "wirelesscharging"
         case .nfc:
             return "wave.3.right.circle"
         case .cellular(_):
@@ -71,25 +79,27 @@ public enum Capability: Hashable {
         case .screen(_):
             return "arrow.up.right.and.arrow.down.left.rectangle"
         case .notch:
-            return "iphone.gen2"
+            return "notch"
         case .roundedCorners:
-            return "rectangle.inset.filled.and.person.filled"
+            return "roundedcorners"
         case .dynamicIsland:
-            return "iphone.gen3"
+            return "dynamicisland"
         case .battery:
             return "battery.100percent"
         case .ringerSwitch:
             return "bell.slash"
         case .applePay:
-            return "creditcard"
+            return "applepay"
+//            return "creditcard"
         case .magSafe:
-            return "magsafe.batterypack.fill"
+            return "magsafe"
         case .magSafe1:
-            return "ellipsis.rectangle.fill"
+            return "magsafe1"
+//            return "ellipsis.rectangle.fill"
         case .magSafe2:
-            return "ellipsis.rectangle.fill"
+            return "magsafe2"
         case .magSafe3:
-            return "ellipsis.rectangle.fill"
+            return "magsafe3"
         case .crashDetection:
             return "car.side.rear.and.collision.and.car.side.front"
         case .actionButton:
@@ -99,7 +109,8 @@ public enum Capability: Hashable {
         case .force3DTouch:
             return "hand.tap"
         case .lidar:
-            return "person.and.background.dotted"
+            return "lidar"
+//            return "circle.hexagongrid.fill"
         case .barometer:
             return "barometer"
         case .biometrics(let biometrics):
@@ -127,29 +138,7 @@ public extension Capabilities {
             sorted.append(.watchSize(watchSize))
         }
         // connections
-        for item in [Capability.headphoneJack, .lightning, .usbC, .wirelessCharging, .nfc] {
-            if self.contains(item) {
-                sorted.append(item)
-            }
-        }
-        if let cellular {
-            sorted.append(.cellular(cellular))
-        }
-        // display
-        if let screen {
-            sorted.append(.screen(screen))
-        }
-        for item in [Capability.notch, .roundedCorners, .dynamicIsland, .battery, .ringerSwitch, .applePay, .magSafe, .magSafe1, .magSafe2, .magSafe3, .crashDetection, .actionButton] {
-            if self.contains(item) {
-                sorted.append(item)
-            }
-        }
-        // features
-        if pencils.count > 0 {
-            sorted.append(.pencils(pencils))
-        }
-        // sensors
-        for item in [Capability.force3DTouch, .lidar, .barometer] {
+        for item in [Capability.headphoneJack, .thirtyPin, .lightning, .usbC, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3] {
             if self.contains(item) {
                 sorted.append(item)
             }
@@ -159,6 +148,33 @@ public extension Capabilities {
         }
         if cameras.count > 0 {
             sorted.append(.cameras(cameras))
+        }
+        if let cellular {
+            sorted.append(.cellular(cellular))
+        }
+        for item in [Capability.applePay, .nfc] {
+            if self.contains(item) {
+                sorted.append(item)
+            }
+        }
+        // display
+        if let screen {
+            sorted.append(.screen(screen))
+        }
+        for item in [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton] {
+            if self.contains(item) {
+                sorted.append(item)
+            }
+        }
+        // features
+        if pencils.count > 0 {
+            sorted.append(.pencils(pencils))
+        }
+        // sensors
+        for item in [Capability.lidar, .barometer, .crashDetection] {
+            if self.contains(item) {
+                sorted.append(item)
+            }
         }
         return sorted
     }
@@ -393,7 +409,11 @@ public enum Biometrics: Hashable {
         case .faceID:
             return "faceid"
         case .opticID:
-            return "opticid"
+            if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10,  *) {
+                return "opticid" // unavailable before iOS 17
+            } else {
+                return "eye"
+            }
         }
     }
 }
@@ -402,6 +422,7 @@ public enum Biometrics: Hashable {
 public enum Camera: Hashable, CaseIterable { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
     /// 8mp iPod touch 7th gen/iPhone 6
     case iSight
+    case vga // iPad 2 front camera
     case standard
     case wide // ƒ/1.6 aperture 12 MP iPhone 12, ƒ/1.5 aperture iPhone 13 Pro, 26 mm, ƒ/1.5 aperture, iPhone 14 Plus
     case telephoto // ƒ/2.0 aperture 12 MP iPhone 12 Pro, ƒ/2.8 aperture iPhone 13 Pro
@@ -509,12 +530,31 @@ public enum MaterialColor: String {
     static var se = [silverSE, spaceGraySE, goldSE, roseGoldSE]
     // iPhone 6
     case silver6 = "#e2e3e4", spaceGray6 = "#b1b2b7", gold6 = "#e3ccb4"
-    static var iPhone6 = [silver6, spaceGray6, gold6]
+    static var iPhone6 = [spaceGray6, silver6, gold6]
     // iPhone 6s
     static var iPhone6s = [silver6, spaceGray6, gold6, roseGoldSE]
     // iPhone 7
     case black7 = "#2e3034"
     static var iPhone7 = [silver6, black7, gold6, roseGoldSE]
+        
+    // iPad Air
+    static var iPadAir = [spaceGray6, silver6]
+    
+    // iPad Air 4
+    case roseGoldA4 = "#ecc5c1", skyBlueA4 = "#cee3f6", greenA4 = "#ccdfc9"
+    
+    // iPad Air 5
+    case spaceGrayA5 = "#6b696e", starlightA5 = "#e5e0d8", pinkA5 = "#e8d2cf", purpleA5 = "#b9b8d1", blueA5 = "#88aebf"
+    
+    // iPad Mini 5
+    case spaceGrayM5 = "#68696d", goldM5 = "#f6cdb9"
+    static var iPadMini5 = [spaceGrayM5, silver6, goldM5]
+    
+    // iPad 9th gen
+    case spaceGray9 = "#68696e"
+    
+    // iPad 10th gen
+    case pink10 = "#de6274", blue10 = "#6480a3", yellow10 = "#f0d95b"
 
     // iPhone 13
     case green13 = "#394c38", pink13 = "#faddd7", blue13 = "#276787", midnight13 = "#232a31", starlight13 = "#faf6f2", productRed13 = "#bf0013"
@@ -569,9 +609,39 @@ public extension [MaterialColor] {
     static var iPhone14Pro = MaterialColor.iPhone14Pro
     static var iPhone15 = MaterialColor.iPhone15
     static var iPhone15Pro = MaterialColor.iPhone15Pro
+    static var iPadAir = MaterialColor.iPadAir
+    static var iPadMini5 = MaterialColor.iPadMini5
     static var watchSE2 = MaterialColor.watchSE2
     static var watch9 = MaterialColor.watch9
     static var watchUltra2 = MaterialColor.watchUltra2
     static var homePod = MaterialColor.homePod
     static var homePodMini = MaterialColor.homePodMini
+    
+    static var colorSets = [
+        iMac: "iMac",
+        se: "se",
+        iPhone6: "iPhone6",
+        iPhone7: "iPhone7",
+        iPhone13: "iPhone13",
+        iPhone13Pro: "iPhone13Pro",
+        iPhoneSE3: "iPhoneSE3",
+        iPhone14: "iPhone14",
+        iPhone14Pro: "iPhone14Pro",
+        iPhone15: "iPhone15",
+        iPhone15Pro: "iPhone15Pro",
+        iPadAir: "iPadAir",
+        iPadMini5: "iPadMini5",
+        watchSE2: "watchSE2",
+        watch9: "watch9",
+        watchUltra2: "watchUltra2",
+        homePod: "homePod",
+        homePodMini: "homePodMini",
+    ]
 }
+
+#if canImport(SwiftUI)
+import SwiftUI
+#Preview {
+    HardwareListView()
+}
+#endif
