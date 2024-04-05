@@ -7,7 +7,8 @@ import UIKit
 #if canImport(SwiftUI)
 import SwiftUI // for Color
 #endif
-#if canImport(IOKit.ps)
+//#if canImport(IOKit.ps) // This doesn't work probably because of the ".ps" part
+#if os(macOS) || targetEnvironment(macCatalyst)
 import IOKit.ps
 #endif
 
@@ -288,6 +289,7 @@ public class DeviceBattery: Battery {
     }
     
     /// The user enabled Low Power mode
+    @available(macOS 12.0, *)
     public var lowPowerMode: Bool {
         return ProcessInfo.processInfo.isLowPowerModeEnabled
     }

@@ -1,5 +1,6 @@
 # ChangeLog
 
+v2.0.5 4/3/2024 Fixed so works on macOS.  Fixed so works in Swift Playgrounds (had to bring minimum iOS level up to 15.2).  Renamed projects in Package.swift to fix so previews load consistently in Swift Playgrounds and Xcode previews.
 v2.0.4 4/2/2024 Renamed project from DeviceTest to Device.  Fixed so supported on tvOS 14.  Added crash detection to newest Apple Watch models.  Backed minimum iOS version to iOS 14.  Changed watchOS minimum to 6.  Updated minimum deployment targets in README.  Added fallbacks for some iOS 15+ only features.
 v2.0.3 4/2/2024 Made screen size resolution width and height public.  Removed HardwareListView from Hardware.swift to prevent issues with integrations.
 v2.0.2 3/31/2024 Fixed so can run test app on iOS 15/16.  Added custom symbols for nicer UI and to make sure icons work on older iOS devices.  Added NFC, ApplePay, Barometer, and Ringer Switch to iPhones where missing.  Improved the display of the test view.
@@ -24,9 +25,6 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
-[ ] Fix so that previews consistently work in Xcode & Swift Playgrounds.
-    - Does not show #Preview("Battery") in Playgrounds on macOS or on iPad Swift Playgrounds.  App Preview is shown.
-    - All Previews work in Xcode.
 [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.
 [ ] Make so low power mode colors yellow when not red for system icon.  For colorful version, have low power mode color the outline in yellow.
 [ ] Need help getting identifier when buildling for macOS (not catalyst)

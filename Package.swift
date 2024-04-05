@@ -11,7 +11,7 @@ import AppleProductTypes
 let package = Package(
     name: "Device",
     platforms: [
-        .iOS("14.0"),
+        .iOS("15.2"),
         .macOS("11.0"),
         .tvOS("14.0"),
         .watchOS("6.0"),
@@ -20,14 +20,14 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "Device",
+            name: "Device Library", // has to be named different from the iOSApplication or Swift Playgrounds won't open correctly
             targets: ["Device"]
         ),
         .iOSApplication(
-            name: "DeviceTestApp",
+            name: "Device", // needs to match package name to open properly in Swift Playgrounds
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "2.0.4",
+            displayVersion: "2.0.5",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
@@ -61,9 +61,10 @@ let package = Package(
                 "Device"
             ],
             path: "Development",
-            resources: [
-                .process("Resources")
-            ],
+//			exclude: ["Device.xcodeproj/*"],
+//            resources: [
+//                .process("Resources")
+//            ],
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")
             ]

@@ -39,11 +39,19 @@ extension Color {
 // for switching between asset images and systemImages
 public extension Image {
     init(symbolName: String) {
+#if canImport(UIKit)
         if UIImage(systemName: symbolName) != nil {
             self.init(systemName: symbolName)
         } else {
             self.init(symbolName)
         }
+#elseif canImport(AppKit)
+        if NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil {
+            self.init(systemName: symbolName)
+        } else {
+            self.init(symbolName)
+        }
+#endif
     }
 }
 
@@ -60,11 +68,19 @@ public extension Label where Title == Text, Icon == Image {
         _ titleKey: String,
         symbolName: String
     ) {
+#if canImport(UIKit)
         if UIImage(systemName: symbolName) != nil {
             self.init(titleKey, systemImage: symbolName)
         } else {
             self.init(titleKey, image: symbolName)
         }
+#elseif canImport(AppKit)
+        if NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil {
+            self.init(titleKey, systemImage: symbolName)
+        } else {
+            self.init(titleKey, image: symbolName)
+        }
+#endif
     }
 }
 
@@ -155,12 +171,21 @@ public struct DeviceInfoView: View {
 
 public extension String {
     func safeSymbolName(fallback: String = "questionmark.square.fill") -> String {
+#if canImport(UIKit)
         if UIImage(systemName: self) == nil {
             // check for asset
             if UIImage(named: self) == nil {
                 return fallback
             }
         }
+#elseif canImport(AppKit)
+        if NSImage(systemSymbolName: self, accessibilityDescription: nil) != nil {
+            // check for asset
+            if NSImage(named: self) == nil {
+                return fallback
+            }
+        }
+#endif
         return self
     }
 }

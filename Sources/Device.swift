@@ -409,7 +409,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
     
     /// A textual representation of the device.
     public var description: String {
-        return "\(self.name), (\(self.identifiers.definition)), \(self.capabilities.sorted.definition)"
+        return "\(self.name), (\(self.identifiers)), \(String(describing: self.capabilities.sorted))"
     }
     
     /// A safe version of `description`.
