@@ -56,6 +56,8 @@ public struct Screen: Hashable {
     public static var p1080 = Screen(resolution: (1920,1080))
     public static var vision = Screen(resolution: (3660,3200))
     // MARK: iPhones
+    // original iPhone
+    public static var i35o = Screen(diagonal: 3.5, resolution: (320,480), ppi: 163)
     // iPhone 4
     public static var i35 = Screen(diagonal: 3.5, resolution: (640,960), ppi: 326)
     // iPod Touch, iPhone 5

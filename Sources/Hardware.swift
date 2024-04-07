@@ -356,7 +356,9 @@ public enum CPU: Hashable, CaseIterable {
     case m3
     case m3pro
     case m3max
-    // iPod
+    // iPod/iPhone
+    case s5L8900 // Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch
+    case sAPL0298C05 // iPhone 3GS
     case a4
     case a5
     case a5x
@@ -420,6 +422,8 @@ public enum Biometrics: Hashable {
 
 // MARK: Camera
 public enum Camera: Hashable, CaseIterable { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
+    case twoMP // original iPhone
+    case threeMP // iPhone 3GS
     /// 8mp iPod touch 7th gen/iPhone 6
     case iSight
     case vga // iPad 2 front camera

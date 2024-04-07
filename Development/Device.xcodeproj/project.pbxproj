@@ -11,8 +11,8 @@
 		B52ED1E52BAB7F7400056A62 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
 		B5861A972BABC531002F0732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B58985FB2BAB99C3002B8E05 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
-		B5EB68172BC1FB8A005DAB8C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5EB68162BC1FB8A005DAB8C /* Device Library */; };
-		B5EB68192BC1FB90005DAB8C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5EB68182BC1FB90005DAB8C /* Device Library */; };
+		B5EB68252BC2485E005DAB8C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5EB68242BC2485E005DAB8C /* Device Library */; };
+		B5EB68272BC24863005DAB8C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5EB68262BC24863005DAB8C /* Device Library */; };
 		B5F0340C2BABA93700CA6396 /* DeviceWatchTest Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B5F033FF2BABA93500CA6396 /* DeviceWatchTest Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 		B5F034132BABB4AF00CA6396 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
@@ -63,7 +63,7 @@
 		B58985F92BAB99C3002B8E05 /* DeviceTest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = DeviceTest.entitlements; sourceTree = "<group>"; };
 		B58985FA2BAB99C3002B8E05 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B5C1B61D2BAB7997001D5CFA /* DeviceTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B5EB68152BC1F480005DAB8C /* DeviceTest.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DeviceTest.swiftpm; path = ..; sourceTree = "<group>"; };
+		B5EB681A2BC244A4005DAB8C /* Device.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Device.swiftpm; path = ..; sourceTree = "<group>"; };
 		B5F033FF2BABA93500CA6396 /* DeviceWatchTest Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DeviceWatchTest Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -72,7 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5EB68172BC1FB8A005DAB8C /* Device Library in Frameworks */,
+				B5EB68252BC2485E005DAB8C /* Device Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,7 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5EB68192BC1FB90005DAB8C /* Device Library in Frameworks */,
+				B5EB68272BC24863005DAB8C /* Device Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,7 +123,7 @@
 				B52ED1CA2BAB7F7400056A62 /* LICENSE */,
 				B52ED1D52BAB7F7400056A62 /* Package.swift */,
 				B52ED1D82BAB7F7400056A62 /* README.md */,
-				B5EB68152BC1F480005DAB8C /* DeviceTest.swiftpm */,
+				B5EB681A2BC244A4005DAB8C /* Device.swiftpm */,
 				B52ED1D72BAB7F7400056A62 /* Tests */,
 				B5C1B61E2BAB7997001D5CFA /* Products */,
 				B5EB67F32BC1F3EB005DAB8C /* Frameworks */,
@@ -165,7 +165,7 @@
 			);
 			name = DeviceTest;
 			packageProductDependencies = (
-				B5EB68162BC1FB8A005DAB8C /* Device Library */,
+				B5EB68242BC2485E005DAB8C /* Device Library */,
 			);
 			productName = DeviceVisionTest;
 			productReference = B5C1B61D2BAB7997001D5CFA /* DeviceTest.app */;
@@ -186,7 +186,7 @@
 			);
 			name = "DeviceWatchTest Watch App";
 			packageProductDependencies = (
-				B5EB68182BC1FB90005DAB8C /* Device Library */,
+				B5EB68262BC24863005DAB8C /* Device Library */,
 			);
 			productName = "DeviceWatchTest Watch App";
 			productReference = B5F033FF2BABA93500CA6396 /* DeviceWatchTest Watch App.app */;
@@ -414,7 +414,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.6;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
@@ -452,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.6;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
@@ -484,7 +484,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.6;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -515,7 +515,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.6;
+				MARKETING_VERSION = 2.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -560,11 +560,11 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B5EB68162BC1FB8A005DAB8C /* Device Library */ = {
+		B5EB68242BC2485E005DAB8C /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
 		};
-		B5EB68182BC1FB90005DAB8C /* Device Library */ = {
+		B5EB68262BC24863005DAB8C /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
 		};

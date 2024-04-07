@@ -1,5 +1,6 @@
 # ChangeLog
 
+v2.0.7 4/7/2024 Added Watch7,2 and several other missing device identifiers.  Made Migration.migrate() public so accessible from test view.  Wanted to move to development folder but would have required too much private internal access.  Re-added the Device.swiftpm to the Xcode project so it's not labeled DeviceTest.  Added lightning to all iPhones that don't have USB-C.
 v2.0.6 4/6/2024 Re-worked resources so that custom symbols are accessable outside module.  Fixed so macOS reports actual identifier (wasn't able to get identifier before).
 v2.0.5 4/3/2024 Fixed so works on macOS.  Fixed so works in Swift Playgrounds (had to bring minimum iOS level up to 15.2).  Renamed projects in Package.swift to fix so previews load consistently in Swift Playgrounds and Xcode previews.
 v2.0.4 4/2/2024 Renamed project from DeviceTest to Device.  Fixed so supported on tvOS 14.  Added crash detection to newest Apple Watch models.  Backed minimum iOS version to iOS 14.  Changed watchOS minimum to 6.  Updated minimum deployment targets in README.  Added fallbacks for some iOS 15+ only features.
@@ -27,6 +28,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 Known issues that need to be addressed.
 
 [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.
+[ ] Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
 [ ] Make so low power mode colors yellow when not red for system icon.  For colorful version, have low power mode color the outline in yellow.
 [ ] Need help getting identifier when buildling for macOS (not catalyst)
 [ ] Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.

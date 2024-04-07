@@ -2,7 +2,6 @@ import SwiftUI
 import Device
 
 extension Label where Title == Text, Icon == Image {
-    
     /// Creates a label with an icon image and a title generated from a
     /// localized string.
     ///
@@ -339,10 +338,6 @@ public struct DeviceTestView: View {
     
     /// For testing and migrating code during development.
     func migrateContent() {
-#if canImport(Device)
-        // if importing this as a package, we're in a preview or something so don't have access to internal migrate function.  Works in Xcode but not Swift Playgrounds.
-#else
         Migration.migrate()
-#endif
     }
 }
