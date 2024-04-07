@@ -141,12 +141,27 @@ final class ActualHardwareDevice: CurrentDevice {
             return true
         }
         // Note: this will be "false" under Catalyst which is what we want.
-        return ProcessInfo().isiOSAppOnMac
+        if #available(watchOS 7.0, *) {
+            return ProcessInfo().isiOSAppOnMac
+        } else {
+            // Fallback on earlier versions
+            return false
+        }
     }
 
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String = {
-#if targetEnvironment(macCatalyst)
+#if os(macOS)
+        let service = IOServiceGetMatchingService(kIOMasterPortDefault,
+                                                  IOServiceMatching("IOPlatformExpertDevice"))
+        var modelIdentifier: String?
+        if let modelData = IORegistryEntryCreateCFProperty(service, "model" as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? Data {
+            modelIdentifier = String(data: modelData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters)
+        }
+
+        IOObjectRelease(service)
+        return modelIdentifier ?? "UnknownIdentifier"
+#elseif targetEnvironment(macCatalyst)
         var size = 0
         sysctlbyname("hw.model", nil, &size, nil, 0)
         

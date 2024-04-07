@@ -7,6 +7,7 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
+import Foundation
 
 // Normally would just use KuditFrameworks but just in case that isn't available...
 extension Color {
@@ -39,70 +40,59 @@ extension Color {
 // for switching between asset images and systemImages
 public extension Image {
     init(symbolName: String) {
-#if canImport(UIKit)
-        if UIImage(systemName: symbolName) != nil {
+        let symbolName = symbolName.safeSymbolName()
+        if .nativeSymbolCheck(symbolName) {
             self.init(systemName: symbolName)
         } else {
-            self.init(symbolName)
+            // get module image asset if possible
+            self.init(symbolName, bundle: Bundle.module)
         }
+    }
+}
+/// helper for making sure symbolName: function always returns an actual image and never `nil`.
+extension String {
+    func safeSymbolName(fallback: String = "questionmark.square.fill") -> String {
+        if !.nativeSymbolCheck(self) {
+            // check for asset
+            if !.nativeLocalCheck(self) {
+                return fallback
+            }
+        }
+        return self
+    }
+}
+extension Bool {
+    static func nativeSymbolCheck(_ symbolName: String) -> Bool {
+#if canImport(UIKit)
+        return UIImage(systemName: symbolName) != nil
 #elseif canImport(AppKit)
-        if NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil {
-            self.init(systemName: symbolName)
+        return NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil
+#endif
+    }
+    static func nativeLocalCheck(_ symbolName: String) -> Bool {
+#if canImport(UIKit)
+        return UIImage(named: symbolName, in: Bundle.module, with: nil) != nil
+#elseif canImport(AppKit)
+        if #available(macOS 13, *) {
+            return NSImage(symbolName: symbolName, bundle: Bundle.module, variableValue: 1) != nil
         } else {
-            self.init(symbolName)
+            // probably won't work in macOS 12
+            return NSImage(named: symbolName) != nil
         }
 #endif
     }
 }
 
-//@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-public extension Label where Title == Text, Icon == Image {
-
-    /// Creates a label with an icon image and a title generated from a
-    /// localized string.
-    ///
-    /// - Parameters:
-    ///    - titleKey: A title generated from a string. // TODO: LocalizeStringKey instead?
-    ///    - symbolName: The name of the symbol resource to lookup (either system or custom included asset).
-    init(
-        _ titleKey: String,
-        symbolName: String
-    ) {
-#if canImport(UIKit)
-        if UIImage(systemName: symbolName) != nil {
-            self.init(titleKey, systemImage: symbolName)
-        } else {
-            self.init(titleKey, image: symbolName)
-        }
-#elseif canImport(AppKit)
-        if NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil {
-            self.init(titleKey, systemImage: symbolName)
-        } else {
-            self.init(titleKey, image: symbolName)
-        }
-#endif
-    }
-}
-
-#Preview("Icons & Labels") {
-    VStack {
-        Image(symbolName: "star")
-        Image(symbolName: "nfc")
-        Label("Foo", symbolName: "star.fill")
-        Label("Bar", symbolName: "roundedcorners")
-    }.font(.title)
-}
-
-public struct DeviceInfoView: View {
-    public var device: DeviceType
-
-    public init(device: any DeviceType) {
-        self.device = device
+public struct CapabilitiesTextView: View {
+    @State public var capabilities: Capabilities
+    
+    public init(capabilities: Capabilities) {
+        self.capabilities = capabilities
     }
     
-    var capabilitiesText: some View {
+    public var body: some View {
         var output = Text("")
-        for capability in device.capabilities.sorted {
+        for capability in capabilities.sorted {
             // don't show screen icon since not really helpful
             if case .screen = capability {}
             // don't show mac form either since redundant
@@ -116,12 +106,25 @@ public struct DeviceInfoView: View {
             // and watches don't need watch size
             else if case .watchSize = capability {}
             else {
-                output = output + Text(Image(symbolName: capability.symbolName.safeSymbolName())) + Text(" ")
+                if #available(watchOS 7.0, *) {
+                    output = output + Text(Image(symbolName: capability.symbolName)) + Text(" ")
+                } else {
+                    // Fallback on earlier versions
+                    output = output + Text("\(capability.symbolName)") + Text(" ")
+                }
             }
         }
         return output
     }
+}
 
+public struct DeviceInfoView: View {
+    public var device: DeviceType
+
+    public init(device: any DeviceType) {
+        self.device = device
+    }
+    
     public var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 10) {
@@ -135,7 +138,7 @@ public struct DeviceInfoView: View {
                     }
                 }
                 HStack {
-                    capabilitiesText
+                    CapabilitiesTextView(capabilities: device.capabilities)
                 }
                 .font(.caption)
             }
@@ -156,37 +159,6 @@ public struct DeviceInfoView: View {
                 }
             }
         }
-    }
-}
-
-#Preview("Capabilities") {
-    DeviceInfoView(device: Device(identifier: "iPhone16,2"))
-        .padding()
-        .padding()
-        .padding()
-        .padding()
-        .padding()
-        .padding()
-}
-
-public extension String {
-    func safeSymbolName(fallback: String = "questionmark.square.fill") -> String {
-#if canImport(UIKit)
-        if UIImage(systemName: self) == nil {
-            // check for asset
-            if UIImage(named: self) == nil {
-                return fallback
-            }
-        }
-#elseif canImport(AppKit)
-        if NSImage(systemSymbolName: self, accessibilityDescription: nil) != nil {
-            // check for asset
-            if NSImage(named: self) == nil {
-                return fallback
-            }
-        }
-#endif
-        return self
     }
 }
 
@@ -222,7 +194,7 @@ public struct DeviceListView: View {
             ForEach(sectioned, id: \.0) { section in
                 Section {
                     ForEach(section.1, id: \.device) { device in
-                        if #available(tvOS 16.0, *) {
+                        if #available(tvOS 16.0, watchOS 7.0, *) {
                             DeviceInfoView(device: device)
                             // This is only for testing anyways
                                 .onTapGesture {

@@ -27,7 +27,7 @@ let package = Package(
             name: "Device", // needs to match package name to open properly in Swift Playgrounds
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "2.0.5",
+            displayVersion: "2.0.6",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
@@ -53,7 +53,8 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Device",
-            path: "Sources"
+            path: "Sources",
+            resources: [.process("Resources")]
         ),
         .executableTarget(
             name: "DeviceTestAppModule",
@@ -75,6 +76,6 @@ let package = Package(
                 "Device"
             ],
             path: "Tests"
-        )
+        ),
     ]
 )

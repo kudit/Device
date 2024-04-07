@@ -1010,13 +1010,13 @@ public struct Mac: IdiomType {
         Mac(
             name: "MacBook Pro (16-inch, 2023)",
             identifiers: ["Mac14,6", "Mac14,10"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
-            form: .macBook,
-            image: nil,
-            capabilities: [.pro, .usbC],
+            supportId: "SP890",
+            form: .macBookGen2,
+            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP890/macbook-pro-2023-16in_2x.png",
+            capabilities: [.pro],
             models: ["MNWG3xx/A", "MNW93xx/A", "MNWK3xx/A", "MNWD3xx/A", "MNWF3xx/A", "MNW83xx/A", "MNWJ3xx/A", "MNWC3xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
-            cpu: .intel),
+            cpu: .m2pro),
         Mac(
             name: "MacBook Pro (13-inch, M2, 2022)",
             identifiers: ["Mac14,7"],
@@ -1594,13 +1594,6 @@ public struct Mac: IdiomType {
             supportId: "SP889",
             form: .macBookGen2,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
-            cpu: .m2pro),
-        Mac(
-            name: "MacBook Pro 16-Inch, M2 Pro, 2023",
-            identifiers: ["Mac14,10"],
-            supportId: "SP890",
-            form: .macBookGen2,
-            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP890/macbook-pro-2023-16in_2x.png",
             cpu: .m2pro),
         Mac(
             name: "Mac mini (2023)",

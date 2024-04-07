@@ -62,7 +62,7 @@ public struct BatteryView<B: Battery>: View {
     }
 
     public var body: some View {
-        if #available(iOS 15.0, watchOS 8, tvOS 15, *) {
+        if #available(iOS 15.0, watchOS 8, tvOS 15, macOS 12, *) {
             ZStack {
                 // add back fill to improve contrast
                 Image(symbolName: "battery.100percent")

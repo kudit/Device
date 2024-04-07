@@ -289,8 +289,12 @@ public class DeviceBattery: Battery {
     }
     
     /// The user enabled Low Power mode
-    @available(macOS 12.0, *)
     public var lowPowerMode: Bool {
-        return ProcessInfo.processInfo.isLowPowerModeEnabled
+        if #available(macOS 12.0, *) {
+            return ProcessInfo.processInfo.isLowPowerModeEnabled
+        } else {
+            // Fallback on earlier versions
+            return false
+        }
     }
 }

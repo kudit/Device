@@ -29,7 +29,7 @@ This is actively maintained so if there is a feature request or change, we will 
 
 ## Requirements
 
-- iOS 15.2+ (minimum required for Swift Playgrounds)
+- iOS 15.2+ (minimum required for Swift Playgrounds support)
 - tvOS 14.0+
 - watchOS 6.0+
 - macOS 11.0+
@@ -39,6 +39,8 @@ This is actively maintained so if there is a feature request or change, we will 
 ## Known Issues
 Built for macOS "Designed for iPad" does not return expected device results.
 Xcode previews do not work when the preview device is set to "My Mac (Mac Catalyst)".
+Custom Symbols likely won't work in macOS < 13.
+LowPowerMode checks unavailable in macOS < 12.
 
 ## Installation
 Install by adding this as a package dependency to your code.  This can be done in Xcode or Swift Playgrounds!

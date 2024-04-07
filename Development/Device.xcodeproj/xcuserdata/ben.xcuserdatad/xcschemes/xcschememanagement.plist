@@ -12,12 +12,17 @@
 		<key>DeviceWatchTest Watch App.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>3</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>B5C1B61C2BAB7997001D5CFA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B5EB67E92BC1F36F005DAB8C</key>
 		<dict>
 			<key>primary</key>
 			<true/>
