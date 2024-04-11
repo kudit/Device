@@ -26,6 +26,8 @@ This is actively maintained so if there is a feature request or change, we will 
 - [x] Detect available disk space
 - [x] Apple Pencil support detection
 - [x] Images and support links
+- [x] Detect when battery state changes.
+- [x] Disable idle timer or have idle timer automatically disabled when plugged in.
 
 ## Requirements
 
@@ -201,16 +203,24 @@ if Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000) {
 }
 ```
 
+### Disabling the Idle Timer
+```swift
+Device.current.isIdleTimerDisabled = true
+
+// Disable automatically when plugged in.  Only call this once (probably during init).
+Device.current.disableIdleTimerWhenPluggedIn()
+```
+
 ## Source of Information
 Some information has been sourced from the following:
-https://www.theiphonewiki.com/wiki/Models
-https://www.everymac.com
-https://github.com/devicekit/DeviceKit
+- https://www.theiphonewiki.com/wiki/Models
+- https://www.everymac.com
+- https://github.com/devicekit/DeviceKit
 
 ## Contributing
 If you have the need for a specific feature that you want implemented or if you experienced a bug, please open an issue.
 If you extended the functionality of Device yourself and want others to use it too, please submit a pull request.
 
 ## Contributors
-The complete list of people who contributed to this project is available [here](https://github.com/device/Device/graphs/contributors).
+The complete list of people who contributed to this project is available [here](https://github.com/kudit/Device/graphs/contributors).
 A big thanks to everyone who has contributed! 🙏

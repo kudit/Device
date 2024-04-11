@@ -5,6 +5,9 @@ import Device
 
 @main
 struct DeviceTestApp: App {
+    init() {
+        Device.current.disableIdleTimerWhenPluggedIn()
+    }
     var body: some Scene {
         WindowGroup {
             DeviceTestView()

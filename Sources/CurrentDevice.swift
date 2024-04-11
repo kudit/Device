@@ -81,10 +81,16 @@ public protocol CurrentDevice: DeviceType {
     
     /// All volumes capacity information in bytes.
     var volumes: [URLResourceKey: Int64]? { get }
+    
+    /// Ability to change/get the idle timeout setting.
+    var isIdleTimerDisabled: Bool { get set }
+    /// When called, will automatically start monitoring the battery state to disable idle timer when plugged in.
+    func disableIdleTimerWhenPluggedIn()
 }
 
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
-final class ActualHardwareDevice: CurrentDevice {
+// TODO: should this be a final class?
+class ActualHardwareDevice: CurrentDevice {
     var device: Device
     
     init() {
@@ -404,5 +410,45 @@ final class ActualHardwareDevice: CurrentDevice {
             return nil
         }
 #endif
+    }
+    
+    private var _isIdleTimerDisabled = false
+    /// Ability to change/get the idle timeout setting.
+    var isIdleTimerDisabled: Bool {
+        get {
+            _isIdleTimerDisabled
+        }
+        set {
+            _isIdleTimerDisabled = newValue
+            _disableIdleTimer(newValue)
+        }
+    }
+    /// Actually disable the idle timer
+    private func _disableIdleTimer(_ disabled: Bool = true) {
+#if canImport(UIKit)
+        UIApplication.shared.isIdleTimerDisabled = disabled
+#endif        
+    }
+    private var _disableIdleTimerWhenPluggedIn = false
+    /// Automatically start monitoring the battery state to disable idle timer when plugged in and re-enable when unplugged.
+    func disableIdleTimerWhenPluggedIn() {
+        guard !_disableIdleTimerWhenPluggedIn else {
+            // atttempting to disable idle timer multiple times.  This should only be set on launch.
+            print("WARNING: attempting to disable idle timer when this has already been set.  You should only call this function once (probably at launch or main init).  Set a breakpoint to see why there's a duplicate call.")
+            return
+        }
+        guard let battery = self.battery else {
+            // attempting to disable idle timer when plugged in when we don't even have a battery.  Just ignore.
+            return
+        }
+        _disableIdleTimerWhenPluggedIn = true // so we only do this once in case called multiple times.
+        if battery.isPluggedIn {
+            _disableIdleTimer()
+        }
+        battery.add(monitor: { battery in
+            // unnecessary when battery level changes, but it shouldn't really be much to repeat.
+            self._disableIdleTimer(battery.isPluggedIn ? true : self._isIdleTimerDisabled)
+                // don't disable timer when unplugged unless we've manually set it to always be disabled.  So when unplugged, re-enable idle timer unless we've set it to always disabled.
+        })
     }
 }

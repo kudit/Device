@@ -1,5 +1,6 @@
 # ChangeLog
 
+v2.0.8 4/10/2024 Updated license copyright.  Added ability to disable screen dimming/locking (and ability to monitor battery state to disable idle timer automatically when plugged in).  Added battery.isPluggedIn variable.  Fixed so that a battery monitor is triggered regardless of battery level or battery state changes.
 v2.0.7 4/7/2024 Added Watch7,2 and several other missing device identifiers.  Made Migration.migrate() public so accessible from test view.  Wanted to move to development folder but would have required too much private internal access.  Re-added the Device.swiftpm to the Xcode project so it's not labeled DeviceTest.  Added lightning to all iPhones that don't have USB-C.
 v2.0.6 4/6/2024 Re-worked resources so that custom symbols are accessable outside module.  Fixed so macOS reports actual identifier (wasn't able to get identifier before).
 v2.0.5 4/3/2024 Fixed so works on macOS.  Fixed so works in Swift Playgrounds (had to bring minimum iOS level up to 15.2).  Renamed projects in Package.swift to fix so previews load consistently in Swift Playgrounds and Xcode previews.

@@ -51,8 +51,11 @@ public protocol Battery: ObservableObject, CustomStringConvertible, Identifiable
     func add(monitor: @escaping BatteryMonitor)
 }
 public extension Battery {
+    /// Return true if the device is actively charging.  Equivalent to testing `curerntState == .charging`
     var isCharging: Bool { currentState == .charging }
-    
+    /// Return true if the device is plugged in.
+    var isPluggedIn: Bool { currentState == .charging || currentState == .full }
+
     /// System Image used to render a symbol representing the current state/charge level
     var symbolName: String {
         let percent = currentLevel
@@ -199,19 +202,33 @@ public class DeviceBattery: Battery {
 #if os(watchOS)
         // Apparently this can't be observed on watchOS :(
 #elseif canImport(UIKit) && !os(tvOS)
+        // add observer for both battery level and battery state
         NotificationCenter.default.addObserver(
             forName: UIDevice.batteryLevelDidChangeNotification,
             object: nil,
             queue: OperationQueue.main
-        ) { (notification) in
+        ) { notification in
             // Do your work after received notification
-            for monitor in self.monitors {
-                monitor(self)
-            }
+            self._triggerBatteryUpdate()
+        }
+        NotificationCenter.default.addObserver(
+            forName: UIDevice.batteryStateDidChangeNotification,
+            object: nil,
+            queue: OperationQueue.main
+        ) { notification in
+            // Do your work after received notification
+            self._triggerBatteryUpdate()
         }
 #else
         // If we don't have access to UIDevice or WKInterfaceDevice, this will be undefined
 #endif
+    }
+    
+    private func _triggerBatteryUpdate() {
+        // Do your work after received notification
+        for monitor in self.monitors {
+            monitor(self)
+        }
     }
     
     /// Fetch and return the current battery level as a number from 0—100.  Returns -1 if for some reason we are using this on an unknown platform.

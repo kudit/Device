@@ -72,10 +72,18 @@ struct TimeClockView: View {
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @State var time = Date()
     
+    @State var disableIdleTimer = false
+    
     var battery: some View {
         Group {
             if let battery = Device.current.battery {
                 BatteryView(battery: battery, fontSize: 80)
+                Toggle("Disable Idle Timer", isOn: Binding(get: {
+                   return disableIdleTimer 
+                }, set: { newValue in
+                    disableIdleTimer = newValue
+                    Device.current.isIdleTimerDisabled = newValue
+                }))
             } else {
                 Image(symbolName: "batteryblock.slash") // battery.slash
                     .font(.system(size: 80))
