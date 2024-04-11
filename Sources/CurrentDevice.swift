@@ -425,7 +425,7 @@ class ActualHardwareDevice: CurrentDevice {
     }
     /// Actually disable the idle timer
     private func _disableIdleTimer(_ disabled: Bool = true) {
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
         UIApplication.shared.isIdleTimerDisabled = disabled
 #endif        
     }
