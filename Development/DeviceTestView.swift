@@ -78,12 +78,14 @@ struct TimeClockView: View {
         Group {
             if let battery = Device.current.battery {
                 BatteryView(battery: battery, fontSize: 80)
+                #if os(iOS) // only works on iOS so don't show on other devices.
                 Toggle("Disable Idle Timer", isOn: Binding(get: {
                    return disableIdleTimer 
                 }, set: { newValue in
                     disableIdleTimer = newValue
                     Device.current.isIdleTimerDisabled = newValue
                 }))
+                #endif
             } else {
                 Image(symbolName: "batteryblock.slash") // battery.slash
                     .font(.system(size: 80))
@@ -208,9 +210,7 @@ struct HardwareListView: View {
 }
 
 #Preview("HardwareList") {
-    NavigationView {
-        HardwareListView()
-    }
+    HardwareListView()
 }
 
 #Preview("DeviceList") {
@@ -238,20 +238,12 @@ public struct BatteryListView: View {
 }
 
 #Preview("BatteryList") {
-    NavigationView {
-        BatteryListView()
-    }
+    BatteryListView()
 }
 
 
 public struct DeviceTestView: View {
     @State var showList = false
-    public var version: String {
-        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            return version
-        }
-        return "Unknown"
-    }
     public var idiomList: some View {
         ForEach(Device.Idiom.allCases) { idiom in
             TestCard(
@@ -268,7 +260,7 @@ public struct DeviceTestView: View {
                 TimeClockView()
             } header: {
                 HStack {
-                    Text("Device v\(version)")
+                    Text("Device v\(Device.version)")
                     Spacer()
                     Text(verbatim: "© \(Calendar.current.component(.year, from: Date())) Kudit, LLC")
                 }
@@ -285,8 +277,8 @@ public struct DeviceTestView: View {
                                 .font(.headline)
                             Text("\(Device.current.identifier)")
                                 .italic()
-                            Text("\(Device.current.name ?? "nil")")
-                            Text("Running **\(Device.current.systemName ?? "nil")**")
+                            Text("\(Device.current.name)")
+                            Text("Running **\(Device.current.systemName)**")
                         }
                     }
                     HStack {
@@ -348,4 +340,8 @@ public struct DeviceTestView: View {
     func migrateContent() {
         Migration.migrate()
     }
+}
+
+#Preview {
+    DeviceTestView()
 }

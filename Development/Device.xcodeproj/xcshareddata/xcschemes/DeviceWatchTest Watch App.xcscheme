@@ -15,6 +15,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B5F033FE2BABA93500CA6396"
+               BuildableName = "DeviceTest Watch App.app"
+               BlueprintName = "DeviceTest Watch App"
+               ReferencedContainer = "container:Device.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "B5DD79B22BC94C8800457681"
                BuildableName = "DeviceTest.app"
                BlueprintName = "DeviceTest"
@@ -44,9 +58,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-            BuildableName = "DeviceTest.app"
-            BlueprintName = "DeviceTest"
+            BlueprintIdentifier = "B5F033FE2BABA93500CA6396"
+            BuildableName = "DeviceTest Watch App.app"
+            BlueprintName = "DeviceTest Watch App"
             ReferencedContainer = "container:Device.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,9 +75,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-            BuildableName = "DeviceTest.app"
-            BlueprintName = "DeviceTest"
+            BlueprintIdentifier = "B5F033FE2BABA93500CA6396"
+            BuildableName = "DeviceTest Watch App.app"
+            BlueprintName = "DeviceTest Watch App"
             ReferencedContainer = "container:Device.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

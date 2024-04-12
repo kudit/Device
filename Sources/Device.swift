@@ -10,6 +10,13 @@
  - https://github.com/schickling/Device.swift
  */
 
+import Foundation
+
+public extension Device {
+    /// The version of the Device Library
+    static var version = "2.0.10"
+}
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -22,6 +29,7 @@ public extension String {
             .replacingOccurrences(of: "ʀ", with: "R")
             .replacingOccurrences(of: "", with: "Apple")
     }
+    static let unknown = "Unknown"
 }
 
 /// Type for inheritance of specific idiom structs which use a Device as a backing store but allows for idiom-specific variables and functions and acts like a sub-class of Device but still having value-type backing.  TODO: Make this private so we don't access DeviceType outside of here?
@@ -149,7 +157,7 @@ extension IdiomType {
     }
 }
 
-public struct Device: CustomStringConvertible, IdiomType, Hashable {
+public struct Device: CustomStringConvertible, IdiomType, Hashable {    
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
     public enum Idiom: CaseIterable, Identifiable, CustomStringConvertible {
         /// An unspecified idiom.
@@ -409,7 +417,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
     
     /// A textual representation of the device.
     public var description: String {
-        return "\(self.name), (\(self.identifiers)), \(String(describing: self.capabilities.sorted))"
+        return "\(self.name), (\(self.identifiers))" // removed since normal description is very long and messy: , \(String(describing: self.capabilities.sorted))
     }
     
     /// A safe version of `description`.

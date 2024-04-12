@@ -49,15 +49,15 @@ public protocol CurrentDevice: DeviceType {
     /// The name identifying the device (e.g. "Dennis' iPhone").
     /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
     /// See the follwing link for more information: https://developer.apple.com/documentation/uikit/uidevice/1620015-name
-    var name: String? { get }
+    var name: String { get } // should be automatic since DeviceType defines name property.
     /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
-    var systemName: String? { get }
+    var systemName: String { get }
     /// The current version of the operating system (e.g. 8.4 or 9.2).
-    var systemVersion: String? { get }
+    var systemVersion: String { get }
     /// The model of the device (e.g. "iPhone" or "iPod Touch").
-    var model: String? { get }
+    var model: String { get }
     /// The model of the device as a localized string.
-    var localizedModel: String? { get }
+    var localizedModel: String { get }
     
     
     /// True when a Guided Access session is currently active; otherwise, false.
@@ -234,18 +234,18 @@ class ActualHardwareDevice: CurrentDevice {
     /// The name identifying the device (e.g. "Dennis' iPhone").
     /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
     /// See the follwing link for more information: https://developer.apple.com/documentation/uikit/uidevice/1620015-name
-    public var name: String? {
+    public var name: String {
 #if os(watchOS)
         return WKInterfaceDevice.current().name
 #elseif canImport(UIKit)
         return UIDevice.current.name
 #else
-        return nil
+        return .unknown
 #endif
     }
     
     /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
-    public var systemName: String? {
+    public var systemName: String {
 #if os(watchOS)
         return WKInterfaceDevice.current().systemName
 #elseif os(iOS)
@@ -258,40 +258,40 @@ class ActualHardwareDevice: CurrentDevice {
 #elseif canImport(UIKit)
         return UIDevice.current.systemName
 #else
-        return nil
+        return .unknown
 #endif
     }
     
     /// The current version of the operating system (e.g. 8.4 or 9.2).
-    public var systemVersion: String? {
+    public var systemVersion: String {
 #if os(watchOS)
         return WKInterfaceDevice.current().systemVersion
 #elseif canImport(UIKit)
         return UIDevice.current.systemVersion
 #else
-        return nil
+        return "0.0"
 #endif
     }
     
     /// The model of the device (e.g. "iPhone" or "iPod Touch").
-    public var model: String? {
+    public var model: String {
 #if os(watchOS)
         return WKInterfaceDevice.current().model
 #elseif canImport(UIKit)
         return UIDevice.current.model
 #else
-        return nil
+        return .unknown
 #endif
     }
     
     /// The model of the device as a localized string.
-    public var localizedModel: String? {
+    public var localizedModel: String {
 #if os(watchOS)
         return WKInterfaceDevice.current().localizedModel
 #elseif canImport(UIKit)
         return UIDevice.current.localizedModel
 #else
-        return nil
+        return .unknown
 #endif
     }
     

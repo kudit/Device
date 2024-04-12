@@ -27,7 +27,7 @@ let package = Package(
             name: "Device", // needs to match package name to open properly in Swift Playgrounds
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "2.0.8",
+            displayVersion: "2.0.10",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
@@ -45,7 +45,7 @@ let package = Package(
                 .outgoingNetworkConnections()
             ],
             appCategory: .developerTools
-        )
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -54,7 +54,9 @@ let package = Package(
         .target(
             name: "Device",
             path: "Sources",
-            resources: [.process("Resources")]
+            resources: [
+	            .process("Resources"),
+            ]
         ),
         .executableTarget(
             name: "DeviceTestAppModule",

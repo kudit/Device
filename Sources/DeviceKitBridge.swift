@@ -12,6 +12,7 @@ import Foundation
 
 extension Device {
     /// Gets the identifier from the system, such as "iPhone7,1".
+    @available(*, deprecated, renamed: "current.identifier")
     public static var identifier: String = Device.current.identifier
     
     /// Ordered list of identifiers in DeviceKit definition file.  Used for migration export.

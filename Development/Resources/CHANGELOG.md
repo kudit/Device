@@ -1,5 +1,13 @@
 # ChangeLog
 
+NOTE: Version needs to be updated in the following places:
+[ ] Xcode project version (normal target)
+[ ] Xcode project version (watch target)
+[ ] Package.swift iOSApplication product displayVersion.
+[ ] Device.version constant (must be hard coded since inaccessible in code)
+[ ] Tag with matching version in GitHub.
+
+v2.0.10 4/12/2024 Fixed so previews work in Xcode for Development files (previews will not work within the project Sources in Xcode but all previews work in Swift Playgrounds).  Updated minimum requirments in Xcode project.  Updated Device version in both targets and package.  Simplified description.  Fixed so name, localizedSystemName, etc. are non-optional.  Deprecated Device.identifier (use Device.current.identifier).  Added Device.version constant for referencing version (will need to manually update on version changes unfortunately).
 v2.0.9 4/11/2024 Fixed issue with watchOS not being able to disable idle timer.
 v2.0.8 4/10/2024 Updated license copyright.  Added ability to disable screen dimming/locking (and ability to monitor battery state to disable idle timer automatically when plugged in).  Added battery.isPluggedIn variable.  Fixed so that a battery monitor is triggered regardless of battery level or battery state changes.
 v2.0.7 4/7/2024 Added Watch7,2 and several other missing device identifiers.  Made Migration.migrate() public so accessible from test view.  Wanted to move to development folder but would have required too much private internal access.  Re-added the Device.swiftpm to the Xcode project so it's not labeled DeviceTest.  Added lightning to all iPhones that don't have USB-C.
@@ -29,7 +37,10 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
+[ ] Build for "Designed for iPad" running on macOS crashes on launch.  Works fine when included in project.
 [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.
+[ ] Retain error on device list on watchOS (simulator and device)
+[ ] Odd warning: Device.swiftpm/Sources/Resources/SymbolAssets.xcassets: Could not get trait set for device Watch7,2 with version 10.4
 [ ] Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
 [ ] Make so low power mode colors yellow when not red for system icon.  For colorful version, have low power mode color the outline in yellow.
 [ ] Need help getting identifier when buildling for macOS (not catalyst)
