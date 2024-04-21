@@ -1,6 +1,7 @@
 import SwiftUI
 import Device
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Capabilities") {
     VStack {
         HStack {
@@ -27,6 +28,7 @@ extension CGFloat {
     static var defaultFontSize: CGFloat = 44
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 struct SymbolTests<T: DeviceAttributeExpressible>: View {
     @State var attribute: T
     var size: CGFloat = .defaultFontSize
@@ -57,6 +59,7 @@ struct SymbolTests<T: DeviceAttributeExpressible>: View {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 struct AttributeListView<T: DeviceAttributeExpressible>: View {
     @State var header: String
     @State var attributes: [T]

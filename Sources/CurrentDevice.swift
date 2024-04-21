@@ -192,9 +192,9 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     
     // Storage Info
     /// The volume’s total capacity in bytes.
-    var volumeTotalCapacity: Int? { get }
+    var volumeTotalCapacity: Int64? { get }
     /// The volume’s available capacity in bytes.
-    var volumeAvailableCapacity: Int? { get }
+    var volumeAvailableCapacity: Int64? { get }
     /// The volume’s available capacity in bytes for storing important resources.
     var volumeAvailableCapacityForImportantUsage: Int64? { get }
     /// The volume’s available capacity in bytes for storing nonessential resources.
@@ -245,8 +245,8 @@ public class MockDevice: CurrentDevice {
         isIdleTimerDisabled: Bool = false,
         thermalState: ThermalState = .nominal,
         
-        volumeTotalCapacity: Int? = 1_000_000_000_000, // 1TB
-        volumeAvailableCapacity: Int? = 90_000_000_000,
+        volumeTotalCapacity: Int64? = 1_000_000_000_000, // 1TB
+        volumeAvailableCapacity: Int64? = 90_000_000_000,
         volumeAvailableCapacityForImportantUsage: Int64? = 43_500_000_000,
         volumeAvailableCapacityForOpportunisticUsage: Int64? = 31_500_000_000,
         
@@ -378,8 +378,8 @@ public class MockDevice: CurrentDevice {
     }
     @Published public var thermalState: ThermalState = .nominal
     
-    public var volumeTotalCapacity: Int?
-    public var volumeAvailableCapacity: Int?
+    public var volumeTotalCapacity: Int64?
+    public var volumeAvailableCapacity: Int64?
     public var volumeAvailableCapacityForImportantUsage: Int64?
     public var volumeAvailableCapacityForOpportunisticUsage: Int64?
     
@@ -770,13 +770,21 @@ Device Framework Version: \(Device.version)
     private let rootURL = URL(fileURLWithPath: NSHomeDirectory())
     
     /// The volume’s total capacity in bytes.
-    public var volumeTotalCapacity: Int? {
-        return (try? rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey]))?.volumeTotalCapacity
+    public var volumeTotalCapacity: Int64? {
+        if let vtc = (try? rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey]))?.volumeTotalCapacity {
+            return Int64(vtc)
+        } else {
+            return nil
+        }
     }
     
     /// The volume’s available capacity in bytes.
-    public var volumeAvailableCapacity: Int? {
-        return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity
+    public var volumeAvailableCapacity: Int64? {
+        if let vtc = (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity {
+            return Int64(vtc)
+        } else {
+            return nil
+        }
     }
     
     /// The volume’s available capacity in bytes for storing important resources.

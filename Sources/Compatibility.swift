@@ -229,6 +229,7 @@ public extension PickerStyle where Self == SegmentedPickerStyle {
 }
 #endif
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public extension Backport where Content: View {
     func onChange<V>(
         of value: V,
@@ -272,6 +273,7 @@ public extension ContainerView {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct BackportNavigationStack<Content: View>: ContainerView {
     var content: () -> Content
 

@@ -75,6 +75,7 @@ public extension Device.Idiom {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public extension Label where Title == Text, Icon == Image {
     /// Creates a label with an icon image and a title generated from a
     /// localized string.
@@ -90,7 +91,7 @@ public extension Label where Title == Text, Icon == Image {
             Text(titleKey)
         }, icon: {
             var image = Image(symbolName: symbolName)
-            if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
+            if #available(iOS 15.0, macCatalyst 15, *) {
                 image = image.symbolRenderingMode(.hierarchical)
             }
             return image
@@ -184,7 +185,7 @@ public struct CurrentDeviceInfoView: View {
 #Preview("Current Device") {
     List {
         ForEach(MockDevice.mocks, id: \.id) { device in
-            CurrentDeviceInfoView(device: device)
+            CurrentDeviceInfoView(device: device, debug: device === Device.current)
         }
     }
 }

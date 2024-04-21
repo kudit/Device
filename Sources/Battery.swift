@@ -280,7 +280,11 @@ public class DeviceBattery: Battery {
 //    print("Manual notification Update \(Date().timeIntervalSinceReferenceDate)")
 //}
 //#endif
-#elseif os(macOS) || targetEnvironment(macCatalyst)
+#else
+        // If we don't have access to UIDevice or WKInterfaceDevice, this will be undefined
+#endif
+        // This way catalyst which also supports UIKit will also post these notifications
+#if os(macOS) || targetEnvironment(macCatalyst)
         // https://stackoverflow.com/questions/51275093/is-there-a-battery-level-did-change-notification-equivalent-for-kiopscurrentcapa
         let loop = IOPSNotificationCreateRunLoopSource({ _ in
             // Perform usual battery status fetching
@@ -288,11 +292,9 @@ public class DeviceBattery: Battery {
             DeviceBattery.current._triggerBatteryUpdate(.level)
             // trigger both just in case
             DeviceBattery.current._triggerBatteryUpdate(.state)
-            print("IOPSNotification for level and state")
+//            print("IOPSNotification for level and state")
         }, nil).takeRetainedValue() as CFRunLoopSource
         CFRunLoopAddSource(CFRunLoopGetCurrent(), loop, .defaultMode)
-#else
-        // If we don't have access to UIDevice or WKInterfaceDevice, this will be undefined
 #endif
         // MacOS 11 is the only system that wouldn't support this notification
         if #available(iOS 9.0, macOS 12.0, macCatalyst 13.1, tvOS 9.0, watchOS 2.0, visionOS 1.0, *) {

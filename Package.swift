@@ -27,7 +27,7 @@ let package = Package(
             name: "Device", // needs to match package name to open properly in Swift Playgrounds
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "2.1.0",
+            displayVersion: "2.1.2",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),

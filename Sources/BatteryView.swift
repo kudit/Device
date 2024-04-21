@@ -183,6 +183,7 @@ public struct MonitoredBatteryView: View {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct BatteryTestsView: View {
     @State public var fontSize: CGFloat
     @State public var lowPowerMode: Bool
@@ -222,6 +223,7 @@ public struct BatteryTestsView: View {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Battery Tests") {
     BatteryTestsView()
 }

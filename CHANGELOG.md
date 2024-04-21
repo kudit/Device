@@ -25,6 +25,7 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.1.2 4/21/2024 Updating version numbers.  Updating Environments to be centered and visible in tests.  Updated Backport and other UI functions that should be version-restricted.  Tested Apple Watch version (missed in 2.1 testing).  Fixed issue with storage Ints being too small (so specified Int64).  Fixed updates for macCatalyst.
 v2.1.1 4/21/2024 Updated to enable showing environments in CurrentDeviceInfoView.
 v2.1.0 4/20/2024 Updated ChangeLog location and formatting.  Added CurrentDeviceInfoView.  Added Device.Environment enum to represent the various environment states so they can be included in the hardware list.  Created a CurrentDeviceInfoView.  Added better description for debugging and inclusion in external data.  Changed DeviceType.name to officialName to differentiate from the user's specified name and maintain compatibility with DeviceKit syntax.  Improved symbols and added modern and legacy symbols for hierarchical display.  Changed so battery status can be compared in macOS.  Included resource processing in the test app so can test using Swift Playgrounds.  Changed so battery monitors can access the type of change that was detected.  Batteries now store a local value and will automatically monitor for changes so that UI can update without adding a separate monitor.  Reworked naming of monitor to be clearer when using just the closure.  Removed the `Battery.add(monitor)` function in favor of a new `Battery.monitor` function that provides the update type when triggered.  I don't think anyone was using this so this shouldn't be a breaking change and is easy to fix.  Increased macOS requirement to 12 (too many issues where foregroundStyle isn't supported.)  Reworked BatteryTestsView to enable toggling lowPowerMode and includesBacking parameter to enable transparency.  Added several backport compabilitiy functions to simplify code for older versions. Had to remove UI compatibility for watchOS < 8 due to too many compatibility issues.  Reordered CurrentDevice properties to be better grouped.  Added isMacCatalyst environment check.  Created monitored views to take any Battery or any CurrentDevice and update as the device or battery updates.  For battery test views, added a toggle for low power mode to change mocks.
 
@@ -83,20 +84,16 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
-- [ ] May or may not work on macCatalyst.
-- [ ] Build for "Designed for iPad" running on macOS crashes on launch.  Works fine when included in project.
-- [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.
-- [ ] Retain error on device list on watchOS (simulator and device)
+- [ ] Orientation change notifications on designed for iPad in visionOS.
+- [ ] Initial state of iPhone orientation icon.
+- [ ] Build for "Designed for iPad" running on macOS crashes on launch.  Works fine when included in project. Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
+- [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
 - [ ] Odd warning: Device.swiftpm/Sources/Resources/SymbolAssets.xcassets: Could not get trait set for device Watch7,2 with version 10.4
-- [ ] Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
-- [ ] Make so low power mode colors yellow when not red for system icon.  For colorful version, have low power mode color the outline in yellow.
-- [ ] Need help getting identifier when buildling for macOS (not catalyst)
-- [ ] Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
-- [ ] Go through and make sure device images have transparent background instead of white.
+- [ ] Go through and make sure device images (photos) have transparent background instead of white.
 - [ ] Add support IDs for macs and anything that has one missing.
 - [ ] Double check and update all device color sets. (right click on the color swatches and inspect element for the hex code)  https://www.apple.com/iphone/compare/?modelList=iphone-13-mini,iphone-13,iphone-15-pro
 - [ ] Add weight option for battery text/symbol (title originally was bold and now that we're doing font size, add weight parameter)
@@ -125,17 +122,14 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
 
-- [ ] Change Battery from Protocol to the DeviceBattery code and have MockBattery be a subclass that overrides functions?
-- [ ] Add release date?
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
-- [ ] Create better way of scaling battery so that it can scale with dynamic type?
+- [ ] Create better way of scaling battery so that it can scale with dynamic type?  Use relative type?
 - [ ] Add a way to check that privacy checks have been added when using APIs that need privacy permissions (have a configuration flag that needs to be set to ensure that privacy flags have been set).
-- [ ] Convert SF Symbol names to an enum to allow version checking?
+- [ ] Convert SF Symbol names to an enum to allow version checking?  May need to use other project.
 - [ ] If there's a way to fetch the actual model number (like MN572LL/A), then we can use this to give information of the state of the device (new, refurb, replaced, personalized, etc): https://osxdaily.com/2018/01/27/determine-iphone-new-refurbished-replaced/
-- [ ] Help contribute to DeviceKit suggest ordering consistently with identifier order?
-- [ ] Should forceTouch and touch3d be separated?
+- [ ] Should forceTouch and touch3d be separated?  Discuss in issues or here.
 - [ ] Add volume controls and power button and home button capabilities?  Possibly with rumored camera button?
-- [ ] Getting Computer Information (must give reason since fingerprinting so not included):
+- [ ] Getting Computer Information (must give reason since can be used for fingerprinting so not included currently):
 var processorCount: Int
 var activeProcessorCount: Int
 var physicalMemory: UInt64

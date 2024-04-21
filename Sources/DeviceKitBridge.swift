@@ -451,13 +451,13 @@ extension Device {
 extension Device {
     /// The volume’s total capacity in bytes.
     @available(*, deprecated, renamed: "Device.current.volumeTotalCapacity")
-    public static var volumeTotalCapacity: Int? {
+    public static var volumeTotalCapacity: Int64? {
         Device.current.volumeTotalCapacity
     }
     
     /// The volume’s available capacity in bytes.
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacity")
-    public static var volumeAvailableCapacity: Int? {
+    public static var volumeAvailableCapacity: Int64? {
         Device.current.volumeAvailableCapacity
     }
     
