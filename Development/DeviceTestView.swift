@@ -1,30 +1,14 @@
 import SwiftUI
 import Device
 
-extension Label where Title == Text, Icon == Image {
-    /// Creates a label with an icon image and a title generated from a
-    /// localized string.
-    ///
-    /// - Parameters:
-    ///    - titleKey: A title generated from a string. // TODO: LocalizeStringKey instead?
-    ///    - symbolName: The name of the symbol resource to lookup (either system or custom included asset).
-    init(
-        _ titleKey: String,
-        symbolName: String
-    ) {
-        self.init(title: {
-            Text(titleKey)
-        }, icon: {
-            Image(symbolName: symbolName)  
-        })
-    }
-}
-
 #Preview("Capabilities") {
     VStack {
-        Image(symbolName: "star")
-        Image(symbolName: "notch")
-        Image(symbolName: "bad")
+        HStack {
+            Image(symbolName: "star")
+            Image(symbolName: "dynamicisland")
+            Image(symbolName: "bad")
+        }
+        .symbolRenderingMode(.hierarchical)
         Label("Foo", symbolName: "star.fill")
         Label("Bar", symbolName: "roundedcorners")
         Label("Baz", symbolName: "bad")
@@ -37,301 +21,214 @@ extension Label where Title == Text, Icon == Image {
     .padding()
     .padding()
     .padding()
-    .padding()
-    .padding()
 }
 
-extension Device.Idiom {
-    var color: Color {
-        switch self {
-        case .unspecified:
-                .gray
-        case .mac:
-                .blue
-        case .pod:
-                .pink
-        case .phone:
-                .red
-        case .pad:
-                .purple
-        case .tv:
-                .blue
-        case .homePod:
-                .pink
-        case .watch:
-                .red
-        case .carPlay:
-                .green
-        case .vision:
-                .yellow
-        }
-    }
+extension CGFloat {
+    static var defaultFontSize: CGFloat = 44
 }
 
-struct TimeClockView: View {
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    @State var time = Date()
-    
-    @State var disableIdleTimer = false
-    
-    var battery: some View {
-        Group {
-            if let battery = Device.current.battery {
-                BatteryView(battery: battery, fontSize: 80)
-                #if os(iOS) // only works on iOS so don't show on other devices.
-                Toggle("Disable Idle Timer", isOn: Binding(get: {
-                   return disableIdleTimer 
-                }, set: { newValue in
-                    disableIdleTimer = newValue
-                    Device.current.isIdleTimerDisabled = newValue
-                }))
-                #endif
-            } else {
-                Image(symbolName: "batteryblock.slash") // battery.slash
-                    .font(.system(size: 80))
-            }
-        }
-    }
-
-    var stackDateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "E, dd MMM yyyy HH:mm:ss z"
-        return formatter
-    }
-
+struct SymbolTests<T: DeviceAttributeExpressible>: View {
+    @State var attribute: T
+    var size: CGFloat = .defaultFontSize
     var body: some View {
-        VStack {
-            if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
-                Text("Current time: \(time.formatted(date: .long, time: .complete))")
-            } else {
-                // Fallback on earlier versions
-                Text("Current type: \(time, formatter: stackDateFormatter)")
-            }
-            if let battery = Device.current.battery {
-                Text("Battery Info: \(battery.description)")
-            } else {
-                Text("No Battery")
-            }
-            HStack {
-                NavigationLink {
-                    BatteryListView()
-                } label: {
-                    battery
-                }
-            }
-        }
-        .onReceive(timer, perform: { _ in
-            //debug("updating \(time)")
-            time = Date()
-        })
-    }
-}
-
-struct StackedLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        VStack {
-            configuration.icon.font(.title2)
-            configuration.title.font(.caption2)
-        }
-    }
-}
-
-struct Placard: View {
-    @State var color = Color.gray
-    var body: some View {
-        return RoundedRectangle(cornerRadius: 10)
-            .strokeBorder(.foreground, lineWidth: 3)
-            .background(RoundedRectangle(cornerRadius: 10).fill(color))
-    }
-}
-
-struct TestCard: View {
-    @State var label = "Unknown"
-    @State var highlighted = true
-    @State var color = Color.gray
-    @State var symbolName = String.symbolUnknownEnvironment
-    var body: some View {
-        if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
-            Placard(color: highlighted ? color : .clear)
-                .overlay {
-                    Label(label, symbolName: symbolName)
-                        .font(.caption)
-                        .symbolRenderingMode(highlighted ? .hierarchical : .monochrome)
-                }
-        } else {
-            // Fallback on earlier versions
+        HStack {
             ZStack {
-                Placard(color: highlighted ? color : .clear)
-                Label(label, symbolName: symbolName)
-                    .font(.caption)
+                Color.clear
+                Image(attribute)
             }
+            ZStack {
+                Color.clear
+                Image(attribute)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            ZStack {
+                Color.clear
+                Image(attribute)
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.red, .green, .blue)
+            }
+            ZStack {
+                Color.clear
+                Image(attribute)
+                    .symbolRenderingMode(.multicolor)
+            }
+        }
+        .font(.system(size: size))
+    }
+}
+
+struct AttributeListView<T: DeviceAttributeExpressible>: View {
+    @State var header: String
+    @State var attributes: [T]
+    var styleView = false
+    var size: CGFloat = .defaultFontSize
+    var body: some View {
+        Section {
+            ForEach(attributes, id: \.self) { attribute in
+                let label = Label(attribute.label, symbolName: attribute.symbolName)
+                    .foregroundColor(.primary)
+                    .font(.headline)
+                if styleView {
+                    SymbolTests(attribute: attribute, size: size)
+                } else {
+                    if attribute.test(device: Device.current) {
+                        label
+                            .listRowBackground(attribute.color)
+                    } else {
+                        label
+                    }
+                }
+            }
+        } header: {
+            Text(header)
         }
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 struct HardwareListView: View {
-    @State private var selection: Device.Idiom?
+    @State var styleView = false
+    @State var size: CGFloat = .defaultFontSize
+    init(styleView: Bool = false, size: CGFloat = .defaultFontSize) {
+        self.styleView = styleView
+        self.size = size
+//        // This is triggered on main view for some reason.
+//        Device.current.enableMonitoring(frequency: 10)
+    }
     var body: some View {
         List {
             Section {
-                ForEach(Device.Idiom.allCases) { idiom in
-                    let label = Label(idiom.description, symbolName: idiom.symbolName)
-                        .foregroundColor(.primary)
-                        .font(.headline)
-                    if Device.current.idiom == idiom {
-                        label
-                            .listRowBackground(idiom.color)
-                    } else {
-                        label
+                DeviceInfoView(device: Device.current)
+                ZStack(alignment: .topLeading) {
+                    Color.clear
+                    Text(Device.current.description).padding()
+                }
+                .foregroundStyle(.background)
+                .background {
+                    RoundedRectangle(cornerRadius: 15)
+                }
+
+            } footer: {
+                VStack {
+                    Spacer()
+                    Divider()
+                    Spacer()
+                    Picker("View", selection: $styleView) {
+                        Text("Names").tag(false)
+                        Text("Styles").tag(true)
+                    }
+                    .pickerStyle(.segmentedBackport)
+                    if styleView {
+                        #if !os(tvOS)
+                        Slider(
+                            value: $size,
+                            in: 9...100
+                        )
+                        #endif
                     }
                 }
-            } header: {
-                Text("Idioms")
             }
-            Section {
-                ForEach(Capability.allCases, id: \.self) { capability in
-                    let label = HStack {
-                        Label(String(describing: capability), symbolName: capability.symbolName)
-                        //                        .accessibilityLabel(capability.description)
-                    }
-                    if Device.current.has(capability) {
-                        label
-                            .listRowBackground(Color.green)
-                    } else {
-                        label
-                    }
-                }
-            } header: {
-                Text("Capabilities")
-            }
+            AttributeListView(header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
+            AttributeListView(header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
+            AttributeListView(header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
         .navigationTitle("Hardware")
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("HardwareList") {
     HardwareListView()
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("DeviceList") {
     DeviceListView(devices: Device.all)
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+public struct DeviceTestView: View {
+    @State var disableIdleTimer = false
 
-public struct BatteryListView: View {
-    public var fontSize: CGFloat = 40
-    @State private var selection: Device.Idiom?
-    public var body: some View {
-        List {
-            ForEach(MockBattery.mocks) { mock in
-                HStack {
-                    BatteryView(battery: mock, useSystemColors: true, includePercent: true, fontSize: fontSize)
-                    BatteryView(battery: mock, useSystemColors: true, includePercent: false, fontSize: fontSize)
-                    Spacer()
-                    BatteryView(battery: mock, useSystemColors: false, includePercent: false, fontSize: fontSize)
-                    BatteryView(battery: mock, useSystemColors: false, includePercent: true, fontSize: fontSize)
-                }
+    var environments: some View {
+        HStack {
+            ForEach(Device.Environment.allCases, id: \.self) { environment in
+                let enabled = environment.test(device: Device.current)
+                Image(environment)
+                    .opacity(enabled ? 1.0 : 0.2)
+                    .foregroundColor(enabled ? environment.color : .primary)
+                    .accessibilityLabel((enabled ? "Is" : "Not") + " " + environment.label)
             }
         }
-        .navigationTitle("Battery Mocks")
     }
-}
 
-#Preview("BatteryList") {
-    BatteryListView()
-}
-
-
-public struct DeviceTestView: View {
-    @State var showList = false
-    public var idiomList: some View {
-        ForEach(Device.Idiom.allCases) { idiom in
-            TestCard(
-                label: idiom.description,
-                highlighted: Device.current.idiom == idiom,
-                color: Device.current.idiom.color,
-                symbolName: idiom.symbolName)
-        }
-    }
-    
     var testView: some View {
         List {
             Section {
-                TimeClockView()
+                NavigationLink {
+                    BatteryTestsView()
+                } label: {
+                    MonitoredBatteryView(battery: Device.current.battery, fontSize: 80)
+                }
+#if os(iOS) // only works on iOS so don't show on other devices.
+                Toggle("Disable Idle Timer", isOn: Binding(get: {
+                    return disableIdleTimer 
+                }, set: { newValue in
+                    disableIdleTimer = newValue
+                    Device.current.isIdleTimerDisabled = newValue
+                }))
+#endif
             } header: {
+                Text("Battery")
+            }
+            Section("Environment") {
+                NavigationLink {
+                    List {
+                        AttributeListView(header: "Environments", attributes: Device.Environment.allCases)
+                    }
+                } label: {
+                    HStack {
+                        Spacer()
+                        environments
+                        Spacer()
+                    }
+                }
+            }
+            Section {
+                NavigationLink(destination: {
+                    HardwareListView()
+                }, label: {
+                    CurrentDeviceInfoView(device: Device.current)
+                })
+            } header: {
+                Text("Current Device")
+            } footer: {
                 HStack {
-                    Text("Device v\(Device.version)")
                     Spacer()
                     Text(verbatim: "© \(Calendar.current.component(.year, from: Date())) Kudit, LLC")
                 }
-            }.buttonStyle(.plain)
-            NavigationLink(destination: {
-                HardwareListView()
-            }, label: {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Image(symbolName: Device.current.symbolName)
-                            .font(.system(size: 80))
-                        VStack(alignment: .leading) {
-                            Text("Current device:")
-                                .font(.headline)
-                            Text("\(Device.current.identifier)")
-                                .italic()
-                            Text("\(Device.current.name)")
-                            Text("Running **\(Device.current.systemName)**")
-                        }
-                    }
-                    HStack {
-                        //                    TestCard(label: "TEST", highlighted: true, color: .yellow, symbolName: "star.fill")
-                        TestCard(
-                            label: "Preview",
-                            highlighted: Device.current.isPreview,
-                            color: .orange,
-                            symbolName: .symbolPreview
-                        )
-                        TestCard(
-                            label: "Playground",
-                            highlighted: Device.current.isPlayground,
-                            color: .pink,
-                            symbolName: .symbolPlayground)
-                        TestCard(
-                            label: "Simulator",
-                            highlighted: Device.current.isSimulator,
-                            color: .blue,
-                            symbolName: .symbolSimulator)
-                        TestCard(
-                            label: "Real Device",
-                            highlighted: Device.current.isRealDevice,
-                            color: .green,
-                            symbolName: .symbolRealDevice)
-                        if [.mac, .vision].contains(Device.current.idiom) {
-                            TestCard(
-                                label: "Designed for iPad",
-                                highlighted: Device.current.isDesignedForiPad,
-                                color: .purple,
-                                symbolName: .symbolDesignedForiPad)
-                        }
-                    }
-                    .labelStyle(StackedLabelStyle())
-                    .frame(height: 60)
-                }
-            })
+            }
+        }
+        .navigationTitle("Device.swift v\(Device.version)")
+        .toolbar {
             NavigationLink(destination: {
                 DeviceListView(devices: Device.all)
                     .toolbar {
-                        Button("Migrate") {
-                            migrateContent()
+                        if Device.current.isSimulator {
+                            Button("Migrate") {
+                                migrateContent()
+                            }
                         }
                     }
             }, label: {
-                DeviceInfoView(device: Device.current)
+                Text("All Devices")
+                    .font(.headline)
             })
         }
-        .navigationTitle("Device.swift")
     }
     
     public var body: some View {
-        NavigationView {
+        BackportNavigationStack {
             testView
         }
     }
@@ -342,6 +239,7 @@ public struct DeviceTestView: View {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview {
     DeviceTestView()
 }

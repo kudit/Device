@@ -26,7 +26,7 @@ extension Color {
         default:
             (a, r, g, b) = (1, 1, 1, 0)
         }
-
+        
         self.init(
             .sRGB,
             red: Double(r) / 255,
@@ -39,8 +39,17 @@ extension Color {
 
 // for switching between asset images and systemImages
 public extension Image {
+    /// Create image with a symbol name using system SF symbol or fall back to the symbol asset embedded in Device library.
     init(symbolName: String) {
-        let symbolName = symbolName.safeSymbolName()
+        var symbolName = symbolName
+        let legacySymbolName = "\(symbolName).legacy"
+        // use the new symbol name for the Xcode 15 symbol assets (should include colors and proper layering)
+        if #available(iOS 17.0, watchOS 10.0, macOS 14.0, tvOS 17.0, visionOS 1.0, macCatalyst 17.0, *) {
+            symbolName = symbolName.safeSymbolName(fallback: legacySymbolName)
+        } else {
+            // if older OS, fallback to compatible symbols.
+            symbolName = legacySymbolName.safeSymbolName(fallback: symbolName)
+        }
         if .nativeSymbolCheck(symbolName) {
             self.init(systemName: symbolName)
         } else {
@@ -48,14 +57,32 @@ public extension Image {
             self.init(symbolName, bundle: Bundle.module)
         }
     }
+    init(_ symbolRepresentable: some SymbolRepresentable) {
+        self.init(symbolName: symbolRepresentable.symbolName)
+    }
 }
-/// helper for making sure symbolName: function always returns an actual image and never `nil`.
 extension String {
-    func safeSymbolName(fallback: String = "questionmark.square.fill") -> String {
+    static var defaultFallback = "questionmark.square.fill"
+    /*
+     Legacy versions for Symbol (iOS = catalyst = tvOS
+     Device min: 15, 11, 14, 6 so create 1.0 or 2.0 versions for fallback.  Make note that watchOS 6 doesn’t support new symbols.
+     1.0 = iOS 13, macOS 11, watchOS 6 * Check this with Device minimum version for potential fallbacks or put note that symbols only work on iOS 13+
+     2.0 = iOS 14, macOS 11, watchOS 7, Xcode 12
+     3.0 = iOS 15, macOS 12, watchOS 8, Xcode 13
+     4.0 = iOS 16, macOS 13, watchOS 9, Xcode 14
+     5.0 = iOS 17, macOS 14, watchOS 10, Xcode 15 * Anything before this, use legacy version.
+     */
+    /// helper for making sure symbolName: function always returns an actual image and never `nil`.
+    func safeSymbolName(fallback: String = .defaultFallback) -> String {
         if !.nativeSymbolCheck(self) {
             // check for asset
             if !.nativeLocalCheck(self) {
-                return fallback
+                if fallback == .defaultFallback {
+                    return fallback
+                } else {
+                    // go through the fallback symbol to make sure it's valid (should never really happen)
+                    return fallback.safeSymbolName()
+                }
             }
         }
         return self
@@ -83,92 +110,106 @@ extension Bool {
     }
 }
 
-public struct CapabilitiesTextView: View {
-    @State public var capabilities: Capabilities
-    
-    public init(capabilities: Capabilities) {
-        self.capabilities = capabilities
-    }
-    
-    public var body: some View {
-        var output = Text("")
-        for capability in capabilities.sorted {
-            // don't show screen icon since not really helpful
-            if case .screen = capability {}
-            // don't show mac form either since redundant
-            else if case .macForm = capability {}
-            // and cellular doesn't really make sense either unless we want to indicate the type
-            else if case .cellular = capability {}
-            // and cameras don't really make sense either
-            else if case .cameras = capability {}
-            // and we don't really want to flag battery here
-            else if case .battery = capability {}
-            // and watches don't need watch size
-            else if case .watchSize = capability {}
-            else {
-                if #available(watchOS 7.0, *) {
-                    output = output + Text(Image(symbolName: capability.symbolName)) + Text(" ")
+/// Technincally a function but present like a View struct.
+public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
+    var output = Text("")
+    for capability in capabilities.sorted {
+        // don't show screen icon since not really helpful
+        if case .screen = capability {}
+        // don't show mac form either since redundant
+        else if case .macForm = capability {}
+        // and cellular doesn't really make sense either unless we want to indicate the type
+        else if case .cellular = capability {}
+        // and cameras don't really make sense either
+        else if case .cameras = capability {}
+        // and we don't really want to flag battery here
+        else if case .battery = capability {}
+        // and watches don't need watch size
+        else if case .watchSize = capability {}
+        else {
+            if #available(watchOS 7.0, *) {
+                if #available(macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+                    output = output + Text(Image(symbolName: capability.symbolName).symbolRenderingMode(.hierarchical)
+                    ) + Text(" ")
                 } else {
                     // Fallback on earlier versions
-                    output = output + Text("\(capability.symbolName)") + Text(" ")
+                    output = output + Text(Image(capability)
+                    ) + Text(" ")
                 }
+            } else {
+                // Fallback on earlier versions
+                output = output + Text("\(capability.symbolName)") + Text(" ")
             }
         }
-        return output
     }
+    return output
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct DeviceInfoView: View {
     public var device: DeviceType
-
-    public init(device: any DeviceType) {
+    
+    @State var includeScreen: Bool
+    
+    public init(device: any DeviceType, includeScreen: Bool = false) {
         self.device = device
+        self.includeScreen = includeScreen
+    }
+    
+    var deviceColors: some View {
+        HStack {
+            ForEach(device.colors, id: \.self) { color in
+                Image(device.idiomatic)
+                    .foregroundColor(Color(hex: color.rawValue))
+                //                            .shadow(color: .primary, radius: 0.5)
+            }
+        }
     }
     
     public var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(device.name)
-                    .font(.headline)
-                HStack {
-                    ForEach(device.colors, id: \.self) { color in
-                        Image(symbolName: device.idiomatic.symbolName)
-                            .foregroundColor(Color(hex: color.rawValue))
-//                            .shadow(color: .primary, radius: 0.5)
+        VStack {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(device.officialName)
+                        .font(.headline)
+                    deviceColors
+                    HStack {
+                        CapabilitiesTextView(capabilities: device.capabilities)
+                    }
+                    .font(.caption)
+                }
+                Spacer()
+                if let image = device.image {
+                    if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
+                        AsyncImage(url: URL(string: image)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 60, height: 60)
+                    } else {
+                        // Fallback on earlier versions
+                        // Don't show the image on devices less than iOS 15
                     }
                 }
-                HStack {
-                    CapabilitiesTextView(capabilities: device.capabilities)
-                }
-                .font(.caption)
             }
-            Spacer()
-            if let image = device.image {
-                if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
-                    AsyncImage(url: URL(string: image)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    } placeholder: {
-                        ProgressView()
-                    }
-                    .frame(width: 60, height: 60)
-                } else {
-                    // Fallback on earlier versions
-                    // Don't show the image on devices less than iOS 15
-                }
+            if device.screen != nil && includeScreen {
+                ScreenInfoView(device: device)
             }
         }
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct DeviceListView: View {
     public var devices: [DeviceType]
     
     public init(devices: [any DeviceType]) {
         self.devices = devices
     }
-
+    
     // TODO: extract this out into KuditFrameworks as a way to section content with a callback for determining the header to group under.
     var sectioned: [(String,[DeviceType])] {
         var sections = [(String,[DeviceType])]()
@@ -177,7 +218,7 @@ public struct DeviceListView: View {
         for device in devices {
             if device.idiom != lastIdiom {
                 if let lastIdiom, sectionDevices.count > 0 {
-                    sections.append((lastIdiom.description, sectionDevices))
+                    sections.append((lastIdiom.label, sectionDevices))
                     sectionDevices = []
                 }
                 lastIdiom = device.idiom
@@ -185,7 +226,7 @@ public struct DeviceListView: View {
             sectionDevices.append(device)
         }
         if let lastIdiom, sectionDevices.count > 0 {
-            sections.append((lastIdiom.description, sectionDevices))
+            sections.append((lastIdiom.label, sectionDevices))
         }
         return sections
     }
@@ -194,15 +235,14 @@ public struct DeviceListView: View {
             ForEach(sectioned, id: \.0) { section in
                 Section {
                     ForEach(section.1, id: \.device) { device in
-                        if #available(tvOS 16.0, watchOS 7.0, *) {
-                            DeviceInfoView(device: device)
-                            // This is only for testing anyways
-                                .onTapGesture {
-                                    print(device.description)
-                                }
-                        } else {
-                            // Fallback on earlier versions
-                            DeviceInfoView(device: device)
+                        NavigationLink {
+                            VStack {
+                                DeviceInfoView(device: device, includeScreen: true)
+                                Spacer()
+                            }
+                            .padding()
+                        } label: {
+                            DeviceInfoView(device: device, includeScreen: false)
                         }
                     }
                 } header: {
@@ -213,8 +253,11 @@ public struct DeviceListView: View {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("All Devices") {
-    DeviceListView(devices: Device.all)
+    NavigationView {
+        DeviceListView(devices: Device.all)
+    }
 }
 
 #endif

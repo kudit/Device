@@ -147,6 +147,15 @@ extension Device {
         return (ratio.width, ratio.height)
     }
     
+    /// The brightness level of the screen (between 0 and 100).  Only supported on iOS and macCatalyst.  Returns -1 if not supported.
+    public var screenBrightness: Int {
+        if let brightness = Device.current.brightness {
+            return Int(brightness * 100)
+        } else {
+            return -1
+        }
+    }
+    
     /// allX static functions not included.  If you have a use case that needs any of these rather than testing, please let us know.
     
     /// Returns whether or not the device has Touch ID
@@ -279,7 +288,7 @@ extension Device {
      - Charging:  The device is plugged into power and the battery is less than 100% charged.
      - Unplugged: The device is not plugged into power; the battery is discharging.
      */
-    public enum BatteryState: CustomStringConvertible, Equatable {
+    public enum BatteryState: CustomStringConvertible, Equatable, CaseNameConvertible {
         /// The device is plugged into power and the battery is 100% charged or the device is the iOS Simulator.
         case full
         /// The device is plugged into power and the battery is less than 100% charged.
@@ -344,54 +353,45 @@ extension Device {
 #endif
 
 // MARK: Device.Batterystate: Comparable
-#if os(iOS) || os(watchOS)
-@available(iOS 8.0, watchOS 4.0, *)
-extension Device.BatteryState: Comparable {
-    /// Tells if two battery states are equal.
-    ///
-    /// - parameter lhs: A battery state.
-    /// - parameter rhs: Another battery state.
-    ///
-    /// - returns: `true` iff they are equal, otherwise `false`
-    public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
-        return lhs.description == rhs.description
-    }
-    
-    /// Compares two battery states.
-    ///
-    /// - parameter lhs: A battery state.
-    /// - parameter rhs: Another battery state.
-    ///
-    /// - returns: `true` if rhs is `.Full`, `false` when lhs is `.Full` otherwise their battery level is compared.
-    public static func < (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
-        switch (lhs, rhs) {
-        case (.full, _): return false // return false (even if both are `.Full` -> they are equal)
-        case (_, .full): return true // lhs is *not* `.Full`, rhs is
-        case let (.charging(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
-        case let (.charging(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
-        case let (.unplugged(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
-        case let (.unplugged(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
-        default: return false // compiler won't compile without it, though it cannot happen
-        }
-    }
-}
-#endif
+//#if os(iOS) || os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
+//@available(iOS 8.0, watchOS 4.0, *)
+//extension BatteryState: Comparable {
+//    /// Tells if two battery states are equal.
+//    ///
+//    /// - parameter lhs: A battery state.
+//    /// - parameter rhs: Another battery state.
+//    ///
+//    /// - returns: `true` iff they are equal, otherwise `false`
+//    public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
+//        return lhs.description == rhs.description
+//    }
+//    
+//    /// Compares two battery states.
+//    ///
+//    /// - parameter lhs: A battery state.
+//    /// - parameter rhs: Another battery state.
+//    ///
+//    /// - returns: `true` if rhs is `.Full`, `false` when lhs is `.Full` otherwise their battery level is compared.
+//    public static func < (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
+//        switch (lhs, rhs) {
+//        case (.full, _): return false // return false (even if both are `.Full` -> they are equal)
+//        case (_, .full): return true // lhs is *not* `.Full`, rhs is
+//        case let (.charging(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
+//        case let (.charging(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
+//        case let (.unplugged(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
+//        case let (.unplugged(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
+//        default: return false // compiler won't compile without it, though it cannot happen
+//        }
+//    }
+//}
+//#endif
 
 #if os(iOS)
-extension Device {
+public extension Device {
     // MARK: Orientation
-    /**
-     This enum describes the state of the orientation.
-     - Landscape: The device is in Landscape Orientation
-     - Portrait:  The device is in Portrait Orientation
-     */
-    public enum Orientation {
-        case landscape
-        case portrait
-    }
     
-    /// Defaults to true if we do not have a screen or cannot get the orientation.
-    public var orientation: Orientation {
+    /// Defaults to `landscape` if we do not have a screen or cannot get the orientation.
+    var orientation: Screen.Orientation {
         if Device.current.screenOrientation?.isLandscape ?? true {
             return .landscape
         } else {
@@ -447,7 +447,6 @@ extension Device {
     
 }
 
-#if os(iOS)
 // MARK: DiskSpace
 extension Device {
     /// The volume’s total capacity in bytes.
@@ -478,9 +477,30 @@ extension Device {
     
     /// All volumes capacity information in bytes.
     @available(iOS 11.0, *)
-    @available(*, deprecated, renamed: "Device.current.volumes")
+    @available(*, deprecated, message: "If you need this, please let us know why.")
     public static var volumes: [URLResourceKey: Int64]? {
-        Device.current.volumes
+#if os(tvOS) || os(watchOS)
+            return nil
+#else
+        let rootURL = URL(fileURLWithPath: NSHomeDirectory())
+        do {
+            let values = try rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey,
+                                                              .volumeAvailableCapacityKey,
+                                                              .volumeAvailableCapacityForOpportunisticUsageKey,
+                                                              .volumeTotalCapacityKey
+            ])
+            return values.allValues.mapValues {
+                if let int = $0 as? Int64 {
+                    return int
+                }
+                if let int = $0 as? Int {
+                    return Int64(int)
+                }
+                return 0
+            }
+        } catch {
+            return nil
+        }
+#endif
     }
 }
-#endif

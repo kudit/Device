@@ -14,7 +14,7 @@ import Foundation
 
 public extension Device {
     /// The version of the Device Library
-    static var version = "2.0.10"
+    static var version = "2.1.0"
 }
 
 #if canImport(UIKit)
@@ -33,14 +33,15 @@ public extension String {
 }
 
 /// Type for inheritance of specific idiom structs which use a Device as a backing store but allows for idiom-specific variables and functions and acts like a sub-class of Device but still having value-type backing.  TODO: Make this private so we don't access DeviceType outside of here?
-public protocol DeviceType: CustomStringConvertible {
+public protocol DeviceType: CustomStringConvertible, SymbolRepresentable {
     var device: Device { get }
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    var symbolName: String { get } // include here so that we use the idiomatic implementation rather than the default implementation below.
+//    var symbolName: String { get } // necessary since we have SymbolRepresentable?
+    // include symbolName here so that we use the idiomatic implementation rather than the default implementation below.
 }
 public extension DeviceType {
     var idiom: Device.Idiom { device.idiom }
-    var name: String { device.name }
+    var officialName: String { device.officialName }
     var identifiers: [String] { device.identifiers }
     var supportId: String { device.supportId }
     var image: String? { device.image }
@@ -159,7 +160,7 @@ extension IdiomType {
 
 public struct Device: CustomStringConvertible, IdiomType, Hashable {    
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
-    public enum Idiom: CaseIterable, Identifiable, CustomStringConvertible {
+    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible {
         /// An unspecified idiom.
         case unspecified
         /// An interface designed for the Mac.
@@ -238,7 +239,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
         public var id: String { identifier }
         
         /// String Description for device idom
-        public var description: String {
+        public var label: String {
             switch self {
             case .unspecified:
                 return "Unspecified"
@@ -264,7 +265,6 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
                 //                return "UnknownDevice"
             }
         }
-
         
         /// Return an idiom-specific kind of device class (for use in generating unknown devices of a particular category when using older version of framework that hasn't been updated yet so there is a reasonable fallback device.)
         var type: IdiomType.Type {
@@ -300,12 +300,16 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
 //            print(String(describing: prototypical))
             return prototypical.symbolName
         }
+        
+        public func test(device: any CurrentDevice) -> Bool {
+            return device.idiom == self
+        }
     }
     
     // MARK: - Initialization and variables
     // Device info
     public var idiom: Device.Idiom // need to include the Device. namespace for type checking below
-    public var name: String
+    public var officialName: String
     public var identifiers: [String]
     public var supportId: String
     public var image: String?
@@ -320,7 +324,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
         
     public init(
         idiom: Idiom,
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String? = nil,
@@ -330,7 +334,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
         cpu: CPU
     ) {
         self.idiom = idiom
-        self.name = name
+        self.officialName = officialName
         self.identifiers = identifiers
         self.supportId = supportId
         self.image = image
@@ -367,7 +371,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
         // possibly a preview?
         self.init(
             idiom: .unspecified,
-            name: "Unknown Device",
+            officialName: "Unknown Device",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -417,7 +421,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
     
     /// A textual representation of the device.
     public var description: String {
-        return "\(self.name), (\(self.identifiers))" // removed since normal description is very long and messy: , \(String(describing: self.capabilities.sorted))
+        return "\(self.officialName), (\(self.identifiers))" // removed since normal description is very long and messy: , \(String(describing: self.capabilities.sorted))
     }
     
     /// A safe version of `description`.
@@ -431,7 +435,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
 
 // MARK: - Device Idiom Types
 public struct Mac: IdiomType {
-    public enum Form: String, Hashable, CaseIterable {
+    public enum Form: String, Hashable, CaseIterable, CaseNameConvertible {
         case macProGen1 = "macpro.gen1"
         case macProGen2 = "macpro.gen2"
         case macProGen3 = "macpro.gen3"
@@ -466,34 +470,62 @@ public struct Mac: IdiomType {
             }
         }
         // TODO: func to convert an identifier to a form (Macmini, MacPro, MacBookPro, MacBook, MacBookAir, etc)
+        var hasScreen: Bool {
+            switch self {
+            case .macProGen1:
+                return false
+            case .macProGen2:
+                return false
+            case .macProGen3:
+                return false
+            case .macBook:
+                return true
+            case .macBookGen1:
+                return true
+            case .macBookGen2:
+                return true
+            case .macMini:
+                return false
+            case .macStudio:
+                return false
+            case .iMac:
+                return true
+            }
+        }
     }
     
     public var device: Device
 
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         form: Form, // will indicate if there is a battery or not (only MacBooks have batteries)
         image: String?,
-        // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
         models: [String] = [],
+        // TODO: Once converted, remove defaults for colors
         colors: [MaterialColor] = .default,
-        cpu: CPU
+        cpu: CPU,
+        screen: Screen? = nil
     )
     {
-        let capabilities = capabilities.union(form.capabilities).union([
+        var capabilities = capabilities.union(form.capabilities).union([
             // assume for all models we are working with here.  If this changes, will remove from defaults.
             .headphoneJack,
             .macForm(form) // will this be problematic with zeroing out defaults or base model?  No because adding the new form should replace old?
         ])
-        device = Device(idiom: .mac, name: name, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities, models: models, colors: colors, cpu: cpu)
+        if let screen {
+            capabilities.formUnion([.screen(screen)])
+        } else if form.hasScreen {
+            capabilities.formUnion([.screen(.undefined)])
+        }
+        device = Device(idiom: .mac, officialName: officialName, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities, models: models, colors: colors, cpu: cpu)
     }
     
     init(identifier: String) {
         self.init(
-            name: "Unknown Mac",
+            officialName: "Unknown Mac",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini, // no default battery
@@ -523,7 +555,7 @@ public struct Mac: IdiomType {
         // Support IDs and images can be found here: https://support.apple.com/en-us/108054
 
         Mac(
-            name: "iMac (24-inch, M1, 2021)",
+            officialName: "iMac (24-inch, M1, 2021)",
             identifiers: ["iMac21,2"],
             supportId: "SP839",
             form: .iMac,
@@ -532,7 +564,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight, .pinkLight, .blueLight, .greenLight],
             cpu: .m1),
         Mac(
-            name: "iMac (Retina 5K, 27-inch, 2020)",
+            officialName: "iMac (Retina 5K, 27-inch, 2020)",
             identifiers: ["iMac20,1", "iMac20,2"],
             supportId: "SP821",
             form: .iMac,
@@ -544,7 +576,7 @@ public struct Mac: IdiomType {
         
         
         Mac(
-            name: "iMac (Retina 5K, 27-inch, 2019)",
+            officialName: "iMac (Retina 5K, 27-inch, 2019)",
             identifiers: ["iMac19,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -554,7 +586,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (Retina 4K, 21.5-inch, 2019)",
+            officialName: "iMac (Retina 4K, 21.5-inch, 2019)",
             identifiers: ["iMac19,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -564,7 +596,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac Pro",
+            officialName: "iMac Pro",
             identifiers: ["iMacPro1,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -574,7 +606,7 @@ public struct Mac: IdiomType {
             colors: [.macSpacegray],
             cpu: .xeonE5),
         Mac(
-            name: "iMac (Retina 5K, 27-inch, 2017)",
+            officialName: "iMac (Retina 5K, 27-inch, 2017)",
             identifiers: ["iMac18,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -584,7 +616,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (Retina 4K, 21.5-inch, 2017)",
+            officialName: "iMac (Retina 4K, 21.5-inch, 2017)",
             identifiers: ["iMac18,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -594,7 +626,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, 2017)",
+            officialName: "iMac (21.5-inch, 2017)",
             identifiers: ["iMac18,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -604,7 +636,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (Retina 5K, 27-inch, Late 2015)",
+            officialName: "iMac (Retina 5K, 27-inch, Late 2015)",
             identifiers: ["iMac17,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -614,7 +646,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (Retina 4K, 21.5-inch, Late 2015)",
+            officialName: "iMac (Retina 4K, 21.5-inch, Late 2015)",
             identifiers: ["iMac16,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -624,7 +656,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Late 2015)",
+            officialName: "iMac (21.5-inch, Late 2015)",
             identifiers: ["iMac16,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -634,7 +666,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015)",
+            officialName: "iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015)",
             identifiers: ["iMac15,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -644,7 +676,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Mid 2014)",
+            officialName: "iMac (21.5-inch, Mid 2014)",
             identifiers: ["iMac14,4"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -654,7 +686,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (27-inch, Late 2013)",
+            officialName: "iMac (27-inch, Late 2013)",
             identifiers: ["iMac14,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -664,7 +696,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Late 2013)",
+            officialName: "iMac (21.5-inch, Late 2013)",
             identifiers: ["iMac14,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -674,7 +706,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (27-inch, Late 2012)",
+            officialName: "iMac (27-inch, Late 2012)",
             identifiers: ["iMac13,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -684,7 +716,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Late 2012)",
+            officialName: "iMac (21.5-inch, Late 2012)",
             identifiers: ["iMac13,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -694,7 +726,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (27-inch, Mid 2011)",
+            officialName: "iMac (27-inch, Mid 2011)",
             identifiers: ["iMac12,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -704,7 +736,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Mid 2011)",
+            officialName: "iMac (21.5-inch, Mid 2011)",
             identifiers: ["iMac12,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -714,7 +746,7 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            name: "iMac (27-inch, Mid 2010)",
+            officialName: "iMac (27-inch, Mid 2010)",
             identifiers: ["iMac11,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -723,7 +755,7 @@ public struct Mac: IdiomType {
             models: ["MC510xx/A", "MC511xx/A"],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Mid 2010)",
+            officialName: "iMac (21.5-inch, Mid 2010)",
             identifiers: ["iMac11,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -732,7 +764,7 @@ public struct Mac: IdiomType {
             models: ["MC508xx/A", "MC509xx/A"],
             cpu: .intel),
         Mac(
-            name: "iMac (27-inch, Late 2009)",
+            officialName: "iMac (27-inch, Late 2009)",
             identifiers: ["iMac10,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -740,7 +772,7 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             cpu: .intel),
         Mac(
-            name: "iMac (21.5-inch, Late 2009)",
+            officialName: "iMac (21.5-inch, Late 2009)",
             identifiers: ["iMac10,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -748,7 +780,7 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             cpu: .intel),
         Mac(
-            name: "iMac (24-inch, Early 2009)",
+            officialName: "iMac (24-inch, Early 2009)",
             identifiers: ["iMac9,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -756,7 +788,7 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             cpu: .intel),
         Mac(
-            name: "iMac (20-inch, Early 2009)",
+            officialName: "iMac (20-inch, Early 2009)",
             identifiers: ["iMac9,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .iMac,
@@ -764,7 +796,7 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook (Retina, 12-inch, 2017)",
+            officialName: "MacBook (Retina, 12-inch, 2017)",
             identifiers: ["MacBook10,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -774,7 +806,7 @@ public struct Mac: IdiomType {
             colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .intel),
         Mac(
-            name: "MacBook (Retina, 12-inch, Early 2016)",
+            officialName: "MacBook (Retina, 12-inch, Early 2016)",
             identifiers: ["MacBook9,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -784,7 +816,7 @@ public struct Mac: IdiomType {
             colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .intel),
         Mac(
-            name: "MacBook (Retina, 12-inch, Early 2015)",
+            officialName: "MacBook (Retina, 12-inch, Early 2015)",
             identifiers: ["MacBook8,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -794,7 +826,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .intel),
         Mac(
-            name: "MacBook (13-inch, Mid 2010)",
+            officialName: "MacBook (13-inch, Mid 2010)",
             identifiers: ["MacBook7,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -803,7 +835,7 @@ public struct Mac: IdiomType {
             models: ["MC516xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook (13-inch, Late 2009)",
+            officialName: "MacBook (13-inch, Late 2009)",
             identifiers: ["MacBook6,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -812,7 +844,7 @@ public struct Mac: IdiomType {
             models: ["MC207xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook (13-inch, Mid 2009)",
+            officialName: "MacBook (13-inch, Mid 2009)",
             identifiers: ["MacBook5,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -821,7 +853,7 @@ public struct Mac: IdiomType {
             models: ["MC240xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook (13-inch, Early 2009)",
+            officialName: "MacBook (13-inch, Early 2009)",
             identifiers: ["MacBook5,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -830,7 +862,7 @@ public struct Mac: IdiomType {
             models: ["MB881xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (M2, 2022)",
+            officialName: "MacBook Air (M2, 2022)",
             identifiers: ["Mac14,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -840,7 +872,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
             cpu: .m2),
         Mac(
-            name: "MacBook Air (M1, 2020)",
+            officialName: "MacBook Air (M1, 2020)",
             identifiers: ["MacBookAir10,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -850,7 +882,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .m1),
         Mac(
-            name: "MacBook Air (Retina, 13-inch, 2020)",
+            officialName: "MacBook Air (Retina, 13-inch, 2020)",
             identifiers: ["MacBookAir9,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -860,7 +892,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (Retina, 13-inch, 2019)",
+            officialName: "MacBook Air (Retina, 13-inch, 2019)",
             identifiers: ["MacBookAir8,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -870,7 +902,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (Retina, 13-inch, 2018)",
+            officialName: "MacBook Air (Retina, 13-inch, 2018)",
             identifiers: ["MacBookAir8,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -880,7 +912,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, 2017)",
+            officialName: "MacBook Air (13-inch, 2017)",
             identifiers: ["MacBookAir7,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -889,7 +921,7 @@ public struct Mac: IdiomType {
             models: ["MQD32xx/A", "MQD42xx/A", "MQD52xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, Early 2015)",
+            officialName: "MacBook Air (13-inch, Early 2015)",
             identifiers: ["MacBookAir7,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -898,7 +930,7 @@ public struct Mac: IdiomType {
             models: ["MJVE2xx/A", "MJVG2xx/A", "MMGF2xx/A", "MMGG2xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (11-inch, Early 2015)",
+            officialName: "MacBook Air (11-inch, Early 2015)",
             identifiers: ["MacBookAir7,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -907,7 +939,7 @@ public struct Mac: IdiomType {
             models: ["MJVM2xx/A", "MJVP2xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, Early 2014)",
+            officialName: "MacBook Air (13-inch, Early 2014)",
             identifiers: ["MacBookAir6,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -916,7 +948,7 @@ public struct Mac: IdiomType {
             models: ["MD760xx/B", "MD761xx/B"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (11-inch, Early 2014)",
+            officialName: "MacBook Air (11-inch, Early 2014)",
             identifiers: ["MacBookAir6,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -925,7 +957,7 @@ public struct Mac: IdiomType {
             models: ["MD711xx/B", "MD712xx/B"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, Mid 2013)",
+            officialName: "MacBook Air (13-inch, Mid 2013)",
             identifiers: ["MacBookAir6,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -934,7 +966,7 @@ public struct Mac: IdiomType {
             models: ["MD760xx/A", "MD761xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (11-inch, Mid 2013)",
+            officialName: "MacBook Air (11-inch, Mid 2013)",
             identifiers: ["MacBookAir6,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -943,7 +975,7 @@ public struct Mac: IdiomType {
             models: ["MD711xx/A", "MD712xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, Mid 2012)",
+            officialName: "MacBook Air (13-inch, Mid 2012)",
             identifiers: ["MacBookAir5,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -952,7 +984,7 @@ public struct Mac: IdiomType {
             models: ["MD231xx/A", "MD232xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (11-inch, Mid 2012)",
+            officialName: "MacBook Air (11-inch, Mid 2012)",
             identifiers: ["MacBookAir5,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -961,7 +993,7 @@ public struct Mac: IdiomType {
             models: ["MD223xx/A", "MD224xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, Mid 2011)",
+            officialName: "MacBook Air (13-inch, Mid 2011)",
             identifiers: ["MacBookAir4,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -970,7 +1002,7 @@ public struct Mac: IdiomType {
             models: ["MC965xx/A", "MC966xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (11-inch, Mid 2011)",
+            officialName: "MacBook Air (11-inch, Mid 2011)",
             identifiers: ["MacBookAir4,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -979,7 +1011,7 @@ public struct Mac: IdiomType {
             models: ["MC968xx/A", "MC969xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (13-inch, Late 2010)",
+            officialName: "MacBook Air (13-inch, Late 2010)",
             identifiers: ["MacBookAir3,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -988,7 +1020,7 @@ public struct Mac: IdiomType {
             models: ["MC503xx/A", "MC504xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (11-inch, Late 2010)",
+            officialName: "MacBook Air (11-inch, Late 2010)",
             identifiers: ["MacBookAir3,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -997,7 +1029,7 @@ public struct Mac: IdiomType {
             models: ["MC505xx/A", "MC506xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Air (Mid 2009)",
+            officialName: "MacBook Air (Mid 2009)",
             identifiers: ["MacBookAir2,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1006,7 +1038,7 @@ public struct Mac: IdiomType {
             models: ["MC505xx/A", "MC233xx/A", "MC234xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (14-inch, 2023)",
+            officialName: "MacBook Pro (14-inch, 2023)",
             identifiers: ["Mac14,5", "Mac14,9"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1016,7 +1048,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (16-inch, 2023)",
+            officialName: "MacBook Pro (16-inch, 2023)",
             identifiers: ["Mac14,6", "Mac14,10"],
             supportId: "SP890",
             form: .macBookGen2,
@@ -1024,9 +1056,11 @@ public struct Mac: IdiomType {
             capabilities: [.pro],
             models: ["MNWG3xx/A", "MNW93xx/A", "MNWK3xx/A", "MNWD3xx/A", "MNWF3xx/A", "MNW83xx/A", "MNWJ3xx/A", "MNWC3xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
-            cpu: .m2pro),
+            cpu: .m2pro,
+            screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254) // 16.2" 16:10
+        ),
         Mac(
-            name: "MacBook Pro (13-inch, M2, 2022)",
+            officialName: "MacBook Pro (13-inch, M2, 2022)",
             identifiers: ["Mac14,7"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1036,7 +1070,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .m2),
         Mac(
-            name: "MacBook Pro (14-inch, 2021)",
+            officialName: "MacBook Pro (14-inch, 2021)",
             identifiers: ["MacBookPro18,3", "MacBookPro18,4"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1046,7 +1080,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (16-inch, 2021)",
+            officialName: "MacBook Pro (16-inch, 2021)",
             identifiers: ["MacBookPro18,1", "MacBookPro18,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1056,7 +1090,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, M1, 2020)",
+            officialName: "MacBook Pro (13-inch, M1, 2020)",
             identifiers: ["MacBookPro17,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1066,7 +1100,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .m1),
         Mac(
-            name: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1076,7 +1110,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1086,7 +1120,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (16-inch, 2019)",
+            officialName: "MacBook Pro (16-inch, 2019)",
             identifiers: ["MacBookPro16,1", "MacBookPro16,4"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1096,7 +1130,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,4"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1106,7 +1140,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, 2019)",
+            officialName: "MacBook Pro (15-inch, 2019)",
             identifiers: ["MacBookPro15,1", "MacBookPro15,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1116,7 +1150,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1126,7 +1160,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, 2018)",
+            officialName: "MacBook Pro (15-inch, 2018)",
             identifiers: ["MacBookPro15,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1136,7 +1170,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1146,7 +1180,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, 2017)",
+            officialName: "MacBook Pro (15-inch, 2017)",
             identifiers: ["MacBookPro14,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1156,7 +1190,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro14,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1166,7 +1200,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro14,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1176,7 +1210,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, 2016)",
+            officialName: "MacBook Pro (15-inch, 2016)",
             identifiers: ["MacBookPro13,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1186,7 +1220,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2016, Four Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2016, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro13,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1196,7 +1230,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)",
+            officialName: "MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro13,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1206,7 +1240,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 15-inch, Mid 2015)",
+            officialName: "MacBook Pro (Retina, 15-inch, Mid 2015)",
             identifiers: ["MacBookPro11,4", "MacBookPro11,5"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1214,7 +1248,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 13-inch, Early 2015)",
+            officialName: "MacBook Pro (Retina, 13-inch, Early 2015)",
             identifiers: ["MacBookPro12,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1223,7 +1257,7 @@ public struct Mac: IdiomType {
             models: ["MF839xx/A", "MF840xx/A", "MF841xx/A", "MF843xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 15-inch, Mid 2014)",
+            officialName: "MacBook Pro (Retina, 15-inch, Mid 2014)",
             identifiers: ["MacBookPro11,2", "MacBookPro11,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1231,7 +1265,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 13-inch, Mid 2014)",
+            officialName: "MacBook Pro (Retina, 13-inch, Mid 2014)",
             identifiers: ["MacBookPro11,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1240,7 +1274,7 @@ public struct Mac: IdiomType {
             models: ["MGX72xx/A", "MGX82xx/A", "MGX92xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 15-inch, Late 2013)",
+            officialName: "MacBook Pro (Retina, 15-inch, Late 2013)",
             identifiers: ["MacBookPro11,2", "MacBookPro11,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1248,7 +1282,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 13-inch, Late 2013)",
+            officialName: "MacBook Pro (Retina, 13-inch, Late 2013)",
             identifiers: ["MacBookPro11,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1257,7 +1291,7 @@ public struct Mac: IdiomType {
             models: ["ME864xx/A", "ME865xx/A", "ME866xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 15-inch, Early 2013)",
+            officialName: "MacBook Pro (Retina, 15-inch, Early 2013)",
             identifiers: ["MacBookPro10,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1266,7 +1300,7 @@ public struct Mac: IdiomType {
             models: ["ME664xx/A", "ME665xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 13-inch, Early 2013)",
+            officialName: "MacBook Pro (Retina, 13-inch, Early 2013)",
             identifiers: ["MacBookPro10,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1275,7 +1309,7 @@ public struct Mac: IdiomType {
             models: ["MD212xx/A", "ME662xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 13-inch, Late 2012)",
+            officialName: "MacBook Pro (Retina, 13-inch, Late 2012)",
             identifiers: ["MacBookPro10,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1284,7 +1318,7 @@ public struct Mac: IdiomType {
             models: ["MD212xx/A", "MD213xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (Retina, 15-inch, Mid 2012)",
+            officialName: "MacBook Pro (Retina, 15-inch, Mid 2012)",
             identifiers: ["MacBookPro10,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1292,7 +1326,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Mid 2012)",
+            officialName: "MacBook Pro (15-inch, Mid 2012)",
             identifiers: ["MacBookPro9,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1301,7 +1335,7 @@ public struct Mac: IdiomType {
             models: ["MD103xx/A", "MD104xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, Mid 2012)",
+            officialName: "MacBook Pro (13-inch, Mid 2012)",
             identifiers: ["MacBookPro9,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1310,7 +1344,7 @@ public struct Mac: IdiomType {
             models: ["MD101xx/A", "MD102xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (17-inch, Late 2011)",
+            officialName: "MacBook Pro (17-inch, Late 2011)",
             identifiers: ["MacBookPro8,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1318,7 +1352,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Late 2011)",
+            officialName: "MacBook Pro (15-inch, Late 2011)",
             identifiers: ["MacBookPro8,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1327,7 +1361,7 @@ public struct Mac: IdiomType {
             models: ["MD322xx/A", "MD318xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, Late 2011)",
+            officialName: "MacBook Pro (13-inch, Late 2011)",
             identifiers: ["MacBookPro8,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1336,7 +1370,7 @@ public struct Mac: IdiomType {
             models: ["MD314xx/A", "MD313xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (17-inch, Early 2011)",
+            officialName: "MacBook Pro (17-inch, Early 2011)",
             identifiers: ["MacBookPro8,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1344,7 +1378,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Early 2011)",
+            officialName: "MacBook Pro (15-inch, Early 2011)",
             identifiers: ["MacBookPro8,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1353,7 +1387,7 @@ public struct Mac: IdiomType {
             models: ["MC723xx/A", "MC721xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, Early 2011)",
+            officialName: "MacBook Pro (13-inch, Early 2011)",
             identifiers: ["MacBookPro8,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1362,7 +1396,7 @@ public struct Mac: IdiomType {
             models: ["MC724xx/A", "MC700xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (17-inch, Mid 2010)",
+            officialName: "MacBook Pro (17-inch, Mid 2010)",
             identifiers: ["MacBookPro6,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1370,7 +1404,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Mid 2010)",
+            officialName: "MacBook Pro (15-inch, Mid 2010)",
             identifiers: ["MacBookPro6,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1379,7 +1413,7 @@ public struct Mac: IdiomType {
             models: ["MC373xx/A", "MC372xx/A", "MC371xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, Mid 2010)",
+            officialName: "MacBook Pro (13-inch, Mid 2010)",
             identifiers: ["MacBookPro7,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1388,7 +1422,7 @@ public struct Mac: IdiomType {
             models: ["MC375xx/A", "MC374xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (17-inch, Mid 2009)",
+            officialName: "MacBook Pro (17-inch, Mid 2009)",
             identifiers: ["MacBookPro5,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1396,7 +1430,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Mid 2009)",
+            officialName: "MacBook Pro (15-inch, Mid 2009)",
             identifiers: ["MacBookPro5,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1405,7 +1439,7 @@ public struct Mac: IdiomType {
             models: ["MB985xx/A", "MB986xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, 2.53GHz, Mid 2009)",
+            officialName: "MacBook Pro (15-inch, 2.53GHz, Mid 2009)",
             identifiers: ["MacBookPro5,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1413,7 +1447,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (13-inch, Mid 2009)",
+            officialName: "MacBook Pro (13-inch, Mid 2009)",
             identifiers: ["MacBookPro5,5"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1422,7 +1456,7 @@ public struct Mac: IdiomType {
             models: ["MB991xx/A", "MB990xx/A"],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (17-inch, Early 2009)",
+            officialName: "MacBook Pro (17-inch, Early 2009)",
             identifiers: ["MacBookPro5,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1430,7 +1464,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Late 2008)",
+            officialName: "MacBook Pro (15-inch, Late 2008)",
             identifiers: ["MacBookPro5,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1438,7 +1472,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (17-inch, Early 2008)",
+            officialName: "MacBook Pro (17-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1446,7 +1480,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "MacBook Pro (15-inch, Early 2008)",
+            officialName: "MacBook Pro (15-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1454,7 +1488,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "Mac mini (2023)",
+            officialName: "Mac mini (2023)",
             identifiers: ["Mac14,12"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1463,7 +1497,7 @@ public struct Mac: IdiomType {
             models: ["MNH73xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (M1, 2020)",
+            officialName: "Mac mini (M1, 2020)",
             identifiers: ["Macmini9,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1472,7 +1506,7 @@ public struct Mac: IdiomType {
             models: ["MGNR3xx/A", "MGNT3xx/A"],
             cpu: .m1),
         Mac(
-            name: "Mac mini (2018)",
+            officialName: "Mac mini (2018)",
             identifiers: ["Macmini8,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1481,7 +1515,7 @@ public struct Mac: IdiomType {
             models: ["MRTR2xx/A", "MRTT2xx/A", "MXNF2xx/A", "MXNG2xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (Late 2014)",
+            officialName: "Mac mini (Late 2014)",
             identifiers: ["Macmini7,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1490,7 +1524,7 @@ public struct Mac: IdiomType {
             models: ["MGEM2xx/A", "MGEN2xx/A", "MGEQ2xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (Late 2012)",
+            officialName: "Mac mini (Late 2012)",
             identifiers: ["Macmini6,1", "Macmini6,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1499,7 +1533,7 @@ public struct Mac: IdiomType {
             models: ["MD387xx/A", "MD388xx/A", "MD389xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (Mid 2011)",
+            officialName: "Mac mini (Mid 2011)",
             identifiers: ["Macmini5,1", "Macmini5,2"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1508,7 +1542,7 @@ public struct Mac: IdiomType {
             models: ["MC815xx/A", "MC816xx/A", "MC936xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (Mid 2010)",
+            officialName: "Mac mini (Mid 2010)",
             identifiers: ["Macmini4,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1517,7 +1551,7 @@ public struct Mac: IdiomType {
             models: ["MC438xx/A", "MC270xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (Late 2009)",
+            officialName: "Mac mini (Late 2009)",
             identifiers: ["Macmini3,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1526,7 +1560,7 @@ public struct Mac: IdiomType {
             models: ["MC238xx/A", "MC239xx/A", "MC408xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac mini (Early 2009)",
+            officialName: "Mac mini (Early 2009)",
             identifiers: ["Macmini3,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macMini,
@@ -1535,7 +1569,7 @@ public struct Mac: IdiomType {
             models: ["MB464xx/A", "MB463xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac Pro (2019)",
+            officialName: "Mac Pro (2019)",
             identifiers: ["MacPro7,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1543,7 +1577,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "Mac Pro (Rack, 2019)",
+            officialName: "Mac Pro (Rack, 2019)",
             identifiers: ["MacPro7,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1551,7 +1585,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "Mac Pro (Late 2013)",
+            officialName: "Mac Pro (Late 2013)",
             identifiers: ["MacPro6,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1560,7 +1594,7 @@ public struct Mac: IdiomType {
             models: ["ME253xx/A", "MD878xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac Pro (Mid 2012)",
+            officialName: "Mac Pro (Mid 2012)",
             identifiers: ["MacPro5,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1569,7 +1603,7 @@ public struct Mac: IdiomType {
             models: ["MD770xx/A", "MD771xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac Pro Server (Mid 2012)",
+            officialName: "Mac Pro Server (Mid 2012)",
             identifiers: ["MacPro5,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1577,7 +1611,7 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         Mac(
-            name: "Mac Pro (Mid 2010)",
+            officialName: "Mac Pro (Mid 2010)",
             identifiers: ["MacPro5,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1586,7 +1620,7 @@ public struct Mac: IdiomType {
             models: ["MC250xx/A", "MC560xx/A", "MC561xx/A"],
             cpu: .intel),
         Mac(
-            name: "Mac Pro Server (Mid 2010)",
+            officialName: "Mac Pro Server (Mid 2010)",
             identifiers: ["MacPro5,1"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macProGen3,
@@ -1597,14 +1631,14 @@ public struct Mac: IdiomType {
         
         
         Mac(
-            name: "MacBook Pro (14-inch, 2023)",
+            officialName: "MacBook Pro (14-inch, 2023)",
             identifiers: ["Mac14,9"],
             supportId: "SP889",
             form: .macBookGen2,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
             cpu: .m2pro),
         Mac(
-            name: "Mac mini (2023)",
+            officialName: "Mac mini (2023)",
             identifiers: ["Mac14,3"],
             supportId: "SP891",
             form: .macMini,
@@ -1617,7 +1651,7 @@ public struct Mac: IdiomType {
 public struct iPod: IdiomType, HasScreen {
     public var device: Device
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -1629,7 +1663,7 @@ public struct iPod: IdiomType, HasScreen {
     ) {
         device = Device(
             idiom: .pod,
-            name: name,
+            officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
             image: image,
@@ -1648,7 +1682,7 @@ public struct iPod: IdiomType, HasScreen {
     
     init(identifier: String) {
         self.init(
-            name: "Unknown iPod",
+            officialName: "Unknown iPod",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -1666,7 +1700,7 @@ public struct iPod: IdiomType, HasScreen {
     static var all = [
     
         iPod(
-            name: "iPhone touch (1st generation)",
+            officialName: "iPhone touch (1st generation)",
             identifiers: ["iPod1,1"],
             supportId: "112532",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-1st-gen.png",
@@ -1674,7 +1708,7 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            name: "iPhone touch (2nd generation)",
+            officialName: "iPhone touch (2nd generation)",
             identifiers: ["iPod2,1"],
             supportId: "112319",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-2nd-gen.png",
@@ -1682,7 +1716,7 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            name: "iPhone touch (3rd generation)",
+            officialName: "iPhone touch (3rd generation)",
             identifiers: ["iPod3,1"],
             supportId: "pp115",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-3rd-gen.png",
@@ -1690,7 +1724,7 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            name: "iPhone touch (4th generation)",
+            officialName: "iPhone touch (4th generation)",
             identifiers: ["iPod4,1"],
             supportId: "112431",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-4th-gen.png",
@@ -1699,19 +1733,19 @@ public struct iPod: IdiomType, HasScreen {
             cpu: .a4),
 
         iPod(
-            name: "iPod touch (5th generation)",
+            officialName: "iPod touch (5th generation)",
             identifiers: ["iPod5,1"],
             supportId: "SP657",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP657/sp657_ipod-touch_size.jpg",
             cpu: .a5),
         iPod(
-            name: "iPod touch (6th generation)",
+            officialName: "iPod touch (6th generation)",
             identifiers: ["iPod7,1"],
             supportId: "SP720",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP720/SP720-ipod-touch-specs-color-sg-2015.jpg",
             cpu: .a8),
         iPod(
-            name: "iPod touch (7th generation)",
+            officialName: "iPod touch (7th generation)",
             identifiers: ["iPod9,1"],
             supportId: "SP796",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP796/ipod-touch-7th-gen_2x.png",
@@ -1724,7 +1758,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
     public var device: Device
     
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -1743,7 +1777,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         capabilities.screen = screen
         device = Device(
             idiom: .phone,
-            name: name,
+            officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
             image: image,
@@ -1756,7 +1790,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
     
     init(identifier: String) {
         self.init(
-            name: "Unknown iPhone",
+            officialName: "Unknown iPhone",
             identifiers:[identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -1796,7 +1830,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
     static var all = [
 
         iPhone(
-            name: "iPhone",
+            officialName: "iPhone",
             identifiers: ["iPhone1,1"],
             supportId: "SP2",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone-original-colors.jpg",
@@ -1807,7 +1841,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .edge,
             screen: .i35),
         iPhone(
-            name: "iPhone 3G",
+            officialName: "iPhone 3G",
             identifiers: ["iPhone1,2"],
             supportId: "SP495",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone3g-colors.jpg",
@@ -1818,7 +1852,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .threeG,
             screen: .i35),
         iPhone(
-            name: "iPhone 3GS",
+            officialName: "iPhone 3GS",
             identifiers: ["iPhone2,1"],
             supportId: "SP565",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone3gs-colors.jpg",
@@ -1830,7 +1864,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i35),
 
         iPhone(
-            name: "iPhone 4",
+            officialName: "iPhone 4",
             identifiers: ["iPhone3,1", "iPhone3,2", "iPhone3,3"],
             supportId: "SP587",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP643/sp643_iphone4s_color_black.jpg",
@@ -1840,7 +1874,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .threeG,
             screen: .i35),
         iPhone(
-            name: "iPhone 4s",
+            officialName: "iPhone 4s",
             identifiers: ["iPhone4,1"],
             supportId: "SP643",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP643/sp643_iphone4s_color_black.jpg",
@@ -1850,7 +1884,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .threeG,
             screen: .i35),
         iPhone(
-            name: "iPhone 5",
+            officialName: "iPhone 5",
             identifiers: ["iPhone5,1", "iPhone5,2"],
             supportId: "SP655",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP655/sp655_iphone5_color.jpg",
@@ -1860,7 +1894,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i4),
         iPhone(
-            name: "iPhone 5c",
+            officialName: "iPhone 5c",
             identifiers: ["iPhone5,3", "iPhone5,4"],
             supportId: "SP684",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP684/SP684-color_yellow.jpg",
@@ -1870,7 +1904,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i4),
         iPhone(
-            name: "iPhone 5s",
+            officialName: "iPhone 5s",
             identifiers: ["iPhone6,1", "iPhone6,2"],
             supportId: "SP685",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP685/SP685-color_black.jpg",
@@ -1880,7 +1914,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i4),
         iPhone(
-            name: "iPhone 6",
+            officialName: "iPhone 6",
             identifiers: ["iPhone7,2"],
             supportId: "SP705",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP705/SP705-iphone_6-mul.png",
@@ -1890,7 +1924,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i47),
         iPhone(
-            name: "iPhone 6 Plus",
+            officialName: "iPhone 6 Plus",
             identifiers: ["iPhone7,1"],
             supportId: "SP706",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP706/SP706-iphone_6_plus-mul.png",
@@ -1900,7 +1934,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i55),
         iPhone(
-            name: "iPhone 6s",
+            officialName: "iPhone 6s",
             identifiers: ["iPhone8,1"],
             supportId: "SP726",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP726/SP726-iphone6s-gray-select-2015.png",
@@ -1910,7 +1944,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i47),
         iPhone(
-            name: "iPhone 6s Plus",
+            officialName: "iPhone 6s Plus",
             identifiers: ["iPhone8,2"],
             supportId: "SP727",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP727/SP727-iphone6s-plus-gray-select-2015.png",
@@ -1920,7 +1954,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i55),
         iPhone(
-            name: "iPhone SE",
+            officialName: "iPhone SE",
             identifiers: ["iPhone8,4"],
             supportId: "SP738",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP738/SP738.png",
@@ -1930,7 +1964,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i4),
         iPhone(
-            name: "iPhone 7",
+            officialName: "iPhone 7",
             identifiers: ["iPhone9,1", "iPhone9,3"],
             supportId: "SP743",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP743/iphone7-black.png",
@@ -1940,7 +1974,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i47),
         iPhone(
-            name: "iPhone 7 Plus",
+            officialName: "iPhone 7 Plus",
             identifiers: ["iPhone9,2", "iPhone9,4"],
             supportId: "SP744",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP744/iphone7-plus-black.png",
@@ -1950,7 +1984,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i55),
         iPhone(
-            name: "iPhone 8",
+            officialName: "iPhone 8",
             identifiers: ["iPhone10,1", "iPhone10,4"],
             supportId: "SP767",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP767/iphone8.png",
@@ -1960,7 +1994,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i47),
         iPhone(
-            name: "iPhone 8 Plus",
+            officialName: "iPhone 8 Plus",
             identifiers: ["iPhone10,2", "iPhone10,5"],
             supportId: "SP768",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP768/iphone8plus.png",
@@ -1970,7 +2004,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i55),
         iPhone(
-            name: "iPhone X",
+            officialName: "iPhone X",
             identifiers: ["iPhone10,3", "iPhone10,6"],
             supportId: "SP770",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP770/iphonex.png",
@@ -1980,7 +2014,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i58),
         iPhone(
-            name: "iPhone Xs",
+            officialName: "iPhone Xs",
             identifiers: ["iPhone11,2"],
             supportId: "SP779",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP779/SP779-iphone-xs.jpg",
@@ -1990,7 +2024,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i58),
         iPhone(
-            name: "iPhone Xs Max",
+            officialName: "iPhone Xs Max",
             identifiers: ["iPhone11,4", "iPhone11,6"],
             supportId: "SP780",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP780/SP780-iPhone-Xs-Max.jpg",
@@ -2000,7 +2034,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i65),
         iPhone(
-            name: "iPhone Xʀ",
+            officialName: "iPhone Xʀ",
             identifiers: ["iPhone11,8"],
             supportId: "SP781",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP781/SP781-iPhone-xr.jpg",
@@ -2010,7 +2044,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i61x828),
         iPhone(
-            name: "iPhone 11",
+            officialName: "iPhone 11",
             identifiers: ["iPhone12,1"],
             supportId: "SP804",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP804/sp804-iphone11_2x.png",
@@ -2020,7 +2054,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i61x828),
         iPhone(
-            name: "iPhone 11 Pro",
+            officialName: "iPhone 11 Pro",
             identifiers: ["iPhone12,3"],
             supportId: "SP805",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP805/sp805-iphone11pro_2x.png",
@@ -2030,7 +2064,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i58),
         iPhone(
-            name: "iPhone 11 Pro Max",
+            officialName: "iPhone 11 Pro Max",
             identifiers: ["iPhone12,5"],
             supportId: "SP806",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP806/sp806-iphone11pro-max_2x.png",
@@ -2040,7 +2074,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i65),
         iPhone(
-            name: "iPhone SE (2nd generation)",
+            officialName: "iPhone SE (2nd generation)",
             identifiers: ["iPhone12,8"],
             supportId: "SP820",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP820/iphone-se-2nd-gen_2x.png",
@@ -2050,7 +2084,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i47),
         iPhone(
-            name: "iPhone 12",
+            officialName: "iPhone 12",
             identifiers: ["iPhone13,2"],
             supportId: "SP830",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP830/sp830-iphone12-ios14_2x.png",
@@ -2060,7 +2094,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1170),
         iPhone(
-            name: "iPhone 12 mini",
+            officialName: "iPhone 12 mini",
             identifiers: ["iPhone13,1"],
             supportId: "SP829",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP829/sp829-iphone12mini-ios14_2x.png",
@@ -2070,7 +2104,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i54),
         iPhone(
-            name: "iPhone 12 Pro",
+            officialName: "iPhone 12 Pro",
             identifiers: ["iPhone13,3"],
             supportId: "SP831",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP831/iphone12pro-ios14_2x.png",
@@ -2080,7 +2114,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1170),
         iPhone(
-            name: "iPhone 12 Pro Max",
+            officialName: "iPhone 12 Pro Max",
             identifiers: ["iPhone13,4"],
             supportId: "SP832",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP832/iphone12promax-ios14_2x.png",
@@ -2090,7 +2124,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i67x1284),
         iPhone(
-            name: "iPhone 13",
+            officialName: "iPhone 13",
             identifiers: ["iPhone14,5"],
             supportId: "SP851",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1092/en_US/iphone-13-240.png",
@@ -2101,7 +2135,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1170),
         iPhone(
-            name: "iPhone 13 mini",
+            officialName: "iPhone 13 mini",
             identifiers: ["iPhone14,4"],
             supportId: "SP847",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1091/en_US/iphone-13mini-240.png",
@@ -2112,7 +2146,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i54),
         iPhone(
-            name: "iPhone 13 Pro",
+            officialName: "iPhone 13 Pro",
             identifiers: ["iPhone14,2"],
             supportId: "SP852",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1093/en_US/iphone-13pro-240.png",
@@ -2123,7 +2157,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1170),
         iPhone(
-            name: "iPhone 13 Pro Max",
+            officialName: "iPhone 13 Pro Max",
             identifiers: ["iPhone14,3"],
             supportId: "SP848",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1095/en_US/iphone-13promax-240.png",
@@ -2134,7 +2168,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i67x1284),
         iPhone(
-            name: "iPhone SE (3rd generation)",
+            officialName: "iPhone SE (3rd generation)",
             identifiers: ["iPhone14,6"],
             supportId: "SP867",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1136/en_US/iphone-se-3rd-gen-colors-240.png",
@@ -2145,7 +2179,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i47),
         iPhone(
-            name: "iPhone 14",
+            officialName: "iPhone 14",
             identifiers: ["iPhone14,7"],
             supportId: "SP873",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP873/iphone-14_1_2x.png",
@@ -2156,7 +2190,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1170),
         iPhone(
-            name: "iPhone 14 Plus",
+            officialName: "iPhone 14 Plus",
             identifiers: ["iPhone14,8"],
             supportId: "SP874",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP873/iphone-14_1_2x.png",
@@ -2167,7 +2201,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i67x1284),
         iPhone(
-            name: "iPhone 14 Pro",
+            officialName: "iPhone 14 Pro",
             identifiers: ["iPhone15,2"],
             supportId: "SP875",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
@@ -2178,7 +2212,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1179),
         iPhone(
-            name: "iPhone 14 Pro Max",
+            officialName: "iPhone 14 Pro Max",
             identifiers: ["iPhone15,3"],
             supportId: "SP876",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
@@ -2189,7 +2223,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i67x1290),
         iPhone(
-            name: "iPhone 15",
+            officialName: "iPhone 15",
             identifiers: ["iPhone15,4"],
             supportId: "SP901",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-colors.jpg",
@@ -2200,7 +2234,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1179),
         iPhone(
-            name: "iPhone 15 Plus",
+            officialName: "iPhone 15 Plus",
             identifiers: ["iPhone15,5"],
             supportId: "SP902",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-plus-colors.jpg",
@@ -2211,7 +2245,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i67x1290),
         iPhone(
-            name: "iPhone 15 Pro",
+            officialName: "iPhone 15 Pro",
             identifiers: ["iPhone16,1"],
             supportId: "SP903",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-colors.jpg",
@@ -2222,7 +2256,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i61x1179),
         iPhone(
-            name: "iPhone 15 Pro Max",
+            officialName: "iPhone 15 Pro Max",
             identifiers: ["iPhone16,2"],
             supportId: "SP904",
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-max-colors.jpg",
@@ -2239,7 +2273,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
     public var device: Device
         
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -2261,7 +2295,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         capabilities.pencils = pencils
         device = Device(
             idiom: .pad,
-            name: name,
+            officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
             image: image,
@@ -2274,7 +2308,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
     
     init(identifier: String) {
         self.init(
-            name: "Unknown iPad",
+            officialName: "Unknown iPad",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -2318,7 +2352,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
     static var all = [
         
         iPad(
-            name: "iPad",
+            officialName: "iPad",
             identifiers: ["iPad1,1", "iPad1,2"], // 1,2 is 3g model
             supportId: "SP580",
             image: "https://everymac.com/images/ipod_pictures/apple-ipad.jpg",
@@ -2329,7 +2363,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .threeG,
             screen: .i97x768),
         iPad(
-            name: "iPad 2",
+            officialName: "iPad 2",
             identifiers: ["iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4"],
             supportId: "SP622",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP622/SP622_01-ipad2-mul.png",
@@ -2340,7 +2374,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .threeG,
             screen: .i97x768),
         iPad(
-            name: "iPad (3rd generation)",
+            officialName: "iPad (3rd generation)",
             identifiers: ["iPad3,1", "iPad3,2", "iPad3,3"],
             supportId: "SP647",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP662/sp662_ipad-4th-gen_color.jpg",
@@ -2351,7 +2385,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            name: "iPad Mini",
+            officialName: "iPad Mini",
             identifiers: ["iPad2,5", "iPad2,6", "iPad2,7"],
             supportId: "SP661",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP661/sp661_ipad_mini_color.jpg",
@@ -2362,7 +2396,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i79x768),
         iPad(
-            name: "iPad (4th generation)",
+            officialName: "iPad (4th generation)",
             identifiers: ["iPad3,4", "iPad3,5", "iPad3,6"],
             supportId: "SP662",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP662/sp662_ipad-4th-gen_color.jpg",
@@ -2373,7 +2407,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            name: "iPad Air",
+            officialName: "iPad Air",
             identifiers: ["iPad4,1", "iPad4,2", "iPad4,3"],
             supportId: "SP692",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP692/SP692-specs_color-mul.png",
@@ -2384,7 +2418,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            name: "iPad Mini 2",
+            officialName: "iPad Mini 2",
             identifiers: ["iPad4,4", "iPad4,5", "iPad4,6"],
             supportId: "SP693",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP693/SP693-specs_color-mul.png",
@@ -2395,7 +2429,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i79x1536),
         iPad(
-            name: "iPad Mini 3",
+            officialName: "iPad Mini 3",
             identifiers: ["iPad4,7", "iPad4,8", "iPad4,9"],
             supportId: "SP709",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP709/SP709-space_gray.jpeg",
@@ -2406,7 +2440,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i79x1536),
         iPad(
-            name: "iPad Mini 4",
+            officialName: "iPad Mini 4",
             identifiers: ["iPad5,1", "iPad5,2"],
             supportId: "SP725",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP725/SP725ipad-mini-4.png",
@@ -2417,7 +2451,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i79x1536),
         iPad(
-            name: "iPad Air 2",
+            officialName: "iPad Air 2",
             identifiers: ["iPad5,3", "iPad5,4"],
             supportId: "SP708",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP708/SP708-space_gray.jpeg",
@@ -2428,7 +2462,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            name: "iPad (5th generation)",
+            officialName: "iPad (5th generation)",
             identifiers: ["iPad6,11", "iPad6,12"],
             supportId: "SP751",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP751/ipad_5th_generation.png",
@@ -2439,7 +2473,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            name: "iPad Pro (9.7-inch)",
+            officialName: "iPad Pro (9.7-inch)",
             identifiers: ["iPad6,3", "iPad6,4"],
             supportId: "SP739",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP739/SP739.png",
@@ -2451,7 +2485,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i97x1536,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad Pro (12.9-inch)",
+            officialName: "iPad Pro (12.9-inch)",
             identifiers: ["iPad6,7", "iPad6,8"],
             supportId: "SP723",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP723/SP723-iPad_Pro_2x.png",
@@ -2463,7 +2497,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i129,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad Pro 12.9-inch (2nd generation)",
+            officialName: "iPad Pro 12.9-inch (2nd generation)",
             identifiers: ["iPad7,1", "iPad7,2"],
             supportId: "SP761",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-12in-hero-201706.png",
@@ -2475,7 +2509,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i129,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad (6th generation)",
+            officialName: "iPad (6th generation)",
             identifiers: ["iPad7,5", "iPad7,6"],
             supportId: "SP774",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP774/sp774-ipad-6-gen_2x.png",
@@ -2487,7 +2521,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i97x1536,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad (7th generation)",
+            officialName: "iPad (7th generation)",
             identifiers: ["iPad7,11", "iPad7,12"],
             supportId: "SP807",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP807/sp807-ipad-7th-gen_2x.png",
@@ -2499,7 +2533,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i102,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad Pro (10.5-inch)",
+            officialName: "iPad Pro (10.5-inch)",
             identifiers: ["iPad7,3", "iPad7,4"],
             supportId: "SP762",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-10in-hero-201706.png",
@@ -2511,7 +2545,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i105,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad Pro 11-inch",
+            officialName: "iPad Pro 11-inch",
             identifiers: ["iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4"],
             supportId: "SP784",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP784/ipad-pro-11-2018_2x.png",
@@ -2523,7 +2557,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 12.9-inch (4th generation)",
+            officialName: "iPad Pro 12.9-inch (4th generation)",
             identifiers: ["iPad8,11", "iPad8,12"],
             supportId: "SP815",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP815/ipad-pro-12-2020.jpeg",
@@ -2535,7 +2569,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 12.9-inch (3rd generation)",
+            officialName: "iPad Pro 12.9-inch (3rd generation)",
             identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"],
             supportId: "SP785",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP785/ipad-pro-12-2018_2x.png",
@@ -2547,7 +2581,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 11-inch (2nd generation)",
+            officialName: "iPad Pro 11-inch (2nd generation)",
             identifiers: ["iPad8,9", "iPad8,10"],
             supportId: "SP814",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP814/ipad-pro-11-2020.jpeg",
@@ -2559,7 +2593,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Mini (5th generation)",
+            officialName: "iPad Mini (5th generation)",
             identifiers: ["iPad11,1", "iPad11,2"],
             supportId: "SP788",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP788/ipad-mini-2019.jpg",
@@ -2571,7 +2605,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i79x1536,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad Air (3rd generation)",
+            officialName: "iPad Air (3rd generation)",
             identifiers: ["iPad11,3", "iPad11,4"],
             supportId: "SP787",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP787/ipad-air-2019.jpg",
@@ -2583,7 +2617,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i105,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad (8th generation)",
+            officialName: "iPad (8th generation)",
             identifiers: ["iPad11,6", "iPad11,7"],
             supportId: "SP822",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP822/sp822-ipad-8gen_2x.png",
@@ -2595,7 +2629,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i102,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad (9th generation)",
+            officialName: "iPad (9th generation)",
             identifiers: ["iPad12,1", "iPad12,2"],
             supportId: "SP849",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1096/en_US/ipad-9gen-240.png",
@@ -2607,7 +2641,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i102,
             pencils: [.firstGeneration]),
         iPad(
-            name: "iPad Air (4th generation)",
+            officialName: "iPad Air (4th generation)",
             identifiers: ["iPad13,1", "iPad13,2"],
             supportId: "SP828",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP828/sp828ipad-air-ipados14-960_2x.png",
@@ -2619,7 +2653,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i109,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Air (5th generation)",
+            officialName: "iPad Air (5th generation)",
             identifiers: ["iPad13,16", "iPad13,17"],
             supportId: "SP866",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP866/sp866-ipad-air-5gen_2x.png",
@@ -2631,7 +2665,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i109,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad (10th generation)",
+            officialName: "iPad (10th generation)",
             identifiers: ["iPad13,18", "iPad13,19"],
             supportId: "SP884",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP884/sp884-ipad-10gen-960_2x.png",
@@ -2643,7 +2677,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i109,
             pencils: [.firstGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 11-inch (3rd generation)",
+            officialName: "iPad Pro 11-inch (3rd generation)",
             identifiers: ["iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7"],
             supportId: "SP843",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP843/ipad-pro-11_2x.png",
@@ -2655,7 +2689,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 12.9-inch (5th generation)",
+            officialName: "iPad Pro 12.9-inch (5th generation)",
             identifiers: ["iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11"],
             supportId: "SP844",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP844/ipad-pro-12-9_2x.png",
@@ -2667,7 +2701,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Mini (6th generation)",
+            officialName: "iPad Mini (6th generation)",
             identifiers: ["iPad14,1", "iPad14,2"],
             supportId: "SP850",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1097/en_US/ipad-mini-6gen-240.png",
@@ -2679,7 +2713,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i83,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 11-inch (4th generation)",
+            officialName: "iPad Pro 11-inch (4th generation)",
             identifiers: ["iPad14,3", "iPad14,4"],
             supportId: "SP882",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP882/ipad-pro-4gen-mainimage_2x.png",
@@ -2691,7 +2725,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            name: "iPad Pro 12.9-inch (6th generation)",
+            officialName: "iPad Pro 12.9-inch (6th generation)",
             identifiers: ["iPad14,5", "iPad14,6"],
             supportId: "SP883",
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111841_ipad-pro-4gen-mainimage.png",
@@ -2709,7 +2743,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
 public struct AppleTV: IdiomType {
     public var device: Device
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -2719,7 +2753,7 @@ public struct AppleTV: IdiomType {
     {
         device = Device(
             idiom: .tv,
-            name: name,
+            officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
             image: image,
@@ -2731,7 +2765,7 @@ public struct AppleTV: IdiomType {
 
     init(identifier: String) {
         self.init(
-            name: "Unknown  TV",
+            officialName: "Unknown  TV",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -2746,7 +2780,7 @@ public struct AppleTV: IdiomType {
     static var all = [ // https://support.apple.com/en-us/101605
         
         AppleTV(
-            name: "Apple TV HD",
+            officialName: "Apple TV HD",
             identifiers: ["AppleTV5,3"],
             supportId: "SP724",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP724/apple-tv-hd_2x.png",
@@ -2754,21 +2788,21 @@ public struct AppleTV: IdiomType {
             models: ["A1625"],
             cpu: .a8),
         AppleTV(
-            name: "Apple TV 4K",
+            officialName: "Apple TV 4K",
             identifiers: ["AppleTV6,2"],
             supportId: "SP769",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP769/appletv4k.png",
             models: ["A1842"],
             cpu: .a10x),
         AppleTV(
-            name: "Apple TV 4K (2nd generation)",
+            officialName: "Apple TV 4K (2nd generation)",
             identifiers: ["AppleTV11,1"],
             supportId: "SP845",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP845/sp845-apple-tv-4k-2gen_2x.png",
             models: ["A2169"],
             cpu: .a12),
         AppleTV(
-            name: "Apple TV 4K (3rd generation)",
+            officialName: "Apple TV 4K (3rd generation)",
             identifiers: ["AppleTV14,1"],
             supportId: "SP886",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP886/apple-tv-4k-3gen_2x.png",
@@ -2785,7 +2819,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     public var bandSize: WatchSize.BandSize {
         watchSize.bandSize
     }
-    public enum WatchSize {
+    public enum WatchSize: CaseNameConvertible {
         case unknown
         case mm38
         case mm40
@@ -2795,7 +2829,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         case mm45
         case mm49 // ultra
         
-        public enum BandSize {
+        public enum BandSize: CaseNameConvertible {
             case small // 38mm, 40mm, 41mm
             case large // 42mm, 44mm, 45mm, 49mm
         }
@@ -2822,7 +2856,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     }
     
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -2835,7 +2869,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     ) {
         device = Device(
             idiom: .watch,
-            name: name,
+            officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
             image: image,
@@ -2848,7 +2882,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     
     init(identifier: String) {
         self.init(
-            name: "Unknown  Watch",
+            officialName: "Unknown  Watch",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -2868,7 +2902,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     static var all = [
 
         AppleWatch(
-            name: "Apple Watch (1st generation) 38mm",
+            officialName: "Apple Watch (1st generation) 38mm",
             identifiers: ["Watch1,1"],
             supportId: "SP735",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
@@ -2876,7 +2910,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s1,
             size: .mm38),
         AppleWatch(
-            name: "Apple Watch (1st generation) 42mm",
+            officialName: "Apple Watch (1st generation) 42mm",
             identifiers: ["Watch1,2"],
             supportId: "SP735",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
@@ -2884,7 +2918,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s1,
             size: .mm42),
         AppleWatch(
-            name: "Apple Watch Series 1 38mm",
+            officialName: "Apple Watch Series 1 38mm",
             identifiers: ["Watch2,6"],
             supportId: "SP745",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
@@ -2892,7 +2926,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s1p,
             size: .mm38),
         AppleWatch(
-            name: "Apple Watch Series 1 42mm",
+            officialName: "Apple Watch Series 1 42mm",
             identifiers: ["Watch2,7"],
             supportId: "SP745",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
@@ -2900,7 +2934,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s1p,
             size: .mm42),
         AppleWatch(
-            name: "Apple Watch Series 2 38mm",
+            officialName: "Apple Watch Series 2 38mm",
             identifiers: ["Watch2,3"],
             supportId: "SP746",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM852/en_US/applewatch-series2-hermes-240.png",
@@ -2908,7 +2942,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s2,
             size: .mm38),
         AppleWatch(
-            name: "Apple Watch Series 2 42mm",
+            officialName: "Apple Watch Series 2 42mm",
             identifiers: ["Watch2,4"],
             supportId: "SP746",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM852/en_US/applewatch-series2-hermes-240.png",
@@ -2916,7 +2950,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s2,
             size: .mm42),
         AppleWatch(
-            name: "Apple Watch Series 3 38mm",
+            officialName: "Apple Watch Series 3 38mm",
             identifiers: ["Watch3,1", "Watch3,3"],
             supportId: "SP766",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM893/en_US/apple-watch-s3-nikeplus-240.png",
@@ -2924,7 +2958,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s3,
             size: .mm38),
         AppleWatch(
-            name: "Apple Watch Series 3 42mm",
+            officialName: "Apple Watch Series 3 42mm",
             identifiers: ["Watch3,2", "Watch3,4"],
             supportId: "SP766",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM893/en_US/apple-watch-s3-nikeplus-240.png",
@@ -2932,7 +2966,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s3,
             size: .mm42),
         AppleWatch(
-            name: "Apple Watch Series 4 40mm",
+            officialName: "Apple Watch Series 4 40mm",
             identifiers: ["Watch4,1", "Watch4,3"],
             supportId: "SP778",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM911/en_US/aw-series4-nike-240.png",
@@ -2940,7 +2974,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s4,
             size: .mm40),
         AppleWatch(
-            name: "Apple Watch Series 4 44mm",
+            officialName: "Apple Watch Series 4 44mm",
             identifiers: ["Watch4,2", "Watch4,4"],
             supportId: "SP778",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM911/en_US/aw-series4-nike-240.png",
@@ -2948,7 +2982,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s4,
             size: .mm44),
         AppleWatch(
-            name: "Apple Watch Series 5 40mm",
+            officialName: "Apple Watch Series 5 40mm",
             identifiers: ["Watch5,1", "Watch5,3"],
             supportId: "SP808",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP808/sp808-apple-watch-series-5_2x.png",
@@ -2956,7 +2990,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s5,
             size: .mm40),
         AppleWatch(
-            name: "Apple Watch Series 5 44mm",
+            officialName: "Apple Watch Series 5 44mm",
             identifiers: ["Watch5,2", "Watch5,4"],
             supportId: "SP808",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP808/sp808-apple-watch-series-5_2x.png",
@@ -2964,63 +2998,63 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s5,
             size: .mm44),
         AppleWatch(
-            name: "Apple Watch Series 6 40mm",
+            officialName: "Apple Watch Series 6 40mm",
             identifiers: ["Watch6,1", "Watch6,3"],
             supportId: "SP826",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP826/sp826-apple-watch-series6-580_2x.png",
             cpu: .s6,
             size: .mm40),
         AppleWatch(
-            name: "Apple Watch Series 6 44mm",
+            officialName: "Apple Watch Series 6 44mm",
             identifiers: ["Watch6,2", "Watch6,4"],
             supportId: "SP826",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP826/sp826-apple-watch-series6-580_2x.png",
             cpu: .s6,
             size: .mm44),
         AppleWatch(
-            name: "Apple Watch SE 40mm",
+            officialName: "Apple Watch SE 40mm",
             identifiers: ["Watch5,9", "Watch5,11"],
             supportId: "SP827",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP827/sp827-apple-watch-se-580_2x.png",
             cpu: .s5,
             size: .mm40),
         AppleWatch(
-            name: "Apple Watch SE 44mm",
+            officialName: "Apple Watch SE 44mm",
             identifiers: ["Watch5,10", "Watch5,12"],
             supportId: "SP827",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP827/sp827-apple-watch-se-580_2x.png",
             cpu: .s5,
             size: .mm44),
         AppleWatch(
-            name: "Apple Watch Series 7 41mm",
+            officialName: "Apple Watch Series 7 41mm",
             identifiers: ["Watch6,6", "Watch6,8"],
             supportId: "SP860",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP860/series7-480_2x.png",
             cpu: .s7,
             size: .mm41),
         AppleWatch(
-            name: "Apple Watch Series 7 45mm",
+            officialName: "Apple Watch Series 7 45mm",
             identifiers: ["Watch6,7", "Watch6,9"],
             supportId: "SP860",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP860/series7-480_2x.png",
             cpu: .s7,
             size: .mm45),
         AppleWatch(
-            name: "Apple Watch Series 8 41mm",
+            officialName: "Apple Watch Series 8 41mm",
             identifiers: ["Watch6,14", "Watch6,16"],
             supportId: "SP878",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP878/apple-watch-series8_2x.png",
             cpu: .s8,
             size: .mm41),
         AppleWatch(
-            name: "Apple Watch Series 8 45mm",
+            officialName: "Apple Watch Series 8 45mm",
             identifiers: ["Watch6,15", "Watch6,17"],
             supportId: "SP878",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP878/apple-watch-series8_2x.png",
             cpu: .s8,
             size: .mm45),
         AppleWatch(
-            name: "Apple Watch SE (2nd generation) 40mm",
+            officialName: "Apple Watch SE (2nd generation) 40mm",
             identifiers: ["Watch6,10", "Watch6,12"],
             supportId: "SP877",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP877/apple-watch-se-2nd-gen_2x.png",
@@ -3028,7 +3062,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s8,
             size: .mm40),
         AppleWatch(
-            name: "Apple Watch SE (2nd generation) 44mm",
+            officialName: "Apple Watch SE (2nd generation) 44mm",
             identifiers: ["Watch6,11", "Watch6,13"],
             supportId: "SP877",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP877/apple-watch-se-2nd-gen_2x.png",
@@ -3036,7 +3070,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s8,
             size: .mm44),
         AppleWatch(
-            name: "Apple Watch Ultra",
+            officialName: "Apple Watch Ultra",
             identifiers: ["Watch6,18"],
             supportId: "SP879",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP879/apple-watch-ultra_2x.png",
@@ -3044,7 +3078,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s8,
             size: .mm49),
         AppleWatch(
-            name: "Apple Watch Series 9 41mm",
+            officialName: "Apple Watch Series 9 41mm",
             identifiers: ["Watch7,1", "Watch7,3"],
             supportId: "SP905",
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-series-9-gps.png",
@@ -3053,7 +3087,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s9,
             size: .mm41),
         AppleWatch(
-            name: "Apple Watch Series 9 45mm",
+            officialName: "Apple Watch Series 9 45mm",
             identifiers: ["Watch7,2", "Watch7,4"],
             supportId: "SP905",
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-series-9-gps.png",
@@ -3062,7 +3096,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s9,
             size: .mm45),
         AppleWatch(
-            name: "Apple Watch Ultra 2",
+            officialName: "Apple Watch Ultra 2",
             identifiers: ["Watch7,5"],
             supportId: "SP906",
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-ultra-2.png",
@@ -3079,7 +3113,7 @@ public struct HomePod: IdiomType {
     public var device: Device
 
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -3089,12 +3123,12 @@ public struct HomePod: IdiomType {
         colors: [MaterialColor] = .default,
         cpu: CPU)
     {
-        device = Device(idiom: .homePod, name: name, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities.union([.screen(.w38)]), models: models, colors: colors, cpu: cpu)
+        device = Device(idiom: .homePod, officialName: officialName, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities.union([.screen(.w38)]), models: models, colors: colors, cpu: cpu)
     }
     
     init(identifier: String) {
         self.init(
-            name: "Unknown HomePod",
+            officialName: "Unknown HomePod",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -3113,14 +3147,14 @@ public struct HomePod: IdiomType {
     static var all = [
         
         HomePod(
-            name: "HomePod",
+            officialName: "HomePod",
             identifiers: ["AudioAccessory1,1"],
             supportId: "SP773",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/homepod/2018-homepod-colors.png",
             colors: [.spacegrayHome, .whiteHome],
             cpu: .a8),
         HomePod(
-            name: "HomePod mini",
+            officialName: "HomePod mini",
             identifiers: ["AudioAccessory5,1"],
             supportId: "SP834",
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111914_homepod-mini-colours.png",
@@ -3128,7 +3162,7 @@ public struct HomePod: IdiomType {
             colors: .homePodMini,
             cpu: .s5),
         HomePod(
-            name: "HomePod (2nd generation)",
+            officialName: "HomePod (2nd generation)",
             identifiers: ["AudioAccessory6,1"],
             supportId: "SP888",
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111843_homepod-2gen.png",
@@ -3142,7 +3176,7 @@ public struct HomePod: IdiomType {
 public struct AppleVision: IdiomType, HasCameras {
     public var device: Device
     public init(
-        name: String,
+        officialName: String,
         identifiers: [String],
         supportId: String,
         image: String?,
@@ -3153,7 +3187,7 @@ public struct AppleVision: IdiomType, HasCameras {
     ) {
         device = Device(
             idiom: .vision,
-            name: name,
+            officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
             image: image,
@@ -3166,7 +3200,7 @@ public struct AppleVision: IdiomType, HasCameras {
     
     init(identifier: String) {
         self.init(
-            name: "Unknown  Vision Device",
+            officialName: "Unknown  Vision Device",
             identifiers: [identifier],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             image: nil,
@@ -3181,10 +3215,10 @@ public struct AppleVision: IdiomType, HasCameras {
     static var all = [
 
         AppleVision(
-            name: "Apple Vision Pro",
+            officialName: "Apple Vision Pro",
             identifiers: ["RealityDevice14,1"],
             supportId: "SP911",
-            image: "https://www.apple.com/newsroom/images/media/Apple-WWCD23-Vision-Pro-glass-230605_big.jpg.large.jpg",
+            image: "https://help.apple.com/assets/65E610E3F8593B4BE30B127E/65E610E47F977D429402E427/en_US/4609019342a9aa9c2560aaeb92e6c21a.png",
             cpu: .m2),
         
     ]

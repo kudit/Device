@@ -51,13 +51,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B52ED1CB2BAB7F7400056A62 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestApp.swift; sourceTree = "<group>"; };
 		B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestView.swift; sourceTree = "<group>"; };
 		B52ED1D52BAB7F7400056A62 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
 		B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTests.swift; sourceTree = "<group>"; };
 		B52ED1D82BAB7F7400056A62 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		B56332102BC793F5006DDB84 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE.txt; path = ../LICENSE.txt; sourceTree = "<group>"; };
+		B56A31C32BC972880077FBE9 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
 		B58985F92BAB99C3002B8E05 /* DeviceTest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = DeviceTest.entitlements; sourceTree = "<group>"; };
 		B58985FA2BAB99C3002B8E05 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B5C0776A2BC938E800BBF3FB /* Device.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Device.swiftpm; path = ..; sourceTree = "<group>"; };
@@ -108,7 +108,6 @@
 			children = (
 				B58985FA2BAB99C3002B8E05 /* Assets.xcassets */,
 				B58985F92BAB99C3002B8E05 /* DeviceTest.entitlements */,
-				B52ED1CB2BAB7F7400056A62 /* CHANGELOG.md */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -137,11 +136,12 @@
 		B5C1B6142BAB7997001D5CFA = {
 			isa = PBXGroup;
 			children = (
-				B52ED1D22BAB7F7400056A62 /* Development */,
+				B56A31C32BC972880077FBE9 /* CHANGELOG.md */,
+				B52ED1D82BAB7F7400056A62 /* README.md */,
 				B56332102BC793F5006DDB84 /* LICENSE.txt */,
 				B52ED1D52BAB7F7400056A62 /* Package.swift */,
 				B5C0776A2BC938E800BBF3FB /* Device.swiftpm */,
-				B52ED1D82BAB7F7400056A62 /* README.md */,
+				B52ED1D22BAB7F7400056A62 /* Development */,
 				B52ED1D72BAB7F7400056A62 /* Tests */,
 				B5C1B61E2BAB7997001D5CFA /* Products */,
 				B5EB67F32BC1F3EB005DAB8C /* Frameworks */,
@@ -533,7 +533,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.4;
-				MARKETING_VERSION = 2.0.10;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -544,6 +544,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,7";
+				TVOS_DEPLOYMENT_TARGET = 15.0;
 			};
 			name = Debug;
 		};
@@ -574,7 +575,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.4;
-				MARKETING_VERSION = 2.0.10;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -585,6 +586,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,7";
+				TVOS_DEPLOYMENT_TARGET = 15.0;
 			};
 			name = Release;
 		};
@@ -700,7 +702,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.10;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -731,7 +733,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.10;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;

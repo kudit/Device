@@ -1,21 +1,29 @@
 import Foundation
 
 public struct Screen: Hashable {
+    static var undefined = Screen(resolution: (-1,-1))
     public struct Size: Hashable {
         public var width: Int
         public var height: Int
-        /// Reduce the size into a ratio of whole numbers.
+        /// Reduce the size into a ratio of whole numbers.  TODO: fix so works in both dimensions
         public var ratio: Size {
-            if Int(round(100 * Double(width) / Double(height))) == 75 {
+            let ratio = Double(width) / Double(height)
+            if Int(round(100 * ratio)) == 75 {
                 return Size(width: 3, height: 4)
             }
-            if Int(100 * Double(width) / Double(height)) == 56 {
+            if Int(100 * ratio) == 56 {
                 return Size(width: 9, height: 16)
             }
-            if Int(10 * Double(width) / Double(height)) == 8 {
+            if Int(100 * ratio) == 46 { // 9:19.5 - new iPhones
+                return Size(width: 18, height: 39)
+            }
+            if Int(10 * ratio) == 8 {
                 return Size(width: 4, height: 5)
             }
-
+            if ratio < 1.7 && ratio > 1.5 { // mac screens
+                return Size(width: 16, height: 10)
+            }
+            
             let min = min(width, height)
             let max = Int(floor(Double(min) / 2.0))
             guard max > 1 else {
@@ -31,15 +39,16 @@ public struct Screen: Hashable {
             return self
         }
     }
-    public static func == (lhs: Screen, rhs: Screen) -> Bool {
-        lhs.diagonal == rhs.diagonal
-        && lhs.resolution == rhs.resolution
-        && lhs.ppi == rhs.ppi
-    }
     
     public var diagonal: Double?
     public var resolution: Size // width, height in pixels
     public var ppi: Int?
+    
+//    public static func == (lhs: Screen, rhs: Screen) -> Bool {
+//        lhs.diagonal == rhs.diagonal
+//        && lhs.resolution == rhs.resolution
+//        && lhs.ppi == rhs.ppi
+//    }
     
     public init(
         diagonal: Double? = nil,
@@ -123,12 +132,20 @@ public struct Screen: Hashable {
      - Landscape: The device is in Landscape Orientation
      - Portrait:  The device is in Portrait Orientation
      */
-    public enum Orientation: Hashable {
+    public enum Orientation: Hashable, SymbolRepresentable {
         case landscape
         case portrait
         
         public var isLandscape: Bool {
             return self == .landscape
+        }
+        
+        public var symbolName: String {
+            if isLandscape {
+                "rectangle"
+            } else {
+                "rectangle.portrait"
+            }
         }
     }
 }

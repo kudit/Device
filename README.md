@@ -32,16 +32,15 @@ This is actively maintained so if there is a feature request or change, we will 
 ## Requirements
 
 - iOS 15.2+ (minimum required for Swift Playgrounds support)
-- tvOS 14.0+
-- watchOS 6.0+
-- macOS 11.0+
+- tvOS 14.0+ (UI only supported on tvOS 15.0+)
+- watchOS 6.0+ (UI only supported on watchOS 8.0+)
+- macOS 11.0+ (UI only supported on macOS 12.0+)
 - macCatalyst 14.0+
 - visionOS 1.0+
 
 ## Known Issues
 Built for macOS "Designed for iPad" does not return expected device results.
-Xcode previews do not work when the preview device is set to "My Mac (Mac Catalyst)".
-Custom Symbols likely won't work in macOS < 13.
+Custom Symbols likely won't work in macOS < 13 or watchOS < 7.
 LowPowerMode checks unavailable in macOS < 12.
 
 ## Installation

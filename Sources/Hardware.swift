@@ -1,17 +1,31 @@
-// String constants for SF Symbols
-public extension String {
-    static let symbolUnknownEnvironment = "questionmark.circle"
-    static let symbolSimulator = "squareshape.squareshape.dotted"
-    static let symbolPlayground = "swift"
-    static let symbolPreview = "curlybraces.square"
-    static let symbolRealDevice = "square.fill"
-    static let symbolDesignedForiPad = "ipad.badge.play"
-    static let symbolUnknownDevice = "questionmark.square.dashed"
+import Foundation
+
+#if canImport(SwiftUI)
+import SwiftUI
+#endif
+
+public protocol CaseNameConvertible {
+    var caseName: String { get }
+}
+public extension CaseNameConvertible {
+    // exposes the case name for an enum without having to have a string rawValue
+    var caseName: String {
+        // for enums
+        (Mirror(reflecting: self).children.first?.label ?? String(describing: self))
+    }
+}
+public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseNameConvertible {
+    var symbolName: String { get }
+    var label: String { get } // description doesn't work since it can cause infinite recursion
+#if canImport(SwiftUI)
+    var color: Color { get }
+#endif
+    func test(device: any CurrentDevice) -> Bool
 }
 
 // MARK: Capabilities
 public typealias Capabilities = Set<Capability>
-public enum Capability: Hashable, CaseIterable {
+public enum Capability: CaseIterable, DeviceAttributeExpressible {
     // model attributes
     case pro, air, mini, plus, max
     case macForm(Mac.Form)
@@ -42,10 +56,12 @@ public enum Capability: Hashable, CaseIterable {
     case pencils(Set<ApplePencil>)
     // sensors
     case lidar, barometer, crashDetection // iPhone 14+
-
+    
     /// Lists all non-associated value cases
     public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
-
+    
+    static var screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
+    
     public var symbolName: String {
         switch self {
         case .pro:
@@ -90,12 +106,12 @@ public enum Capability: Hashable, CaseIterable {
             return "bell.slash"
         case .applePay:
             return "applepay"
-//            return "creditcard"
+            //            return "creditcard"
         case .magSafe:
             return "magsafe"
         case .magSafe1:
             return "magsafe1"
-//            return "ellipsis.rectangle.fill"
+            //            return "ellipsis.rectangle.fill"
         case .magSafe2:
             return "magsafe2"
         case .magSafe3:
@@ -110,7 +126,7 @@ public enum Capability: Hashable, CaseIterable {
             return "hand.tap"
         case .lidar:
             return "lidar"
-//            return "circle.hexagongrid.fill"
+            //            return "circle.hexagongrid.fill"
         case .barometer:
             return "barometer"
         case .biometrics(let biometrics):
@@ -119,9 +135,18 @@ public enum Capability: Hashable, CaseIterable {
             return "camera"
         }
     }
+    
+    public func test(device: any CurrentDevice) -> Bool {
+        return device.has(self)
+    }
+    
+    /// caseName string.  Do not use this in a var description: String or it will cause an infinite loop.
+    public var label: String { caseName }
 }
 // device specific have functions for getting a wrapped capability out.
 public extension Capabilities {
+    static var screenFeatures = Set(Capability.screenFeatures)
+
     /// Order them based off of the order in the Capability definition for consistency
     var sorted: [Capability] {
         var sorted = [Capability]()
@@ -336,7 +361,7 @@ public extension Capabilities {
 
 // MARK: CPU
 // https://en.wikipedia.org/wiki/List_of_Mac_models_grouped_by_CPU_type
-public enum CPU: Hashable, CaseIterable {
+public enum CPU: Hashable, CaseIterable, CaseNameConvertible {
     // Only 2013+ really need to be included since Swift won't run on devices prior to this.
     case unknown
     // Mac
@@ -397,7 +422,7 @@ public enum CPU: Hashable, CaseIterable {
 }
 
 // MARK: Biometrics
-public enum Biometrics: Hashable {
+public enum Biometrics: Hashable, CaseNameConvertible {
     case none
     case touchID
     case faceID
@@ -421,7 +446,7 @@ public enum Biometrics: Hashable {
 }
 
 // MARK: Camera
-public enum Camera: Hashable, CaseIterable { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
+public enum Camera: Hashable, CaseIterable, CaseNameConvertible { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
     case twoMP // original iPhone
     case threeMP // iPhone 3GS
     /// 8mp iPod touch 7th gen/iPhone 6
@@ -457,7 +482,7 @@ public extension Set<Camera> {
 }
 
 // MARK: Cellular
-public enum Cellular: Hashable, Comparable {
+public enum Cellular: Hashable, Comparable, CaseNameConvertible {
     case none // TODO: Take this out?  Do we need it for anything?  This should only be available in iPhone and iPad (protocol CellularCapable)
     case gprs // 1G
     case edge // 2G
@@ -467,7 +492,7 @@ public enum Cellular: Hashable, Comparable {
 }
 
 // MARK: Pencil
-public enum ApplePencil: Hashable, CaseIterable {
+public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible {
     case firstGeneration
     case secondGeneration
     case usbC
@@ -497,7 +522,7 @@ extension Set<ApplePencil> {
 }
 
 // MARK: Material Color
-public enum MaterialColor: String {
+public enum MaterialColor: String, CaseNameConvertible {
     // standard colors
     case black = "#000000" // complete black for default color
     case white = "#FFFFFF" // complete white for default white plastic color

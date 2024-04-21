@@ -10,7 +10,12 @@ struct DeviceTestApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            DeviceTestView()
+            if #available(watchOS 8.0, tvOS 15.0, macOS 12.0, *) {
+                DeviceTestView()
+            } else {
+                // Fallback on earlier versions
+                Text("UI Tests not available on older platforms.  However, framework code should still work.")
+            }
         }
     }
 }

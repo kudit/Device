@@ -9,11 +9,12 @@ import SwiftUI // for Color
 #endif
 //#if canImport(IOKit.ps) // This doesn't work probably because of the ".ps" part
 #if os(macOS) || targetEnvironment(macCatalyst)
+import IOKit
 import IOKit.ps
 #endif
 
 /// This enum describes the state of the battery.
-public enum BatteryState: CustomStringConvertible { // automatically conforms to Equatable since no associated/raw value
+public enum BatteryState: CustomStringConvertible, CaseNameConvertible { // automatically conforms to Equatable since no associated/raw value
     /// The battery state for the device can’t be determined.
     case unknown
     /// The device is not plugged into power; the battery is discharging.
@@ -37,18 +38,25 @@ public enum BatteryState: CustomStringConvertible { // automatically conforms to
     }
 }
 
-public protocol Battery: ObservableObject, CustomStringConvertible, Identifiable {
+/// Use to indicate the type of change that was present in a monitor update.
+public enum BatteryChangeType {
+    case level, state, lowPowerMode
+}
+
+public protocol Battery: ObservableObject, SymbolRepresentable, CustomStringConvertible, Identifiable {
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
     var currentState: BatteryState { get }
     /// The user enabled Low Power mode
     var lowPowerMode: Bool { get }
-    /// Change Monitoring
-    typealias BatteryMonitor = (any Battery) -> Void
-    /// Allows fetching or setting whether battery monitoring is enabled.
+    /// Allows fetching or setting whether battery monitoring is enabled.  Don't necessarily need ot use this directly.  You can just add a monitor by calling `.monitor { battery, changeType in }`.
     var monitoring: Bool { get set }
-    func add(monitor: @escaping BatteryMonitor)
+    /// Change Monitoring
+    typealias BatteryMonitor = (any Battery, BatteryChangeType) -> Void
+    /// Adds a callback that will be called when the battery state changes.
+    /// Callback takes a `battery` parameter and the `BatteryChangeType`
+    func monitor(_ monitor: @escaping BatteryMonitor)
 }
 public extension Battery {
     /// Return true if the device is actively charging.  Equivalent to testing `curerntState == .charging`
@@ -56,6 +64,13 @@ public extension Battery {
     /// Return true if the device is plugged in.
     var isPluggedIn: Bool { currentState == .charging || currentState == .full }
 
+    @available(*, deprecated, message: "Use use monitor { battery, type in }")
+    func add(monitor: @escaping (any Battery) -> Void) {
+        self.monitor { battery, changeType in
+            monitor(battery)
+        }
+    }
+    
     /// System Image used to render a symbol representing the current state/charge level
     var symbolName: String {
         let percent = currentLevel
@@ -83,16 +98,16 @@ public extension Battery {
 #if canImport(SwiftUI)
     /// Color for the battery icon.  Should mirror the system battery icon.
     var systemColor: Color {
-        if lowPowerMode {
-            return .yellow
-        }
         var redLevel = 20
         // for some reason, iPad only warns at 10% (maybe because the battery is larger?)
         if Device.current.idiom == .pad { //  || Device.current.idiom == .mac // do we need to do this for Macs as well?
             redLevel = 10
         }
         if currentLevel <= redLevel {
-            return .red // even when charging
+            return .red // even when charging or low power mode
+        }
+        if lowPowerMode {
+            return .yellow
         }
         if currentState == .charging {
             return .green
@@ -139,37 +154,77 @@ public extension Battery {
     var id: String { description }
 }
 
+// Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
 public class MockBattery: Battery {
-    public var currentLevel: Int = 82
-    public var currentState: BatteryState = .unplugged
-    public var lowPowerMode: Bool = false
+    @Published public var currentLevel: Int = -1
+    @Published public var currentState: BatteryState = .unplugged
+    @Published public var lowPowerMode: Bool = false
+    // save so a similar battery without a cycle level doesn't get merged.
+    public var cycleLevelState: TimeInterval
     public var monitoring: Bool = false // add observers to trigger changes?
-    private var monitors = [BatteryMonitor]()
-    public func add(monitor: @escaping BatteryMonitor) {
+    public var monitors = [BatteryMonitor]()
+    public func monitor(_ monitor: @escaping BatteryMonitor) {
         monitors.append(monitor)
     }
     
-    init(currentLevel: Int = 82, currentState: BatteryState = .unplugged, lowPowerMode: Bool = false) {
+    public var description: String {
+        "\(currentLevel)\(currentState)\(lowPowerMode)\(cycleLevelState)"
+    }
+    
+    /// Creates a mock Battery object that can be passed to a BatteryView or used for various things.  Will automatically cycle battery to empty and then charge to full and then empty again if `cycleLevelStateSeconds` is greater than 0.  If so, creates a timer that will automatically drain battery to 0 and then charge to 100 and then drain again every cycleLevelStateSeconds.
+    public init(currentLevel: Int = -1, currentState: BatteryState = .unplugged, cycleLevelState: TimeInterval = 0, lowPowerMode: Bool = false) {
         self.currentLevel = currentLevel
         self.currentState = currentState
         self.lowPowerMode = lowPowerMode
+        self.cycleLevelState = cycleLevelState
+        
+        guard cycleLevelState > 0 else {
+            return // no need to create timer if no cycle level
+        }
+        // create and schedule timer (no need to keep reference)
+        Timer.scheduledTimer(withTimeInterval: cycleLevelState, repeats: true) { timer in
+            switch self.currentState {
+            case .unknown:
+                // This really should never happen.  But if it does, go ahead and invalidate the timer.
+                timer.invalidate()
+            case .charging:
+                self.currentLevel+=1
+                if self.currentLevel > 99 {
+                    self.currentState = .full
+                }
+            case .full:
+                // Keep in full state for a few seconds
+                self.currentLevel+=1
+                if self.currentLevel > 104 {
+                    self.currentState = .unplugged // start to discharge
+                }
+            case .unplugged:
+                // discharge
+                self.currentLevel-=1
+                if self.currentLevel < 1 {
+                    self.currentState = .charging
+                }
+            }
+        }
     }
 
     public static var mocks = [
+        MockBattery(currentLevel: 50, cycleLevelState: 0.1),
+        MockBattery(currentLevel: -1, currentState: .unknown),
+        MockBattery(currentLevel: 0),
         MockBattery(currentLevel: 2, currentState: .charging),
-        MockBattery(currentLevel: 5),
         MockBattery(currentLevel: 15),
         MockBattery(currentLevel: 25),
         MockBattery(currentLevel: 50),
         MockBattery(currentLevel: 75),
-        MockBattery(currentState: .charging),
+        MockBattery(currentLevel: 82, currentState: .charging),
         MockBattery(currentLevel: 100, currentState: .full),
     ]
 }
 
 public class DeviceBattery: Battery {
-    public static var current = DeviceBattery()
-    
+    public static var current = DeviceBattery() // only time this is initialized typically
+        
     private var monitors: [BatteryMonitor] = []
     
     /// Allows fetching or setting whether battery monitoring is enabled.
@@ -195,13 +250,13 @@ public class DeviceBattery: Battery {
     }
     
     /// Add a monitor for detecting changes to the battery state
-    public func add(monitor: @escaping BatteryMonitor) {
+    public func monitor(_ monitor: @escaping BatteryMonitor) {
         monitors.append(monitor)
-        monitoring = true // enable monitoring from this point forward
-        // create an observer for changes
-#if os(watchOS)
-        // Apparently this can't be observed on watchOS :(
-#elseif canImport(UIKit) && !os(tvOS)
+        monitoring = true // enable monitoring from this point forward regardless of previous state
+        // create observers for changes
+#if os(watchOS) || os(tvOS)
+        // Apparently this can't be observed on watchOS or tvOS (which makes sense) :(
+#elseif canImport(UIKit) // only supported on iOS, macCatalyst, and visionOS
         // add observer for both battery level and battery state
         NotificationCenter.default.addObserver(
             forName: UIDevice.batteryLevelDidChangeNotification,
@@ -209,7 +264,7 @@ public class DeviceBattery: Battery {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            self._triggerBatteryUpdate()
+            self._triggerBatteryUpdate(.level)
         }
         NotificationCenter.default.addObserver(
             forName: UIDevice.batteryStateDidChangeNotification,
@@ -217,19 +272,112 @@ public class DeviceBattery: Battery {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            self._triggerBatteryUpdate()
+            self._triggerBatteryUpdate(.state)
         }
+//#if targetEnvironment(macCatalyst)
+//Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+//    self.objectWillChange.send()
+//    print("Manual notification Update \(Date().timeIntervalSinceReferenceDate)")
+//}
+//#endif
+#elseif os(macOS) || targetEnvironment(macCatalyst)
+        // https://stackoverflow.com/questions/51275093/is-there-a-battery-level-did-change-notification-equivalent-for-kiopscurrentcapa
+        let loop = IOPSNotificationCreateRunLoopSource({ _ in
+            // Perform usual battery status fetching
+            // self can't be captured in C function
+            DeviceBattery.current._triggerBatteryUpdate(.level)
+            // trigger both just in case
+            DeviceBattery.current._triggerBatteryUpdate(.state)
+            print("IOPSNotification for level and state")
+        }, nil).takeRetainedValue() as CFRunLoopSource
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), loop, .defaultMode)
 #else
         // If we don't have access to UIDevice or WKInterfaceDevice, this will be undefined
 #endif
-    }
-    
-    private func _triggerBatteryUpdate() {
-        // Do your work after received notification
-        for monitor in self.monitors {
-            monitor(self)
+        // MacOS 11 is the only system that wouldn't support this notification
+        if #available(iOS 9.0, macOS 12.0, macCatalyst 13.1, tvOS 9.0, watchOS 2.0, visionOS 1.0, *) {
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name.NSProcessInfoPowerStateDidChange,
+                object: nil,
+                queue: OperationQueue.main
+            ) { notification in
+//                print("NSProcessInfoPowerStateDidChange notification")
+                // Do your work after received notification
+                self._triggerBatteryUpdate(.lowPowerMode)
+            }
         }
     }
+    
+    private func _triggerBatteryUpdate(_ notificationType: BatteryChangeType) {
+        // Do your work after received notification
+        for monitor in self.monitors {
+            monitor(self, notificationType)
+        }
+    }
+    
+#if os(macOS) || targetEnvironment(macCatalyst)
+    // TODO: Clean up unnecessary code.  Figure out "best" way.
+    private func _levelPluggedIn() -> (level: Int, pluggedIn: Bool) {
+//        print("IOKit version")
+        // thanks to https://github.com/thebarbican19/BatteryBoi
+        let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
+        let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
+        var level = -1
+        for source in sources {
+            if let description = IOPSGetPowerSourceDescription(snapshot, source).takeUnretainedValue() as? [String: Any] {
+                
+                if description["Type"] as? String == kIOPSInternalBatteryType {
+                    let capacity = description[kIOPSCurrentCapacityKey] as? Int ?? -1
+                    //print("Current level set: \(capacity)")
+                    level = capacity
+                    break
+                }
+            }
+        }
+        // This works, but below is better for exact state
+//        if (!(IOPSCopyExternalPowerAdapterDetails() != nil)) {
+//            print("not plugged in")
+//        } else {
+//            print("plugged in")
+//        }
+        let psInfo = IOPSCopyPowerSourcesInfo().takeRetainedValue()
+        let psList = IOPSCopyPowerSourcesList(psInfo).takeRetainedValue() as [CFTypeRef]
+
+        var pluggedIn = true // assume true for macs without battery
+        for ps in psList {
+//            print(ps)
+            if let psDesc = IOPSGetPowerSourceDescription(psInfo, ps).takeUnretainedValue() as? [String: Any] {
+                if //let type = psDesc[kIOPSTypeKey] as? String,
+                    //                   let isCharging = (psDesc[kIOPSIsChargingKey] as? Bool) {
+                    //                   print(type, "is charging:", isCharging)
+                    let powerSource = (psDesc[kIOPSPowerSourceStateKey] as? String) {
+//                    print("Power Source: \(powerSource)")
+                    if powerSource == "AC Power" {
+//                        if let capacity = psDesc[kIOPSCurrentCapacityKey] as? Int, capacity == 100 {
+//                            print("Capacity: \(capacity), Level: \(level)")
+//                            // TODO: Update current level
+//                            return .full
+//                        }
+//                        return .charging
+                    } else {
+                        pluggedIn = false
+                    }
+//                    return .unplugged
+                }
+            }
+        }
+//        return .unknown
+//        if PowerDetail["Power Source State"] == "AC Power" {
+//            if PowerDetail["Current Capacity"] == 100 {
+//                return .full
+//            }
+//            return .charging
+//        } else {
+//            return .unplugged
+//        }
+        return (level, pluggedIn)
+    }
+#endif
     
     /// Fetch and return the current battery level as a number from 0—100.  Returns -1 if for some reason we are using this on an unknown platform.
     public var currentLevel: Int {
@@ -242,22 +390,8 @@ public class DeviceBattery: Battery {
         return Int(round(WKInterfaceDevice.current().batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
         // but maybe that changes in the future.
 #elseif os(macOS) || targetEnvironment(macCatalyst)
-        // thanks to https://github.com/thebarbican19/BatteryBoi
-        let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
-        let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
-        for source in sources {
-            if let description = IOPSGetPowerSourceDescription(snapshot, source).takeUnretainedValue() as? [String: Any] {
-                
-                if description["Type"] as? String == kIOPSInternalBatteryType {
-                    return description[kIOPSCurrentCapacityKey] as? Int ?? -1
-                    
-                }
-                
-            }
-            
-        }
-        return 100
-#elseif canImport(UIKit) && !os(tvOS)
+        return _levelPluggedIn().level
+#elseif canImport(UIKit) && !os(tvOS) // UIDevice support
 //        UIDevice.current.isBatteryMonitoringEnabled = true
 //        print(UIDevice.current.batteryLevel)
         return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
@@ -274,6 +408,7 @@ public class DeviceBattery: Battery {
         defer {
             monitoring = currentMonitoring
         }
+//        print("state monitoring")
         // TODO: Figure out why it reports as .full when it's actually .charging and 76%...
 #if os(watchOS)
         switch WKInterfaceDevice.current().batteryState {
@@ -285,6 +420,7 @@ public class DeviceBattery: Battery {
             return .unknown // To cover any future additions for which DeviceKit might not have updated yet.
         }
 #elseif canImport(UIKit) && !os(tvOS)
+        //        print("UIDevice version")
         switch UIDevice.current.batteryState {
         case .charging: return .charging
         case .full:
@@ -299,6 +435,15 @@ public class DeviceBattery: Battery {
         @unknown default:
             return .unknown // To cover any future additions for which DeviceKit might not have updated yet.
         }
+#elseif canImport(IOKit)
+        let (level, pluggedIn) = _levelPluggedIn()
+        if pluggedIn {
+            if level == 100 {
+                return .full
+            }
+            return .charging
+        }
+        return .unplugged
 #else
         // If we don't have access to UIDevice or WKInterfaceDevice, this gets ignored
         return .unknown
@@ -313,5 +458,61 @@ public class DeviceBattery: Battery {
             // Fallback on earlier versions
             return false
         }
+    }
+}
+
+/// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
+public class MonitoredDeviceBattery: Battery {
+    public static var current = MonitoredDeviceBattery() // only time this is initialized typically
+    
+    @Published public var currentLevel: Int = -1
+    @Published public var currentState: BatteryState = .unplugged
+    @Published public var lowPowerMode: Bool = false
+    
+    private init() {
+        // enable monitoring for self
+        self.monitor { battery, changeType in
+            switch changeType {
+            case .level:
+                // update local level cache
+                self.updateLevel()
+            case .state:
+                // update local state cache
+                self.updateState()
+            case .lowPowerMode:
+                // update local lowPowerMode cache
+                self.updateLowPowerMode()
+            }
+        }
+        // make sure after init we have the current values
+        updateLevel()
+        updateState()
+        updateLowPowerMode()
+    }
+    
+    func updateLevel() {
+        currentLevel = DeviceBattery.current.currentLevel
+    }
+    
+    func updateState() {
+        currentState = DeviceBattery.current.currentState
+    }
+    
+    func updateLowPowerMode() {
+        lowPowerMode = DeviceBattery.current.lowPowerMode
+    }
+    
+    /// Probably not needed directly, but here to wrap DeviceBattery.current.monitoring (which should always be true due to this monitoring)
+    public var monitoring: Bool {
+        get {
+            DeviceBattery.current.monitoring            
+        }
+        set {
+            DeviceBattery.current.monitoring = newValue            
+        }
+    }
+    
+    public func monitor(_ monitor: @escaping BatteryMonitor) {
+        DeviceBattery.current.monitor(monitor)
     }
 }

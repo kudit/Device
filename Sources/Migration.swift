@@ -24,11 +24,12 @@ extension Collection where Element: Definable {
 }
 // TODO:?must manually add collection conformance...
 // for enums
-extension Definable {
+extension CaseNameConvertible {
     var definition: String {
-        // for enums
-        "." + (Mirror(reflecting: self).children.first?.label ?? "\(String(describing: self))")
+        "." + self.caseName
     }
+}
+extension Definable {
     var deviceKitDefinition: String { definition }
 }
 
@@ -164,7 +165,7 @@ extension Capability: Definable {
         case .cameras(let cameras):
             return ".cameras(\(cameras.sorted.definition))"
         default:
-            return "." + (Mirror(reflecting: self).children.first?.label ?? "\(String(describing: self))")
+            return "." + caseName
             // why can't we remove duplicate code by doing the following?
 //            return (self as Definable).definition
         }
@@ -359,7 +360,7 @@ extension DeviceType {
         }
         return """
                 \(String(describing: idiom.type))(
-                    \(idiomish)name: \(name.definition),
+                    \(idiomish)officialName: \(officialName.definition),
                     identifiers: \(identifiers.definition),
                     supportId: \(supportId.definition),
                     \(macForm)image: \(image.definition),
@@ -369,26 +370,26 @@ extension DeviceType {
     var deviceKitDefinition: String {
         // assumes run on upgraded device
         // create case name
-        var caseName = name.safeDescription
-        var name = name
+        var caseName = officialName.safeDescription
+        var officialName = officialName
         var isAppleWatch = false
         if caseName.contains("Apple Watch") {
             if let pos = caseName.lastIndex(of: " "), !caseName.contains("Ultra") {
                 let mm = caseName[pos..<caseName.endIndex]
                 caseName.replaceSubrange(pos..<caseName.index(pos, offsetBy: 1), with: "_")
-                name = name.replacingOccurrences(of: mm, with: "")
+                officialName = officialName.replacingOccurrences(of: mm, with: "")
             }
             caseName = caseName.replacingOccurrences(of: "Apple Watch", with: "apple Watch")
             caseName = caseName.replacingOccurrences(of: "(1st generation)", with: "Series0")
-            let end = name.firstIndex(of: ")") ?? name.endIndex
-            name = String(name[name.startIndex..<end])
-            if name.contains("generation") {
-                name += ")"
+            let end = officialName.firstIndex(of: ")") ?? officialName.endIndex
+            officialName = String(officialName[officialName.startIndex..<end])
+            if officialName.contains("generation") {
+                officialName += ")"
             }
             isAppleWatch = true
         }
-        if name.contains("Apple TV") {
-            name = name.replacingOccurrences(of: " (1st generation)", with: "")
+        if officialName.contains("Apple TV") {
+            officialName = officialName.replacingOccurrences(of: " (1st generation)", with: "")
         }
         caseName = caseName.replacingOccurrences(of: " ", with: "")
         caseName = caseName.replacingOccurrences(of: "Xs", with: "XS")
@@ -411,7 +412,7 @@ extension DeviceType {
         var description = description
         var safeDescription = safeDescription.replacingOccurrences(of: "Xs", with: "XS")
         
-        var support = "Device is a\(String(name[name.startIndex]).isVowel ? "n" : "") [\(name)](https://support.apple.com/kb/\(supportId))"
+        var support = "Device is a\(String(officialName[officialName.startIndex]).isVowel ? "n" : "") [\(officialName)](https://support.apple.com/kb/\(supportId))"
         support = support.replacingOccurrences(of: " (9.7-inch)", with: " 9.7-inch")
         support = support.replacingOccurrences(of: " (10.5-inch)", with: " 10.5-inch")
         support = support.replacingOccurrences(of: " (11-inch)", with: " 11-inch")
@@ -444,12 +445,12 @@ extension DeviceType {
             diagonal = "2.0"
         }
         var ppi = screen?.ppi ?? -1
-        if name.contains("HomePod") {
+        if officialName.contains("HomePod") {
             diagonal = "-1"
             ppi = -1
         }
         var ratio = "\(screen?.resolution.ratio.deviceKitDefinition ?? "()")"
-        if name.contains("Apple TV") {
+        if officialName.contains("Apple TV") {
             ratio = ratio.replacingOccurrences(of: "16, 9", with: "")
         }
         if [8, 13, 14].contains(Int(self.identifierSortKey)) {
@@ -578,7 +579,7 @@ struct MacLookup: Codable {
     var models: [String] // identifiers
     var kind: String // form
     var colors: [String] // Convert to MaterialColors
-    var name: String
+    var officialName: String
     var variant: String // included in name so unused
     var parts: [String] // part numbers MGTF3xx/a
     var asDevice: Mac {
@@ -589,22 +590,22 @@ struct MacLookup: Codable {
             materials.append(MaterialColor.from(string: color, form: form))
         }
         // convert name to cpu
-        var cpu = CPU.from(nameString: name)
+        var cpu = CPU.from(nameString: officialName)
         var capabilities = form.capabilities
-        if name.contains("Pro") {
+        if officialName.contains("Pro") {
             capabilities.insert(.pro)
         }
-        if name.contains("Air") {
+        if officialName.contains("Air") {
             capabilities.insert(.air)
         }
-        if name == "iMac Pro" {
+        if officialName == "iMac Pro" {
             cpu = .xeonE5
         }
         // assume all the ones we're importing are new enough that they have USB-C
         capabilities.insert(.usbC)
         capabilities.subtract(form.capabilities) // will automatically be added by form so no need to double add.
         return Mac(
-            name: name,
+            officialName: officialName,
             identifiers: models.distilled,
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: form,
@@ -717,7 +718,7 @@ public struct Migration {
         }
         for device in devices {
 //            device.upgrade()
-            let idiom = device.idiom.description
+            let idiom = device.idiom.label
             if idiom != lastIdiom {
                 print("        ]\n\n\(idiom)s = [")
                 lastIdiom = idiom
@@ -1023,8 +1024,8 @@ Watch7,5 : Apple Watch Ultra 2
             }
             let (identifier, description) = (parts[0], parts[1])
             var device = Device(identifier: identifier)
-            if device.name.contains("Unknown") {
-                device.name = description
+            if device.officialName.contains("Unknown") {
+                device.officialName = description
                 print(device.definition)
             }
         }
