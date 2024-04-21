@@ -99,14 +99,6 @@ struct HardwareListView: View {
         List {
             Section {
                 DeviceInfoView(device: Device.current)
-                ZStack(alignment: .topLeading) {
-                    Color.clear
-                    Text(Device.current.description).padding()
-                }
-                .foregroundStyle(.background)
-                .background {
-                    RoundedRectangle(cornerRadius: 15)
-                }
 
             } footer: {
                 VStack {
@@ -128,8 +120,8 @@ struct HardwareListView: View {
                     }
                 }
             }
-            AttributeListView(header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
             AttributeListView(header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
+            AttributeListView(header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
             AttributeListView(header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
         .navigationTitle("Hardware")
@@ -149,18 +141,6 @@ struct HardwareListView: View {
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct DeviceTestView: View {
     @State var disableIdleTimer = false
-
-    var environments: some View {
-        HStack {
-            ForEach(Device.Environment.allCases, id: \.self) { environment in
-                let enabled = environment.test(device: Device.current)
-                Image(environment)
-                    .opacity(enabled ? 1.0 : 0.2)
-                    .foregroundColor(enabled ? environment.color : .primary)
-                    .accessibilityLabel((enabled ? "Is" : "Not") + " " + environment.label)
-            }
-        }
-    }
 
     var testView: some View {
         List {
@@ -189,7 +169,7 @@ public struct DeviceTestView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        environments
+                        EnvironmentsView()
                         Spacer()
                     }
                 }

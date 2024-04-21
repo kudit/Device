@@ -147,14 +147,19 @@ public struct MonitoredCurrentDeviceView<Content: View>: View {
 public struct CurrentDeviceInfoView: View {
     @State var device: any CurrentDevice
     @State var includeStorage: Bool
+    @State var debug: Bool
     
-    public init(device: any CurrentDevice, includeStorage: Bool = true) {
+    public init(device: any CurrentDevice, includeStorage: Bool = true, debug: Bool = false) {
         self.device = device
         self.includeStorage = includeStorage
+        self.debug = debug
     }
 
     public var body: some View {
         VStack(alignment: .leading) {
+            if debug {
+                EnvironmentsView()
+            }
             HStack {
                 Image(device)
                     .foregroundStyle(Color.accentColor)
