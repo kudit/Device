@@ -158,9 +158,6 @@ public struct CurrentDeviceInfoView: View {
 
     public var body: some View {
         VStack(alignment: .leading) {
-            if debug {
-                EnvironmentsView()
-            }
             HStack {
                 Image(device)
                     .foregroundStyle(Color.accentColor)
@@ -168,6 +165,9 @@ public struct CurrentDeviceInfoView: View {
             }.font(.headline)
 //                .accentColor(.green)
             Divider()
+            if debug {
+                EnvironmentsView()
+            }
             ZStack(alignment: .top) {
                 SystemInfoView(device: device)
             }
