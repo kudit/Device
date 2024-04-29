@@ -42,8 +42,12 @@ public struct SystemInfoView: View {
         .font(.caption)
         .padding()
         .background {
-            RoundedRectangle(cornerRadius: 15)
-                .fill(.background)
+            ZStack {
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(.background)
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(.primary)
+            }
         }
     }
 }

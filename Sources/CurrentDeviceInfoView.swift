@@ -168,9 +168,7 @@ public struct CurrentDeviceInfoView: View {
             if debug {
                 EnvironmentsView()
             }
-            ZStack(alignment: .top) {
-                SystemInfoView(device: device)
-            }
+            SystemInfoView(device: device)
             if device.screen != nil {
                 ScreenInfoView(device: device)
             }

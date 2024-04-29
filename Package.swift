@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // WARNING:
@@ -18,7 +18,7 @@ let package = Package(
         .visionOS("1.0")
     ],
     products: [
-        // Products define the executables and libraries a package produces, and make them visible to other packages.
+        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "Device Library", // has to be named different from the iOSApplication or Swift Playgrounds won't open correctly
             targets: ["Device"]
@@ -27,7 +27,7 @@ let package = Package(
             name: "Device", // needs to match package name to open properly in Swift Playgrounds
             targets: ["DeviceTestAppModule"],
             teamIdentifier: "3QPV894C33",
-            displayVersion: "2.1.3",
+            displayVersion: "2.1.4",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.blue),
@@ -41,16 +41,16 @@ let package = Package(
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
-            capabilities: [
-                .outgoingNetworkConnections()
-            ],
+            // is this necessary for Device?
+//            capabilities: [
+//                .outgoingNetworkConnections()
+//            ],
             appCategory: .developerTools
         ),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
+        // Targets are the basic building blocks of a package, defining a module or a test suite.
+        // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "Device",
             path: "Sources",
@@ -61,7 +61,7 @@ let package = Package(
         .executableTarget(
             name: "DeviceTestAppModule",
             dependencies: [
-                "Device"
+                "Device",
             ],
             path: "Development",
 //			exclude: ["Device.xcodeproj/*"],

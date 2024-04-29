@@ -329,11 +329,7 @@ extension Device {
         /// Battery level: \(batteryLevel)%, device is unplugged.
         /// ```
         public var description: String {
-            switch self {
-            case .charging(let batteryLevel): return "Battery level: \(batteryLevel)%, device is plugged in."
-            case .full: return "Battery level: 100 % (Full), device is plugged in."
-            case .unplugged(let batteryLevel): return "Battery level: \(batteryLevel)%, device is unplugged."
-            }
+            return Device.current.battery?.description ?? "No Battery"
         }
     }
     

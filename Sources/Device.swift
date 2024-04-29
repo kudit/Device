@@ -14,7 +14,7 @@ import Foundation
 
 public extension Device {
     /// The version of the Device Library
-    static var version = "2.1.3"
+    static var version = "2.1.4"
 }
 
 #if canImport(UIKit)
@@ -158,7 +158,7 @@ extension IdiomType {
     }
 }
 
-public struct Device: CustomStringConvertible, IdiomType, Hashable {    
+public struct Device: IdiomType, Hashable {    
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
     public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible {
         /// An unspecified idiom.
@@ -420,6 +420,7 @@ public struct Device: CustomStringConvertible, IdiomType, Hashable {
     }
     
     /// A textual representation of the device.
+//    @available(*, deprecated, message: "self.officialName or self.identifiers or property actually needing.")
     public var description: String {
         return "\(self.officialName), (\(self.identifiers))" // removed since normal description is very long and messy: , \(String(describing: self.capabilities.sorted))
     }

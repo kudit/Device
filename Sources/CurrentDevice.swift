@@ -202,6 +202,36 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     
     func enableMonitoring(frequency: TimeInterval)
 }
+extension ActualHardwareDevice { // Should be CurrentDevice but causes error in Swift Playgrounds.  Perhaps fix this in the future?  Error: "Replaced accessor for 'description' occurs in multiple places"
+    /// Description (includes current identifier since device might have multiple).
+    public var description: String {
+        let environments = Device.Environment.allCases.map {
+            if $0 != .realDevice && $0.test(device: self) {
+                return " (\($0.label))"
+            } else {
+                return "" //  H(.\($0.caseName))
+            }
+        }.joined()
+        var description = """
+Device: \(officialName)
+Name: "\(name)"
+Model: \(identifier) running \(systemName) \(systemVersion)\(environments)
+Thermal State: \(String(describing: thermalState))
+
+"""
+        if let battery {
+            description += battery.description + "\n"
+        }
+        description += """
+Volume Total Capacity: \(volumeTotalCapacity?.byteString(.file) ?? "n/a")
+Volume Available Capacity for Important Resources: \(volumeAvailableCapacityForImportantUsage?.byteString(.file) ?? "n/a")
+Volume Available Capacity for Opportunistic Resources: \(volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a")
+Volume Available Capacity: \(volumeAvailableCapacity?.byteString(.file) ?? "n/a")
+Device Framework Version: v\(Device.version)
+"""
+        return description
+    }
+}
 /*
  Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
      callback()
@@ -415,29 +445,7 @@ class ActualHardwareDevice: CurrentDevice {
     init() {
         device = Device(identifier: identifier)
     }
-    
-    /// Description (includes current identifier since device might have multiple).
-    public var description: String {
-        var description = """
-Device: \(officialName)
-Name: "\(name)"
-Model: \(identifier) running \(systemName) \(systemVersion)
-Thermal State: \(String(describing: thermalState))
-
-"""
-        if let battery {
-            description += battery.description + "\n"
-        }
-        description += """
-Volume Total Capacity: \(volumeTotalCapacity?.byteString(.file) ?? "n/a")
-Volume Available Capacity for Important Resources: \(volumeAvailableCapacityForImportantUsage?.byteString(.file) ?? "n/a")
-Volume Available Capacity for Opportunistic Resources: \(volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a")
-Volume Available Capacity: \(volumeAvailableCapacity?.byteString(.file) ?? "n/a")
-Device Framework Version: \(Device.version)
-"""
-        return description
-    }
-    
+        
     /// Returns `true` if running on the simulator vs actual device.
     public var isSimulator: Bool {
 #if targetEnvironment(simulator)
@@ -821,7 +829,9 @@ import SwiftUI
 #Preview("Animated Test") {
     List {
         ForEach(MockDevice.mocks, id: \.id) { mock in
-            CurrentDeviceInfoView(device: mock, includeStorage: false)
+            Section {
+                CurrentDeviceInfoView(device: mock, includeStorage: false)
+            }
         }
     }
 }

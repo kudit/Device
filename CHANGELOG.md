@@ -25,6 +25,7 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.1.4 4/29/2024 Added `v` to version in description.  Added some separation between SystemInfo view (and removed unused ZStack wrapper).  Added back text description to HardwareView to ensure testing (refreshes when toggling to ensure that the text is updated to current which is further helpful for debugging).  Added environment information to description.  Removed redundant battery description code.
 v2.1.3 4/22/2024 Moved Environments view in CurrentDeviceInfoView.
 v2.1.2 4/21/2024 Updating version numbers.  Updating Environments to be centered and visible in tests.  Updated Backport and other UI functions that should be version-restricted.  Tested Apple Watch version (missed in 2.1 testing).  Fixed issue with storage Ints being too small (so specified Int64).  Fixed updates for macCatalyst.
 v2.1.1 4/21/2024 Updated to enable showing environments in CurrentDeviceInfoView.
@@ -130,6 +131,7 @@ This is where proposals can be discussed for potential movement to the roadmap.
 - [ ] If there's a way to fetch the actual model number (like MN572LL/A), then we can use this to give information of the state of the device (new, refurb, replaced, personalized, etc): https://osxdaily.com/2018/01/27/determine-iphone-new-refurbished-replaced/
 - [ ] Should forceTouch and touch3d be separated?  Discuss in issues or here.
 - [ ] Add volume controls and power button and home button capabilities?  Possibly with rumored camera button?
+- [ ] Add orientation and brightness to current device description?
 - [ ] Getting Computer Information (must give reason since can be used for fingerprinting so not included currently):
 var processorCount: Int
 var activeProcessorCount: Int

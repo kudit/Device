@@ -61,6 +61,7 @@ struct SymbolTests<T: DeviceAttributeExpressible>: View {
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 struct AttributeListView<T: DeviceAttributeExpressible>: View {
+    @State var currentDevice: any CurrentDevice = Device.current
     @State var header: String
     @State var attributes: [T]
     var styleView = false
@@ -74,7 +75,7 @@ struct AttributeListView<T: DeviceAttributeExpressible>: View {
                 if styleView {
                     SymbolTests(attribute: attribute, size: size)
                 } else {
-                    if attribute.test(device: Device.current) {
+                    if attribute.test(device: currentDevice) {
                         label
                             .listRowBackground(attribute.color)
                     } else {
@@ -90,9 +91,11 @@ struct AttributeListView<T: DeviceAttributeExpressible>: View {
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 struct HardwareListView: View {
+    @State var currentDevice: any CurrentDevice
     @State var styleView = false
     @State var size: CGFloat = .defaultFontSize
-    init(styleView: Bool = false, size: CGFloat = .defaultFontSize) {
+    init(currentDevice: any CurrentDevice = Device.current, styleView: Bool = false, size: CGFloat = .defaultFontSize) {
+        self.currentDevice = currentDevice
         self.styleView = styleView
         self.size = size
 //        // This is triggered on main view for some reason.
@@ -101,31 +104,35 @@ struct HardwareListView: View {
     var body: some View {
         List {
             Section {
-                DeviceInfoView(device: Device.current)
-
+                DeviceInfoView(device: currentDevice)
             } footer: {
-                VStack {
-                    Spacer()
-                    Divider()
-                    Spacer()
-                    Picker("View", selection: $styleView) {
-                        Text("Names").tag(false)
-                        Text("Styles").tag(true)
-                    }
-                    .pickerStyle(.segmentedBackport)
-                    if styleView {
-                        #if !os(tvOS)
-                        Slider(
-                            value: $size,
-                            in: 9...100
-                        )
-                        #endif
+                VStack(alignment: .leading) {
+                    Text("\(currentDevice)")
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                    VStack {
+                        Spacer()
+                        Divider()
+                        Spacer()
+                        Picker("View", selection: $styleView) {
+                            Text("Names").tag(false)
+                            Text("Styles").tag(true)
+                        }
+                        .pickerStyle(.segmentedBackport)
+#if !os(tvOS)
+                        if styleView {
+                            Slider(
+                                value: $size,
+                                in: 9...100
+                            )
+                        }
+#endif
                     }
                 }
             }
-            AttributeListView(header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
-            AttributeListView(header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
-            AttributeListView(header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
+            AttributeListView(currentDevice: currentDevice, header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
+            AttributeListView(currentDevice: currentDevice,header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
+            AttributeListView(currentDevice: currentDevice,header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
         .navigationTitle("Hardware")
     }
