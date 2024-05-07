@@ -14,7 +14,7 @@ import Foundation
 
 public extension Device {
     /// The version of the Device Library
-    static var version = "2.1.4"
+    static var version = "2.1.5"
 }
 
 #if canImport(UIKit)
@@ -2717,7 +2717,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 11-inch (4th generation)",
             identifiers: ["iPad14,3", "iPad14,4"],
             supportId: "SP882",
-            image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP882/ipad-pro-4gen-mainimage_2x.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-11-inch-4gen-ipad-pro.png",
             capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
@@ -2729,7 +2729,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 12.9-inch (6th generation)",
             identifiers: ["iPad14,5", "iPad14,6"],
             supportId: "SP883",
-            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111841_ipad-pro-4gen-mainimage.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-12-9-inch-6gen-ipad-pro.png",
             capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
@@ -2737,6 +2737,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
+        // TODO: Add new iPad Pro models and iPad Air models.
         
     ]
 }

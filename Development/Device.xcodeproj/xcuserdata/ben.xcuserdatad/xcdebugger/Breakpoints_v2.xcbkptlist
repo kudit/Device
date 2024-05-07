@@ -18,6 +18,36 @@
             endingLineNumber = "181"
             landmarkName = "definition"
             landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "40F30452-B6AF-42D0-83D7-DD1CAA801F43 - 3060a34233579b5b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Swift.Dictionary&lt; where &#x3c4;_0_0 == Swift.String, &#x3c4;_0_1 == Any&gt;.definition.getter : Swift.String"
+                  moduleName = "DeviceTest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Migration.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "181"
+                  endingLineNumber = "181">
+               </Location>
+               <Location
+                  uuid = "40F30452-B6AF-42D0-83D7-DD1CAA801F43 - 3060a34233579b5b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Swift.Dictionary&lt; where &#x3c4;_0_0 == Swift.String, &#x3c4;_0_1 == Any&gt;.definition.getter : Swift.String"
+                  moduleName = "DeviceTest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Migration.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "181"
+                  endingLineNumber = "181">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -79,6 +109,36 @@
             endingLineNumber = "59"
             landmarkName = "screen"
             landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "40E9358F-823F-4C4B-B322-7673D98486A1 - a77cf6a281fa786a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Device.ScreenInfoView.screen.getter : Device.Screen"
+                  moduleName = "DeviceTest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/ScreenInfoView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+               <Location
+                  uuid = "40E9358F-823F-4C4B-B322-7673D98486A1 - a77cf6a281fa786a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Device.ScreenInfoView.screen.getter : Device.Screen"
+                  moduleName = "DeviceTest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/ScreenInfoView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

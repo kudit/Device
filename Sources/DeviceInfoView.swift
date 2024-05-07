@@ -163,6 +163,9 @@ public struct DeviceInfoView: View {
                     .foregroundColor(Color(hex: color.rawValue))
                 //                            .shadow(color: .primary, radius: 0.5)
             }
+            Spacer(minLength: 0)
+            Text("\(device.cpu.caseName) ")+Text(
+            Image(symbolName: "cpu"))
         }
     }
     
@@ -206,6 +209,8 @@ public struct DeviceInfoView: View {
 public struct DeviceListView: View {
     public var devices: [DeviceType]
     
+    @State var searchText = ""
+    
     public init(devices: [any DeviceType]) {
         self.devices = devices
     }
@@ -223,7 +228,9 @@ public struct DeviceListView: View {
                 }
                 lastIdiom = device.idiom
             }
-            sectionDevices.append(device)
+            if searchText == "" || device.description.lowercased().contains(searchText.lowercased()) {
+                sectionDevices.append(device)
+            }
         }
         if let lastIdiom, sectionDevices.count > 0 {
             sections.append((lastIdiom.label, sectionDevices))
@@ -250,6 +257,7 @@ public struct DeviceListView: View {
                 }
             }
         }
+        .searchable(text: $searchText, prompt: "Devices")
     }
 }
 

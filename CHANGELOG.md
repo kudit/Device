@@ -25,10 +25,16 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.1.5 5/7/2024 Added spaces to changelog to improve formatting in github.  Added notifications when changing orientation and brightness.  Removed brightness from macCatalyst and macOS since it doesn't appear to work.  Change icon to Icon.png instead of Icon%20Design.1024.png.  Added CPU to the SystemInfoView.  Added search to the device list tool.  Updated iPad Pro 6th gen images.
+
 v2.1.4 4/29/2024 Added `v` to version in description.  Added some separation between SystemInfo view (and removed unused ZStack wrapper).  Added back text description to HardwareView to ensure testing (refreshes when toggling to ensure that the text is updated to current which is further helpful for debugging).  Added environment information to description.  Removed redundant battery description code.
+
 v2.1.3 4/22/2024 Moved Environments view in CurrentDeviceInfoView.
+
 v2.1.2 4/21/2024 Updating version numbers.  Updating Environments to be centered and visible in tests.  Updated Backport and other UI functions that should be version-restricted.  Tested Apple Watch version (missed in 2.1 testing).  Fixed issue with storage Ints being too small (so specified Int64).  Fixed updates for macCatalyst.
+
 v2.1.1 4/21/2024 Updated to enable showing environments in CurrentDeviceInfoView.
+
 v2.1.0 4/20/2024 Updated ChangeLog location and formatting.  Added CurrentDeviceInfoView.  Added Device.Environment enum to represent the various environment states so they can be included in the hardware list.  Created a CurrentDeviceInfoView.  Added better description for debugging and inclusion in external data.  Changed DeviceType.name to officialName to differentiate from the user's specified name and maintain compatibility with DeviceKit syntax.  Improved symbols and added modern and legacy symbols for hierarchical display.  Changed so battery status can be compared in macOS.  Included resource processing in the test app so can test using Swift Playgrounds.  Changed so battery monitors can access the type of change that was detected.  Batteries now store a local value and will automatically monitor for changes so that UI can update without adding a separate monitor.  Reworked naming of monitor to be clearer when using just the closure.  Removed the `Battery.add(monitor)` function in favor of a new `Battery.monitor` function that provides the update type when triggered.  I don't think anyone was using this so this shouldn't be a breaking change and is easy to fix.  Increased macOS requirement to 12 (too many issues where foregroundStyle isn't supported.)  Reworked BatteryTestsView to enable toggling lowPowerMode and includesBacking parameter to enable transparency.  Added several backport compabilitiy functions to simplify code for older versions. Had to remove UI compatibility for watchOS < 8 due to too many compatibility issues.  Reordered CurrentDevice properties to be better grouped.  Added isMacCatalyst environment check.  Created monitored views to take any Battery or any CurrentDevice and update as the device or battery updates.  For battery test views, added a toggle for low power mode to change mocks.
 
 v2.0.10 4/12/2024 Fixed so previews work in Xcode for Development files (previews will not work within the project Sources in Xcode but all previews work in Swift Playgrounds).  Updated minimum requirments in Xcode project.  Updated Device version in both targets and package.  Simplified description.  Fixed so name, localizedSystemName, etc. are non-optional.  Deprecated Device.identifier (use Device.current.identifier).  Added Device.version constant for referencing version (will need to manually update on version changes unfortunately).
@@ -95,12 +101,13 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
+- [ ] Device: MonitoredBatteryView and BatteryView should default to using Device.current.battery.  Have extension with generic "where Battery == Device.current.battery" for default init.
 - [ ] Go through and make sure device images (photos) have transparent background instead of white.
 - [ ] Add support IDs for macs and anything that has one missing.
 - [ ] Double check and update all device color sets. (right click on the color swatches and inspect element for the hex code)  https://www.apple.com/iphone/compare/?modelList=iphone-13-mini,iphone-13,iphone-15-pro
 - [ ] Add weight option for battery text/symbol (title originally was bold and now that we're doing font size, add weight parameter)
 - [ ] Add new devices (ongoing).
-- [ ] Figure out how to query brightness on macOS.
+- [ ] Figure out how to query brightness on macOS/macCatalyst (UIScreen.main.brightness does not appear to work).
 - [ ] Improve test app user interface/layout.
 - [ ] Add tests to complete code coverage.
 - [ ] Create tests in such a way that they can be run in Previews and in the example App (may require a project dependency).

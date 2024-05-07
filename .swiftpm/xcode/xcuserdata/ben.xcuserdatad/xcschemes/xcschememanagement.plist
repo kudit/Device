@@ -6,6 +6,8 @@
 	<dict>
 		<key>Device Library.xcscheme_^#shared#^_</key>
 		<dict>
+			<key>isShown</key>
+			<false/>
 			<key>orderHint</key>
 			<integer>2</integer>
 		</dict>
@@ -28,6 +30,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>Device</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>Device Library</key>
 		<dict>
 			<key>primary</key>
 			<true/>

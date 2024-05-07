@@ -364,7 +364,7 @@ public extension Capabilities {
 public enum CPU: Hashable, CaseIterable, CaseNameConvertible {
     // Only 2013+ really need to be included since Swift won't run on devices prior to this.
     case unknown
-    // Mac
+    // Mac/iPad
     case i3
     case xeonE5
     case i5
@@ -381,6 +381,7 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible {
     case m3
     case m3pro
     case m3max
+    case m4
     // iPod/iPhone
     case s5L8900 // Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch
     case sAPL0298C05 // iPhone 3GS
@@ -496,6 +497,7 @@ public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible {
     case firstGeneration
     case secondGeneration
     case usbC
+    case pro
     public var symbolName: String {
         switch self {
         case .firstGeneration:
@@ -504,6 +506,12 @@ public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible {
             "applepencil.gen2"
         case .usbC:
             "applepencil"
+        case .pro:
+//            if #available(iOS 18, *) {
+//                "applepencilpro"// TODO: iOS 18 will likely add a special symbol
+//            } else {
+                "applepencil.gen2"
+//            }
         }
     }
 }

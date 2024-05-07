@@ -404,7 +404,7 @@ public class MockDevice: CurrentDevice {
     public var battery: (any Battery)? = nil
     public var isIdleTimerDisabled: Bool = false
     public func disableIdleTimerWhenPluggedIn() {
-        // do nothing
+        // do nothing (this is Mock)
     }
     @Published public var thermalState: ThermalState = .nominal
     
@@ -444,6 +444,29 @@ class ActualHardwareDevice: CurrentDevice {
 
     init() {
         device = Device(identifier: identifier)
+        // add screen orientation monitor (only supported by UIDevice which is fine)
+#if canImport(UIKit)
+        #if os(iOS) // technically supported by mac catalyst as well but not sure when it would be ever used       NotificationCenter.default.addObserver(
+        NotificationCenter.default.addObserver(
+            forName: UIDevice.orientationDidChangeNotification,
+            object: nil,
+            queue: OperationQueue.main
+        ) { notification in
+            // Do your work after received notification
+            self.objectWillChange.send()
+        }
+        #endif
+        #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        NotificationCenter.default.addObserver(
+            forName: UIScreen.brightnessDidChangeNotification,
+            object: nil,
+            queue: OperationQueue.main
+        ) { notification in
+            // Do your work after received notification
+            self.objectWillChange.send()
+        }
+        #endif
+#endif
     }
         
     /// Returns `true` if running on the simulator vs actual device.
@@ -657,31 +680,29 @@ class ActualHardwareDevice: CurrentDevice {
             
             // for macOS: TODO
             // https://stackoverflow.com/questions/67929644/getting-notified-when-the-screen-brightness-changes-in-macos
-            // TODO: create a tasks that polls for various values on macOS and constantly updates values so the local value can publish notifications?
-            // use `objectWillChange.send()` to publish changes to the variables.  TODO: Have a setting that specifies the frequency of the polling updates for properties and which properties are included (don't need to include updates in the poll that aren't needed to save processing).  enablePolling(rate: Double, // seconds between polling
-            // updateAttributes: [default Attributes.allCases, optionalCallbackToCall on each update cycle to tap in to this update clock to avoid creating multiple timers.
 
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
             let b = UIScreen.main.brightness
             if b < 0 {
                 return nil
             }
             return b
-#elseif canImport(IOKit)
-            var brightness: Float = 1.0
-            var service: io_object_t = 1
-            var iterator: io_iterator_t = 0
-            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
-            
-            if result == kIOReturnSuccess {
-                
-                while service != 0 {
-                    service = IOIteratorNext(iterator)
-                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
-                    IOObjectRelease(service)
-                }
-            }
-            return Double(brightness)
+//#elseif canImport(IOKit)
+//            // Does not seem to work!
+//            var brightness: Float = 1.0
+//            var service: io_object_t = 1
+//            var iterator: io_iterator_t = 0
+//            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
+//            
+//            if result == kIOReturnSuccess {
+//                
+//                while service != 0 {
+//                    service = IOIteratorNext(iterator)
+//                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
+//                    IOObjectRelease(service)
+//                }
+//            }
+//            return Double(brightness)
 #else
             return nil
 #endif
@@ -735,6 +756,7 @@ class ActualHardwareDevice: CurrentDevice {
     }
     /// Actually disable the idle timer
     private func _disableIdleTimer(_ disabled: Bool = true) {
+        // https://developer.apple.com/documentation/uikit/uiapplication/1623070-isidletimerdisabled
 #if canImport(UIKit) && !os(watchOS)
         UIApplication.shared.isIdleTimerDisabled = disabled
 #endif
