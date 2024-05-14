@@ -361,7 +361,7 @@ extension Device {
 //    public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
 //        return lhs.description == rhs.description
 //    }
-//    
+//
 //    /// Compares two battery states.
 //    ///
 //    /// - parameter lhs: A battery state.

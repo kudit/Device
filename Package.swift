@@ -6,10 +6,90 @@
 // Do not edit it by hand because the contents will be replaced.
 
 import PackageDescription
+
+var packageLibraryName = "Device"
+
+// Products define the executables and libraries a package produces, making them visible to other packages.
+var products = [
+	Product.library(
+        name: "\(packageLibraryName) Library", // has to be named different from the iOSApplication or Swift Playgrounds won't open correctly
+        targets: [packageLibraryName]
+    ),
+]
+
+// Targets are the basic building blocks of a package, defining a module or a test suite.
+// Targets can depend on other targets in this package and products from dependencies.
+var targets = [
+	Target.target(
+		name: packageLibraryName,
+//            dependencies: [
+//                .product(name: "Device Library", package: "device")
+//            ],
+		path: "Sources",
+		resources: [
+			.process("Resources"),
+		]
+	),
+]
+
+#if canImport(AppleProductTypes) // swift package dump-package fails because of this
 import AppleProductTypes
 
+products += [
+	.iOSApplication(
+		name: packageLibraryName, // needs to match package name to open properly in Swift Playgrounds
+		targets: ["\(packageLibraryName)TestAppModule"],
+		teamIdentifier: "3QPV894C33",
+		displayVersion: "2.1.6",
+		bundleVersion: "1",
+		appIcon: .asset("AppIcon"),
+		accentColor: .presetColor(.blue),
+		supportedDeviceFamilies: [
+			.pad,
+			.phone
+		],
+		supportedInterfaceOrientations: [
+			.portrait,
+			.landscapeRight,
+			.landscapeLeft,
+			.portraitUpsideDown(.when(deviceFamilies: [.pad]))
+		],
+		// is this necessary for Device?
+//            capabilities: [
+//                .outgoingNetworkConnections()
+//            ],
+		appCategory: .developerTools
+	),
+]
+
+targets += [
+	.executableTarget(
+		name: "\(packageLibraryName)TestAppModule",
+		dependencies: [
+			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal
+		],
+		path: "Development",
+//			exclude: ["Device.xcodeproj/*"],
+		resources: [
+			.process("Resources")
+		],
+		swiftSettings: [
+			.enableUpcomingFeature("BareSlashRegexLiterals")
+		]
+	),
+	.testTarget(
+		name: "\(packageLibraryName)Tests",
+		dependencies: [
+			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal
+		],
+		path: "Tests"
+	),
+]
+
+#endif // for Swift Package compiling for https://swiftpackageindex.com/add-a-package
+
 let package = Package(
-    name: "Device",
+    name: packageLibraryName,
     platforms: [
         .iOS("15.2"),
         .macOS("11.0"),
@@ -17,67 +97,10 @@ let package = Package(
         .watchOS("6.0"),
         .visionOS("1.0")
     ],
-    products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "Device Library", // has to be named different from the iOSApplication or Swift Playgrounds won't open correctly
-            targets: ["Device"]
-        ),
-        .iOSApplication(
-            name: "Device", // needs to match package name to open properly in Swift Playgrounds
-            targets: ["DeviceTestAppModule"],
-            teamIdentifier: "3QPV894C33",
-            displayVersion: "2.1.5",
-            bundleVersion: "1",
-            appIcon: .asset("AppIcon"),
-            accentColor: .presetColor(.blue),
-            supportedDeviceFamilies: [
-                .pad,
-                .phone
-            ],
-            supportedInterfaceOrientations: [
-                .portrait,
-                .landscapeRight,
-                .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-            ],
-            // is this necessary for Device?
-//            capabilities: [
-//                .outgoingNetworkConnections()
-//            ],
-            appCategory: .developerTools
-        ),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .target(
-            name: "Device",
-            path: "Sources",
-            resources: [
-	            .process("Resources"),
-            ]
-        ),
-        .executableTarget(
-            name: "DeviceTestAppModule",
-            dependencies: [
-                "Device",
-            ],
-            path: "Development",
-//			exclude: ["Device.xcodeproj/*"],
-            resources: [
-                .process("Resources")
-            ],
-            swiftSettings: [
-                .enableUpcomingFeature("BareSlashRegexLiterals")
-            ]
-        ),
-        .testTarget(
-            name: "DeviceTests",
-            dependencies: [
-                "Device"
-            ],
-            path: "Tests"
-        ),
-    ]
+    products: products,
+    // include dependencies
+//    dependencies: [
+//        .package(url: "https://github.com/kudit/Device", "2.1.4"..<"3.0.0")
+//    ],
+    targets: targets
 )

@@ -12,24 +12,24 @@ import SwiftUI
 // https://malauch.com/posts/auto-resizable-text-size-in-swiftui/
 /*
  let font = Font.custom("SF Pro", size: 8, relativeTo: .caption2)
-.system(size:) should support relativeTo:
+ .system(size:) should support relativeTo:
  .font(.system(size: 200))  // 1
  .minimumScaleFactor(0.01)  // 2
  */
 
 public struct BatteryView<SomeBattery: Battery>: View {
     @ObservedObject public var battery: SomeBattery
-
+    
     // Making these state variables means they wouldn't be updated or set by the initializer.
     // These are part of the view which can be set in initializer so they don't need to be public.
     var useSystemColors: Bool
     var includePercent: Bool
     var fontSize: CGFloat
-//    /// Include the backing view to improve contrast.
+    //    /// Include the backing view to improve contrast.
     var includeBacking: Bool
-
+    
     @Environment(\.colorScheme) var colorScheme
-        
+    
     public init(battery: SomeBattery, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
         self.battery = battery
         self.useSystemColors = useSystemColors
@@ -37,7 +37,7 @@ public struct BatteryView<SomeBattery: Battery>: View {
         self.fontSize = fontSize
         self.includeBacking = includeBacking
     }
-            
+    
     var background: Color {
         if colorScheme == .light {
             return .white
@@ -63,7 +63,7 @@ public struct BatteryView<SomeBattery: Battery>: View {
                         .font(.system(size: fontSize))
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(
-                             background,
+                            background,
                             .clear) // tertiary color unused.
                 } else {
                     Image(symbolName: "battery.100percent")
@@ -151,22 +151,22 @@ public struct BatteryView<SomeBattery: Battery>: View {
 
 public struct MonitoredBatteryView: View {
     var battery: (any Battery)?
-
+    
     var useSystemColors: Bool
     var includePercent: Bool
     var fontSize: CGFloat
     //    /// Include the backing view to improve contrast.
     var includeBacking: Bool
-        
+    
     public init(battery: (any Battery)?, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
         self.battery = battery
         self.useSystemColors = useSystemColors
         self.includePercent = includePercent
         self.fontSize = fontSize
         self.includeBacking = includeBacking
-        #if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
         Device.current.enableMonitoring(frequency: 1)
-        #endif
+#endif
     }
     public var body: some View {
         Group {

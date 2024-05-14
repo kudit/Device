@@ -157,17 +157,12 @@ public struct DeviceInfoView: View {
     }
     
     var deviceColors: some View {
-        HStack {
-            ForEach(device.colors, id: \.self) { color in
-                Image(device.idiomatic)
-                    .foregroundColor(Color(hex: color.rawValue))
-                //                            .shadow(color: .primary, radius: 0.5)
-            }
-            Spacer(minLength: 0)
-            Text("\(device.cpu.caseName) ")+Text(
-            Image(symbolName: "cpu"))
+        ForEach(device.colors, id: \.self) { color in
+            Image(device.idiomatic)
+                .foregroundColor(Color(hex: color.rawValue))
+            //                            .shadow(color: .primary, radius: 0.5)
         }
-    }
+}
     
     public var body: some View {
         VStack {
@@ -175,7 +170,12 @@ public struct DeviceInfoView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(device.officialName)
                         .font(.headline)
-                    deviceColors
+                    HStack {
+                        deviceColors
+                        Spacer(minLength: 0)
+                        Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text(
+                            Image(symbolName: "cpu"))
+                    }
                     HStack {
                         CapabilitiesTextView(capabilities: device.capabilities)
                     }
@@ -228,7 +228,7 @@ public struct DeviceListView: View {
                 }
                 lastIdiom = device.idiom
             }
-            if searchText == "" || device.description.lowercased().contains(searchText.lowercased()) {
+            if searchText == "" || "\(device.description) \(device.cpu.caseName)".lowercased().contains(searchText.lowercased()) {
                 sectionDevices.append(device)
             }
         }

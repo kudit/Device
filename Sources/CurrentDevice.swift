@@ -37,7 +37,7 @@ public extension Device {
             }
             return cases
         }
-                
+        
         public var symbolName: String {
             switch self {
             case .realDevice:
@@ -72,7 +72,7 @@ public extension Device {
                 return "Mac Catalyst"
             }
         }
-
+        
         public func test(device: any CurrentDevice) -> Bool {
             switch self {
             case .realDevice:
@@ -153,7 +153,7 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     var isDesignedForiPad: Bool { get }
     /// Returns `true` if is macCatalyst app on macOS
     var isMacCatalyst: Bool { get }
-
+    
     // Description
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String { get }
@@ -179,7 +179,7 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     var brightness: Double? { get set }
     /// Returns the screen orientation if applicable or `nil`
     var screenOrientation: Screen.Orientation? { get }
-
+    
     // Power and hardware
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return `nil`.  Needed to be a concrete type for use in BatteryView.
     var battery: (any Battery)? { get } //MonitoredDeviceBattery? { get }
@@ -234,19 +234,19 @@ Device Framework Version: v\(Device.version)
 }
 /*
  Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
-     callback()
-//            timer.invalidate()
+ callback()
+ //            timer.invalidate()
  }
  */
 public class MockDevice: CurrentDevice {
     public var device: Device = Device(idiom: .unspecified, officialName: "Mock Device", identifiers: ["Mock1,1"], supportId: "n/a", capabilities: [.screen(.undefined)], colors: [.blue], cpu: .unknown)
-
+    
     public func enableMonitoring(frequency: TimeInterval) {
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
             self.objectWillChange.send()
         }
     }
-
+    
     public var cycleAnimation: TimeInterval
     private var brightnessIncreasing = false
     @Published internal var updateCount = 0
@@ -258,7 +258,7 @@ public class MockDevice: CurrentDevice {
         isRealDevice: Bool = false,
         isDesignedForiPad: Bool = false,
         isMacCatalyst: Bool = false,
-
+        
         identifier: String = "MOCK1,1",
         name: String = "Mock's Device",
         systemName: String = "mockOS",
@@ -309,7 +309,7 @@ public class MockDevice: CurrentDevice {
         self.volumeAvailableCapacityForImportantUsage = volumeAvailableCapacityForImportantUsage
         self.volumeAvailableCapacityForOpportunisticUsage = volumeAvailableCapacityForOpportunisticUsage
         self.cycleAnimation = cycleAnimation
-
+        
         guard cycleAnimation > 0 else {
             return // no need to create timer if no cycle animation
         }
@@ -334,7 +334,7 @@ public class MockDevice: CurrentDevice {
             // This should never happen!
             fatalError("Brightness unable to be set!")
             // This really should never happen.  But if it does, go ahead and invalidate the timer.
-//            timer.invalidate()
+            //            timer.invalidate()
         }
         if brightnessIncreasing {
             brightness += 0.01
@@ -350,7 +350,7 @@ public class MockDevice: CurrentDevice {
             }
         }
         self.brightness = brightness
-//        print("Update \(updateCount), brightness: \(brightness)")
+        //        print("Update \(updateCount), brightness: \(brightness)")
         // zoomed (every 3 ticks)
         if updateCount % 7 == 0 {
             isZoomed = !isZoomed
@@ -388,7 +388,7 @@ public class MockDevice: CurrentDevice {
     public var isRealDevice: Bool
     public var isDesignedForiPad: Bool
     public var isMacCatalyst: Bool
-
+    
     public var identifier: String
     public var name: String
     public var systemName: String
@@ -427,7 +427,7 @@ public class MockDevice: CurrentDevice {
         MockDevice(isDesignedForiPad: true, isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical),
         MockDevice(isMacCatalyst: true, brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair),
     ]
-
+    
 }
 
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
@@ -438,15 +438,15 @@ class ActualHardwareDevice: CurrentDevice {
     public func enableMonitoring(frequency: TimeInterval) {
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
             self.objectWillChange.send()
-//            print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
+            //            print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
         }
     }
-
+    
     init() {
         device = Device(identifier: identifier)
         // add screen orientation monitor (only supported by UIDevice which is fine)
 #if canImport(UIKit)
-        #if os(iOS) // technically supported by mac catalyst as well but not sure when it would be ever used       NotificationCenter.default.addObserver(
+#if os(iOS) // technically supported by mac catalyst as well but not sure when it would be ever used       NotificationCenter.default.addObserver(
         NotificationCenter.default.addObserver(
             forName: UIDevice.orientationDidChangeNotification,
             object: nil,
@@ -455,8 +455,8 @@ class ActualHardwareDevice: CurrentDevice {
             // Do your work after received notification
             self.objectWillChange.send()
         }
-        #endif
-        #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#endif
+#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
         NotificationCenter.default.addObserver(
             forName: UIScreen.brightnessDidChangeNotification,
             object: nil,
@@ -465,10 +465,10 @@ class ActualHardwareDevice: CurrentDevice {
             // Do your work after received notification
             self.objectWillChange.send()
         }
-        #endif
+#endif
 #endif
     }
-        
+    
     /// Returns `true` if running on the simulator vs actual device.
     public var isSimulator: Bool {
 #if targetEnvironment(simulator)
@@ -522,7 +522,7 @@ class ActualHardwareDevice: CurrentDevice {
             return false
         }
     }
-
+    
     /// Returns `true` if is macCatalyst app on macOS
     var isMacCatalyst: Bool {
 #if targetEnvironment(macCatalyst)
@@ -531,7 +531,7 @@ class ActualHardwareDevice: CurrentDevice {
         return false
 #endif
     }
-
+    
     // MARK: - Description Device Strings
     /// Gets the identifier from the system, such as "iPhone7,1".
     var identifier: String = {
@@ -544,12 +544,12 @@ class ActualHardwareDevice: CurrentDevice {
         }
         // kIOMasterPortDefault => kIOMainPortDefault
         let service = IOServiceGetMatchingService(defaultPort,
-                                                      IOServiceMatching("IOPlatformExpertDevice"))
+                                                  IOServiceMatching("IOPlatformExpertDevice"))
         var modelIdentifier: String?
         if let modelData = IORegistryEntryCreateCFProperty(service, "model" as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? Data {
             modelIdentifier = String(data: modelData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters)
         }
-
+        
         IOObjectRelease(service)
         return modelIdentifier ?? "UnknownIdentifier"
 #elseif targetEnvironment(macCatalyst)
@@ -577,7 +577,7 @@ class ActualHardwareDevice: CurrentDevice {
         return identifier
 #endif
     }()
-        
+    
     /// The name identifying the device (e.g. "Dennis' iPhone").
     /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
     /// See the follwing link for more information: https://developer.apple.com/documentation/uikit/uidevice/1620015-name
@@ -641,7 +641,7 @@ class ActualHardwareDevice: CurrentDevice {
         return .unknown
 #endif
     }
-
+    
     // MARK: - Screen Properties
     
     /// Returns if the screen is zoomed in.
@@ -657,7 +657,7 @@ class ActualHardwareDevice: CurrentDevice {
         return false
 #endif
     }
-
+    
     /// True when a Guided Access session is currently active; otherwise, false.
     public var isGuidedAccessSessionActive: Bool {
 #if os(iOS)
@@ -670,7 +670,7 @@ class ActualHardwareDevice: CurrentDevice {
         return false
 #endif
     }
-
+    
     /// The brightness level of the screen (between 0.0 and 1.0).  Only supported on iOS and macCatalyst.  Returns nil if not supported.  Wrapper for UIScreen.main.brightness
     public var brightness: Double? {
         get {
@@ -680,29 +680,29 @@ class ActualHardwareDevice: CurrentDevice {
             
             // for macOS: TODO
             // https://stackoverflow.com/questions/67929644/getting-notified-when-the-screen-brightness-changes-in-macos
-
+            
 #if os(iOS) && !targetEnvironment(macCatalyst)
             let b = UIScreen.main.brightness
             if b < 0 {
                 return nil
             }
             return b
-//#elseif canImport(IOKit)
-//            // Does not seem to work!
-//            var brightness: Float = 1.0
-//            var service: io_object_t = 1
-//            var iterator: io_iterator_t = 0
-//            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
-//            
-//            if result == kIOReturnSuccess {
-//                
-//                while service != 0 {
-//                    service = IOIteratorNext(iterator)
-//                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
-//                    IOObjectRelease(service)
-//                }
-//            }
-//            return Double(brightness)
+            //#elseif canImport(IOKit)
+            //            // Does not seem to work!
+            //            var brightness: Float = 1.0
+            //            var service: io_object_t = 1
+            //            var iterator: io_iterator_t = 0
+            //            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
+            //            
+            //            if result == kIOReturnSuccess {
+            //                
+            //                while service != 0 {
+            //                    service = IOIteratorNext(iterator)
+            //                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
+            //                    IOObjectRelease(service)
+            //                }
+            //            }
+            //            return Double(brightness)
 #else
             return nil
 #endif
@@ -719,7 +719,7 @@ class ActualHardwareDevice: CurrentDevice {
             }
         }
     }
-
+    
     /// Returns the screen orientation if applicable or `nil`
     var screenOrientation: Screen.Orientation? {
 #if os(iOS) && !os(visionOS)
@@ -732,7 +732,7 @@ class ActualHardwareDevice: CurrentDevice {
         return nil
 #endif
     }
-
+    
     // MARK: - Power & Hardware
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
@@ -742,7 +742,7 @@ class ActualHardwareDevice: CurrentDevice {
         }
         return nil
     }
-
+    
     @Published private var _isIdleTimerDisabled = false
     /// Ability to change/get the idle timeout setting.
     var isIdleTimerDisabled: Bool {
@@ -785,15 +785,15 @@ class ActualHardwareDevice: CurrentDevice {
             }
         }
     }
-
+    
     /// Returns the current thermal state of the system
     public var thermalState: ThermalState {
         return ProcessInfo().thermalState.thermalState
     }
     
-
+    
     // MARK: - Storage Info
-
+    
     /// Return the root url
     ///
     /// - returns: the NSHomeDirectory() url
@@ -820,7 +820,7 @@ class ActualHardwareDevice: CurrentDevice {
     /// The volume’s available capacity in bytes for storing important resources.
     public var volumeAvailableCapacityForImportantUsage: Int64? {
 #if os(tvOS) || os(watchOS)
-            return nil
+        return nil
 #else
         if #available(iOS 11.0, *) {
             return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage
@@ -833,7 +833,7 @@ class ActualHardwareDevice: CurrentDevice {
     /// The volume’s available capacity in bytes for storing nonessential resources.
     public var volumeAvailableCapacityForOpportunisticUsage: Int64? {
 #if os(tvOS) || os(watchOS)
-            return nil
+        return nil
 #else
         if #available(iOS 11.0, *) {
             return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForOpportunisticUsageKey]))?.volumeAvailableCapacityForOpportunisticUsage
@@ -842,7 +842,7 @@ class ActualHardwareDevice: CurrentDevice {
         }
 #endif
     }
-        
+    
 }
 
 #if canImport(SwiftUI)
@@ -858,3 +858,4 @@ import SwiftUI
     }
 }
 #endif
+

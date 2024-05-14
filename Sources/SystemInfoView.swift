@@ -24,7 +24,7 @@ public struct SystemInfoView: View {
                         .foregroundStyle(currentDevice.thermalState == .nominal ? .primary : currentDevice.thermalState.color, currentDevice.thermalState.color, .secondary)
                     Text(" \(String(describing: currentDevice.thermalState))").font(.headline)
                     Text("thermal state").font(.callout).opacity(0.5)
-                    Text("\(device.cpu.caseName) ")+Text(
+                    Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text(
                         Image(symbolName: "cpu"))
                 }
                 Spacer()

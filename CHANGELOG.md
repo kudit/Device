@@ -25,6 +25,12 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+Check files that look like they're being added (since no change??)
+Mac (non-catalyst) device details view is truncated.
+Default BatteryView(battery: MonitoredDeviceBattery.current)
+
+v2.1.6 5/13/2024 Fixed 4 cases where iPod touch was listed as "iPhone touch".  Updated README with better feature list.  Re-worked Package.swift to be cleaner and support `swift package dump-package` for swiftpackageindex.com and enhanced for code re-use.  Added small caps to the processor views.  Fixed so Mac (non-catalyst) shows full description in text editor to make it easier to see everything and select text.  Allowed searching by processor.
+
 v2.1.5 5/7/2024 Added spaces to changelog to improve formatting in github.  Added notifications when changing orientation and brightness.  Removed brightness from macCatalyst and macOS since it doesn't appear to work.  Change icon to Icon.png instead of Icon%20Design.1024.png.  Added CPU to the SystemInfoView.  Added search to the device list tool.  Updated iPad Pro 6th gen images.
 
 v2.1.4 4/29/2024 Added `v` to version in description.  Added some separation between SystemInfo view (and removed unused ZStack wrapper).  Added back text description to HardwareView to ensure testing (refreshes when toggling to ensure that the text is updated to current which is further helpful for debugging).  Added environment information to description.  Removed redundant battery description code.
@@ -132,6 +138,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 This is where proposals can be discussed for potential movement to the roadmap.
 
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
+- [ ] Find a way to make words WATCH and SERIES appear in smallCaps() text field and make Apple be Apple logo character  in official names?
 - [ ] Create better way of scaling battery so that it can scale with dynamic type?  Use relative type?
 - [ ] Add a way to check that privacy checks have been added when using APIs that need privacy permissions (have a configuration flag that needs to be set to ensure that privacy flags have been set).
 - [ ] Convert SF Symbol names to an enum to allow version checking?  May need to use other project.

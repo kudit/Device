@@ -107,9 +107,10 @@ struct HardwareListView: View {
                 DeviceInfoView(device: currentDevice)
             } footer: {
                 VStack(alignment: .leading) {
-                    Text("\(currentDevice)")
+                    TextEditor(text: .constant("\(currentDevice)"))
                         .font(.caption)
                         .fixedSize(horizontal: false, vertical: true)
+                        .background(.green)
                     VStack {
                         Spacer()
                         Divider()

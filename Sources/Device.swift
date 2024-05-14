@@ -14,7 +14,7 @@ import Foundation
 
 public extension Device {
     /// The version of the Device Library
-    static var version = "2.1.5"
+    static var version = "2.1.6"
 }
 
 #if canImport(UIKit)
@@ -158,7 +158,7 @@ extension IdiomType {
     }
 }
 
-public struct Device: IdiomType, Hashable {    
+public struct Device: IdiomType, Hashable {
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
     public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible {
         /// An unspecified idiom.
@@ -1701,7 +1701,7 @@ public struct iPod: IdiomType, HasScreen {
     static var all = [
     
         iPod(
-            officialName: "iPhone touch (1st generation)",
+            officialName: "iPod touch (1st generation)",
             identifiers: ["iPod1,1"],
             supportId: "112532",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-1st-gen.png",
@@ -1709,7 +1709,7 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            officialName: "iPhone touch (2nd generation)",
+            officialName: "iPod touch (2nd generation)",
             identifiers: ["iPod2,1"],
             supportId: "112319",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-2nd-gen.png",
@@ -1717,7 +1717,7 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            officialName: "iPhone touch (3rd generation)",
+            officialName: "iPod touch (3rd generation)",
             identifiers: ["iPod3,1"],
             supportId: "pp115",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-3rd-gen.png",
@@ -1725,7 +1725,7 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            officialName: "iPhone touch (4th generation)",
+            officialName: "iPod touch (4th generation)",
             identifiers: ["iPod4,1"],
             supportId: "112431",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-4th-gen.png",

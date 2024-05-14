@@ -7,27 +7,83 @@ This is actively maintained so if there is a feature request or change, we will 
 
 ## Features
 
-- [x] Clearly labeled device identification
-- [x] Device idiom detection
-- [x] Simulator detection
-- [x] Playground detection
-- [x] Preview detection
-- [x] Various device metrics (e.g. screen size, screen ratio, PPI)
-- [x] Battery state
-- [x] Battery level
-- [x] Battery symbol
-- [x] Battery color
-- [x] BatteryView
-- [x] Low Power Mode detection
-- [x] Guided Access Session detection
-- [x] Screen brightness
-- [x] Display Zoom detection
-- [x] Detect available sensors (Touch ID, Face ID, Optic ID)
-- [x] Detect available disk space
-- [x] Apple Pencil support detection
-- [x] Images and support links
-- [x] Detect when battery state changes.
-- [x] Disable idle timer or have idle timer automatically disabled when plugged in.
+- Framework
+    - Clearly labeled device identification
+    - Device idiom detection
+    - Environmental detections:
+        - Simulator
+        - Playground
+        - Preview
+        - Designed for iPad
+        - macCataylst
+- Debugging
+    - Provides UI for quickly showing information about devices and batteries.
+- Device Information
+    - Identifier (ex: `Mac14,10`)
+    - Name (ex: `Ben's iPad` Note: only available on some devices.)
+    - Operating System (ex: `iPad OS 17.4`)
+    - Official Name (ex: `MacBook Pro (16-inch, 2023`)
+    - Image
+    - Color
+    - CPU (ex: `M2 Pro`)
+    - Cellular technology
+    - Thermal state
+    - Orientation
+    - Screen information
+        - Size
+        - Diagonal
+        - Pixels Per Inch (PPI)
+        - Ratio
+- Battery & Power Information
+    - Battery availability
+    - Battery state changes
+    - Battery level
+    - Low Power Mode
+    - Plugged in
+    - Battery View
+    - Battery Symbols
+    - Battery Coloring
+- User Hardware Settings
+    - Disable Idle Timer (set permanently or automatically when plugged in)
+    - Display Zoom
+    - Guided Access
+    - Screen Brightness (only available on iOS)
+    - Available Disk Space
+- Capabilities (with symbols for each)
+    - Model Attributes
+        - Pro
+        - Air
+        - mini
+        - Plus
+        - Max
+        - Mac form factor
+        -  Watch size
+    - Connections
+        - Headphone Jack
+        - 30-pin Connector
+        - Lightning Connector
+        - USB-C
+    - Power
+        - Battery
+        - Wireless Charging
+        - MagSafe (MacBook and iPhone)
+    - Dislplay Features
+        - Force/3D Touch
+        - Rounded Corners
+        - Notch
+        - Dynamic Island
+    - Additional Features
+        - Ringer Switch
+        -  Pay
+        - NFC
+        - Action Button
+        -  Pencil Support
+    - Sensors
+        - Biometrics
+        - LIDAR
+        - Barometer
+        - Crash Detection
+        - Cameras
 
 ## Requirements
 
