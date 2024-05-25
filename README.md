@@ -63,6 +63,7 @@ This is actively maintained so if there is a feature request or change, we will 
         - 30-pin Connector
         - Lightning Connector
         - USB-C
+        - Thunderbolt
     - Power
         - Battery
         - Wireless Charging

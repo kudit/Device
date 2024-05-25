@@ -31,7 +31,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
     case macForm(Mac.Form)
     case watchSize(AppleWatch.WatchSize)
     // connections
-    case headphoneJack, thirtyPin, lightning, usbC
+    case headphoneJack, thirtyPin, lightning, usbC, thunderbolt
     // power
     case battery
     case wirelessCharging // qi charging
@@ -58,7 +58,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
     case lidar, barometer, crashDetection // iPhone 14+
     
     /// Lists all non-associated value cases
-    public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
+    /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
+    public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
     
     static var screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
     
@@ -86,6 +87,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
             return "cable.connector.lightning"
         case .usbC:
             return "cable.connector.usbc"
+        case .thunderbolt:
+            return "thunderbolt"
         case .wirelessCharging:
             return "wirelesscharging"
         case .nfc:
@@ -163,7 +166,7 @@ public extension Capabilities {
             sorted.append(.watchSize(watchSize))
         }
         // connections
-        for item in [Capability.headphoneJack, .thirtyPin, .lightning, .usbC, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3] {
+        for item in [Capability.headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3] {
             if self.contains(item) {
                 sorted.append(item)
             }
@@ -592,7 +595,11 @@ public enum MaterialColor: String, CaseNameConvertible {
     
     // iPad 10th gen
     case pink10 = "#de6274", blue10 = "#6480a3", yellow10 = "#f0d95b"
-
+    
+    // iPad Air 2024
+    case starlightAir = "#e3dcd1", purpleAir = "#e3dee9", blueAir = "#d7e5e6"
+    static var iPadAirM2 = [spaceGrayA5, starlightAir, purpleAir, blueAir]
+    
     // iPhone 13
     case green13 = "#394c38", pink13 = "#faddd7", blue13 = "#276787", midnight13 = "#232a31", starlight13 = "#faf6f2", productRed13 = "#bf0013"
     static var iPhone13 = [green13, pink13, blue13, midnight13, starlight13, productRed13]
@@ -647,6 +654,7 @@ public extension [MaterialColor] {
     static var iPhone15 = MaterialColor.iPhone15
     static var iPhone15Pro = MaterialColor.iPhone15Pro
     static var iPadAir = MaterialColor.iPadAir
+    static var iPadAirM2 = MaterialColor.iPadAirM2
     static var iPadMini5 = MaterialColor.iPadMini5
     static var watchSE2 = MaterialColor.watchSE2
     static var watch9 = MaterialColor.watch9
@@ -667,6 +675,7 @@ public extension [MaterialColor] {
         iPhone15: "iPhone15",
         iPhone15Pro: "iPhone15Pro",
         iPadAir: "iPadAir",
+        iPadAirM2: "iPadAirM2",
         iPadMini5: "iPadMini5",
         watchSE2: "watchSE2",
         watch9: "watch9",

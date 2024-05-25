@@ -5,6 +5,7 @@
 //  Created by Ben Ku on 4/16/24.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 public struct BytesView: View {
@@ -71,3 +72,4 @@ public struct StorageInfoView: View {
 #Preview("Storage Info") {
     StorageInfoView(device: Device.current)
 }
+#endif

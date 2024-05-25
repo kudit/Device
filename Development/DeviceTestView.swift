@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 import Device
 
@@ -234,3 +235,4 @@ public struct DeviceTestView: View {
 #Preview {
     DeviceTestView()
 }
+#endif

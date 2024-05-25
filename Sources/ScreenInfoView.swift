@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 // TODO: Remove?
@@ -148,3 +149,4 @@ public struct ScreenInfoView: View {
         }
     }
 }
+#endif

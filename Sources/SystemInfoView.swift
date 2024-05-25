@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
@@ -62,3 +63,4 @@ public struct SystemInfoView: View {
         }
     }
 }
+#endif

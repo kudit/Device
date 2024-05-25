@@ -14,7 +14,7 @@ import Foundation
 
 public extension Device {
     /// The version of the Device Library
-    static var version = "2.1.6"
+    static var version = "2.1.7"
 }
 
 #if canImport(UIKit)
@@ -451,17 +451,17 @@ public struct Mac: IdiomType {
         var capabilities: Capabilities {
             switch self {
             case .macProGen1:
-                []
+                [.thunderbolt]
             case .macProGen2:
-                []
+                [.thunderbolt]
             case .macProGen3:
-                []
+                [.thunderbolt]
             case .macBook:
                 [.battery]
             case .macBookGen1:
                 Mac.Form.macBook.capabilities.union([.cameras([.faceTimeHD720p]), .magSafe2])
             case .macBookGen2:
-                Mac.Form.macBook.capabilities.union([.usbC, .notch, .cameras([.faceTimeHD1080p]), .biometrics(.touchID), .magSafe3])
+                Mac.Form.macBook.capabilities.union([.usbC, .thunderbolt, .notch, .cameras([.faceTimeHD1080p]), .biometrics(.touchID), .magSafe3])
             case .macMini:
                 []
             case .macStudio:
@@ -533,7 +533,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: identifier == .base ? [] : [
                 // defaults for new unknown devices
-                .usbC
+                .usbC, .thunderbolt
             ],
             models: [],
             colors: .default,
@@ -2682,7 +2682,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7"],
             supportId: "SP843",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP843/ipad-pro-11_2x.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
@@ -2694,7 +2694,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11"],
             supportId: "SP844",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP844/ipad-pro-12-9_2x.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
@@ -2718,7 +2718,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad14,3", "iPad14,4"],
             supportId: "SP882",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-11-inch-4gen-ipad-pro.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
@@ -2730,14 +2730,65 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             identifiers: ["iPad14,5", "iPad14,6"],
             supportId: "SP883",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-12-9-inch-6gen-ipad-pro.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
             cameras: [.iSight, .wide, .ultraWide, .trueDepth],
             cellular: .fiveG,
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
-        // TODO: Add new iPad Pro models and iPad Air models.
+
+        // 2024 Spring models
+        iPad(
+            officialName: "iPad Air 11‑inch (M2)",
+            identifiers: ["iPad14,8"],
+            supportId: "TODO",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-4.png",
+            capabilities: [.usbC, .biometrics(.touchID), .roundedCorners, .barometer],
+            colors: [.blueA5, .purpleA5, .starlightA5, .spaceGrayA5],
+            cpu: .m2,
+            cameras: [.iSight, .wide, .faceTimeHD1080p],
+            cellular: .fiveG,
+            screen: .i109,
+            pencils: [.usbC, .pro]),
+        iPad(
+            officialName: "iPad Air 13‑inch (M2)",
+            identifiers: ["iPad14,9"],
+            supportId: "TODO",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-3.png",
+            capabilities: [.usbC, .biometrics(.touchID), .roundedCorners, .barometer],
+            colors: [.blueA5, .purpleA5, .starlightA5, .spaceGrayA5],
+            cpu: .m2,
+            cameras: [.iSight, .wide, .faceTimeHD1080p],
+            cellular: .fiveG,
+            screen: .i129,
+            pencils: [.usbC, .pro]),
+        iPad(
+            officialName: "iPad Pro 11-inch (M4)",
+            identifiers: ["iPad16,3", "iPad16,4"],
+            supportId: "TODO",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-2.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.macbookSpaceblack, .macbookSilver],
+            cpu: .m4,
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cellular: .fiveG,
+            screen: .i11,
+            pencils: [.pro, .usbC]),
+        iPad(
+            officialName: "iPad Pro 13-inch (M4)",
+            identifiers: ["iPad16,5", "iPad16,6"],
+            supportId: "TODO",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-1.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .roundedCorners, .notch, .lidar, .barometer],
+            colors: [.macbookSpaceblack, .macbookSilver],
+            cpu: .m4,
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cellular: .fiveG,
+            screen: .i129,
+            pencils: [.pro, .usbC]),
+        
+        // TODO: Check new iPad Pro models and iPad Air models.
         
     ]
 }

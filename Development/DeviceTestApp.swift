@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 #if canImport(Device)
 import Device
@@ -19,3 +20,4 @@ struct DeviceTestApp: App {
         }
     }
 }
+#endif

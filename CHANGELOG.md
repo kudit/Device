@@ -29,6 +29,8 @@ Check files that look like they're being added (since no change??)
 Mac (non-catalyst) device details view is truncated.
 Default BatteryView(battery: MonitoredDeviceBattery.current)
 
+v2.1.7 5/25/2024 Added Thunderbolt capability.  Added new iPads.  Re-worked package for better compatibility with swiftpackageindex.com platforms.  Added checks for SwiftUI for compilation compatibilty.  Added support for swift 5.7.
+
 v2.1.6 5/13/2024 Fixed 4 cases where iPod touch was listed as "iPhone touch".  Updated README with better feature list.  Re-worked Package.swift to be cleaner and support `swift package dump-package` for swiftpackageindex.com and enhanced for code re-use.  Added small caps to the processor views.  Fixed so Mac (non-catalyst) shows full description in text editor to make it easier to see everything and select text.  Allowed searching by processor.
 
 v2.1.5 5/7/2024 Added spaces to changelog to improve formatting in github.  Added notifications when changing orientation and brightness.  Removed brightness from macCatalyst and macOS since it doesn't appear to work.  Change icon to Icon.png instead of Icon%20Design.1024.png.  Added CPU to the SystemInfoView.  Added search to the device list tool.  Updated iPad Pro 6th gen images.

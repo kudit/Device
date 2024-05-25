@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 5.7
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // WARNING:
@@ -7,6 +7,7 @@
 
 import PackageDescription
 
+var version = "2.1.7"
 var packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -32,6 +33,19 @@ var targets = [
 	),
 ]
 
+var platforms: [SupportedPlatform] = [ // minimums for Date.now
+	.iOS("15.2"),
+	.macOS("11.0"),
+	.tvOS("14.0"),
+	.watchOS("6.0"),
+]
+
+#if os(visionOS)
+platforms += [
+    .visionOS("1.0"),
+]
+#endif
+
 #if canImport(AppleProductTypes) // swift package dump-package fails because of this
 import AppleProductTypes
 
@@ -40,7 +54,7 @@ products += [
 		name: packageLibraryName, // needs to match package name to open properly in Swift Playgrounds
 		targets: ["\(packageLibraryName)TestAppModule"],
 		teamIdentifier: "3QPV894C33",
-		displayVersion: "2.1.6",
+		displayVersion: version,
 		bundleVersion: "1",
 		appIcon: .asset("AppIcon"),
 		accentColor: .presetColor(.blue),
@@ -72,9 +86,9 @@ targets += [
 //			exclude: ["Device.xcodeproj/*"],
 		resources: [
 			.process("Resources")
-		],
-		swiftSettings: [
-			.enableUpcomingFeature("BareSlashRegexLiterals")
+//		],
+//		swiftSettings: [
+//			.enableUpcomingFeature("BareSlashRegexLiterals")
 		]
 	),
 	.testTarget(
@@ -90,13 +104,7 @@ targets += [
 
 let package = Package(
     name: packageLibraryName,
-    platforms: [
-        .iOS("15.2"),
-        .macOS("11.0"),
-        .tvOS("14.0"),
-        .watchOS("6.0"),
-        .visionOS("1.0")
-    ],
+    platforms: platforms,
     products: products,
     // include dependencies
 //    dependencies: [
