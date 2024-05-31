@@ -160,11 +160,11 @@ public struct Screen: Hashable {
             case .landscapeLeft:
                 "rectangle"
             case .landscapeRight:
-                "rectangle"
-            case .faceUp:
                 "rectangle.fill"
+            case .faceUp:
+                "square.fill"
             case .faceDown:
-                "rectangle.slash"
+                "square.slash"
             }
         }
         
