@@ -41,6 +41,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
     case biometrics(Biometrics)
     case cameras(Set<Camera>)
     case cellular(Cellular)
+    case esim, dualesim
     case applePay // iPhone 6+
     case nfc // iPhone 7+
     // Should we add: wifi, bluetooth, bluetoothLE, 30pin, AC Power?, ethernet, HDMI, SDCard?
@@ -59,7 +60,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
     
     /// Lists all non-associated value cases
     /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
-    public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
+    public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .esim, .dualesim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
     
     static var screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
     
@@ -107,6 +108,10 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
             return "battery.100percent"
         case .ringerSwitch:
             return "bell.slash"
+        case .esim:
+            return "esim.fill"
+        case .dualesim:
+            return "simcard.2"
         case .applePay:
             return "applepay"
             //            return "creditcard"
@@ -180,7 +185,7 @@ public extension Capabilities {
         if let cellular {
             sorted.append(.cellular(cellular))
         }
-        for item in [Capability.applePay, .nfc] {
+        for item in [Capability.esim, .dualesim, .applePay, .nfc] {
             if self.contains(item) {
                 sorted.append(item)
             }

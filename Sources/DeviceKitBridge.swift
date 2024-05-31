@@ -388,11 +388,7 @@ public extension Device {
     
     /// Defaults to `landscape` if we do not have a screen or cannot get the orientation.
     var orientation: Screen.Orientation {
-        if Device.current.screenOrientation?.isLandscape ?? true {
-            return .landscape
-        } else {
-            return .portrait
-        }
+        return Device.current.screenOrientation ?? .unknown
     }
 }
 #endif

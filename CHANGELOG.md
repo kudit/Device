@@ -25,7 +25,7 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-v2.1.9 XXXXX Fails Linux test.  Need a better way of testing on linux.
+v2.1.9 5/31/2024 Fails Linux test (fixed?).  Need a better way of testing on linux.  Added better information for new iPads.  Fixed bug where screen wasn't included on device detail view.  Added information on esim/dual esim capability.  Re-ordered some iPads so they are chronological.  Added full UIDeviceOrientation value set for Screen.Orientation to be more accurate and not lose information.
 
 v2.1.8 5/31/2024 Fixed project so only one version check is needed not per target.  Set Swift version minimum to 5.9 since that's needed for #Preview {} functionality.  Added additional checks to allow compiling on Linux.  Added dummy ObservableObject protocol when Combine isn't available.  Removed now unnecessary MonitoredBatteryView and simplified API to just BatteryView() for simplicity and clarity.  Fixed thermal layout.  Fixed issue with enabledMonitoring frequency was ignored (and potentially generating many many timers that could cause memory leak).  Moved MockDevice to bottom to make it easier to find mocks.  Fixed error introduced in v2.1.0 where battery.slash.legacy was exported with SF Symbols 5 instead of 2 and thus crashed on devices and previews < iOS 17.
 
@@ -138,6 +138,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
 
+- [ ] Move privacy manifest to the package sources resources folder so it gets processed? https://github.com/devicekit/DeviceKit/issues/408#event-12991784329
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
 - [ ] Find a way to make words WATCH and SERIES appear in smallCaps() text field and make Apple be Apple logo character  in official names?
 - [ ] Create better way of scaling battery so that it can scale with dynamic type?  Use relative type?

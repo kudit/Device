@@ -8,7 +8,7 @@ public struct Screen: Hashable {
         /// Reduce the size into a ratio of whole numbers.  TODO: fix so works in both dimensions
         public var ratio: Size {
             let ratio = Double(width) / Double(height)
-            if Int(round(100 * ratio)) == 75 {
+            if 68...79 ~= Int(round(100 * ratio)) { // 75
                 return Size(width: 3, height: 4)
             }
             if Int(100 * ratio) == 56 {
@@ -110,10 +110,12 @@ public struct Screen: Hashable {
     public static var i79x1536 = Screen(diagonal: 7.9, resolution: (1536,2048), ppi: 326)
     // iPad mini 6
     public static var i83 = Screen(diagonal: 8.3, resolution: (1488,2266), ppi: 326)
-    // iPad Pro
-    public static var i129 = Screen(diagonal: 12.9, resolution: (2048,2732), ppi: 264)
     // iPad Pro 11
     public static var i11 = Screen(diagonal: 11.0, resolution: (1668,2388), ppi: 264)
+    // iPad Pro
+    public static var i129 = Screen(diagonal: 12.9, resolution: (2048,2732), ppi: 264)
+    // iPad Pro
+    public static var i13 = Screen(diagonal: 13, resolution: (2064,2752), ppi: 264)
     // MARK: Watches
     public static var wUnknown = Screen(
         diagonal: 2.0,
@@ -132,20 +134,46 @@ public struct Screen: Hashable {
      - Landscape: The device is in Landscape Orientation
      - Portrait:  The device is in Portrait Orientation
      */
-    public enum Orientation: Hashable, SymbolRepresentable {
-        case landscape
-        case portrait
-        
-        public var isLandscape: Bool {
-            return self == .landscape
+    public enum Orientation: Int, Hashable, SymbolRepresentable, CaseIterable {
+        case unknown = 0
+
+        case portrait = 1 // Device oriented vertically, home button on the bottom
+
+        case portraitUpsideDown = 2 // Device oriented vertically, home button on the top
+
+        case landscapeLeft = 3 // Device oriented horizontally, home button on the right
+
+        case landscapeRight = 4 // Device oriented horizontally, home button on the left
+
+        case faceUp = 5 // Device oriented flat, face up
+
+        case faceDown = 6 // Device oriented flat, face down
+
+        public var symbolName: String {
+            switch self {
+            case .unknown:
+                "questionmark.square"
+            case .portrait:
+                "rectangle.portrait"
+            case .portraitUpsideDown:
+                "rectangle.portrait.slash"
+            case .landscapeLeft:
+                "rectangle"
+            case .landscapeRight:
+                "rectangle"
+            case .faceUp:
+                "rectangle.fill"
+            case .faceDown:
+                "rectangle.slash"
+            }
         }
         
-        public var symbolName: String {
-            if isLandscape {
-                "rectangle"
-            } else {
-                "rectangle.portrait"
-            }
+        public var isLandscape: Bool {
+            return [.landscapeLeft, .landscapeRight].contains(self)
+        }
+
+        public var isPortrait: Bool {
+            return [.portrait, .portraitUpsideDown].contains(self)
         }
     }
 }

@@ -549,10 +549,23 @@ class ActualHardwareDevice: CurrentDevice {
     /// Returns the screen orientation if applicable or `nil`
     var screenOrientation: Screen.Orientation? {
 #if os(iOS) && !os(visionOS)
-        if UIDevice.current.orientation.isPortrait {
+        switch UIDevice.current.orientation {
+        case .unknown:
+            return .unknown
+        case .portrait:
             return .portrait
-        } else {
-            return .landscape
+        case .portraitUpsideDown:
+            return .portraitUpsideDown
+        case .landscapeLeft:
+            return .landscapeLeft
+        case .landscapeRight:
+            return .landscapeRight
+        case .faceUp:
+            return .faceUp
+        case .faceDown:
+            return .faceDown
+        @unknown default:
+            return .unknown
         }
 #else
         return nil
@@ -717,7 +730,7 @@ public class MockDevice: CurrentDevice {
         isZoomed: Bool = false,
         isGuidedAccessSessionActive: Bool = false,
         brightness: Double? = 0.5,
-        screenOrientation: Screen.Orientation? = .landscape,
+        screenOrientation: Screen.Orientation? = .landscapeLeft,
         
         battery: BatteryType? = nil,
         isIdleTimerDisabled: Bool = false,
@@ -825,11 +838,13 @@ public class MockDevice: CurrentDevice {
         }
         // orientation (every 5 ticks)
         if updateCount % 11 == 0 {
-            if screenOrientation == .portrait {
-                screenOrientation = .landscape
+            if var screenOrientation {
+                screenOrientation++
+                self.screenOrientation = screenOrientation
             } else {
-                screenOrientation = .portrait
+                screenOrientation = .unknown
             }
+            
         }
         // guided access mode
         if updateCount % 17 == 0 {
@@ -867,7 +882,7 @@ public class MockDevice: CurrentDevice {
     @Published public var isZoomed: Bool = false
     public var isGuidedAccessSessionActive: Bool = false
     @Published public var brightness: Double? = 0.5
-    @Published public var screenOrientation: Screen.Orientation? = .landscape
+    @Published public var screenOrientation: Screen.Orientation? = .landscapeLeft
     
     public var battery: BatteryType? = nil
     public var isIdleTimerDisabled: Bool = false
@@ -911,3 +926,16 @@ import SwiftUI
     }
 }
 #endif
+
+// Utility (included in Kudit Frameworks but copied here)
+/// Enables ++ on any enum to get the next enum value (if it's the last value, wraps around to first)
+extension CaseIterable where Self: Equatable { // equatable required to find self in list of cases
+    /// Replaces the variable with the next enum value (if it's the last value, wraps around to first)
+    static postfix func ++(e: inout Self) {
+        let allCases = Self.allCases
+        let idx = allCases.firstIndex(of: e)! // not possible to have it not be found
+        let next = allCases.index(after: idx)
+        e = allCases[next == allCases.endIndex ? allCases.startIndex : next]
+    }
+}
+
