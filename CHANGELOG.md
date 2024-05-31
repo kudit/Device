@@ -1,8 +1,7 @@
 # ChangeLog
 
 NOTE: Version needs to be updated in the following places:
-- [ ] Xcode project version (normal target)
-- [ ] Xcode project version (watch target)
+- [ ] Xcode project version (in build settings - normal and watch targets should inherit)
 - [ ] Package.swift iOSApplication product displayVersion.
 - [ ] Device.version constant (must be hard coded since inaccessible in code)
 - [ ] Tag with matching version in GitHub.
@@ -10,6 +9,7 @@ NOTE: Version needs to be updated in the following places:
 Tests:
 Playgrounds Preview Mac
 Playgrounds Preview iPad
+Preview Xcode (only in Xcode project in app not framework)
 Playgrounds App Mac
 Playgrounds App iPad
 Simulator visionOS
@@ -19,15 +19,13 @@ Simulator Apple Watch
 Simulator Apple TV
 Real Device macOS
 Real Device macOS (catalyst)
-XX Real Device macOS (for iPad) - currently crashing!
+Real Device macOS (for iPad)
 Real Device iPad
 Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-Check files that look like they're being added (since no change??)
-Mac (non-catalyst) device details view is truncated.
-Default BatteryView(battery: MonitoredDeviceBattery.current)
+v2.1.8 5/31/2024 Fixed project so only one version check is needed not per target.  Set Swift version minimum to 5.9 since that's needed for #Preview {} functionality.  Added additional checks to allow compiling on Linux.  Added dummy ObservableObject protocol when Combine isn't available.  Removed now unnecessary MonitoredBatteryView and simplified API to just BatteryView() for simplicity and clarity.  Fixed thermal layout.  Fixed issue with enabledMonitoring frequency was ignored (and potentially generating many many timers that could cause memory leak).  Moved MockDevice to bottom to make it easier to find mocks.  Fixed error introduced in v2.1.0 where battery.slash.legacy was exported with SF Symbols 5 instead of 2 and thus crashed on devices and previews < iOS 17.
 
 v2.1.7 5/25/2024 Added Thunderbolt capability.  Added new iPads.  Re-worked package for better compatibility with swiftpackageindex.com platforms.  Added checks for SwiftUI for compilation compatibilty.  Added support for swift 5.7.
 
@@ -102,14 +100,13 @@ Known issues that need to be addressed.
 
 - [ ] Orientation change notifications on designed for iPad in visionOS.
 - [ ] Initial state of iPhone orientation icon.
-- [ ] Build for "Designed for iPad" running on macOS crashes on launch.  Works fine when included in project. Designed for iPad running on macOS has all appearance of being an actual iPad and battery level does not work.  Need help on this edge case (or use macCatalyst or macOS development).  Running on macOS (Designed for iPad) reports OS as iPadOS and returns an iPad Pro identifier instead of a Mac identifier and battery information is incorrect.  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
+- [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 - [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
 - [ ] Odd warning: Device.swiftpm/Sources/Resources/SymbolAssets.xcassets: Could not get trait set for device Watch7,2 with version 10.4
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
-- [ ] Device: MonitoredBatteryView and BatteryView should default to using Device.current.battery.  Have extension with generic "where Battery == Device.current.battery" for default init.
 - [ ] Go through and make sure device images (photos) have transparent background instead of white.
 - [ ] Add support IDs for macs and anything that has one missing.
 - [ ] Double check and update all device color sets. (right click on the color swatches and inspect element for the hex code)  https://www.apple.com/iphone/compare/?modelList=iphone-13-mini,iphone-13,iphone-15-pro
@@ -153,3 +150,27 @@ var processorCount: Int
 var activeProcessorCount: Int
 var physicalMemory: UInt64
 var systemUptime: TimeInterval
+
+TODO: See if we can include the Package.swift file in the project target and pull the build number there instead of manually coding.  See if that causes an issue with other swift Package includes.
+
+Thanks to this post for helping reduce the number of places we have to add the version:
+
+[quote='782317022, marian.cerny, /thread/730234?answerId=782317022#782317022, /profile/marian.cerny']
+Xcode 15 does not show Version and Build settings for app extensions in Project > Targets > target > General any more. In Xcode 14 I have been manually changing those versions to keep them in sync (and avoid warnings or errors).
+
+Moving the setting from target level to project level as suggested by Eskimo from Apple fixed the problem (and simplifies the workflow so that I do not need to manually keep the versions in sync).
+
+How to move the settings?
+
+- Go to Project > _main target_ > Build Settings. Enable "Levels".
+- Enter `CURRENT_PROJECT_VERSION` into Filter.
+- Edit the value for the project level (double click on the empty value in the project column).
+- Remove the value for the main target level (single click the value in the target column, press Delete key on keyboard).
+- Similarly for the `MARKETING_VERSION`. Enter it into Filter, enter the value for the project level, remove it from target level.
+
+Then, for **each** app extension target (Project > _an app extension target_ > Build Settings):
+
+- Remove the project level value for both settings.
+[/quote]
+
+

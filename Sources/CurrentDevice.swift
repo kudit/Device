@@ -23,7 +23,7 @@ public extension String {
 
 public extension Device {
     /// An object representing the current device this software is running on.
-    static var current: any CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock
+    static var current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock
     enum Environment: CaseIterable, DeviceAttributeExpressible {
         case realDevice, simulator, playground, preview, designedForiPad, macCatalyst
         
@@ -106,6 +106,7 @@ public enum ThermalState: SymbolRepresentable {
             return "thermometer.high"
         }
     }
+    #if canImport(Combine)
     var processInfoThermalState: ProcessInfo.ThermalState {
         switch self {
         case .nominal:
@@ -118,7 +119,9 @@ public enum ThermalState: SymbolRepresentable {
             return .critical
         }
     }
+    #endif
 }
+#if canImport(Combine)
 public extension ProcessInfo.ThermalState {
     var thermalState: ThermalState {
         switch self {
@@ -135,11 +138,14 @@ public extension ProcessInfo.ThermalState {
         }
     }
 }
+#endif
 
 //#if canImport(Observable)
 //@Observable
 //#endif // TODO: this is only supported in iOS 17+ so wait to implement until we no longer need backwards compatibility
 public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
+    associatedtype BatteryType: Battery
+
     // Environment
     /// Returns `true` if running on the simulator vs actual device.
     var isSimulator: Bool { get }
@@ -182,7 +188,7 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     
     // Power and hardware
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return `nil`.  Needed to be a concrete type for use in BatteryView.
-    var battery: (any Battery)? { get } //MonitoredDeviceBattery? { get }
+    var battery: BatteryType? { get } //MonitoredDeviceBattery? { get }
     /// Ability to change/get the idle timeout setting.
     var isIdleTimerDisabled: Bool { get set }
     /// When called, will automatically start monitoring the battery state to disable idle timer when plugged in.
@@ -200,8 +206,10 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     /// The volume’s available capacity in bytes for storing nonessential resources.
     var volumeAvailableCapacityForOpportunisticUsage: Int64? { get }
     
+    /// will enable monitoring at the specified frequency.  If this is called multiple times, it will replace the existing monitor.
     func enableMonitoring(frequency: TimeInterval)
 }
+
 extension ActualHardwareDevice { // Should be CurrentDevice but causes error in Swift Playgrounds.  Perhaps fix this in the future?  Error: "Replaced accessor for 'description' occurs in multiple places"
     /// Description (includes current identifier since device might have multiple).
     public var description: String {
@@ -232,211 +240,21 @@ Device Framework Version: v\(Device.version)
         return description
     }
 }
-/*
- Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
- callback()
- //            timer.invalidate()
- }
- */
-public class MockDevice: CurrentDevice {
-    public var device: Device = Device(idiom: .unspecified, officialName: "Mock Device", identifiers: ["Mock1,1"], supportId: "n/a", capabilities: [.screen(.undefined)], colors: [.blue], cpu: .unknown)
-    
-    public func enableMonitoring(frequency: TimeInterval) {
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-            self.objectWillChange.send()
-        }
-    }
-    
-    public var cycleAnimation: TimeInterval
-    private var brightnessIncreasing = false
-    @Published internal var updateCount = 0
-    public init(
-        device: Device? = nil,
-        isSimulator: Bool = false,
-        isPlayground: Bool = false,
-        isPreview: Bool = false,
-        isRealDevice: Bool = false,
-        isDesignedForiPad: Bool = false,
-        isMacCatalyst: Bool = false,
-        
-        identifier: String = "MOCK1,1",
-        name: String = "Mock's Device",
-        systemName: String = "mockOS",
-        systemVersion: String = "00.00.00",
-        model: String = "iMock",
-        localizedModel: String = "iMocké",
-        
-        isZoomed: Bool = false,
-        isGuidedAccessSessionActive: Bool = false,
-        brightness: Double? = 0.5,
-        screenOrientation: Screen.Orientation? = .landscape,
-        
-        battery: (any Battery)? = nil,
-        isIdleTimerDisabled: Bool = false,
-        thermalState: ThermalState = .nominal,
-        
-        volumeTotalCapacity: Int64? = 1_000_000_000_000, // 1TB
-        volumeAvailableCapacity: Int64? = 90_000_000_000,
-        volumeAvailableCapacityForImportantUsage: Int64? = 43_500_000_000,
-        volumeAvailableCapacityForOpportunisticUsage: Int64? = 31_500_000_000,
-        
-        cycleAnimation: TimeInterval = 0)
-    {
-        if let device {
-            self.device = device
-        }
-        self.isSimulator = isSimulator
-        self.isPlayground = isPlayground
-        self.isPreview = isPreview
-        self.isRealDevice = isRealDevice
-        self.isDesignedForiPad = isDesignedForiPad
-        self.isMacCatalyst = isMacCatalyst
-        self.identifier = identifier
-        self.name = name
-        self.systemName = systemName
-        self.systemVersion = systemVersion
-        self.model = model
-        self.localizedModel = localizedModel
-        self.isZoomed = isZoomed
-        self.isGuidedAccessSessionActive = isGuidedAccessSessionActive
-        self.brightness = brightness
-        self.screenOrientation = screenOrientation
-        self.battery = battery
-        self.isIdleTimerDisabled = isIdleTimerDisabled
-        self.thermalState = thermalState
-        self.volumeTotalCapacity = volumeTotalCapacity
-        self.volumeAvailableCapacity = volumeAvailableCapacity
-        self.volumeAvailableCapacityForImportantUsage = volumeAvailableCapacityForImportantUsage
-        self.volumeAvailableCapacityForOpportunisticUsage = volumeAvailableCapacityForOpportunisticUsage
-        self.cycleAnimation = cycleAnimation
-        
-        guard cycleAnimation > 0 else {
-            return // no need to create timer if no cycle animation
-        }
-        // create and schedule timer (no need to keep reference)
-        Timer.scheduledTimer(withTimeInterval: cycleAnimation, repeats: true) { timer in
-            self.update()
-        }
-    }
-    
-    public func update() {
-        updateCount += 1 // increase
-        let dup = Double(updateCount)
-        let patch = updateCount % 100
-        let minor = Int(dup / 100) % 100
-        let major = Int(floor(dup / 10000))
-        systemVersion = "\(major).\(minor).\(patch)"
-        // brightness (every tick)
-        if brightness == nil {
-            brightness = 0.5
-        }
-        guard var brightness else {
-            // This should never happen!
-            fatalError("Brightness unable to be set!")
-            // This really should never happen.  But if it does, go ahead and invalidate the timer.
-            //            timer.invalidate()
-        }
-        if brightnessIncreasing {
-            brightness += 0.01
-            if brightness > 1 {
-                brightness = 1
-                brightnessIncreasing = false
-            }
-        } else {
-            brightness -= 0.01
-            if brightness < 0 {
-                brightness = 0
-                brightnessIncreasing = true
-            }
-        }
-        self.brightness = brightness
-        //        print("Update \(updateCount), brightness: \(brightness)")
-        // zoomed (every 3 ticks)
-        if updateCount % 7 == 0 {
-            isZoomed = !isZoomed
-        }
-        // orientation (every 5 ticks)
-        if updateCount % 11 == 0 {
-            if screenOrientation == .portrait {
-                screenOrientation = .landscape
-            } else {
-                screenOrientation = .portrait
-            }
-        }
-        // guided access mode
-        if updateCount % 17 == 0 {
-            isGuidedAccessSessionActive = !isGuidedAccessSessionActive
-        }
-        // thermal state (every 7 ticks)
-        if updateCount % 13 == 0 {
-            switch thermalState {
-            case .nominal:
-                thermalState = .fair
-            case .fair:
-                thermalState = .serious
-            case .serious:
-                thermalState = .critical
-            case .critical:
-                thermalState = .nominal
-            }
-        }
-    }
-    
-    public var isSimulator: Bool
-    public var isPlayground: Bool
-    public var isPreview: Bool
-    public var isRealDevice: Bool
-    public var isDesignedForiPad: Bool
-    public var isMacCatalyst: Bool
-    
-    public var identifier: String
-    public var name: String
-    public var systemName: String
-    public var systemVersion: String
-    public var model: String
-    public var localizedModel: String
-    
-    @Published public var isZoomed: Bool = false
-    public var isGuidedAccessSessionActive: Bool = false
-    @Published public var brightness: Double? = 0.5
-    @Published public var screenOrientation: Screen.Orientation? = .landscape
-    
-    public var battery: (any Battery)? = nil
-    public var isIdleTimerDisabled: Bool = false
-    public func disableIdleTimerWhenPluggedIn() {
-        // do nothing (this is Mock)
-    }
-    @Published public var thermalState: ThermalState = .nominal
-    
-    public var volumeTotalCapacity: Int64?
-    public var volumeAvailableCapacity: Int64?
-    public var volumeAvailableCapacityForImportantUsage: Int64?
-    public var volumeAvailableCapacityForOpportunisticUsage: Int64?
-    
-    public var id: String {
-        String(describing: self)
-    }
-    
-    public static var mocks = [
-        Device.current,
-        MockDevice(battery: MockBattery.mocks[0], cycleAnimation: 0.1),
-        MockDevice(),
-        MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal),
-        MockDevice(isPlayground: true, isGuidedAccessSessionActive: true, brightness: 0.0, battery: MockBattery.mocks[2], thermalState: .fair),
-        MockDevice(isRealDevice: true, brightness: 0.75, battery: MockBattery.mocks[3], thermalState: .serious),
-        MockDevice(isDesignedForiPad: true, isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical),
-        MockDevice(isMacCatalyst: true, brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair),
-    ]
-    
-}
 
+#if canImport(Combine)
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
 // TODO: should this be a final class?
 class ActualHardwareDevice: CurrentDevice {
-    var device: Device
+    typealias BatteryType = MonitoredDeviceBattery
     
+    var device: Device
+
+    var timer: Timer?
     public func enableMonitoring(frequency: TimeInterval) {
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+        if let timer {
+            timer.invalidate()
+        }
+        timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
             self.objectWillChange.send()
             //            print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
         }
@@ -516,7 +334,11 @@ class ActualHardwareDevice: CurrentDevice {
         }
         // Note: this will be "false" under Catalyst which is what we want.
         if #available(watchOS 7.0, *) {
+#if canImport(Combine)
             return ProcessInfo().isiOSAppOnMac
+#else
+            return false // linux should just return false
+#endif
         } else {
             // Fallback on earlier versions
             return false
@@ -562,10 +384,13 @@ class ActualHardwareDevice: CurrentDevice {
         return String(cString: modelIdentifier)
 #else
         //        print(ProcessInfo().environment)
+        #if canImport(Combine)
+        // TODO: Should this be ProcessInfo.processInfo since initializer is internal?
         if let identifier = ProcessInfo().environment["SIMULATOR_MODEL_IDENTIFIER"] {
             // machine value is likely just arm64 so return the simulator identifier
             return identifier
         }
+        #endif
         var systemInfo = utsname()
         uname(&systemInfo)
         let mirror = Mirror(reflecting: systemInfo.machine)
@@ -586,8 +411,10 @@ class ActualHardwareDevice: CurrentDevice {
         return WKInterfaceDevice.current().name
 #elseif canImport(UIKit)
         return UIDevice.current.name
+#elseif canImport(Combine)
+        return ProcessInfo().hostName // mac device?
 #else
-        return ProcessInfo().hostName
+        return "Unknown Linux Device"
 #endif
     }
     
@@ -693,9 +520,9 @@ class ActualHardwareDevice: CurrentDevice {
             //            var service: io_object_t = 1
             //            var iterator: io_iterator_t = 0
             //            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
-            //            
+            //
             //            if result == kIOReturnSuccess {
-            //                
+            //
             //                while service != 0 {
             //                    service = IOIteratorNext(iterator)
             //                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
@@ -736,7 +563,7 @@ class ActualHardwareDevice: CurrentDevice {
     // MARK: - Power & Hardware
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
-    var battery: (any Battery)? {
+    var battery: BatteryType? {
         if device.has(.battery) {
             return MonitoredDeviceBattery.current
         }
@@ -788,7 +615,11 @@ class ActualHardwareDevice: CurrentDevice {
     
     /// Returns the current thermal state of the system
     public var thermalState: ThermalState {
+        #if canImport(Combine)
         return ProcessInfo().thermalState.thermalState
+        #else
+        return .nominal
+        #endif
     }
     
     
@@ -819,7 +650,7 @@ class ActualHardwareDevice: CurrentDevice {
     
     /// The volume’s available capacity in bytes for storing important resources.
     public var volumeAvailableCapacityForImportantUsage: Int64? {
-#if os(tvOS) || os(watchOS)
+#if os(tvOS) || os(watchOS) || !canImport(Combine)
         return nil
 #else
         if #available(iOS 11.0, *) {
@@ -832,7 +663,7 @@ class ActualHardwareDevice: CurrentDevice {
     
     /// The volume’s available capacity in bytes for storing nonessential resources.
     public var volumeAvailableCapacityForOpportunisticUsage: Int64? {
-#if os(tvOS) || os(watchOS)
+#if os(tvOS) || os(watchOS) || !canImport(Combine)
         return nil
 #else
         if #available(iOS 11.0, *) {
@@ -844,13 +675,236 @@ class ActualHardwareDevice: CurrentDevice {
     }
     
 }
+/*
+ Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
+ callback()
+ //            timer.invalidate()
+ }
+ */
+public class MockDevice: CurrentDevice {
+    public typealias BatteryType = MockBattery
+    public var device: Device
+    
+    var timer: Timer?
+    public func enableMonitoring(frequency: TimeInterval) {
+        if let timer {
+            timer.invalidate()
+        }
+        timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
+            self.objectWillChange.send()
+        }
+    }
+    
+    static var mockCount = 1
+    public var cycleAnimation: TimeInterval
+    private var brightnessIncreasing = false
+    @Published internal var updateCount = 0
+    public init(
+        device: Device? = nil,
+        isSimulator: Bool = false,
+        isPlayground: Bool = false,
+        isPreview: Bool = false,
+        isRealDevice: Bool = false,
+        isDesignedForiPad: Bool = false,
+        isMacCatalyst: Bool = false,
+        
+        identifier: String? = nil,
+        name: String = "Mock's Device",
+        systemName: String = "mockOS",
+        systemVersion: String = "00.00.00",
+        model: String = "iMock",
+        localizedModel: String = "iMocké",
+        
+        isZoomed: Bool = false,
+        isGuidedAccessSessionActive: Bool = false,
+        brightness: Double? = 0.5,
+        screenOrientation: Screen.Orientation? = .landscape,
+        
+        battery: BatteryType? = nil,
+        isIdleTimerDisabled: Bool = false,
+        thermalState: ThermalState = .nominal,
+        
+        volumeTotalCapacity: Int64? = 1_000_000_000_000, // 1TB
+        volumeAvailableCapacity: Int64? = 90_000_000_000,
+        volumeAvailableCapacityForImportantUsage: Int64? = 43_500_000_000,
+        volumeAvailableCapacityForOpportunisticUsage: Int64? = 31_500_000_000,
+        
+        cycleAnimation: TimeInterval = 0)
+    {
+        self.isSimulator = isSimulator
+        self.isPlayground = isPlayground
+        self.isPreview = isPreview
+        self.isRealDevice = isRealDevice
+        self.isDesignedForiPad = isDesignedForiPad
+        self.isMacCatalyst = isMacCatalyst
+        if let identifier {
+            self.identifier = identifier
+        } else {
+            self.identifier = "MOCK\(MockDevice.mockCount),\(MockDevice.mockCount)"
+            MockDevice.mockCount += 1
+        }
+        if let device {
+            self.device = device
+        } else {
+            self.device = Device(idiom: .unspecified, officialName: "Mock Device", identifiers: [self.identifier], supportId: "n/a", capabilities: [.screen(.undefined)], colors: [.blue], cpu: .unknown)
+        }
+        self.name = name
+        self.systemName = systemName
+        self.systemVersion = systemVersion
+        self.model = model
+        self.localizedModel = localizedModel
+        self.isZoomed = isZoomed
+        self.isGuidedAccessSessionActive = isGuidedAccessSessionActive
+        self.brightness = brightness
+        self.screenOrientation = screenOrientation
+        self.battery = battery
+        self.isIdleTimerDisabled = isIdleTimerDisabled
+        self.thermalState = thermalState
+        self.volumeTotalCapacity = volumeTotalCapacity
+        self.volumeAvailableCapacity = volumeAvailableCapacity
+        self.volumeAvailableCapacityForImportantUsage = volumeAvailableCapacityForImportantUsage
+        self.volumeAvailableCapacityForOpportunisticUsage = volumeAvailableCapacityForOpportunisticUsage
+        self.cycleAnimation = cycleAnimation
+        
+        //        print("Created mock with identifier: \(self.identifier)")
+        
+        guard cycleAnimation > 0 else {
+            return // no need to create timer if no cycle animation
+        }
+        // create and schedule timer
+        animationTimer = Timer.scheduledTimer(withTimeInterval: cycleAnimation, repeats: true) { timer in
+            self.update()
+        }
+    }
+    var animationTimer: Timer?
+    deinit {
+        if let timer {
+            timer.invalidate()
+        }
+        timer = nil
+        if let animationTimer {
+            animationTimer.invalidate()
+        }
+        animationTimer = nil
+    }
+    
+    public func update() {
+        updateCount += 1 // increase
+        let dup = Double(updateCount)
+        let patch = updateCount % 100
+        let minor = Int(dup / 100) % 100
+        let major = Int(floor(dup / 10000))
+        systemVersion = "\(major).\(minor).\(patch)"
+        // brightness (every tick)
+        if brightness == nil {
+            brightness = 0.5
+        }
+        guard var brightness else {
+            // This should never happen!
+            fatalError("Brightness unable to be set!")
+            // This really should never happen.  But if it does, go ahead and invalidate the timer.
+            //            timer.invalidate()
+        }
+        if brightnessIncreasing {
+            brightness += 0.01
+            if brightness > 1 {
+                brightness = 1
+                brightnessIncreasing = false
+            }
+        } else {
+            brightness -= 0.01
+            if brightness < 0 {
+                brightness = 0
+                brightnessIncreasing = true
+            }
+        }
+        self.brightness = brightness
+        //        print("Update \(updateCount), brightness: \(brightness)")
+        // zoomed (every 3 ticks)
+        if updateCount % 7 == 0 {
+            isZoomed = !isZoomed
+        }
+        // orientation (every 5 ticks)
+        if updateCount % 11 == 0 {
+            if screenOrientation == .portrait {
+                screenOrientation = .landscape
+            } else {
+                screenOrientation = .portrait
+            }
+        }
+        // guided access mode
+        if updateCount % 17 == 0 {
+            isGuidedAccessSessionActive = !isGuidedAccessSessionActive
+        }
+        // thermal state (every 7 ticks)
+        if updateCount % 13 == 0 {
+            switch thermalState {
+            case .nominal:
+                thermalState = .fair
+            case .fair:
+                thermalState = .serious
+            case .serious:
+                thermalState = .critical
+            case .critical:
+                thermalState = .nominal
+            }
+        }
+    }
+    
+    public var isSimulator: Bool
+    public var isPlayground: Bool
+    public var isPreview: Bool
+    public var isRealDevice: Bool
+    public var isDesignedForiPad: Bool
+    public var isMacCatalyst: Bool
+    
+    public var identifier: String
+    public var name: String
+    public var systemName: String
+    public var systemVersion: String
+    public var model: String
+    public var localizedModel: String
+    
+    @Published public var isZoomed: Bool = false
+    public var isGuidedAccessSessionActive: Bool = false
+    @Published public var brightness: Double? = 0.5
+    @Published public var screenOrientation: Screen.Orientation? = .landscape
+    
+    public var battery: BatteryType? = nil
+    public var isIdleTimerDisabled: Bool = false
+    public func disableIdleTimerWhenPluggedIn() {
+        // do nothing (this is Mock)
+    }
+    @Published public var thermalState: ThermalState = .nominal
+    
+    public var volumeTotalCapacity: Int64?
+    public var volumeAvailableCapacity: Int64?
+    public var volumeAvailableCapacityForImportantUsage: Int64?
+    public var volumeAvailableCapacityForOpportunisticUsage: Int64?
+    
+    public var id: String {
+        String(describing: self)
+    }
+    
+    public static var mocks = [
+        MockDevice(battery: MockBattery.mocks[0], cycleAnimation: 0.1),
+        MockDevice(),
+        MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal),
+        MockDevice(isPlayground: true, isGuidedAccessSessionActive: true, brightness: 0.0, battery: MockBattery.mocks[2], thermalState: .fair),
+        MockDevice(isRealDevice: true, brightness: 0.75, screenOrientation: .portrait, battery: MockBattery.mocks[3], thermalState: .serious),
+        MockDevice(isDesignedForiPad: true, isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical),
+        MockDevice(isMacCatalyst: true, brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair),
+    ]
+    
+}
 
 #if canImport(SwiftUI)
 import SwiftUI
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Animated Test") {
     List {
-        ForEach(MockDevice.mocks, id: \.id) { mock in
+        CurrentDeviceInfoView(device: Device.current, includeStorage: false)
+        ForEach(MockDevice.mocks) { mock in
             Section {
                 CurrentDeviceInfoView(device: mock, includeStorage: false)
             }
@@ -859,3 +913,4 @@ import SwiftUI
 }
 #endif
 
+#endif

@@ -149,7 +149,7 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
 public struct DeviceInfoView: View {
     public var device: DeviceType
     
-    @State var includeScreen: Bool
+    @State var includeScreen = false
     
     public init(device: any DeviceType, includeScreen: Bool = false) {
         self.device = device

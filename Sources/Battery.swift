@@ -12,6 +12,22 @@ import SwiftUI // for Color
 import IOKit
 import IOKit.ps
 #endif
+#if !canImport(Combine)
+// Add stub here to make sure we can compile
+public protocol ObservableObject {
+    var objectWillChange: ObjectWillChangePublisher { get }
+}
+public struct ObjectWillChangePublisher {
+    func send() {} // dummy for calls
+    static var dummyPublisher = ObjectWillChangePublisher()
+}
+public extension ObservableObject {
+    var objectWillChange: ObjectWillChangePublisher {
+        return .dummyPublisher
+    }
+}
+#endif
+import Foundation // for Timer
 
 /// This enum describes the state of the battery.
 public enum BatteryState: CustomStringConvertible, CaseNameConvertible { // automatically conforms to Equatable since no associated/raw value
@@ -52,7 +68,7 @@ public protocol Battery: ObservableObject, SymbolRepresentable, CustomStringConv
     var lowPowerMode: Bool { get }
     /// Allows fetching or setting whether battery monitoring is enabled.  Don't necessarily need ot use this directly.  You can just add a monitor by calling `.monitor { battery, changeType in }`.
     var monitoring: Bool { get set }
-    /// Change Monitoring
+    /// Change Monitoring (needs to be `any Battery` so that can mix DeviceBattery and MonitoredDeviceBattery
     typealias BatteryMonitor = (any Battery, BatteryChangeType) -> Void
     /// Adds a callback that will be called when the battery state changes.
     /// Callback takes a `battery` parameter and the `BatteryChangeType`
@@ -154,6 +170,7 @@ public extension Battery {
     var id: String { description }
 }
 
+#if canImport(Combine)
 // Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
 public class MockBattery: Battery {
     @Published public var currentLevel: Int = -1
@@ -182,7 +199,7 @@ public class MockBattery: Battery {
             return // no need to create timer if no cycle level
         }
         // create and schedule timer (no need to keep reference)
-        Timer.scheduledTimer(withTimeInterval: cycleLevelState, repeats: true) { timer in
+        _ = Timer.scheduledTimer(withTimeInterval: cycleLevelState, repeats: true) { timer in
             switch self.currentState {
             case .unknown:
                 // This really should never happen.  But if it does, go ahead and invalidate the timer.
@@ -208,9 +225,10 @@ public class MockBattery: Battery {
         }
     }
 
+    public static var missing = MockBattery(currentLevel: -1, currentState: .unknown)
     public static var mocks = [
         MockBattery(currentLevel: 50, cycleLevelState: 0.1),
-        MockBattery(currentLevel: -1, currentState: .unknown),
+        MockBattery.missing,
         MockBattery(currentLevel: 0),
         MockBattery(currentLevel: 2, currentState: .charging),
         MockBattery(currentLevel: 15),
@@ -507,10 +525,10 @@ public class MonitoredDeviceBattery: Battery {
     /// Probably not needed directly, but here to wrap DeviceBattery.current.monitoring (which should always be true due to this monitoring)
     public var monitoring: Bool {
         get {
-            DeviceBattery.current.monitoring            
+            DeviceBattery.current.monitoring
         }
         set {
-            DeviceBattery.current.monitoring = newValue            
+            DeviceBattery.current.monitoring = newValue
         }
     }
     
@@ -518,3 +536,4 @@ public class MonitoredDeviceBattery: Battery {
         DeviceBattery.current.monitor(monitor)
     }
 }
+#endif

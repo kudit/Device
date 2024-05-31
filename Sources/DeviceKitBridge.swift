@@ -475,7 +475,7 @@ extension Device {
     @available(iOS 11.0, *)
     @available(*, deprecated, message: "If you need this, please let us know why.")
     public static var volumes: [URLResourceKey: Int64]? {
-#if os(tvOS) || os(watchOS)
+#if os(tvOS) || os(watchOS) || !canImport(Combine)
             return nil
 #else
         let rootURL = URL(fileURLWithPath: NSHomeDirectory())

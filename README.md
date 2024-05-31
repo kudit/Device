@@ -1,5 +1,7 @@
 <img src="/Development/Resources/Assets.xcassets/AppIcon.appiconset/Icon.png" height="128">
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fkudit%2FDevice%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/kudit/Device)
+
 # Device.swiftpm
 Device is a value-type replacement for device information on all supported platforms.  The primary goals are to be easily maintainable by multiple individuals and employ a consistent API that can be used across platforms.  APIs are present even on platforms that don't support all features so that availability checks do not have to be performed in external code and where irrelevant, code can simply unwrap optionals.  Device definitions include clear initializers so anyone can add new devices and contribute to the project even on an iPad using Swift Playgrounds rather than requiring Xcode.  No need to memorize mapping schema or use additional build tools.
 
@@ -96,7 +98,7 @@ This is actively maintained so if there is a feature request or change, we will 
 - visionOS 1.0+
 
 ## Known Issues
-Built for macOS "Designed for iPad" does not return expected device results.
+Built for macOS "Designed for iPad" returns an iPad profile instead of actual hardware profile.
 Custom Symbols likely won't work in macOS < 13 or watchOS < 7.
 LowPowerMode checks unavailable in macOS < 12.
 
@@ -265,6 +267,14 @@ Device.current.isIdleTimerDisabled = true
 
 // Disable automatically when plugged in.  Only call this once (probably during init).
 Device.current.disableIdleTimerWhenPluggedIn()
+```
+
+### Displaying a BatteryView
+```swift
+// BatteryView() will default to a view with a live updating battery indicator.
+BatteryView()
+// you can have a larger one by changing the font size
+BatteryView(fontSize: 80)
 ```
 
 ## Source of Information

@@ -139,12 +139,22 @@ public struct ScreenInfoView: View {
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Screens") {
     List {
-        ForEach(MockDevice.mocks, id: \.id) { device in
-            ScreenInfoView(device: device)
+        Section {
+            Text("Current Device")
+            ScreenInfoView(device: Device.current)
         }
-        ForEach(Device.all, id: \.self) { device in
-            if device.screen != nil && device.screen != .undefined {
+        Section {
+            ForEach(MockDevice.mocks) { device in
+                Text(device.identifier)
                 ScreenInfoView(device: device)
+            }
+        }
+        Section {
+            ForEach(Device.all, id: \.self) { device in
+                if device.screen != nil && device.screen != .undefined {
+                    Text(device.officialName)
+                    ScreenInfoView(device: device)
+                }
             }
         }
     }

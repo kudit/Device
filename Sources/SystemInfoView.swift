@@ -2,9 +2,9 @@
 import SwiftUI
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
-public struct SystemInfoView: View {
-    public var device: any CurrentDevice
-    public init(device: any CurrentDevice) {
+public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
+    public var device: SomeCurrentDevice
+    public init(device: SomeCurrentDevice) {
         self.device = device
     }
     public var body: some View {
@@ -23,14 +23,17 @@ public struct SystemInfoView: View {
                 MonitoredCurrentDeviceView(device: device) { currentDevice in
                     Image(currentDevice.thermalState).font(.title)
                         .foregroundStyle(currentDevice.thermalState == .nominal ? .primary : currentDevice.thermalState.color, currentDevice.thermalState.color, .secondary)
-                    Text(" \(String(describing: currentDevice.thermalState))").font(.headline)
-                    Text("thermal state").font(.callout).opacity(0.5)
+                    VStack(alignment: .leading) {
+                        Text(" thermal state").font(.footnote.smallCaps()).opacity(0.5)
+                        Text(" \(String(describing: currentDevice.thermalState))").font(.headline)
+                    }
+                    Spacer()
                     Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text(
                         Image(symbolName: "cpu"))
                 }
-                Spacer()
                 if let battery = device.battery {
-                    MonitoredBatteryView(battery: battery, fontSize: 44)
+                    Spacer()
+                    BatteryView(battery: battery, fontSize: 44)
                 }
 }
             
@@ -58,7 +61,10 @@ public struct SystemInfoView: View {
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("SystemInfo") {
     List {
+        SystemInfoView(device: Device.current)
+        Divider()
         ForEach(MockDevice.mocks, id: \.id) { device in
+            Text(String(describing: device))
             SystemInfoView(device: device)
         }
     }

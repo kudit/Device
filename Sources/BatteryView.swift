@@ -17,7 +17,57 @@ import SwiftUI
  .minimumScaleFactor(0.01)  // 2
  */
 
-public struct BatteryView<SomeBattery: Battery>: View {
+class PolymorphicBattery: ObservableObject {
+    @Published var monitoredDeviceBattery: MonitoredDeviceBattery?
+    @Published var deviceBattery: DeviceBattery?
+    @Published var mockBattery: MockBattery = .missing // guarantees that this will never be nil and the polymorphic battery will have at least one representation
+} 
+public struct BatteryView: View {
+    // ObservedObject can't be used with any.
+    @ObservedObject var polymorphicBattery = PolymorphicBattery()
+    
+    // Making these state variables means they wouldn't be updated or set by the initializer.
+    // These are part of the view which can be set in initializer so they don't need to be public.
+    var useSystemColors: Bool
+    var includePercent: Bool
+    var fontSize: CGFloat
+    //    /// Include the backing view to improve contrast.
+    var includeBacking: Bool
+        
+    /// Initializer without specifying a battery will assume CurrentDevice.battery, and if that is nil, will use the missing battery mock.
+    public init(battery initialBattery: (some Battery)? = MockBattery?.none, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
+        self.useSystemColors = useSystemColors
+        self.includePercent = includePercent
+        self.fontSize = fontSize
+        self.includeBacking = includeBacking
+        let battery: (any Battery)? = initialBattery ?? Device.current.battery
+        if let battery = battery as? MonitoredDeviceBattery {
+            self.polymorphicBattery.monitoredDeviceBattery = battery
+        } else if let battery = battery as? DeviceBattery {
+            self.polymorphicBattery.deviceBattery = battery
+        } else if let battery = battery as? MockBattery {
+            self.polymorphicBattery.mockBattery = battery
+        } // poly already initializes to .missing
+#if targetEnvironment(macCatalyst)
+        Device.current.enableMonitoring(frequency: 1)
+#endif
+    }
+    func batteryView(battery: some Battery) -> some View {
+        SpecificBatteryView(battery: battery, useSystemColors: useSystemColors, includePercent: includePercent, fontSize: fontSize, includeBacking: includeBacking)
+    }
+    public var body: some View {
+        if let battery = polymorphicBattery.monitoredDeviceBattery {
+            batteryView(battery: battery)
+        } else if let battery = polymorphicBattery.deviceBattery {
+            batteryView(battery: battery)
+        } else {
+            batteryView(battery: polymorphicBattery.mockBattery)
+        } 
+    }
+}
+
+public struct SpecificBatteryView<SomeBattery: Battery>: View {
+    // ObservedObject can't be used with any.
     @ObservedObject public var battery: SomeBattery
     
     // Making these state variables means they wouldn't be updated or set by the initializer.
@@ -30,7 +80,9 @@ public struct BatteryView<SomeBattery: Battery>: View {
     
     @Environment(\.colorScheme) var colorScheme
     
-    public init(battery: SomeBattery, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
+    /// Initializer without specifying a battery will assume CurrentDevice.battery, and if that is nil, will use the bad battery mock.
+    public init(battery: SomeBattery,
+                useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
         self.battery = battery
         self.useSystemColors = useSystemColors
         self.includePercent = includePercent
@@ -149,36 +201,27 @@ public struct BatteryView<SomeBattery: Battery>: View {
     }
 }
 
-public struct MonitoredBatteryView: View {
-    var battery: (any Battery)?
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+public struct BatteryTestsRow<SomeBattery: Battery>: View {
+    public var battery: SomeBattery
+    public var fontSize: CGFloat
+    public var lowPowerMode: Bool
+    public var includeBacking: Bool
     
-    var useSystemColors: Bool
-    var includePercent: Bool
-    var fontSize: CGFloat
-    //    /// Include the backing view to improve contrast.
-    var includeBacking: Bool
-    
-    public init(battery: (any Battery)?, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
+    public init(battery: SomeBattery, fontSize: CGFloat = 45, lowPowerMode: Bool = false, includeBacking: Bool = true) {
         self.battery = battery
-        self.useSystemColors = useSystemColors
-        self.includePercent = includePercent
         self.fontSize = fontSize
+        self.lowPowerMode = lowPowerMode
         self.includeBacking = includeBacking
-#if targetEnvironment(macCatalyst)
-        Device.current.enableMonitoring(frequency: 1)
-#endif
     }
+
     public var body: some View {
-        Group {
-            if let battery = battery as? MonitoredDeviceBattery {
-                BatteryView(battery: battery, useSystemColors: useSystemColors, includePercent: includePercent, fontSize: fontSize, includeBacking: includeBacking)
-            } else if let battery = battery as? DeviceBattery {
-                BatteryView(battery: battery, useSystemColors: useSystemColors, includePercent: includePercent, fontSize: fontSize, includeBacking: includeBacking)
-            } else if let battery = battery as? MockBattery {
-                BatteryView(battery: battery, useSystemColors: useSystemColors, includePercent: includePercent, fontSize: fontSize, includeBacking: includeBacking)
-            } else {
-                EmptyView()
-            }
+        HStack {
+            BatteryView(battery: battery, useSystemColors: true, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
+            BatteryView(battery: battery, useSystemColors: true, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
+            Spacer()
+            BatteryView(battery: battery, useSystemColors: false, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
+            BatteryView(battery: battery, useSystemColors: false, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
         }
     }
 }
@@ -209,14 +252,11 @@ public struct BatteryTestsView: View {
                     updateMocksLowPowerMode()
                 }
             Toggle("Include Backing", isOn: $includeBacking)
+            if let battery = Device.current.battery {
+                BatteryTestsRow(battery: battery, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
+            }
             ForEach(MockBattery.mocks) { mock in
-                HStack {
-                    BatteryView(battery: mock, useSystemColors: true, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
-                    BatteryView(battery: mock, useSystemColors: true, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
-                    Spacer()
-                    BatteryView(battery: mock, useSystemColors: false, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
-                    BatteryView(battery: mock, useSystemColors: false, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
-                }
+                BatteryTestsRow(battery: mock, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
         }
         .navigationTitle("Battery Mocks")

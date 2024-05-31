@@ -9,11 +9,13 @@ import Device
             Image(symbolName: "star")
             Image(symbolName: "dynamicisland")
             Image(symbolName: "bad")
+            Image(symbolName: "battery.slash")
         }
         .symbolRenderingMode(.hierarchical)
         Label("Foo", symbolName: "star.fill")
         Label("Bar", symbolName: "roundedcorners")
         Label("Baz", symbolName: "bad")
+        Label("BS", symbolName: "battery.slash")
         Divider()
         CapabilitiesTextView(capabilities: Set(Capability.allCases))
     }
@@ -160,7 +162,7 @@ public struct DeviceTestView: View {
                 NavigationLink {
                     BatteryTestsView()
                 } label: {
-                    MonitoredBatteryView(battery: Device.current.battery, fontSize: 80)
+                    BatteryView(fontSize: 80)
                 }
 #if os(iOS) // only works on iOS so don't show on other devices.
                 Toggle("Disable Idle Timer", isOn: Binding(get: {

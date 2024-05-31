@@ -145,12 +145,12 @@ public struct MonitoredCurrentDeviceView<Content: View>: View {
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
-public struct CurrentDeviceInfoView: View {
-    @State var device: any CurrentDevice
+public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
+    var device: SomeCurrentDevice
     @State var includeStorage: Bool
     @State var debug: Bool
     
-    public init(device: any CurrentDevice, includeStorage: Bool = true, debug: Bool = false) {
+    public init(device: SomeCurrentDevice, includeStorage: Bool = true, debug: Bool = false) {
         self.device = device
         self.includeStorage = includeStorage
         self.debug = debug
@@ -182,8 +182,14 @@ public struct CurrentDeviceInfoView: View {
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Current Device") {
     List {
+        Section {
+            CurrentDeviceInfoView(device: Device.current, debug: true)
+        }
+        Divider()
         ForEach(MockDevice.mocks, id: \.id) { device in
-            CurrentDeviceInfoView(device: device, debug: device === Device.current)
+            Section {
+                CurrentDeviceInfoView(device: device, debug: false)
+            }
         }
     }
 }

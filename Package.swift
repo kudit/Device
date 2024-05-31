@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // WARNING:
@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-var version = "2.1.7"
+var version = "2.1.8"
 var packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -42,7 +42,7 @@ var platforms: [SupportedPlatform] = [ // minimums for Date.now
 
 #if os(visionOS)
 platforms += [
-    .visionOS("1.0"),
+    .visionOS("1.0"), // unavailable in Swift Playgrounds
 ]
 #endif
 
