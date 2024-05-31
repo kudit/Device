@@ -241,7 +241,6 @@ Device Framework Version: v\(Device.version)
     }
 }
 
-#if canImport(Combine)
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
 // TODO: should this be a final class?
 class ActualHardwareDevice: CurrentDevice {
@@ -911,6 +910,4 @@ import SwiftUI
         }
     }
 }
-#endif
-
 #endif
