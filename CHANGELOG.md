@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.1.11 6/1/2024 Completely re-worked Storage view to be more compact and expand for more information.
+
 v2.1.10 5/31/2024 Forgot to update versions!  Also added legacy symbol for screen size.
 
 v2.1.9 5/31/2024 Fails Linux test (fixed?).  Need a better way of testing on linux.  Added better information for new iPads.  Fixed bug where screen wasn't included on device detail view.  Added information on esim/dual esim capability.  Re-ordered some iPads so they are chronological.  Added full UIDeviceOrientation value set for Screen.Orientation to be more accurate and not lose information.

@@ -199,12 +199,12 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     // Storage Info
     /// The volume’s total capacity in bytes.
     var volumeTotalCapacity: Int64? { get }
-    /// The volume’s available capacity in bytes.
-    var volumeAvailableCapacity: Int64? { get }
     /// The volume’s available capacity in bytes for storing important resources.
     var volumeAvailableCapacityForImportantUsage: Int64? { get }
     /// The volume’s available capacity in bytes for storing nonessential resources.
     var volumeAvailableCapacityForOpportunisticUsage: Int64? { get }
+    /// The volume’s available capacity in bytes.
+    var volumeAvailableCapacity: Int64? { get }
     
     /// will enable monitoring at the specified frequency.  If this is called multiple times, it will replace the existing monitor.
     func enableMonitoring(frequency: TimeInterval)
@@ -737,9 +737,9 @@ public class MockDevice: CurrentDevice {
         thermalState: ThermalState = .nominal,
         
         volumeTotalCapacity: Int64? = 1_000_000_000_000, // 1TB
-        volumeAvailableCapacity: Int64? = 90_000_000_000,
-        volumeAvailableCapacityForImportantUsage: Int64? = 43_500_000_000,
-        volumeAvailableCapacityForOpportunisticUsage: Int64? = 31_500_000_000,
+        volumeAvailableCapacityForImportantUsage: Int64? = 443_500_000_000,
+        volumeAvailableCapacityForOpportunisticUsage: Int64? = 333_300_000_000,
+        volumeAvailableCapacity: Int64? = 220_300_000_000,
         
         cycleAnimation: TimeInterval = 0)
     {
@@ -844,7 +844,6 @@ public class MockDevice: CurrentDevice {
             } else {
                 screenOrientation = .unknown
             }
-            
         }
         // guided access mode
         if updateCount % 17 == 0 {
@@ -862,6 +861,15 @@ public class MockDevice: CurrentDevice {
             case .critical:
                 thermalState = .nominal
             }
+        }
+        
+        // volume information
+        if updateCount % 23 == 0 {
+            let index = (updateCount / 23) % MockDevice.mocks.count
+            let mock = MockDevice.mocks[index]
+            self.volumeAvailableCapacity = mock.volumeAvailableCapacity
+            self.volumeAvailableCapacityForImportantUsage = mock.volumeAvailableCapacityForImportantUsage
+            self.volumeAvailableCapacityForOpportunisticUsage = mock.volumeAvailableCapacityForOpportunisticUsage
         }
     }
     
@@ -892,9 +900,9 @@ public class MockDevice: CurrentDevice {
     @Published public var thermalState: ThermalState = .nominal
     
     public var volumeTotalCapacity: Int64?
-    public var volumeAvailableCapacity: Int64?
     public var volumeAvailableCapacityForImportantUsage: Int64?
     public var volumeAvailableCapacityForOpportunisticUsage: Int64?
+    public var volumeAvailableCapacity: Int64?
     
     public var id: String {
         String(describing: self)
@@ -903,11 +911,11 @@ public class MockDevice: CurrentDevice {
     public static var mocks = [
         MockDevice(battery: MockBattery.mocks[0], cycleAnimation: 0.1),
         MockDevice(),
-        MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal),
-        MockDevice(isPlayground: true, isGuidedAccessSessionActive: true, brightness: 0.0, battery: MockBattery.mocks[2], thermalState: .fair),
-        MockDevice(isRealDevice: true, brightness: 0.75, screenOrientation: .portrait, battery: MockBattery.mocks[3], thermalState: .serious),
-        MockDevice(isDesignedForiPad: true, isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical),
-        MockDevice(isMacCatalyst: true, brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair),
+        MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal, volumeAvailableCapacityForImportantUsage: 908_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 900_500_000_000, volumeAvailableCapacity: 888_500_000_000),
+        MockDevice(isPlayground: true, isGuidedAccessSessionActive: true, brightness: 0.0, battery: MockBattery.mocks[2], thermalState: .fair, volumeAvailableCapacityForImportantUsage: 708_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 600_500_000_000, volumeAvailableCapacity: 488_500_000_000),
+        MockDevice(isRealDevice: true, brightness: 0.75, screenOrientation: .portrait, battery: MockBattery.mocks[3], thermalState: .serious, volumeAvailableCapacityForImportantUsage: 300_908_000_000, volumeAvailableCapacityForOpportunisticUsage: 200_900_000_000, volumeAvailableCapacity: 100_888_000_000),
+        MockDevice(isDesignedForiPad: true, isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical, volumeAvailableCapacityForImportantUsage: 98_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 80_500_000_000, volumeAvailableCapacity: 68_500_000_000),
+        MockDevice(isMacCatalyst: true, brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair, volumeAvailableCapacityForImportantUsage: 808_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 700_500_000_000, volumeAvailableCapacity: 688_500_000_000),
     ]
     
 }
@@ -917,10 +925,10 @@ import SwiftUI
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Animated Test") {
     List {
-        CurrentDeviceInfoView(device: Device.current, includeStorage: false)
+        CurrentDeviceInfoView(device: Device.current, includeStorage: true)
         ForEach(MockDevice.mocks) { mock in
             Section {
-                CurrentDeviceInfoView(device: mock, includeStorage: false)
+                CurrentDeviceInfoView(device: mock, includeStorage: true)
             }
         }
     }
