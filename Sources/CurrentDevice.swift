@@ -244,7 +244,11 @@ Device Framework Version: v\(Device.version)
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
 // TODO: should this be a final class?
 class ActualHardwareDevice: CurrentDevice {
+#if canImport(Combine)
     typealias BatteryType = MonitoredDeviceBattery
+#else
+    typealias BatteryType = DeviceBattery
+#endif
     
     var device: Device
 
@@ -577,7 +581,11 @@ class ActualHardwareDevice: CurrentDevice {
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
     var battery: BatteryType? {
         if device.has(.battery) {
+#if canImport(Combine)
             return MonitoredDeviceBattery.current
+#else
+            return DeviceBattery.current
+#endif
         }
         return nil
     }

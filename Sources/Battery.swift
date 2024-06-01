@@ -239,6 +239,7 @@ public class MockBattery: Battery {
         MockBattery(currentLevel: 100, currentState: .full),
     ]
 }
+#endif
 
 public class DeviceBattery: Battery {
     public static var current = DeviceBattery() // only time this is initialized typically
@@ -481,6 +482,7 @@ public class DeviceBattery: Battery {
     }
 }
 
+#if canImport(Combine)
 /// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
 public class MonitoredDeviceBattery: Battery {
     public static var current = MonitoredDeviceBattery() // only time this is initialized typically

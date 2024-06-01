@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-var version = "2.1.11"
+var version = "2.1.12"
 var packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.

@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.1.12 6/1/2024 Re-worked so MonitoredDeviceBattery is not required by Linux.
+
 v2.1.11 6/1/2024 Completely re-worked Storage view to be more compact and expand for more information.
 
 v2.1.10 5/31/2024 Forgot to update versions!  Also added legacy symbol for screen size.
