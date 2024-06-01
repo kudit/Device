@@ -590,7 +590,11 @@ class ActualHardwareDevice: CurrentDevice {
         return nil
     }
     
+#if canImport(Combine)
     @Published private var _isIdleTimerDisabled = false
+#else
+    private var _isIdleTimerDisabled = false
+#endif
     /// Ability to change/get the idle timeout setting.
     var isIdleTimerDisabled: Bool {
         get {
@@ -608,7 +612,11 @@ class ActualHardwareDevice: CurrentDevice {
         UIApplication.shared.isIdleTimerDisabled = disabled
 #endif
     }
+#if canImport(Combine)
     @Published private var _disableIdleTimerWhenPluggedIn = false
+#else
+    private var _disableIdleTimerWhenPluggedIn = false
+#endif
     /// Automatically start monitoring the battery state to disable idle timer when plugged in and re-enable when unplugged.
     func disableIdleTimerWhenPluggedIn() {
         guard !_disableIdleTimerWhenPluggedIn else {
@@ -718,7 +726,11 @@ public class MockDevice: CurrentDevice {
     static var mockCount = 1
     public var cycleAnimation: TimeInterval
     private var brightnessIncreasing = false
+#if canImport(Combine)
     @Published internal var updateCount = 0
+#else
+    internal var updateCount = 0
+#endif
     public init(
         device: Device? = nil,
         isSimulator: Bool = false,
@@ -895,18 +907,25 @@ public class MockDevice: CurrentDevice {
     public var model: String
     public var localizedModel: String
     
-    @Published public var isZoomed: Bool = false
     public var isGuidedAccessSessionActive: Bool = false
+#if canImport(Combine)
+    @Published public var isZoomed: Bool = false
     @Published public var brightness: Double? = 0.5
     @Published public var screenOrientation: Screen.Orientation? = .landscapeLeft
+    @Published public var thermalState: ThermalState = .nominal
+#else
+    public var isZoomed: Bool = false
+    public var brightness: Double? = 0.5
+    public var screenOrientation: Screen.Orientation? = .landscapeLeft
+    public var thermalState: ThermalState = .nominal
+#endif
     
     public var battery: BatteryType? = nil
     public var isIdleTimerDisabled: Bool = false
     public func disableIdleTimerWhenPluggedIn() {
         // do nothing (this is Mock)
     }
-    @Published public var thermalState: ThermalState = .nominal
-    
+
     public var volumeTotalCapacity: Int64?
     public var volumeAvailableCapacityForImportantUsage: Int64?
     public var volumeAvailableCapacityForOpportunisticUsage: Int64?

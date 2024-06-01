@@ -49,9 +49,9 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
         .padding()
         .background {
             ZStack {
-                RoundedRectangle(cornerRadius: 15)
+                RoundedRectangle(cornerRadius: .devicePanelRadius)
                     .fill(.background)
-                RoundedRectangle(cornerRadius: 15)
+                RoundedRectangle(cornerRadius: .devicePanelRadius)
                     .stroke(.primary)
             }
         }

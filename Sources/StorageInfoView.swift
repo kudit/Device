@@ -36,11 +36,6 @@ struct BytesView: View {
     }
 }
 
-#Preview("Bytes View") {
-    BytesView(label: "Test", bytes: 1_000_000, font: .title, countStyle: .memory)
-        .padding()
-}
-
 struct StorageBytesView: View {
     var label: String?
     var bytes: (any BinaryInteger)?
@@ -56,21 +51,18 @@ struct StorageBytesView: View {
     }
 }
 
-private struct ViewWidthPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    // TODO: Check that this actually works.  If we rotate, the width will need to grow or shrink.
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
     @ObservedObject public var device: SomeCurrentDevice
     @State var includeDebugInformation: Bool
     public init(device: SomeCurrentDevice, includeDebugInformation: Bool = false) {
         self.device = device
+#if os(tvOS)
+        // if tvOS, go ahead and expand since interaction is difficult
+        self.includeDebugInformation = true
+#else
         self.includeDebugInformation = includeDebugInformation
+#endif
     }
     
     @State private var width: CGFloat = 0
@@ -93,7 +85,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
     func backgroundView(color: Color, width: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
             Color.clear
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: .devicePanelRadius)
                 .fill(color)
                 .frame(width: width)
         }
@@ -120,7 +112,8 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
         }
     }
     
-    public var body: some View {
+    @ViewBuilder
+    public var storageView: some View {
         capacityBar(label: "Volume Available Capacity:", bytes: device.volumeAvailableCapacity, color: .green) {
             capacityBar(label: "Available for Opportunistic:", bytes: device.volumeAvailableCapacityForOpportunisticUsage, color: .yellow) {
                 capacityBar(label: "Available for Important:", bytes: device.volumeAvailableCapacityForImportantUsage, color: .red) {
@@ -130,7 +123,8 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
                             Spacer()
                             HStack(spacing: 0) {
                                 if includeDebugInformation {
-                                    StorageBytesView(label: "Total Capacity:", bytes: device.volumeTotalCapacity, visible: true)
+                                    Text("Total Capacity: ").font(.caption.smallCaps()).opacity(0.5)
+                                    StorageBytesView(bytes: device.volumeTotalCapacity)
                                 } else {
                                     BytesView(bytes: device.volumeAvailableCapacity, countStyle: nil, round: true)
                                     Text(" / ").font(.headline)
@@ -147,27 +141,37 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
         }
         .font(.caption)
         .foregroundStyle(.black)
+        // Store width for percent calculations.  TODO: create this as a reusable modele for having percentage based dimensions...
         .overlay(GeometryReader { proxy in
-            Color.clear.preference(
-                key: ViewWidthPreferenceKey.self,
-                value: proxy.size.width
-            )
+            Color.clear
+                .onAppear {
+                    self.width = proxy.size.width
+                }
+                .onChange(of: proxy.size.width) { _ in
+                    self.width = proxy.size.width
+                }
         })
-        .onPreferenceChange(ViewWidthPreferenceKey.self) { width in
-            self.width = width
-        }
-        .onTapGesture {
-            withAnimation {
-                includeDebugInformation.toggle()
+    }
+    
+    public var body: some View {
+#if os(tvOS)
+        storageView
+#else
+        storageView
+            .onTapGesture {
+                withAnimation {
+                    includeDebugInformation.toggle()
+                }
             }
-        }
+#endif
     }
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Storage Info") {
-    VStack {
-        Spacer().frame(height: 100)
+    List {
+        BytesView(label: "Test", bytes: 1_000_000, font: .title, countStyle: .memory)
+            .padding()
         StorageInfoView(device: Device.current)
         StorageInfoView(device: Device.current, includeDebugInformation: true)
         ForEach(MockDevice.mocks) { mock in

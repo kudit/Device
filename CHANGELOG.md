@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.1.13 6/1/2024 Fixed issues with tvOS and tap gesture recognizer not being available.  Added several @Published and notification checks for things that aren't available on Linux.  Changed alignment of "Total Capacity:" label so it's not floating by itself.  Created constant for `devicePanelRadius` for consistency.  Fixed issue with PreferenceKey monitoring and changed to onAppear and onChange modifiers which is simpler and works better.
+
 v2.1.12 6/1/2024 Re-worked so MonitoredDeviceBattery is not required by Linux.
 
 v2.1.11 6/1/2024 Completely re-worked Storage view to be more compact and expand for more information.

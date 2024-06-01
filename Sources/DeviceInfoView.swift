@@ -9,6 +9,10 @@
 import SwiftUI
 import Foundation
 
+public extension CGFloat {
+    static var devicePanelRadius: CGFloat = 15 
+}
+
 // Normally would just use KuditFrameworks but just in case that isn't available...
 extension Color {
     init(hex: String) {
@@ -61,8 +65,9 @@ public extension Image {
         self.init(symbolName: symbolRepresentable.symbolName)
     }
 }
+// TODO: Move the following to Kudit Frameworks
 extension String {
-    static var defaultFallback = "questionmark.square.fill"
+    public static var defaultFallback = "questionmark.square.fill"
     /*
      Legacy versions for Symbol (iOS = catalyst = tvOS
      Device min: 15, 11, 14, 6 so create 1.0 or 2.0 versions for fallback.  Make note that watchOS 6 doesn’t support new symbols.
@@ -73,7 +78,7 @@ extension String {
      5.0 = iOS 17, macOS 14, watchOS 10, Xcode 15 * Anything before this, use legacy version.
      */
     /// helper for making sure symbolName: function always returns an actual image and never `nil`.
-    func safeSymbolName(fallback: String = .defaultFallback) -> String {
+    public func safeSymbolName(fallback: String = .defaultFallback) -> String {
         if !.nativeSymbolCheck(self) {
             // check for asset
             if !.nativeLocalCheck(self) {

@@ -110,10 +110,15 @@ struct HardwareListView: View {
                 DeviceInfoView(device: currentDevice)
             } footer: {
                 VStack(alignment: .leading) {
+                    // for showing text details in a way that can be copied (not available on tvOS)
+#if os(tvOS)
+                    Text("\(currentDevice)").font(.caption)
+#else
                     TextEditor(text: .constant("\(currentDevice)"))
                         .font(.caption)
                         .fixedSize(horizontal: false, vertical: true)
                         .background(.green)
+#endif
                     VStack {
                         Spacer()
                         Divider()

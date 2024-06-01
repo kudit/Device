@@ -315,18 +315,20 @@ public class DeviceBattery: Battery {
         }, nil).takeRetainedValue() as CFRunLoopSource
         CFRunLoopAddSource(CFRunLoopGetCurrent(), loop, .defaultMode)
 #endif
-        // MacOS 11 is the only system that wouldn't support this notification
+        // MacOS 11 and Linux are the only systems that wouldn't support this notification
+#if canImport(Combine)
         if #available(iOS 9.0, macOS 12.0, macCatalyst 13.1, tvOS 9.0, watchOS 2.0, visionOS 1.0, *) {
             NotificationCenter.default.addObserver(
                 forName: Notification.Name.NSProcessInfoPowerStateDidChange,
                 object: nil,
                 queue: OperationQueue.main
             ) { notification in
-//                print("NSProcessInfoPowerStateDidChange notification")
+                //                print("NSProcessInfoPowerStateDidChange notification")
                 // Do your work after received notification
                 self._triggerBatteryUpdate(.lowPowerMode)
             }
         }
+#endif
     }
     
     private func _triggerBatteryUpdate(_ notificationType: BatteryChangeType) {
@@ -474,7 +476,11 @@ public class DeviceBattery: Battery {
     /// The user enabled Low Power mode
     public var lowPowerMode: Bool {
         if #available(macOS 12.0, *) {
+#if canImport(Combine)
             return ProcessInfo.processInfo.isLowPowerModeEnabled
+#else
+            return false
+#endif
         } else {
             // Fallback on earlier versions
             return false

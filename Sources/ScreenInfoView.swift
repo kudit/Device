@@ -131,7 +131,7 @@ public struct ScreenInfoView: View {
         .padding()
         .foregroundStyle(.background)
         .background {
-            RoundedRectangle(cornerRadius: 15)
+            RoundedRectangle(cornerRadius: .devicePanelRadius)
         }
     }
 }
