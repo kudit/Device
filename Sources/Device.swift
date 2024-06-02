@@ -14,7 +14,7 @@ import Foundation
 
 public extension Device {
     /// The version of the Device Library
-    static var version = "2.1.13"
+    static var version = "2.1.14"
 }
 
 #if canImport(UIKit)

@@ -170,12 +170,17 @@ public extension Battery {
     var id: String { description }
 }
 
-#if canImport(Combine)
 // Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
 public class MockBattery: Battery {
+#if canImport(Combine)
     @Published public var currentLevel: Int = -1
     @Published public var currentState: BatteryState = .unplugged
     @Published public var lowPowerMode: Bool = false
+#else
+    public var currentLevel: Int = -1
+    public var currentState: BatteryState = .unplugged
+    public var lowPowerMode: Bool = false
+#endif
     // save so a similar battery without a cycle level doesn't get merged.
     public var cycleLevelState: TimeInterval
     public var monitoring: Bool = false // add observers to trigger changes?
@@ -239,7 +244,6 @@ public class MockBattery: Battery {
         MockBattery(currentLevel: 100, currentState: .full),
     ]
 }
-#endif
 
 public class DeviceBattery: Battery {
     public static var current = DeviceBattery() // only time this is initialized typically
