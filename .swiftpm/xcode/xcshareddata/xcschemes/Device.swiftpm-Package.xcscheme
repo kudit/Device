@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Device Library"
-               BuildableName = "Device Library"
-               BlueprintName = "Device Library"
+               BlueprintIdentifier = "Device.swiftpm"
+               BuildableName = "Device.swiftpm"
+               BlueprintName = "Device.swiftpm"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "Device Library"
-            BuildableName = "Device Library"
-            BlueprintName = "Device Library"
+            BlueprintIdentifier = "Device.swiftpm"
+            BuildableName = "Device.swiftpm"
+            BlueprintName = "Device.swiftpm"
             ReferencedContainer = "container:">
          </BuildableReference>
       </MacroExpansion>

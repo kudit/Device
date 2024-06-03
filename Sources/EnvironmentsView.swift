@@ -26,8 +26,10 @@ public struct EnvironmentsView: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Environments") {
     EnvironmentsView()
 }
+#endif
 #endif

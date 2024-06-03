@@ -13,6 +13,7 @@ extension String {
         return vowels.contains(self.lowercased())
     }
 }
+// TODO: Use this to help with code generation more globally?  Add to KuditFrameworks/Compatibility?
 protocol Definable {
     var definition: String { get }
     var deviceKitDefinition: String { get }

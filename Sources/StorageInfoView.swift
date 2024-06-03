@@ -8,6 +8,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
+// TODO: Add to KuditFrameworks
 public extension EdgeInsets {
     static var zero = Self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
 }
@@ -65,9 +66,9 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
 #endif
     }
     
-    @State private var width: CGFloat = 0
+    @State private var width: Double = 0
     
-    func width(for capacity: Int64) -> CGFloat {
+    func width(for capacity: Int64) -> Double {
         let denominator = Double(device.volumeTotalCapacity ?? 1024)
         let percent = Double(capacity) / denominator
         return (1 - percent) * width
@@ -82,7 +83,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
         .padding()
     }
     
-    func backgroundView(color: Color, width: CGFloat) -> some View {
+    func backgroundView(color: Color, width: Double) -> some View {
         ZStack(alignment: .topLeading) {
             Color.clear
             RoundedRectangle(cornerRadius: .devicePanelRadius)
@@ -147,7 +148,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
                 .onAppear {
                     self.width = proxy.size.width
                 }
-                .onChange(of: proxy.size.width) { _ in
+                .backport.onChange(of: proxy.size.width) {
                     self.width = proxy.size.width
                 }
         })
@@ -167,6 +168,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Storage Info") {
     List {
@@ -181,4 +183,5 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
     }
     .padding()
 }
+#endif
 #endif

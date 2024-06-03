@@ -2,6 +2,7 @@
 import SwiftUI
 import Device
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Capabilities") {
     VStack {
@@ -26,15 +27,16 @@ import Device
     .padding()
     .padding()
 }
+#endif
 
-extension CGFloat {
-    static var defaultFontSize: CGFloat = 44
+extension Double {
+    static var defaultFontSize: Double = 44
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 struct SymbolTests<T: DeviceAttributeExpressible>: View {
     @State var attribute: T
-    var size: CGFloat = .defaultFontSize
+    var size: Double = .defaultFontSize
     var body: some View {
         HStack {
             ZStack {
@@ -68,7 +70,7 @@ struct AttributeListView<T: DeviceAttributeExpressible>: View {
     @State var header: String
     @State var attributes: [T]
     var styleView = false
-    var size: CGFloat = .defaultFontSize
+    var size: Double = .defaultFontSize
     var body: some View {
         Section {
             ForEach(attributes, id: \.self) { attribute in
@@ -96,8 +98,8 @@ struct AttributeListView<T: DeviceAttributeExpressible>: View {
 struct HardwareListView: View {
     @State var currentDevice: any CurrentDevice
     @State var styleView = false
-    @State var size: CGFloat = .defaultFontSize
-    init(currentDevice: any CurrentDevice = Device.current, styleView: Bool = false, size: CGFloat = .defaultFontSize) {
+    @State var size: Double = .defaultFontSize
+    init(currentDevice: any CurrentDevice = Device.current, styleView: Bool = false, size: Double = .defaultFontSize) {
         self.currentDevice = currentDevice
         self.styleView = styleView
         self.size = size
@@ -111,7 +113,7 @@ struct HardwareListView: View {
             } footer: {
                 VStack(alignment: .leading) {
                     // for showing text details in a way that can be copied (not available on tvOS)
-#if os(tvOS)
+#if os(tvOS) || os(watchOS)
                     Text("\(currentDevice)").font(.caption)
 #else
                     TextEditor(text: .constant("\(currentDevice)"))
@@ -147,15 +149,16 @@ struct HardwareListView: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("HardwareList") {
     HardwareListView()
 }
-
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("DeviceList") {
     DeviceListView(devices: Device.all)
 }
+#endif
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct DeviceTestView: View {
@@ -180,7 +183,7 @@ public struct DeviceTestView: View {
             } header: {
                 Text("Battery")
             }
-            Section("Environment") {
+            Section("Environment (Swift \(Device.current.swiftVersion))") { 
                 NavigationLink {
                     List {
                         AttributeListView(header: "Environments", attributes: Device.Environment.allCases)
@@ -238,8 +241,10 @@ public struct DeviceTestView: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview {
     DeviceTestView()
 }
+#endif
 #endif

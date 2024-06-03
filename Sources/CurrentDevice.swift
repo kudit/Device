@@ -147,6 +147,8 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     associatedtype BatteryType: Battery
 
     // Environment
+    /// Returns the version number of Swift being used to compile.
+    var swiftVersion: String { get }
     /// Returns `true` if running on the simulator vs actual device.
     var isSimulator: Bool { get }
     /// Returns `true` if running in Swift Playgrounds.
@@ -208,6 +210,34 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
     
     /// will enable monitoring at the specified frequency.  If this is called multiple times, it will replace the existing monitor.
     func enableMonitoring(frequency: TimeInterval)
+}
+extension CurrentDevice {
+    /// Returns the version number of Swift being used to compile
+    public var swiftVersion: String {
+#if swift(>=8.0)
+        "8.0"
+#elseif swift(>=7.0)
+        "7.0"
+#elseif swift(>=6.1)
+        "6.1"
+#elseif swift(>=6.0)
+        "6.0"
+#elseif swift(>=5.12)
+        "5.12"
+#elseif swift(>=5.11)
+        "5.11"
+#elseif swift(>=5.10)
+        "5.10"
+#elseif swift(>=5.9)
+        "5.9"
+#elseif swift(>=5.8)
+        "5.8"
+#elseif swift(>=5.7)
+        "5.7"
+#else
+        "Unsupported"
+#endif
+    }
 }
 
 extension ActualHardwareDevice { // Should be CurrentDevice but causes error in Swift Playgrounds.  Perhaps fix this in the future?  Error: "Replaced accessor for 'description' occurs in multiple places"
@@ -289,7 +319,7 @@ class ActualHardwareDevice: CurrentDevice {
 #endif
 #endif
     }
-    
+        
     /// Returns `true` if running on the simulator vs actual device.
     public var isSimulator: Bool {
 #if targetEnvironment(simulator)
@@ -320,7 +350,6 @@ class ActualHardwareDevice: CurrentDevice {
     
     /// Returns `true` if running in an XCode or Swift Playgrounds #Preview macro.
     var isPreview: Bool {
-        // TODO: Verify this works in Swift Playgrounds and not just XCode
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
     
@@ -947,7 +976,7 @@ public class MockDevice: CurrentDevice {
     
 }
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && swift(>=5.9)
 import SwiftUI
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Animated Test") {

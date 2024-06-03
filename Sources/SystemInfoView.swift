@@ -58,6 +58,7 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("SystemInfo") {
     List {
@@ -69,4 +70,5 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
         }
     }
 }
+#endif
 #endif

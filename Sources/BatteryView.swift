@@ -30,12 +30,12 @@ public struct BatteryView: View {
     // These are part of the view which can be set in initializer so they don't need to be public.
     var useSystemColors: Bool
     var includePercent: Bool
-    var fontSize: CGFloat
+    var fontSize: Double
     //    /// Include the backing view to improve contrast.
     var includeBacking: Bool
         
     /// Initializer without specifying a battery will assume CurrentDevice.battery, and if that is nil, will use the missing battery mock.
-    public init(battery initialBattery: (some Battery)? = MockBattery?.none, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
+    public init(battery initialBattery: (some Battery)? = MockBattery?.none, useSystemColors: Bool = false, includePercent: Bool = true, fontSize: Double = 16, includeBacking: Bool = true) {
         self.useSystemColors = useSystemColors
         self.includePercent = includePercent
         self.fontSize = fontSize
@@ -74,7 +74,7 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
     // These are part of the view which can be set in initializer so they don't need to be public.
     var useSystemColors: Bool
     var includePercent: Bool
-    var fontSize: CGFloat
+    var fontSize: Double
     //    /// Include the backing view to improve contrast.
     var includeBacking: Bool
     
@@ -82,7 +82,7 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
     
     /// Initializer without specifying a battery will assume CurrentDevice.battery, and if that is nil, will use the bad battery mock.
     public init(battery: SomeBattery,
-                useSystemColors: Bool = false, includePercent: Bool = true, fontSize: CGFloat = 16, includeBacking: Bool = true) {
+                useSystemColors: Bool = false, includePercent: Bool = true, fontSize: Double = 16, includeBacking: Bool = true) {
         self.battery = battery
         self.useSystemColors = useSystemColors
         self.includePercent = includePercent
@@ -204,11 +204,11 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct BatteryTestsRow<SomeBattery: Battery>: View {
     public var battery: SomeBattery
-    public var fontSize: CGFloat
+    public var fontSize: Double
     public var lowPowerMode: Bool
     public var includeBacking: Bool
     
-    public init(battery: SomeBattery, fontSize: CGFloat = 45, lowPowerMode: Bool = false, includeBacking: Bool = true) {
+    public init(battery: SomeBattery, fontSize: Double = 45, lowPowerMode: Bool = false, includeBacking: Bool = true) {
         self.battery = battery
         self.fontSize = fontSize
         self.lowPowerMode = lowPowerMode
@@ -228,11 +228,11 @@ public struct BatteryTestsRow<SomeBattery: Battery>: View {
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct BatteryTestsView: View {
-    @State public var fontSize: CGFloat
+    @State public var fontSize: Double
     @State public var lowPowerMode: Bool
     @State public var includeBacking: Bool
     
-    public init(fontSize: CGFloat = 45, lowPowerMode: Bool = false, includeBacking: Bool = true) {
+    public init(fontSize: Double = 45, lowPowerMode: Bool = false, includeBacking: Bool = true) {
         self.fontSize = fontSize
         self.lowPowerMode = lowPowerMode
         self.includeBacking = includeBacking
@@ -263,9 +263,10 @@ public struct BatteryTestsView: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Battery Tests") {
     BatteryTestsView()
 }
-
+#endif
 #endif

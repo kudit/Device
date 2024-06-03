@@ -10,7 +10,7 @@ import SwiftUI
 import Foundation
 
 public extension CGFloat {
-    static var devicePanelRadius: CGFloat = 15 
+    static var devicePanelRadius: Double = 15
 }
 
 // Normally would just use KuditFrameworks but just in case that isn't available...
@@ -266,11 +266,12 @@ public struct DeviceListView: View {
     }
 }
 
+#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("All Devices") {
     NavigationView {
         DeviceListView(devices: Device.all)
     }
 }
-
+#endif
 #endif

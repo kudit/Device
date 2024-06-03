@@ -515,11 +515,23 @@ public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible {
         case .usbC:
             "applepencil"
         case .pro:
-//            if #available(iOS 18, *) {
-//                "applepencilpro"// TODO: iOS 18 will likely add a special symbol
-//            } else {
-                "applepencil.gen2"
-//            }
+            //            if #available(iOS 18, *) {
+            //                "applepencilpro"// TODO: iOS 18 will likely add a special symbol
+            //            } else {
+            "applepencil.gen2"
+            //            }
+        }
+    }
+    public var name: String {
+        switch self {
+        case .firstGeneration:
+            " Pencil (1st generation)"
+        case .secondGeneration:
+            " Pencil (2nd generation)"
+        case .usbC:
+            " Pencil (USB‑C)"
+        case .pro:
+            " Pencil Pro"
         }
     }
 }

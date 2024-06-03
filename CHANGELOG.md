@@ -25,6 +25,12 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+TODO: Model off of Swift Algorithms project.
+TODO: See if anything in Swift Algorithm replaces Kudit or Device collection extensions.
+Now that we have linux support see if we can backport device to swift 5.7? What is needed?
+
+v2.1.15 6/3/2024 Separated out legacy symbols so could exclude new templates for Swift 5.7 & 5.8.  Added exposition of Swift version number.  Replaced CGFloat values in framework with Double since toll-free bridged and CGFloat is less swifty...  Now including note when low power mode is active in battery description.  Added  Pencil names.
+
 v2.1.14 6/2/2024 Fixed so that MockBattery and MockDevice are visible in Linux.
 
 v2.1.13 6/1/2024 Fixed issues with tvOS and tap gesture recognizer not being available.  Added several @Published and notification checks for things that aren't available on Linux.  Changed alignment of "Total Capacity:" label so it's not floating by itself.  Created constant for `devicePanelRadius` for consistency.  Fixed issue with PreferenceKey monitoring and changed to onAppear and onChange modifiers which is simpler and works better.
@@ -110,28 +116,39 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
-- [ ] Orientation change notifications on designed for iPad in visionOS.
-- [ ] Initial state of iPhone orientation icon.
+- [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
+- [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 - [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
+        Info.plist contained no UIScene configuration dictionary (looking for configuration named "Default Configuration")
+        ScrollView contentOffset binding has been read; this will cause grossly inefficient view performance as the ScrollView's content will be updated whenever its contentOffset changes. Read the contentOffset binding in a view that is not parented between the creator of the binding and the ScrollView to avoid this.
+        Crown Sequencer was set up without a view property. This will inevitably lead to incorrect crown indicator states
+        overrelease of detent assertion detected
 - [ ] Odd warning: Device.swiftpm/Sources/Resources/SymbolAssets.xcassets: Could not get trait set for device Watch7,2 with version 10.4
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
+- [ ] Move Migration code into test module and out of the main source so that it isn't included in library.  Figure out why Device: migration needs to be part of the internal module. Perhaps have a way to expose what I need and move to the development folder so it's not included in any projects.
+- [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.
+- [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
 - [ ] Go through and make sure device images (photos) have transparent background instead of white.
 - [ ] Add support IDs for macs and anything that has one missing.
 - [ ] Double check and update all device color sets. (right click on the color swatches and inspect element for the hex code)  https://www.apple.com/iphone/compare/?modelList=iphone-13-mini,iphone-13,iphone-15-pro
 - [ ] Add weight option for battery text/symbol (title originally was bold and now that we're doing font size, add weight parameter)
 - [ ] Add new devices (ongoing).
+- [ ] Device: Add ability to tap on section headings to collapse (for device list view - default to all collapsed?) auto scroll to current device row?
+- [ ] Device: Add code to put PPI in visual range dial like health app (using SwiftCharts if available).
 - [ ] Figure out how to query brightness on macOS/macCatalyst (UIScreen.main.brightness does not appear to work).
+- [ ] Allow battery symbol view to be different weights.  Have inherit/track with font weights using size relative to.
 - [ ] Improve test app user interface/layout.
 - [ ] Add tests to complete code coverage.
 - [ ] Create tests in such a way that they can be run in Previews and in the example App (may require a project dependency).
+- [ ] Device: Have capabilities list slider and toggle be stuck to top of screen when scrolling.
 - [ ] Re-work so custom symbols are image constants rather than using strings which may be unavailable (perhaps use with symbol enum package?)
 - [ ] See if there's a way to automate tests on various platform combinations.
 - [ ] Support landscape on iPhone for test view and use size classes to re-layout.
-- [ ] For devices that support multiple orientations, automatically apply current orientation to the symbol name for current device.
+- [ ] Add a variable for interfaceOrientation (separate from device orientation) that indicates the UI paradigm (portrait or landscape) and when the device switches to face up/down and doesn't rotate, should still report the current value (last known value).  Should report landscape in mac, vision, and tv devices, landscape by default in iPads, portrait by default in iPhone and watch.
 - [ ] Create replacement for rounded display corners since faceID is a good proxy but misses modern touchID power button iPads.  Have as capability.
 - [ ] Add way of getting battery cycle count and health? https://stackoverflow.com/questions/34571222/get-battery-percentage-on-mac-in-swift
 - [ ] Add additional notification monitors that can be subscribed to:
@@ -151,6 +168,9 @@ This is where proposals can be discussed for potential movement to the roadmap.
 - [ ] Move privacy manifest to the package sources resources folder so it gets processed? https://github.com/devicekit/DeviceKit/issues/408#event-12991784329
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
 - [ ] Find a way to make words WATCH and SERIES appear in smallCaps() text field and make Apple be Apple logo character  in official names?
+- [ ] For more example code, Make widget for Device tests for Home Screen view and live activity (battery monitor?) Lock Screen widget?
+- [ ] Add easy way to capture screenshots of entire view (have `.screenshottable()` view modifier and then Device.current.captureScreenshot() -> Image that can be attached or exported or whatevered.)
+- [ ] Add hook for monitoring when screenshot is taken. `Device.current.monitorForScreenshot { image in } 
 - [ ] Create better way of scaling battery so that it can scale with dynamic type?  Use relative type?
 - [ ] Add a way to check that privacy checks have been added when using APIs that need privacy permissions (have a configuration flag that needs to be set to ensure that privacy flags have been set).
 - [ ] Convert SF Symbol names to an enum to allow version checking?  May need to use other project.
@@ -158,6 +178,7 @@ This is where proposals can be discussed for potential movement to the roadmap.
 - [ ] Should forceTouch and touch3d be separated?  Discuss in issues or here.
 - [ ] Add volume controls and power button and home button capabilities?  Possibly with rumored camera button?
 - [ ] Add orientation and brightness to current device description?
+- [ ] Device: have code to make battery monitor dimmed and grayed out if App switches or goes to sleep so the wind coming back it doesn't show misinformation”.  Test with iPhone.  Maybe shouldn’t happen because would be problematic with visionOS?
 - [ ] Getting Computer Information (must give reason since can be used for fingerprinting so not included currently):
 var processorCount: Int
 var activeProcessorCount: Int
@@ -186,4 +207,5 @@ Then, for **each** app extension target (Project > _an app extension target_ > B
 - Remove the project level value for both settings.
 [/quote]
 
+    // TODO: find a way to include Package.swift file as resource and parse for version number??
 

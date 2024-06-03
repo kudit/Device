@@ -10,15 +10,15 @@
  - https://github.com/schickling/Device.swift
  */
 
-import Foundation
-
 public extension Device {
-    /// The version of the Device Library
-    static var version = "2.1.14"
+    /// The version of the Device Library since cannot get directly from Package.
+    static var version = "2.1.15"
 }
 
+import Foundation
+
 #if canImport(UIKit)
-import UIKit
+import UIKit // for UIUserInterfaceIdiom
 #endif
 
 public extension String {
