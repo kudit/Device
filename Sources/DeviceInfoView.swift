@@ -266,12 +266,10 @@ public struct DeviceListView: View {
     }
 }
 
-#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("All Devices") {
     NavigationView {
         DeviceListView(devices: Device.all)
     }
 }
-#endif
 #endif

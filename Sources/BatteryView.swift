@@ -263,10 +263,8 @@ public struct BatteryTestsView: View {
     }
 }
 
-#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Battery Tests") {
     BatteryTestsView()
 }
-#endif
 #endif

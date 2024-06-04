@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // WARNING:
@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-var version = "2.1.15"
+var version = "2.1.16"
 var packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -18,17 +18,6 @@ var products = [
     ),
 ]
 
-// Resources for the target (for this, we just need the symbol assets.  Older Swift versions don't recognize new template format for symbols so we need to factor out.
-#if swift(>=5.8)
-var resources = [
-    Resource.process("Resources"),
-]
-#else
-var resources = [
-    Resource.process("Resources/LegacySymbolAssets.xcassets"),
-]
-#endif
-
 // Targets are the basic building blocks of a package, defining a module or a test suite.
 // Targets can depend on other targets in this package and products from dependencies.
 var targets = [
@@ -38,7 +27,9 @@ var targets = [
 //                .product(name: "Device Library", package: "device")
 //            ],
 		path: "Sources",
-		resources: resources
+		resources: [ // unfortuantely cannot be conditionally compiled based on Swift version since the tool seems to be run on latest version.
+            Resource.process("Resources"),
+        ]
 	),
 ]
 

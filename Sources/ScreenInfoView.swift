@@ -136,7 +136,6 @@ public struct ScreenInfoView: View {
     }
 }
 
-#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Screens") {
     List {
@@ -160,5 +159,4 @@ public struct ScreenInfoView: View {
         }
     }
 }
-#endif
 #endif

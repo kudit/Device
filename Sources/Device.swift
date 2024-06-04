@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static var version = "2.1.15"
+    static var version = "2.1.16"
 }
 
 import Foundation

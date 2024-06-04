@@ -2,7 +2,6 @@
 import SwiftUI
 import Device
 
-#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Capabilities") {
     VStack {
@@ -27,7 +26,6 @@ import Device
     .padding()
     .padding()
 }
-#endif
 
 extension Double {
     static var defaultFontSize: Double = 44
@@ -149,7 +147,6 @@ struct HardwareListView: View {
     }
 }
 
-#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("HardwareList") {
     HardwareListView()
@@ -158,7 +155,6 @@ struct HardwareListView: View {
 #Preview("DeviceList") {
     DeviceListView(devices: Device.all)
 }
-#endif
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct DeviceTestView: View {
@@ -241,10 +237,8 @@ public struct DeviceTestView: View {
     }
 }
 
-#if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview {
     DeviceTestView()
 }
-#endif
 #endif
