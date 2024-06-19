@@ -17,6 +17,7 @@ import SwiftUI
  .minimumScaleFactor(0.01)  // 2
  */
 
+@MainActor
 class PolymorphicBattery: ObservableObject {
     @Published var monitoredDeviceBattery: MonitoredDeviceBattery?
     @Published var deviceBattery: DeviceBattery?
@@ -238,24 +239,19 @@ public struct BatteryTestsView: View {
         self.includeBacking = includeBacking
     }
     
-    /// go through and update all mocks so the low power mode is applied
-    func updateMocksLowPowerMode() {
-        for mock in MockBattery.mocks {
-            mock.lowPowerMode = lowPowerMode
-        }
+    @MainActor
+    public var mocks: [MockBattery] {
+        MockBattery.mocksFor(lowPowerMode: lowPowerMode)
     }
-    
+        
     public var body: some View {
         List {
             Toggle("Low Power Mode", isOn: $lowPowerMode)
-                .backport.onChange(of: lowPowerMode) {
-                    updateMocksLowPowerMode()
-                }
             Toggle("Include Backing", isOn: $includeBacking)
             if let battery = Device.current.battery {
                 BatteryTestsRow(battery: battery, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
-            ForEach(MockBattery.mocks) { mock in
+            ForEach(mocks) { mock in
                 BatteryTestsRow(battery: mock, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
         }

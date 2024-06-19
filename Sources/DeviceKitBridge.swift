@@ -13,7 +13,8 @@ import Foundation
 extension Device {
     /// Gets the identifier from the system, such as "iPhone7,1".
     @available(*, deprecated, renamed: "current.identifier")
-    public static var identifier: String = Device.current.identifier
+    @MainActor
+    public static let identifier: String = Device.current.identifier
     
     /// Ordered list of identifiers in DeviceKit definition file.  Used for migration export.
     /// iOS iPods, iPhones, iPads, HomePods, Apple TV, Apple Watch (doesn't include vision or macs)
@@ -148,6 +149,7 @@ extension Device {
     }
     
     /// The brightness level of the screen (between 0 and 100).  Only supported on iOS and macCatalyst.  Returns -1 if not supported.
+    @MainActor
     public var screenBrightness: Int {
         if let brightness = Device.current.brightness {
             return Int(brightness * 100)
@@ -209,6 +211,7 @@ extension Device {
     
     /// Returns whether the current device is a SwiftUI preview canvas
     @available(*, deprecated, renamed: "Device.current.isPreview")
+    @MainActor
     public var isCanvas: Bool? {
         return Device.current.isPreview
     }
@@ -216,6 +219,7 @@ extension Device {
     /// Returns whether the device is any of the simulator
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
     @available(*, deprecated, renamed: "Device.current.isSimulator")
+    @MainActor
     public var isSimulator: Bool {
         return Device.current.isSimulator
     }
@@ -288,7 +292,7 @@ extension Device {
      - Charging:  The device is plugged into power and the battery is less than 100% charged.
      - Unplugged: The device is not plugged into power; the battery is discharging.
      */
-    public enum BatteryState: CustomStringConvertible, Equatable, CaseNameConvertible {
+    public enum BatteryState: CustomStringConvertible, Equatable, CaseNameConvertible, Sendable {
         /// The device is plugged into power and the battery is 100% charged or the device is the iOS Simulator.
         case full
         /// The device is plugged into power and the battery is less than 100% charged.
@@ -299,6 +303,7 @@ extension Device {
         case unplugged(Int)
         
         @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
+        @MainActor
         fileprivate init() {
             guard let battery = Device.current.battery else {
                 self = .full
@@ -317,6 +322,7 @@ extension Device {
         }
         
         /// The user enabled Low Power mode
+        @MainActor
         public var lowPowerMode: Bool {
             return Device.current.battery?.lowPowerMode ?? false
         }
@@ -328,6 +334,7 @@ extension Device {
         /// Battery level: 100 % (Full), device is plugged in.
         /// Battery level: \(batteryLevel)%, device is unplugged.
         /// ```
+        @MainActor
         public var description: String {
             return Device.current.battery?.description ?? "No Battery"
         }
@@ -335,12 +342,14 @@ extension Device {
     
     /// The state of the battery
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
+    @MainActor
     public var batteryState: BatteryState? {
         return BatteryState()
     }
     
     /// Battery level ranges from 0 (fully discharged) to 100 (100% charged).
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
+    @MainActor
     public var batteryLevel: Int? {
         return Device.current.battery?.currentLevel
     }
@@ -387,6 +396,7 @@ public extension Device {
     // MARK: Orientation
     
     /// Defaults to `landscape` if we do not have a screen or cannot get the orientation.
+    @MainActor
     var orientation: Screen.Orientation {
         return Device.current.screenOrientation ?? .unknown
     }
@@ -443,12 +453,14 @@ extension Device {
 extension Device {
     /// The volume’s total capacity in bytes.
     @available(*, deprecated, renamed: "Device.current.volumeTotalCapacity")
+    @MainActor
     public static var volumeTotalCapacity: Int64? {
         Device.current.volumeTotalCapacity
     }
     
     /// The volume’s available capacity in bytes.
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacity")
+    @MainActor
     public static var volumeAvailableCapacity: Int64? {
         Device.current.volumeAvailableCapacity
     }
@@ -456,6 +468,7 @@ extension Device {
     /// The volume’s available capacity in bytes for storing important resources.
     @available(iOS 11.0, *)
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacityForImportantUsage")
+    @MainActor
     public static var volumeAvailableCapacityForImportantUsage: Int64? {
         Device.current.volumeAvailableCapacityForImportantUsage
     }
@@ -463,6 +476,7 @@ extension Device {
     /// The volume’s available capacity in bytes for storing nonessential resources.
     @available(iOS 11.0, *)
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacityForOpportunisticUsage")
+    @MainActor
     public static var volumeAvailableCapacityForOpportunisticUsage: Int64? {
         Device.current.volumeAvailableCapacityForOpportunisticUsage
     }

@@ -12,7 +12,6 @@
 		B5CCE9CA2BC94D8A005CC2D2 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
 		B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 		B5CCE9CC2BC94D93005CC2D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
-		B5CCE9CF2BC94DB6005CC2D2 /* DeviceUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CCE9CD2BC94DB6005CC2D2 /* DeviceUITestsLaunchTests.swift */; };
 		B5CCE9D02BC94DB6005CC2D2 /* DeviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */; };
 		B5CCE9D12BC94DBD005CC2D2 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */; };
 		B5EB68272BC24863005DAB8C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5EB68262BC24863005DAB8C /* Device Library */; };
@@ -61,8 +60,8 @@
 		B56A31C32BC972880077FBE9 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
 		B58985F92BAB99C3002B8E05 /* DeviceTest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = DeviceTest.entitlements; sourceTree = "<group>"; };
 		B58985FA2BAB99C3002B8E05 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B598DCC92C239165000B5517 /* DeviceTest.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DeviceTest.xctestplan; sourceTree = "<group>"; };
 		B5C0776A2BC938E800BBF3FB /* Device.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Device.swiftpm; path = ..; sourceTree = "<group>"; };
-		B5CCE9CD2BC94DB6005CC2D2 /* DeviceUITestsLaunchTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceUITests.swift; sourceTree = "<group>"; };
 		B5DD79B32BC94C8800457681 /* DeviceTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,8 +125,8 @@
 		B52ED1D72BAB7F7400056A62 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				B598DCC92C239165000B5517 /* DeviceTest.xctestplan */,
 				B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */,
-				B5CCE9CD2BC94DB6005CC2D2 /* DeviceUITestsLaunchTests.swift */,
 				B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */,
 			);
 			name = Tests;
@@ -351,7 +350,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5CCE9CF2BC94DB6005CC2D2 /* DeviceUITestsLaunchTests.swift in Sources */,
 				B5CCE9D02BC94DB6005CC2D2 /* DeviceUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -436,13 +434,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.1.16;
+				MARKETING_VERSION = 2.1.17;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
 				TVOS_DEPLOYMENT_TARGET = 14.0;
 				WATCHOS_DEPLOYMENT_TARGET = 6.0;
 				XROS_DEPLOYMENT_TARGET = 1.0;
@@ -498,11 +497,12 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.1.16;
+				MARKETING_VERSION = 2.1.17;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				TVOS_DEPLOYMENT_TARGET = 14.0;
 				VALIDATE_PRODUCT = YES;
 				WATCHOS_DEPLOYMENT_TARGET = 6.0;

@@ -28,7 +28,7 @@ import Device
 }
 
 extension Double {
-    static var defaultFontSize: Double = 44
+    static let defaultFontSize: Double = 44
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
@@ -63,6 +63,7 @@ struct SymbolTests<T: DeviceAttributeExpressible>: View {
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@MainActor
 struct AttributeListView<T: DeviceAttributeExpressible>: View {
     @State var currentDevice: any CurrentDevice = Device.current
     @State var header: String
@@ -93,16 +94,17 @@ struct AttributeListView<T: DeviceAttributeExpressible>: View {
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@MainActor
 struct HardwareListView: View {
-    @State var currentDevice: any CurrentDevice
+    @State var currentDevice: any CurrentDevice = Device.current
     @State var styleView = false
     @State var size: Double = .defaultFontSize
-    init(currentDevice: any CurrentDevice = Device.current, styleView: Bool = false, size: Double = .defaultFontSize) {
-        self.currentDevice = currentDevice
+    init(currentDevice: (any CurrentDevice)? = nil, styleView: Bool = false, size: Double = .defaultFontSize) {
+        if let currentDevice {
+            self.currentDevice = currentDevice
+        }
         self.styleView = styleView
         self.size = size
-//        // This is triggered on main view for some reason.
-//        Device.current.enableMonitoring(frequency: 10)
     }
     var body: some View {
         List {
@@ -159,7 +161,10 @@ struct HardwareListView: View {
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct DeviceTestView: View {
     @State var disableIdleTimer = false
+    
+    @ObservedObject var animatedDevice = MockDevice.mocks.first!
 
+    @MainActor
     var testView: some View {
         List {
             Section {
@@ -200,6 +205,11 @@ public struct DeviceTestView: View {
                 })
             } header: {
                 Text("Current Device")
+            }
+            Section {
+                CurrentDeviceInfoView(device: animatedDevice)
+            } header: {
+                Text("Animated Device")
             } footer: {
                 HStack {
                     Spacer()

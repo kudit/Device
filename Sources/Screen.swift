@@ -1,8 +1,8 @@
 import Foundation
 
-public struct Screen: Hashable {
+public struct Screen: Hashable, Sendable {
     static var undefined = Screen(resolution: (-1,-1))
-    public struct Size: Hashable {
+    public struct Size: Hashable, Sendable {
         public var width: Int
         public var height: Int
         /// Reduce the size into a ratio of whole numbers.  TODO: fix so works in both dimensions
@@ -134,7 +134,7 @@ public struct Screen: Hashable {
      - Landscape: The device is in Landscape Orientation
      - Portrait:  The device is in Portrait Orientation
      */
-    public enum Orientation: Int, Hashable, SymbolRepresentable, CaseIterable {
+    public enum Orientation: Int, Hashable, SymbolRepresentable, CaseIterable, Sendable {
         case unknown = 0
 
         case portrait = 1 // Device oriented vertically, home button on the bottom

@@ -28,6 +28,8 @@ Real Device Apple TV
 TODO: Model off of Swift Algorithms project.
 TODO: See if anything in Swift Algorithm replaces Kudit or Device collection extensions.
 
+v2.1.17 6/19/2024 Updated code to enble strict concurrency checking.  Changed several constants to lets to make clear they won't change.  Made ActualHardwareDevice and MockDevice final.  Made public enums conform to Sendable since they do not by default.  Ignored enableMonitoring functionality on MockDevice since not used.  Set up for creating tests using Swift Testing.
+
 v2.1.16 6/3/2024 Removed code for Swift 5.7 & 5.8 since conditional code in the Package.swift file doesn't seem to work.
 
 v2.1.15 6/3/2024 Separated out legacy symbols so could exclude new templates for Swift 5.7 & 5.8.  Added exposition of Swift version number.  Replaced CGFloat values in framework with Double since toll-free bridged and CGFloat is less swifty...  Now including note when low power mode is active in battery description.  Added  Pencil names.

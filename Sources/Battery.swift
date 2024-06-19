@@ -30,7 +30,7 @@ public extension ObservableObject {
 import Foundation // for Timer
 
 /// This enum describes the state of the battery.
-public enum BatteryState: CustomStringConvertible, CaseNameConvertible { // automatically conforms to Equatable since no associated/raw value
+public enum BatteryState: CustomStringConvertible, CaseNameConvertible, Sendable { // automatically conforms to Equatable since no associated/raw value
     /// The battery state for the device can’t be determined.
     case unknown
     /// The device is not plugged into power; the battery is discharging.
@@ -55,7 +55,7 @@ public enum BatteryState: CustomStringConvertible, CaseNameConvertible { // auto
 }
 
 /// Use to indicate the type of change that was present in a monitor update.
-public enum BatteryChangeType {
+public enum BatteryChangeType: Sendable {
     case level, state, lowPowerMode
 }
 
@@ -88,6 +88,7 @@ public extension Battery {
     }
     
     /// System Image used to render a symbol representing the current state/charge level
+    @MainActor
     var symbolName: String {
         let percent = currentLevel
         var percentWord: String
@@ -113,6 +114,7 @@ public extension Battery {
 
 #if canImport(SwiftUI)
     /// Color for the battery icon.  Should mirror the system battery icon.
+    @MainActor
     var systemColor: Color {
         var redLevel = 20
         // for some reason, iPad only warns at 10% (maybe because the battery is larger?)
@@ -171,6 +173,24 @@ public extension Battery {
         }
     }
     var id: String { description }
+}
+
+public struct BatterySnapshot: Sendable {
+    public var currentLevel: Int = -1
+    public var currentState: BatteryState = .unplugged
+    public var lowPowerMode: Bool = false
+    public static var missing = BatterySnapshot(currentLevel: -1, currentState: .unknown)
+    public static var mocks = [
+        BatterySnapshot.missing,
+        BatterySnapshot(currentLevel: 0),
+        BatterySnapshot(currentLevel: 2, currentState: .charging),
+        BatterySnapshot(currentLevel: 15),
+        BatterySnapshot(currentLevel: 25),
+        BatterySnapshot(currentLevel: 50),
+        BatterySnapshot(currentLevel: 75),
+        BatterySnapshot(currentLevel: 82, currentState: .charging),
+        BatterySnapshot(currentLevel: 100, currentState: .full),
+    ]
 }
 
 // Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
@@ -232,20 +252,26 @@ public class MockBattery: Battery {
             }
         }
     }
+    
+    public convenience init(snapshot: BatterySnapshot) {
+        self.init(currentLevel: snapshot.currentLevel, currentState: snapshot.currentState, lowPowerMode: snapshot.lowPowerMode)
+    }
+    public var snapshot: BatterySnapshot {
+        return BatterySnapshot(currentLevel: currentLevel, currentState: currentState, lowPowerMode: lowPowerMode)
+    }
+    
 
     public static var missing = MockBattery(currentLevel: -1, currentState: .unknown)
-    public static var mocks = [
-        MockBattery(currentLevel: 50, cycleLevelState: 0.1),
-        MockBattery.missing,
-        MockBattery(currentLevel: 0),
-        MockBattery(currentLevel: 2, currentState: .charging),
-        MockBattery(currentLevel: 15),
-        MockBattery(currentLevel: 25),
-        MockBattery(currentLevel: 50),
-        MockBattery(currentLevel: 75),
-        MockBattery(currentLevel: 82, currentState: .charging),
-        MockBattery(currentLevel: 100, currentState: .full),
-    ]
+    public static var animated = MockBattery(currentLevel: 50, cycleLevelState: 0.1)
+    public static var mocks = mocksFor(lowPowerMode: false)
+    public static func mocksFor(lowPowerMode: Bool) -> [MockBattery] {
+        Self.animated.lowPowerMode = lowPowerMode
+        var mocks = [Self.animated]
+        mocks += BatterySnapshot.mocks.map { mock in
+            MockBattery(currentLevel: mock.currentLevel, currentState: mock.currentState, lowPowerMode: lowPowerMode)
+        }
+        return mocks
+    }
 }
 
 public class DeviceBattery: Battery {
@@ -439,7 +465,6 @@ public class DeviceBattery: Battery {
             monitoring = currentMonitoring
         }
 //        print("state monitoring")
-        // TODO: Figure out why it reports as .full when it's actually .charging and 76%...
 #if os(watchOS)
         switch WKInterfaceDevice.current().batteryState {
         case .charging: return .charging

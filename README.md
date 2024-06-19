@@ -263,7 +263,7 @@ if Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000) {
 
 ### Disabling the Idle Timer
 ```swift
-Device.current.isIdleTimerDisabled = true
+Device.current.isIdleTimerDisabled = true // must be run on the main actor
 
 // Disable automatically when plugged in.  Only call this once (probably during init).
 Device.current.disableIdleTimerWhenPluggedIn()

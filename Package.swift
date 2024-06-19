@@ -7,8 +7,8 @@
 
 import PackageDescription
 
-var version = "2.1.16"
-var packageLibraryName = "Device"
+let version = "2.1.17"
+let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
 var products = [
@@ -91,13 +91,13 @@ targets += [
 //			.enableUpcomingFeature("BareSlashRegexLiterals")
 		]
 	),
-	.testTarget(
-		name: "\(packageLibraryName)Tests",
-		dependencies: [
-			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal but we're not using a string literal
-		],
-		path: "Tests"
-	),
+//	.testTarget(
+//		name: "\(packageLibraryName)Tests",
+//		dependencies: [
+//			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal but we're not using a string literal
+//		],
+//		path: "Tests"
+//	),
 ]
 
 #endif // for Swift Package compiling for https://swiftpackageindex.com/add-a-package

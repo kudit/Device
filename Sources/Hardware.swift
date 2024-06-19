@@ -25,7 +25,7 @@ public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseN
 
 // MARK: Capabilities
 public typealias Capabilities = Set<Capability>
-public enum Capability: CaseIterable, DeviceAttributeExpressible {
+public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     // model attributes
     case pro, air, mini, plus, max
     case macForm(Mac.Form)
@@ -60,9 +60,9 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible {
     
     /// Lists all non-associated value cases
     /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
-    public static var allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .esim, .dualesim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
+    public static let allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .esim, .dualesim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
     
-    static var screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
+    static let screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
     
     public var symbolName: String {
         switch self {
@@ -369,7 +369,7 @@ public extension Capabilities {
 
 // MARK: CPU
 // https://en.wikipedia.org/wiki/List_of_Mac_models_grouped_by_CPU_type
-public enum CPU: Hashable, CaseIterable, CaseNameConvertible {
+public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     // Only 2013+ really need to be included since Swift won't run on devices prior to this.
     case unknown
     // Mac/iPad
@@ -431,7 +431,7 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible {
 }
 
 // MARK: Biometrics
-public enum Biometrics: Hashable, CaseNameConvertible {
+public enum Biometrics: Hashable, CaseNameConvertible, Sendable {
     case none
     case touchID
     case faceID
@@ -455,7 +455,7 @@ public enum Biometrics: Hashable, CaseNameConvertible {
 }
 
 // MARK: Camera
-public enum Camera: Hashable, CaseIterable, CaseNameConvertible { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
+public enum Camera: Hashable, CaseIterable, CaseNameConvertible, Sendable { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
     case twoMP // original iPhone
     case threeMP // iPhone 3GS
     /// 8mp iPod touch 7th gen/iPhone 6
@@ -491,7 +491,7 @@ public extension Set<Camera> {
 }
 
 // MARK: Cellular
-public enum Cellular: Hashable, Comparable, CaseNameConvertible {
+public enum Cellular: Hashable, Comparable, CaseNameConvertible, Sendable {
     case none // TODO: Take this out?  Do we need it for anything?  This should only be available in iPhone and iPad (protocol CellularCapable)
     case gprs // 1G
     case edge // 2G
@@ -501,7 +501,7 @@ public enum Cellular: Hashable, Comparable, CaseNameConvertible {
 }
 
 // MARK: Pencil
-public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible {
+public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     case firstGeneration
     case secondGeneration
     case usbC
@@ -550,7 +550,7 @@ extension Set<ApplePencil> {
 }
 
 // MARK: Material Color
-public enum MaterialColor: String, CaseNameConvertible {
+public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // standard colors
     case black = "#000000" // complete black for default color
     case white = "#FFFFFF" // complete white for default white plastic color

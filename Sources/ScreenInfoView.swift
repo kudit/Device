@@ -61,6 +61,7 @@ public struct ScreenInfoView: View {
         }
         return screen
     }    
+    @MainActor
     var statusFeatures: some View {
         HStack(spacing: 2) {
             MonitoredCurrentDeviceView(device: device) { currentDevice in

@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static var version = "2.1.16"
+    static let version = "2.1.17"
 }
 
 import Foundation
@@ -161,9 +161,9 @@ extension IdiomType {
     }
 }
 
-public struct Device: IdiomType, Hashable {
+public struct Device: IdiomType, Hashable, Sendable {
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
-    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible {
+    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable {
         /// An unspecified idiom.
         case unspecified
         /// An interface designed for the Mac.
@@ -390,7 +390,7 @@ public struct Device: IdiomType, Hashable {
     }
 
     /// A list of all known devices (devices with identifiers and descriptions).
-    public static var all: [Device] = {
+    public static let all: [Device] = {
         var allKnownDevices = [Device]()
         
         // Macs
@@ -439,7 +439,7 @@ public struct Device: IdiomType, Hashable {
 
 // MARK: - Device Idiom Types
 public struct Mac: IdiomType {
-    public enum Form: String, Hashable, CaseIterable, CaseNameConvertible {
+    public enum Form: String, Hashable, CaseIterable, CaseNameConvertible, Sendable {
         case macProGen1 = "macpro.gen1"
         case macProGen2 = "macpro.gen2"
         case macProGen3 = "macpro.gen3"
@@ -2873,7 +2873,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
     public var bandSize: WatchSize.BandSize {
         watchSize.bandSize
     }
-    public enum WatchSize: CaseNameConvertible {
+    public enum WatchSize: CaseNameConvertible, Sendable {
         case unknown
         case mm38
         case mm40
@@ -2883,7 +2883,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         case mm45
         case mm49 // ultra
         
-        public enum BandSize: CaseNameConvertible {
+        public enum BandSize: CaseNameConvertible, Sendable {
             case small // 38mm, 40mm, 41mm
             case large // 42mm, 44mm, 45mm, 49mm
         }

@@ -23,10 +23,13 @@ public extension String {
 
 public extension Device {
     /// An object representing the current device this software is running on.
-    static var current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock
-    enum Environment: CaseIterable, DeviceAttributeExpressible {
+    // TODO: Figure out how to handle this with concurrency.
+    @MainActor
+    static let current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock
+    enum Environment: CaseIterable, DeviceAttributeExpressible, Sendable {
         case realDevice, simulator, playground, preview, designedForiPad, macCatalyst
         
+        @MainActor
         static public var allCases: [Device.Environment] {
             var cases = [Environment.realDevice, .simulator, .playground, .preview]
             if [.mac, .vision].contains(Device.current.idiom) {
@@ -92,7 +95,7 @@ public extension Device {
     }
 }
 
-public enum ThermalState: SymbolRepresentable {
+public enum ThermalState: SymbolRepresentable, Sendable {
     case nominal, fair, serious, critical
     public var symbolName: String {
         switch self {
@@ -143,7 +146,8 @@ public extension ProcessInfo.ThermalState {
 //#if canImport(Observable)
 //@Observable
 //#endif // TODO: this is only supported in iOS 17+ so wait to implement until we no longer need backwards compatibility
-public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable {
+// don't mark as MainActor since we may need to just read values on different threads and this is OKAY!  Also, marking the entire protocol as MainActor prevents having static global initializers.  Isolate any shared device state in a separate MainActor object and only those methods need to be MainActor isolated.  MainActor accessors (variables that could change) are marked.  Since will usually be done in UI, this shouldn't change any code usage in practice.
+public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable { // Sendable so can assign to static variable??  Need static variable not to be @MainActor since may be getting properties in non-isolated contexts like current identifier?  Make those static functions instead of instance functions??
     associatedtype BatteryType: Battery
 
     // Environment
@@ -242,6 +246,7 @@ extension CurrentDevice {
 
 extension ActualHardwareDevice { // Should be CurrentDevice but causes error in Swift Playgrounds.  Perhaps fix this in the future?  Error: "Replaced accessor for 'description' occurs in multiple places"
     /// Description (includes current identifier since device might have multiple).
+    @MainActor
     public var description: String {
         let environments = Device.Environment.allCases.map {
             if $0 != .realDevice && $0.test(device: self) {
@@ -272,22 +277,22 @@ Device Framework Version: v\(Device.version)
 }
 
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
-// TODO: should this be a final class?
-class ActualHardwareDevice: CurrentDevice {
+final class ActualHardwareDevice: CurrentDevice {
 #if canImport(Combine)
     typealias BatteryType = MonitoredDeviceBattery
 #else
     typealias BatteryType = DeviceBattery
 #endif
     
-    var device: Device
+    let device: Device
 
-    var timer: Timer?
+    // since there should only ever be one ActualHardwareDevice, we can make this static
+    static var timer: Timer?
     public func enableMonitoring(frequency: TimeInterval) {
-        if let timer {
+        if let timer = Self.timer {
             timer.invalidate()
         }
-        timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
+        Self.timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
             self.objectWillChange.send()
             //            print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
         }
@@ -359,6 +364,7 @@ class ActualHardwareDevice: CurrentDevice {
     }
     
     /// Returns `true` if Built for iPad mode not a native mode (for macOS and visionOS)
+    @MainActor
     var isDesignedForiPad: Bool {
         // Check for mismatch between systemName and expected idiom based on identifier.
         if Device.current.idiom == .vision && Device.current.systemName == "iPadOS" {
@@ -388,7 +394,7 @@ class ActualHardwareDevice: CurrentDevice {
     
     // MARK: - Description Device Strings
     /// Gets the identifier from the system, such as "iPhone7,1".
-    var identifier: String = {
+    let identifier: String = {
 #if os(macOS)
         let defaultPort: mach_port_t
         if #available(macOS 12.0, *) {
@@ -732,13 +738,8 @@ class ActualHardwareDevice: CurrentDevice {
     }
     
 }
-/*
- Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
- callback()
- //            timer.invalidate()
- }
- */
-public class MockDevice: CurrentDevice {
+
+public final class MockDevice: CurrentDevice {
     public typealias BatteryType = MockBattery
     public var device: Device
     
@@ -834,7 +835,9 @@ public class MockDevice: CurrentDevice {
         }
         // create and schedule timer
         animationTimer = Timer.scheduledTimer(withTimeInterval: cycleAnimation, repeats: true) { timer in
-            self.update()
+            Task { @MainActor in
+                self.update()
+            }
         }
     }
     var animationTimer: Timer?
@@ -849,7 +852,7 @@ public class MockDevice: CurrentDevice {
         animationTimer = nil
     }
     
-    public func update() {
+    @MainActor public func update() {
         updateCount += 1 // increase
         let dup = Double(updateCount)
         let patch = updateCount % 100
@@ -955,7 +958,7 @@ public class MockDevice: CurrentDevice {
         // do nothing (this is Mock)
     }
 
-    public var volumeTotalCapacity: Int64?
+    public let volumeTotalCapacity: Int64?
     public var volumeAvailableCapacityForImportantUsage: Int64?
     public var volumeAvailableCapacityForOpportunisticUsage: Int64?
     public var volumeAvailableCapacity: Int64?
@@ -964,8 +967,11 @@ public class MockDevice: CurrentDevice {
         String(describing: self)
     }
     
+    @MainActor
+    public static var animated = MockDevice(cycleAnimation: 0.1)
+    @MainActor
     public static var mocks = [
-        MockDevice(battery: MockBattery.mocks[0], cycleAnimation: 0.1),
+        animated,
         MockDevice(),
         MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal, volumeAvailableCapacityForImportantUsage: 908_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 900_500_000_000, volumeAvailableCapacity: 888_500_000_000),
         MockDevice(isPlayground: true, isGuidedAccessSessionActive: true, brightness: 0.0, battery: MockBattery.mocks[2], thermalState: .fair, volumeAvailableCapacityForImportantUsage: 708_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 600_500_000_000, volumeAvailableCapacity: 488_500_000_000),

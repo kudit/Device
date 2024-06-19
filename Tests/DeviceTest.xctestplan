@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "DE2D9903-E4C5-41F6-B398-21E6053C27A4",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Device.xcodeproj",
+        "identifier" : "B5DD79C22BC94C8A00457681",
+        "name" : "DeviceTests"
+      }
+    }
+  ],
+  "version" : 1
+}
