@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.1.18"
+    static let version = "2.1.19"
 }
 
 import Foundation
@@ -304,6 +304,7 @@ public struct Device: IdiomType, Hashable, Sendable {
             return prototypical.symbolName
         }
         
+        @MainActor
         public func test(device: any CurrentDevice) -> Bool {
             return device.idiom == self
         }

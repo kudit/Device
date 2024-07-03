@@ -20,6 +20,7 @@ public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseN
 #if canImport(SwiftUI)
     var color: Color { get }
 #endif
+    @MainActor
     func test(device: any CurrentDevice) -> Bool
 }
 

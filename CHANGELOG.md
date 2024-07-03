@@ -4,7 +4,7 @@ NOTE: Version needs to be updated in the following places:
 - [ ] Xcode project version (in build settings - normal and watch targets should inherit)
 - [ ] Package.swift iOSApplication product displayVersion.
 - [ ] Device.version constant (must be hard coded since inaccessible in code)
-- [ ] Tag with matching version in GitHub.
+- [ ] Update changelog and tag with matching version in GitHub.
 
 Tests:
 Playgrounds Preview Mac
@@ -27,6 +27,8 @@ Real Device Apple TV
 
 TODO: Model off of Swift Algorithms project.
 TODO: See if anything in Swift Algorithm replaces Kudit or Device collection extensions.
+
+v2.1.19 7/3/2024 Ensured CurrentDevice objects are @MainActor isolated so can be used in concurrent code.
 
 v2.1.18 7/3/2024 Converted several static variables from `var` to `let` for clarity.  Added availability check for renamed API from kIOMasterPortDefault to kIOMainPortDefault.
 

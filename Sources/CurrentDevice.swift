@@ -76,6 +76,7 @@ public extension Device {
             }
         }
         
+        @MainActor
         public func test(device: any CurrentDevice) -> Bool {
             switch self {
             case .realDevice:
@@ -147,6 +148,7 @@ public extension ProcessInfo.ThermalState {
 //@Observable
 //#endif // TODO: this is only supported in iOS 17+ so wait to implement until we no longer need backwards compatibility
 // don't mark as MainActor since we may need to just read values on different threads and this is OKAY!  Also, marking the entire protocol as MainActor prevents having static global initializers.  Isolate any shared device state in a separate MainActor object and only those methods need to be MainActor isolated.  MainActor accessors (variables that could change) are marked.  Since will usually be done in UI, this shouldn't change any code usage in practice.
+@MainActor // to conform to Sendable
 public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable { // Sendable so can assign to static variable??  Need static variable not to be @MainActor since may be getting properties in non-isolated contexts like current identifier?  Make those static functions instead of instance functions??
     associatedtype BatteryType: Battery
 
