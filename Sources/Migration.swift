@@ -89,7 +89,7 @@ extension ApplePencil: Definable {}
 extension MaterialColor: Definable {}
 extension AppleWatch.WatchSize: Definable {}
 extension Screen: Definable {
-    static var all = [
+    static let all = [
         "tv":Screen.tv,
         "p720":.p720,
         "p1080":.p1080,
@@ -137,7 +137,7 @@ extension Screen: Definable {
     }
 }
 extension Screen.Size: Definable {
-    static var widescreen = Screen.Size(width: 9, height: 16)
+    static let widescreen = Screen.Size(width: 9, height: 16)
     var definition: String {
         return "(\(width), \(height))"
     }

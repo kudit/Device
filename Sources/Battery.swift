@@ -19,7 +19,7 @@ public protocol ObservableObject {
 }
 public struct ObjectWillChangePublisher {
     func send() {} // dummy for calls
-    static var dummyPublisher = ObjectWillChangePublisher()
+    static let dummyPublisher = ObjectWillChangePublisher()
 }
 public extension ObservableObject {
     var objectWillChange: ObjectWillChangePublisher {
@@ -179,8 +179,8 @@ public struct BatterySnapshot: Sendable {
     public var currentLevel: Int = -1
     public var currentState: BatteryState = .unplugged
     public var lowPowerMode: Bool = false
-    public static var missing = BatterySnapshot(currentLevel: -1, currentState: .unknown)
-    public static var mocks = [
+    public static let missing = BatterySnapshot(currentLevel: -1, currentState: .unknown)
+    public static let mocks = [
         BatterySnapshot.missing,
         BatterySnapshot(currentLevel: 0),
         BatterySnapshot(currentLevel: 2, currentState: .charging),
@@ -261,9 +261,9 @@ public class MockBattery: Battery {
     }
     
 
-    public static var missing = MockBattery(currentLevel: -1, currentState: .unknown)
-    public static var animated = MockBattery(currentLevel: 50, cycleLevelState: 0.1)
-    public static var mocks = mocksFor(lowPowerMode: false)
+    public static let missing = MockBattery(currentLevel: -1, currentState: .unknown)
+    public static let animated = MockBattery(currentLevel: 50, cycleLevelState: 0.1)
+    public static let mocks = mocksFor(lowPowerMode: false)
     public static func mocksFor(lowPowerMode: Bool) -> [MockBattery] {
         Self.animated.lowPowerMode = lowPowerMode
         var mocks = [Self.animated]
@@ -275,7 +275,7 @@ public class MockBattery: Battery {
 }
 
 public class DeviceBattery: Battery {
-    public static var current = DeviceBattery() // only time this is initialized typically
+    public static let current = DeviceBattery() // only time this is initialized typically
         
     private var monitors: [BatteryMonitor] = []
     
@@ -523,7 +523,7 @@ public class DeviceBattery: Battery {
 #if canImport(Combine)
 /// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
 public class MonitoredDeviceBattery: Battery {
-    public static var current = MonitoredDeviceBattery() // only time this is initialized typically
+    public static let current = MonitoredDeviceBattery() // only time this is initialized typically
     
     @Published public var currentLevel: Int = -1
     @Published public var currentState: BatteryState = .unplugged

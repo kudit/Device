@@ -28,6 +28,8 @@ Real Device Apple TV
 TODO: Model off of Swift Algorithms project.
 TODO: See if anything in Swift Algorithm replaces Kudit or Device collection extensions.
 
+v2.1.18 7/3/2024 Converted several static variables from `var` to `let` for clarity.  Added availability check for renamed API from kIOMasterPortDefault to kIOMainPortDefault.
+
 v2.1.17 6/19/2024 Updated code to enble strict concurrency checking.  Changed several constants to lets to make clear they won't change.  Made ActualHardwareDevice and MockDevice final.  Made public enums conform to Sendable since they do not by default.  Ignored enableMonitoring functionality on MockDevice since not used.  Set up for creating tests using Swift Testing.
 
 v2.1.16 6/3/2024 Removed code for Swift 5.7 & 5.8 since conditional code in the Package.swift file doesn't seem to work.
@@ -45,9 +47,9 @@ v2.1.11 6/1/2024 Completely re-worked Storage view to be more compact and expand
 v2.1.10 5/31/2024 Forgot to update versions!  Also added legacy symbol for screen size.
 
 v2.1.9 5/31/2024 Fails Linux test (fixed?).  Need a better way of testing on linux.  Added better information for new iPads.  Fixed bug where screen wasn't included on device detail view.  Added information on esim/dual esim capability.  Re-ordered some iPads so they are chronological.  Added full UIDeviceOrientation value set for Screen.Orientation to be more accurate and not lose information.
-
+b
 v2.1.8 5/31/2024 Fixed project so only one version check is needed not per target.  Set Swift version minimum to 5.9 since that's needed for #Preview {} functionality.  Added additional checks to allow compiling on Linux.  Added dummy ObservableObject protocol when Combine isn't available.  Removed now unnecessary MonitoredBatteryView and simplified API to just BatteryView() for simplicity and clarity.  Fixed thermal layout.  Fixed issue with enabledMonitoring frequency was ignored (and potentially generating many many timers that could cause memory leak).  Moved MockDevice to bottom to make it easier to find mocks.  Fixed error introduced in v2.1.0 where battery.slash.legacy was exported with SF Symbols 5 instead of 2 and thus crashed on devices and previews < iOS 17.
-
+g
 v2.1.7 5/25/2024 Added Thunderbolt capability.  Added new iPads.  Re-worked package for better compatibility with swiftpackageindex.com platforms.  Added checks for SwiftUI for compilation compatibilty.  Added support for swift 5.7.
 
 v2.1.6 5/13/2024 Fixed 4 cases where iPod touch was listed as "iPhone touch".  Updated README with better feature list.  Re-worked Package.swift to be cleaner and support `swift package dump-package` for swiftpackageindex.com and enhanced for code re-use.  Added small caps to the processor views.  Fixed so Mac (non-catalyst) shows full description in text editor to make it easier to see everything and select text.  Allowed searching by processor.
@@ -119,6 +121,8 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
+- [ ] Must be built for debug instead of release configuration due to: Re-worked project to fix errors linking for release like "Undefined symbols for architecture arm64:
+  "protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device"" and "type metadata accessor for Device.ActualHardwareDevice".  (Removed checks for #if canImport(Combine) around various classes.) - possibly issue building against macOS 11??  Apple Forum Description: https://developer.apple.com/forums/thread/758168?login=true  
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
@@ -211,4 +215,7 @@ Then, for **each** app extension target (Project > _an app extension target_ > B
 [/quote]
 
     // TODO: find a way to include Package.swift file as resource and parse for version number??
+
+Note: If get `protocol conformance descriptor for` error, this is how to fix:
+Check the errors for the protocol that's missing.  There was an #if canImport(Combine) which was making the protocol itself unavailable for viewing when Combine was not present!
 

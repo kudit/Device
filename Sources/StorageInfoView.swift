@@ -10,7 +10,7 @@ import SwiftUI
 
 // TODO: Add to KuditFrameworks
 public extension EdgeInsets {
-    static var zero = Self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
+    static let zero = Self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
 }
 
 struct BytesView: View {

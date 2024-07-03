@@ -165,6 +165,7 @@ public struct DeviceTestView: View {
     @ObservedObject var animatedDevice = MockDevice.mocks.first!
 
     @MainActor
+    @ViewBuilder
     var testView: some View {
         List {
             Section {

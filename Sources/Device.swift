@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.1.17"
+    static let version = "2.1.18"
 }
 
 import Foundation
@@ -554,7 +554,7 @@ public struct Mac: IdiomType {
         return self.form.rawValue
     }
 
-    static var all = [
+    static let all = [
         // TODO: We need a lot more of the macs here!  Please help fill these out via a pull request.
         // Support IDs and images can be found here: https://support.apple.com/en-us/108054
 
@@ -1214,7 +1214,7 @@ public struct Mac: IdiomType {
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
-            officialName: "MacBook Pro (15-inch, 2016)",
+            officialName: "MacBook Pro (15-inch, 2016)", // Touchbook, macOS 12
             identifiers: ["MacBookPro13,3"],
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
             form: .macBook,
@@ -1701,7 +1701,7 @@ public struct iPod: IdiomType, HasScreen {
         return "ipodtouch"
     }
     
-    static var all = [
+    static let all = [
     
         iPod(
             officialName: "iPod touch (1st generation)",
@@ -1831,7 +1831,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         }
     }
     
-    static var all = [
+    static let all = [
 
         iPhone(
             officialName: "iPhone",
@@ -2353,7 +2353,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         return capabilities.pencils
     }
 
-    static var all = [
+    static let all = [
         
         iPad(
             officialName: "iPad",
@@ -2831,7 +2831,7 @@ public struct AppleTV: IdiomType {
         return "appletv"
     }
 
-    static var all = [ // https://support.apple.com/en-us/101605
+    static let all = [ // https://support.apple.com/en-us/101605
         
         AppleTV(
             officialName: "Apple TV HD",
@@ -2953,7 +2953,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         return capabilities.watchSize ?? .unknown // should always be present
     }
 
-    static var all = [
+    static let all = [
 
         AppleWatch(
             officialName: "Apple Watch (1st generation) 38mm",
@@ -3198,7 +3198,7 @@ public struct HomePod: IdiomType {
         return "homepod"
     }
 
-    static var all = [
+    static let all = [
         
         HomePod(
             officialName: "HomePod",
@@ -3266,7 +3266,7 @@ public struct AppleVision: IdiomType, HasCameras {
         return "visionpro"
     }
 
-    static var all = [
+    static let all = [
 
         AppleVision(
             officialName: "Apple Vision Pro",

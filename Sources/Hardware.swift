@@ -153,7 +153,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
 }
 // device specific have functions for getting a wrapped capability out.
 public extension Capabilities {
-    static var screenFeatures = Set(Capability.screenFeatures)
+    static let screenFeatures = Set(Capability.screenFeatures)
 
     /// Order them based off of the order in the Capability definition for consistency
     var sorted: [Capability] {
@@ -577,25 +577,25 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     case macbookairStarlight = "#f0e4d3"
     
     // iMac
-    static var iMac = [blueLight, greenLight, pinkLight, silverLight, yellowLight, orangeLight, purpleLight]
+    static let iMac = [blueLight, greenLight, pinkLight, silverLight, yellowLight, orangeLight, purpleLight]
     
     // MacBook
     case macbookRoseGold = "#E1C3C8"
     
     // SE 1
     case silverSE = "#e4e4e2", spaceGraySE = "#262529", goldSE = "#fadcc2", roseGoldSE = "#ecc6c1"
-    static var se = [silverSE, spaceGraySE, goldSE, roseGoldSE]
+    static let se = [silverSE, spaceGraySE, goldSE, roseGoldSE]
     // iPhone 6
     case silver6 = "#e2e3e4", spaceGray6 = "#b1b2b7", gold6 = "#e3ccb4"
-    static var iPhone6 = [spaceGray6, silver6, gold6]
+    static let iPhone6 = [spaceGray6, silver6, gold6]
     // iPhone 6s
-    static var iPhone6s = [silver6, spaceGray6, gold6, roseGoldSE]
+    static let iPhone6s = [silver6, spaceGray6, gold6, roseGoldSE]
     // iPhone 7
     case black7 = "#2e3034"
-    static var iPhone7 = [silver6, black7, gold6, roseGoldSE]
+    static let iPhone7 = [silver6, black7, gold6, roseGoldSE]
         
     // iPad Air
-    static var iPadAir = [spaceGray6, silver6]
+    static let iPadAir = [spaceGray6, silver6]
     
     // iPad Air 4
     case roseGoldA4 = "#ecc5c1", skyBlueA4 = "#cee3f6", greenA4 = "#ccdfc9"
@@ -605,7 +605,7 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     
     // iPad Mini 5
     case spaceGrayM5 = "#68696d", goldM5 = "#f6cdb9"
-    static var iPadMini5 = [spaceGrayM5, silver6, goldM5]
+    static let iPadMini5 = [spaceGrayM5, silver6, goldM5]
     
     // iPad 9th gen
     case spaceGray9 = "#68696e"
@@ -615,71 +615,71 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     
     // iPad Air 2024
     case starlightAir = "#e3dcd1", purpleAir = "#e3dee9", blueAir = "#d7e5e6"
-    static var iPadAirM2 = [spaceGrayA5, starlightAir, purpleAir, blueAir]
+    static let iPadAirM2 = [spaceGrayA5, starlightAir, purpleAir, blueAir]
     
     // iPhone 13
     case green13 = "#394c38", pink13 = "#faddd7", blue13 = "#276787", midnight13 = "#232a31", starlight13 = "#faf6f2", productRed13 = "#bf0013"
-    static var iPhone13 = [green13, pink13, blue13, midnight13, starlight13, productRed13]
+    static let iPhone13 = [green13, pink13, blue13, midnight13, starlight13, productRed13]
     
     // iPhone 13 Pro
     case alpineGreen = "#576856", gold13 = "#fae7cf", graphite = "#54524f", sierraBlue = "#a7c1d9"
-    static var iPhone13Pro = [alpineGreen, starlight13, gold13, graphite, sierraBlue]
+    static let iPhone13Pro = [alpineGreen, starlight13, gold13, graphite, sierraBlue]
     
     // iPhone SE 3
-    static var iPhoneSE3 = [midnight13, starlight13, productRed13]
+    static let iPhoneSE3 = [midnight13, starlight13, productRed13]
     // iPhone 14
     case blue14 = "#a0b4c7", purple14 = "#e6ddeb", yellow14 = "#f9e479", midnight14 = "#222930", productRed14 = "#fc0324"
-    static var iPhone14 = [blue14, purple14, yellow14, midnight14, starlight13, productRed14]
+    static let iPhone14 = [blue14, purple14, yellow14, midnight14, starlight13, productRed14]
     // iPhone 14 Pro
     case deepPurple14 = "#594f63", gold14 = "#f4e8ce", silver14 = "#f0f2f2", spaceBlack14 = "#403e3d"
-    static var iPhone14Pro = [deepPurple14, gold14, silver14, spaceBlack14]
+    static let iPhone14Pro = [deepPurple14, gold14, silver14, spaceBlack14]
     // iPhone 15
     case pink15 = "#E3C8CA", yellow15 = "#E6E0C1", green15 = "#CAD4C5", blue15 = "#CED5D9", black15 = "#35393B"
-    static var iPhone15 = [pink15, yellow15, green15, blue15, black15]
+    static let iPhone15 = [pink15, yellow15, green15, blue15, black15]
     // iPhone 15 Pro
     case titanium = "#837f7d", blueTitanium = "#2f4452", whiteTitanium = "#dddddd", blackTitanium = "#1b1b1b"
-    static var iPhone15Pro = [titanium, blueTitanium, whiteTitanium, blackTitanium]
+    static let iPhone15Pro = [titanium, blueTitanium, whiteTitanium, blackTitanium]
 
     //  Watch SE
     case midnightW = "#1a2530", starlightW = "#ded6d1", silverW = "#e0e0e0"
-    static var watchSE2 = [midnightW, starlightW, silverW]
+    static let watchSE2 = [midnightW, starlightW, silverW]
     //  Watch Series 9
     case pinkW9 = "#fadcde", productRedW9 = "#d61139"
     case graphitePVD = "#3e3a36", silverSS = "#e6e6e7", goldPVD = "#d4bda1"
-    static var watch9 = [midnightW, starlightW, silverW, pinkW9, productRedW9, graphitePVD, silverSS, goldPVD]
+    static let watch9 = [midnightW, starlightW, silverW, pinkW9, productRedW9, graphitePVD, silverSS, goldPVD]
     //  Watch Ultra 2
     case naturalW = "#ccc4bc"
-    static var watchUltra2 = [naturalW]
+    static let watchUltra2 = [naturalW]
     
     // HomePod
     case whiteHome = "#f1f1f1", yellowHome = "#ffc953", orangeHome = "#e56645", blueHome = "#25485e", spacegrayHome = "#36373a", midnightHome = "#313236" // midnight is best guess
-    static var homePod = [whiteHome, midnightHome]
-    static var homePodMini = [whiteHome, yellowHome, orangeHome, blueHome, spacegrayHome]
+    static let homePod = [whiteHome, midnightHome]
+    static let homePodMini = [whiteHome, yellowHome, orangeHome, blueHome, spacegrayHome]
 }
 public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]
     
-    static var iMac = MaterialColor.iMac
-    static var se = MaterialColor.se
-    static var iPhone6 = MaterialColor.iPhone6
-    static var iPhone7 = MaterialColor.iPhone7
-    static var iPhone13 = MaterialColor.iPhone13
-    static var iPhone13Pro = MaterialColor.iPhone13Pro
-    static var iPhoneSE3 = MaterialColor.iPhoneSE3
-    static var iPhone14 = MaterialColor.iPhone14
-    static var iPhone14Pro = MaterialColor.iPhone14Pro
-    static var iPhone15 = MaterialColor.iPhone15
-    static var iPhone15Pro = MaterialColor.iPhone15Pro
-    static var iPadAir = MaterialColor.iPadAir
-    static var iPadAirM2 = MaterialColor.iPadAirM2
-    static var iPadMini5 = MaterialColor.iPadMini5
-    static var watchSE2 = MaterialColor.watchSE2
-    static var watch9 = MaterialColor.watch9
-    static var watchUltra2 = MaterialColor.watchUltra2
-    static var homePod = MaterialColor.homePod
-    static var homePodMini = MaterialColor.homePodMini
+    static let iMac = MaterialColor.iMac
+    static let se = MaterialColor.se
+    static let iPhone6 = MaterialColor.iPhone6
+    static let iPhone7 = MaterialColor.iPhone7
+    static let iPhone13 = MaterialColor.iPhone13
+    static let iPhone13Pro = MaterialColor.iPhone13Pro
+    static let iPhoneSE3 = MaterialColor.iPhoneSE3
+    static let iPhone14 = MaterialColor.iPhone14
+    static let iPhone14Pro = MaterialColor.iPhone14Pro
+    static let iPhone15 = MaterialColor.iPhone15
+    static let iPhone15Pro = MaterialColor.iPhone15Pro
+    static let iPadAir = MaterialColor.iPadAir
+    static let iPadAirM2 = MaterialColor.iPadAirM2
+    static let iPadMini5 = MaterialColor.iPadMini5
+    static let watchSE2 = MaterialColor.watchSE2
+    static let watch9 = MaterialColor.watch9
+    static let watchUltra2 = MaterialColor.watchUltra2
+    static let homePod = MaterialColor.homePod
+    static let homePodMini = MaterialColor.homePodMini
     
-    static var colorSets = [
+    static let colorSets = [
         iMac: "iMac",
         se: "se",
         iPhone6: "iPhone6",

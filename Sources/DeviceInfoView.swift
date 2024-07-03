@@ -10,7 +10,7 @@ import SwiftUI
 import Foundation
 
 public extension CGFloat {
-    static var devicePanelRadius: Double = 15
+    static let devicePanelRadius: Double = 15
 }
 
 // Normally would just use KuditFrameworks but just in case that isn't available...
@@ -67,7 +67,7 @@ public extension Image {
 }
 // TODO: Move the following to Kudit Frameworks
 extension String {
-    public static var defaultFallback = "questionmark.square.fill"
+    public static let defaultFallback = "questionmark.square.fill"
     /*
      Legacy versions for Symbol (iOS = catalyst = tvOS
      Device min: 15, 11, 14, 6 so create 1.0 or 2.0 versions for fallback.  Make note that watchOS 6 doesn’t support new symbols.

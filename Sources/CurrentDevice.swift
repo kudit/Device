@@ -302,7 +302,7 @@ final class ActualHardwareDevice: CurrentDevice {
         device = Device(identifier: identifier)
         // add screen orientation monitor (only supported by UIDevice which is fine)
 #if canImport(UIKit)
-#if os(iOS) // technically supported by mac catalyst as well but not sure when it would be ever used       NotificationCenter.default.addObserver(
+#if os(iOS) // technically supported by mac catalyst as well but not sure when it would be ever used in tvOS or visionOS or macCatalyst etc.
         NotificationCenter.default.addObserver(
             forName: UIDevice.orientationDidChangeNotification,
             object: nil,
@@ -577,9 +577,16 @@ final class ActualHardwareDevice: CurrentDevice {
 #if os(iOS) || targetEnvironment(macCatalyst)
                 UIScreen.main.brightness = newValue
 #elseif canImport(IOKit)
-                let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"))
-                IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
-                IOObjectRelease(service)
+                if #available(macOS 12, *) {
+                    let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IODisplayConnect"))
+                    // TODO: Figure out how to consolidate redundant code
+                    IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
+                    IOObjectRelease(service)
+                } else {
+                    let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"))
+                    IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
+                    IOObjectRelease(service)
+                }
 #endif
             }
         }
@@ -968,9 +975,9 @@ public final class MockDevice: CurrentDevice {
     }
     
     @MainActor
-    public static var animated = MockDevice(cycleAnimation: 0.1)
+    public static let animated = MockDevice(cycleAnimation: 0.1)
     @MainActor
-    public static var mocks = [
+    public static let mocks = [
         animated,
         MockDevice(),
         MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal, volumeAvailableCapacityForImportantUsage: 908_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 900_500_000_000, volumeAvailableCapacity: 888_500_000_000),

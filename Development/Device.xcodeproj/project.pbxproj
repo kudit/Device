@@ -8,15 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		B5861A972BABC531002F0732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
-		B5CCE9C92BC94D7A005CC2D2 /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5CCE9C82BC94D7A005CC2D2 /* Device Library */; };
-		B5CCE9CA2BC94D8A005CC2D2 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
+		B58B62B52C23ECB40046E91C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B58B62B42C23ECB40046E91C /* Device Library */; };
+		B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
+		B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
+		B5B1A22A2C23EF14002C848D /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5B1A2292C23EF14002C848D /* Device Library */; };
 		B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 		B5CCE9CC2BC94D93005CC2D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B5CCE9D02BC94DB6005CC2D2 /* DeviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */; };
 		B5CCE9D12BC94DBD005CC2D2 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */; };
-		B5EB68272BC24863005DAB8C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5EB68262BC24863005DAB8C /* Device Library */; };
 		B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
-		B5F034132BABB4AF00CA6396 /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,8 +60,10 @@
 		B56A31C32BC972880077FBE9 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
 		B58985F92BAB99C3002B8E05 /* DeviceTest.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = DeviceTest.entitlements; sourceTree = "<group>"; };
 		B58985FA2BAB99C3002B8E05 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B58B62B12C23EC5C0046E91C /* Device.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Device.swiftpm; path = ..; sourceTree = "<group>"; };
 		B598DCC92C239165000B5517 /* DeviceTest.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DeviceTest.xctestplan; sourceTree = "<group>"; };
-		B5C0776A2BC938E800BBF3FB /* Device.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Device.swiftpm; path = ..; sourceTree = "<group>"; };
+		B5B1A2272C23EEB9002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
+		B5B1A22B2C23EF14002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS10.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceUITests.swift; sourceTree = "<group>"; };
 		B5DD79B32BC94C8800457681 /* DeviceTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5CCE9C92BC94D7A005CC2D2 /* Device Library in Frameworks */,
+				B58B62B52C23ECB40046E91C /* Device Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,7 +98,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5EB68272BC24863005DAB8C /* Device Library in Frameworks */,
+				B5B1A22A2C23EF14002C848D /* Device Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,9 +142,9 @@
 				B52ED1D82BAB7F7400056A62 /* README.md */,
 				B56332102BC793F5006DDB84 /* LICENSE.txt */,
 				B52ED1D52BAB7F7400056A62 /* Package.swift */,
+				B58B62B12C23EC5C0046E91C /* Device.swiftpm */,
 				B55DE1BB2C0E4BDE00D2192C /* .spi.yml */,
 				B52ED1D22BAB7F7400056A62 /* Development */,
-				B5C0776A2BC938E800BBF3FB /* Device.swiftpm */,
 				B52ED1D72BAB7F7400056A62 /* Tests */,
 				B5C1B61E2BAB7997001D5CFA /* Products */,
 				B5EB67F32BC1F3EB005DAB8C /* Frameworks */,
@@ -163,6 +165,8 @@
 		B5EB67F32BC1F3EB005DAB8C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B5B1A22B2C23EF14002C848D /* CoreAudioTypes.framework */,
+				B5B1A2272C23EEB9002C848D /* CoreAudioTypes.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -184,7 +188,7 @@
 			);
 			name = DeviceTest;
 			packageProductDependencies = (
-				B5CCE9C82BC94D7A005CC2D2 /* Device Library */,
+				B58B62B42C23ECB40046E91C /* Device Library */,
 			);
 			productName = DeviceTest;
 			productReference = B5DD79B32BC94C8800457681 /* DeviceTest.app */;
@@ -241,7 +245,7 @@
 			);
 			name = "DeviceTest Watch App";
 			packageProductDependencies = (
-				B5EB68262BC24863005DAB8C /* Device Library */,
+				B5B1A2292C23EF14002C848D /* Device Library */,
 			);
 			productName = "DeviceWatchTest Watch App";
 			productReference = B5F033FF2BABA93500CA6396 /* DeviceTest Watch App.app */;
@@ -333,7 +337,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5CCE9CA2BC94D8A005CC2D2 /* DeviceTestView.swift in Sources */,
+				B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */,
 				B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -358,7 +362,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5F034132BABB4AF00CA6396 /* DeviceTestView.swift in Sources */,
+				B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */,
 				B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -431,10 +435,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.1.17;
+				MARKETING_VERSION = 2.1.18;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -483,24 +487,25 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.1.17;
+				MARKETING_VERSION = 2.1.18;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				TVOS_DEPLOYMENT_TARGET = 14.0;
@@ -537,7 +542,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.4;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -548,7 +553,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,7";
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Debug;
 		};
@@ -579,7 +584,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.4;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kudit.DeviceTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -590,7 +595,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,7";
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Release;
 		};
@@ -699,6 +704,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = DeviceWatchTest;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.kudit.DeviceTest;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
@@ -729,6 +735,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = DeviceWatchTest;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.kudit.DeviceTest;
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
@@ -798,11 +805,11 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B5CCE9C82BC94D7A005CC2D2 /* Device Library */ = {
+		B58B62B42C23ECB40046E91C /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
 		};
-		B5EB68262BC24863005DAB8C /* Device Library */ = {
+		B5B1A2292C23EF14002C848D /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
 		};
