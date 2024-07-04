@@ -146,7 +146,7 @@ public struct MonitoredCurrentDeviceView<Content: View>: View {
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
-    var device: SomeCurrentDevice
+    @ObservedObject var device: SomeCurrentDevice
     @State var includeStorage: Bool
     @State var debug: Bool
     
@@ -179,6 +179,27 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
     }
 }
 
+@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@MainActor
+public struct DeviceMocksView: View {
+    @State public var includeStorage: Bool
+    @State public var debug: Bool
+
+    public init(includeStorage: Bool = true, debug: Bool = false) {
+        self.includeStorage = includeStorage
+        self.debug = debug
+    }
+
+    public var body: some View {
+        ForEach(MockDevice.mocks, id: \.identifier) { mock in
+            Section {
+                CurrentDeviceInfoView(device: mock, includeStorage: includeStorage, debug: debug)
+            }
+        }
+        .navigationTitle("Device Mocks")
+    }
+}
+
 #if swift(>=5.9)
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Current Device") {
@@ -187,11 +208,7 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
             CurrentDeviceInfoView(device: Device.current, debug: true)
         }
         Divider()
-        ForEach(MockDevice.mocks, id: \.id) { device in
-            Section {
-                CurrentDeviceInfoView(device: device, debug: false)
-            }
-        }
+        DeviceMocksView(debug: false)
     }
 }
 #endif

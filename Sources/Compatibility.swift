@@ -17,6 +17,16 @@
      watchOS 6.2+
      visionOS 1.0+
 
+ 2015 (for OperatingSystemVersion)
+ canImport(HealthKit) || canImport(Metal)
+     iOS 8.0+ // Health, Metal
+     iPadOS 8.0+ // Health, Metal
+     macOS 10.10+
+     Mac Catalyst 13.0+ // Metal
+     tvOS 9.0+ // Metal
+     watchOS 2.0+ // Health
+     visionOS 1.0+ // Health, Metal
+ 
  2019
  canImport(SwiftUI) || canImport(Combine)
      iOS 13.0+

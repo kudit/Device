@@ -277,7 +277,7 @@ extension Device: Equatable {
     /// - returns: `true` iff the underlying identifier is the same.
     @available(*, deprecated, message: "How is this used?  Is it necessary?")
     public static func == (lhs: Device, rhs: Device) -> Bool {
-        return lhs.description == rhs.description
+        return lhs.officialName == rhs.officialName // assumes official names are unique?  Identifiers may or may not be the same if current device has one identifier and comparing device with multiple identifiers.  Resulting officialName should be the same though...
     }
 }
 

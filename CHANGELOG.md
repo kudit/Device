@@ -25,8 +25,7 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-TODO: Model off of Swift Algorithms project.
-TODO: See if anything in Swift Algorithm replaces Kudit or Device collection extensions.
+v2.2 7/4/2024 Removed CustomStringConvertible conformance from Device since we want to have CurrentDevice implement this (so we can have for both Mocks as well as ActualDevice) and we don't want confusion between the two implementations.  Fixed identifiability of mocks.  Added Version.swift and additional extensions on OperatingSystemVersion for better output and compatibility of version information on ALL devices.  Added hostSystemVersion and hostSystemName for macCatalyst and Designed for iPad and Linux systems.  Changed version returns from string to OperatingSystemVersion (or Version structs).  Added compatibility so that old uses should work without changing code (though if you store in typed variables that were previously strings, this may require code updates).  Removed `Device.description` and `Device.safeDescription` to prevent conflicts with `CurrentDevice.description` since CurrentDevice inherits from DeviceType.  Renamed to `safeOfficialName` for clarity and deprecated `safeDescription`.  Added macOS system name hard-coded component lookup for better system software info display.  Removed green background on visionOS.  Fixed `isDesignedForiPad` code on visionOS.  Fixed SomeCurrentDeviceView by making the device an @ObservedObject.
 
 v2.1.19 7/3/2024 Ensured CurrentDevice objects are @MainActor isolated so can be used in concurrent code.
 
@@ -123,8 +122,8 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
-- [ ] Must be built for debug instead of release configuration due to: Re-worked project to fix errors linking for release like "Undefined symbols for architecture arm64:
-  "protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device"" and "type metadata accessor for Device.ActualHardwareDevice".  (Removed checks for #if canImport(Combine) around various classes.) - possibly issue building against macOS 11??  Apple Forum Description: https://developer.apple.com/forums/thread/758168?login=true  
+- [ ] Must be built for debug instead of release configuration when archiving/analyzing due to issue: errors linking for release like "Undefined symbols for architecture arm64:
+  "protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device" and "type metadata accessor for Device.ActualHardwareDevice".  (Removed checks for #if canImport(Combine) around various classes and that helped some but didn't completely fix.) - possibly issue building against macOS 11?  Possible other #combine check?  Apple Forum Description: https://developer.apple.com/forums/thread/758168?login=true
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
@@ -138,8 +137,9 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
+- [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
 - [ ] Move Migration code into test module and out of the main source so that it isn't included in library.  Figure out why Device: migration needs to be part of the internal module. Perhaps have a way to expose what I need and move to the development folder so it's not included in any projects.
-- [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.
+- [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
 - [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
 - [ ] Go through and make sure device images (photos) have transparent background instead of white.
 - [ ] Add support IDs for macs and anything that has one missing.
@@ -194,30 +194,11 @@ var activeProcessorCount: Int
 var physicalMemory: UInt64
 var systemUptime: TimeInterval
 
-TODO: See if we can include the Package.swift file in the project target and pull the build number there instead of manually coding.  See if that causes an issue with other swift Package includes.
-
-Thanks to this post for helping reduce the number of places we have to add the version:
-
-[quote='782317022, marian.cerny, /thread/730234?answerId=782317022#782317022, /profile/marian.cerny']
-Xcode 15 does not show Version and Build settings for app extensions in Project > Targets > target > General any more. In Xcode 14 I have been manually changing those versions to keep them in sync (and avoid warnings or errors).
-
-Moving the setting from target level to project level as suggested by Eskimo from Apple fixed the problem (and simplifies the workflow so that I do not need to manually keep the versions in sync).
-
-How to move the settings?
-
-- Go to Project > _main target_ > Build Settings. Enable "Levels".
-- Enter `CURRENT_PROJECT_VERSION` into Filter.
-- Edit the value for the project level (double click on the empty value in the project column).
-- Remove the value for the main target level (single click the value in the target column, press Delete key on keyboard).
-- Similarly for the `MARKETING_VERSION`. Enter it into Filter, enter the value for the project level, remove it from target level.
-
-Then, for **each** app extension target (Project > _an app extension target_ > Build Settings):
-
-- Remove the project level value for both settings.
-[/quote]
-
-    // TODO: find a way to include Package.swift file as resource and parse for version number??
+- [ ] Model off of Swift Algorithms project.
+- [ ] See if anything in Swift Algorithm replaces Kudit or Device collection extensions.
 
 Note: If get `protocol conformance descriptor for` error, this is how to fix:
-Check the errors for the protocol that's missing.  There was an #if canImport(Combine) which was making the protocol itself unavailable for viewing when Combine was not present!
+Still waiting for reply to Apple discussions thread: 
+https://developer.apple.com/forums/thread/758168?login=true  
 
+Note: If Swift Playgrounds crashes saying the module Device_Device can't be built, it's probably a bad cache build.  Delete/rename the following: ~/Library/Containers/com.apple.PlaygroundsMac/Data/Library/Caches/com.apple.PlaygroundsMac

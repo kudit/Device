@@ -233,7 +233,7 @@ public struct DeviceListView: View {
                 }
                 lastIdiom = device.idiom
             }
-            if searchText == "" || "\(device.description) \(device.cpu.caseName)".lowercased().contains(searchText.lowercased()) {
+            if searchText == "" || "\(device.safeOfficialName) \(device.cpu.caseName) \(device.identifiers.joined(separator: " "))".lowercased().contains(searchText.lowercased()) {
                 sectionDevices.append(device)
             }
         }

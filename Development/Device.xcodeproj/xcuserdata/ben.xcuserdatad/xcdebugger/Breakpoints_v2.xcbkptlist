@@ -30,8 +30,8 @@
             filePath = "../Sources/Migration.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "645"
-            endingLineNumber = "645"
+            startingLineNumber = "644"
+            endingLineNumber = "644"
             landmarkName = "from(string:form:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -59,8 +59,8 @@
             filePath = "../Sources/Compatibility.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "316"
-            endingLineNumber = "316"
+            startingLineNumber = "326"
+            endingLineNumber = "326"
             landmarkName = "byteParts(_:)"
             landmarkType = "7">
          </BreakpointContent>

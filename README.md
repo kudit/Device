@@ -96,6 +96,7 @@ This is actively maintained so if there is a feature request or change, we will 
 - macOS 11.0+ (UI only supported on macOS 12.0+)
 - macCatalyst 14.0+
 - visionOS 1.0+
+- Theoretically should work with Linux, Windows, and Vapor, but haven't tested.  If you would like to help, please let us know.
 
 ## Known Issues
 Built for macOS "Designed for iPad" returns an iPad profile instead of actual hardware profile.

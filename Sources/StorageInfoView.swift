@@ -176,7 +176,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
             .padding()
         StorageInfoView(device: Device.current)
         StorageInfoView(device: Device.current, includeDebugInformation: true)
-        ForEach(MockDevice.mocks) { mock in
+        ForEach(MockDevice.mocks, id: \.identifiers) { mock in
             StorageInfoView(device: mock)
         }
         Spacer()

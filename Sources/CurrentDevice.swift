@@ -32,7 +32,7 @@ public extension Device {
         @MainActor
         static public var allCases: [Device.Environment] {
             var cases = [Environment.realDevice, .simulator, .playground, .preview]
-            if [.mac, .vision].contains(Device.current.idiom) {
+            if Device.current.isDesignedForiPad || [.mac, .vision].contains(Device.current.idiom) {
                 cases += [.designedForiPad]
                 if Device.current.idiom == .mac {
                     cases += [.macCatalyst]
@@ -147,9 +147,8 @@ public extension ProcessInfo.ThermalState {
 //#if canImport(Observable)
 //@Observable
 //#endif // TODO: this is only supported in iOS 17+ so wait to implement until we no longer need backwards compatibility
-// don't mark as MainActor since we may need to just read values on different threads and this is OKAY!  Also, marking the entire protocol as MainActor prevents having static global initializers.  Isolate any shared device state in a separate MainActor object and only those methods need to be MainActor isolated.  MainActor accessors (variables that could change) are marked.  Since will usually be done in UI, this shouldn't change any code usage in practice.
-@MainActor // to conform to Sendable
-public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable { // Sendable so can assign to static variable??  Need static variable not to be @MainActor since may be getting properties in non-isolated contexts like current identifier?  Make those static functions instead of instance functions??
+@MainActor // Inferred conformance to Sendable
+public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs explicit conformance to for background await usage.
     associatedtype BatteryType: Battery
 
     // Environment
@@ -175,10 +174,14 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Identifiable { // S
     /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
     /// See the follwing link for more information: https://developer.apple.com/documentation/uikit/uidevice/1620015-name
     var name: String { get } // should be automatic since DeviceType defines name property.
-    /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
+    /// The name of the host operating system running on the device represented by the receiver (e.g. "macOS" or "tvOS" or "iOS" or "iPadOS" or  "visionOS" or "Ubuntu").
     var systemName: String { get }
-    /// The current version of the operating system (e.g. 8.4 or 9.2).
-    var systemVersion: String { get }
+    /// The current version of the host operating system (e.g. 8.4 or 9.2).
+    var systemVersion: Version { get }
+    /// The name of the middleware operating system used to run the code (e.g. "iPadOS" or "Linux").  If this isn't macCatalyst or Designed for iPad or Linux, will match systemName.
+    var environmentSystemName: String { get }
+    /// The current version of the middleware operating system (e.g. 8.4 or 9.2).  If there is no middle-ware, this will be identical to systemVersion.
+    var environmentSystemVersion: Version { get }
     /// The model of the device (e.g. "iPhone" or "iPod Touch").
     var model: String { get }
     /// The model of the device as a localized string.
@@ -244,23 +247,31 @@ extension CurrentDevice {
         "Unsupported"
 #endif
     }
-}
+    
+    public var systemInfo: String {
+        var info = "\(systemName)"
+        if systemVersion != "0.0" {
+            info += " \(systemVersion)"
+        }
+        if isMacCatalyst || isDesignedForiPad {
+            info += " (\(environmentSystemName) \(environmentSystemVersion))"
+        }
+        return info
+    }
 
-extension ActualHardwareDevice { // Should be CurrentDevice but causes error in Swift Playgrounds.  Perhaps fix this in the future?  Error: "Replaced accessor for 'description' occurs in multiple places"
     /// Description (includes current identifier since device might have multiple).
-    @MainActor
     public var description: String {
         let environments = Device.Environment.allCases.map {
             if $0 != .realDevice && $0.test(device: self) {
                 return " (\($0.label))"
             } else {
-                return "" //  H(.\($0.caseName))
+                return "" //  NOT(.\($0.caseName))
             }
         }.joined()
         var description = """
 Device: \(officialName)
 Name: "\(name)"
-Model: \(identifier) running \(systemName) \(systemVersion)\(environments)
+Model: \(identifier) running \(systemInfo)\(environments)
 Thermal State: \(String(describing: thermalState))
 
 """
@@ -279,6 +290,7 @@ Device Framework Version: v\(Device.version)
 }
 
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
+@MainActor // All calculations/queries should be quick so we can isolate to main actor to give Sendable conformance.
 final class ActualHardwareDevice: CurrentDevice {
 #if canImport(Combine)
     typealias BatteryType = MonitoredDeviceBattery
@@ -289,7 +301,9 @@ final class ActualHardwareDevice: CurrentDevice {
     let device: Device
 
     // since there should only ever be one ActualHardwareDevice, we can make this static
+    @MainActor
     static var timer: Timer?
+    @MainActor
     public func enableMonitoring(frequency: TimeInterval) {
         if let timer = Self.timer {
             timer.invalidate()
@@ -366,23 +380,19 @@ final class ActualHardwareDevice: CurrentDevice {
     }
     
     /// Returns `true` if Built for iPad mode not a native mode (for macOS and visionOS)
-    @MainActor
     var isDesignedForiPad: Bool {
         // Check for mismatch between systemName and expected idiom based on identifier.
-        if Device.current.idiom == .vision && Device.current.systemName == "iPadOS" {
+        if Device.current.idiom == .vision && Device.current.environmentSystemName == "iPadOS" {
             return true
         }
-        // Note: this will be "false" under Catalyst which is what we want.
-        if #available(watchOS 7.0, *) {
 #if canImport(Combine)
-            return ProcessInfo().isiOSAppOnMac
-#else
-            return false // linux should just return false
-#endif
-        } else {
-            // Fallback on earlier versions
-            return false
+        // Note: this will be "false" under Catalyst which is what we want.
+        if #available(watchOS 7.0, *) { // not available on watchOS 6
+            return ProcessInfo.processInfo.isiOSAppOnMac
         }
+#endif
+        // Fallback on earlier versions & unsupported platforms
+        return false // linux should just return false
     }
     
     /// Returns `true` if is macCatalyst app on macOS
@@ -458,33 +468,102 @@ final class ActualHardwareDevice: CurrentDevice {
 #endif
     }
     
-    /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
-    var systemName: String {
-#if os(watchOS)
-        return WKInterfaceDevice.current().systemName
-#elseif os(iOS)
-        let systemName = UIDevice.current.systemName
-        if idiom == .pad, #available(iOS 13, *), systemName == "iOS" {
-            return "iPadOS"
-        } else {
-            return systemName
+    private typealias SystemInfo = (String, Version)
+    private var calculatedSystemInfoCache: SystemInfo?
+    /// internal function for getting system information
+    private var calculatedSystemInfo: SystemInfo {
+        if let calculatedSystemInfoCache {
+            return calculatedSystemInfoCache
         }
-#elseif canImport(UIKit)
-        return UIDevice.current.systemName
+        calculatedSystemInfoCache = calculateSystemInfo()
+        return calculatedSystemInfoCache! // assigned to non-optional above, so will never be nil and can be safely unwrapped
+    }
+    private func calculateSystemInfo() -> SystemInfo {
+#if canImport(Combine) // Perhaps this is available on Linux and can use this?
+        let operatingSystemVersionString = ProcessInfo.processInfo.operatingSystemVersionString
+//        print("ProcessInfo.operatingSystemVersionString: \(operatingSystemVersionString)")
 #else
-        return .unknown
+        // if can't import Combine, we have no way of getting info
+        return (.unknown, "0.0")
 #endif
+        
+#if os(watchOS)
+        let systemName = WKInterfaceDevice.current().systemName
+        let systemVersion = Version(WKInterfaceDevice.current().systemVersion)
+//        print("watchOS Name: \(systemName)")
+//        print("watchOS Version: \(systemVersion)")
+        return (systemName, systemVersion)
+#else
+        let operatingSystemStringVersion = Version(operatingSystemVersionString.replacingOccurrences(of: "Version ", with: "").replacingOccurrences(of: " (Build ", with: "."))
+//        print("Operating system string version: \(operatingSystemStringVersion)")
+        let macName = operatingSystemStringVersion.macOSName
+//        print("Mac Name: \(macName)")
+#if canImport(UIKit) // this generates better results than the ProcessInfo.operatingSystemVersionString
+        var systemName = UIDevice.current.systemName
+//        print("UIDevice.current.systemName: \(systemName)")
+        let systemVersion = Version(UIDevice.current.systemVersion)
+//        print("UIDevice.current.systemVersion: \(systemVersion)")
+        if idiom == .pad, #available(iOS 13, *), systemName == "iOS" {
+            systemName = "iPadOS"
+//            print("System Version changed to: \(systemName)")
+        }
+        // check for hosted environment
+        var hostedMac = false
+        if isDesignedForiPad {
+            if idiom == .vision {
+                return ("visionOS", "0.0") // Unfortunately unable to determine visionOS version in Designed for iPad :-(
+            } else { // assume macOS
+                hostedMac = true
+            }
+        }
+#if targetEnvironment(macCatalyst)
+// don't try to get from system since it just reports a Version XX.X (Build XXXXX) and not system name.
+        hostedMac = true
+#endif
+        if hostedMac {
+            return (macName, operatingSystemStringVersion)
+        } else {
+            return (systemName, systemVersion)
+        }
+#else // no UIKit
+#if os(macOS)
+// don't try to get from system since it just reports a Version XX.X (Build XXXXX) and not system name.
+        return (macName, operatingSystemStringVersion)
+#else
+        let operatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
+//        print("ProcessInfo.operatingSystemVersion: \(operatingSystemVersion)")
+        return (operatingSystemVersionString, operatingSystemVersion)
+#endif // macOS
+#endif // UIKit
+#endif // watchOS
     }
     
-    /// The current version of the operating system (e.g. 8.4 or 9.2).
-    var systemVersion: String {
-#if os(watchOS)
-        return WKInterfaceDevice.current().systemVersion
-#elseif canImport(UIKit)
-        return UIDevice.current.systemVersion
-#else
-        return "0.0"
-#endif
+    /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
+    var systemName: String {
+        let (systemName, _) = calculatedSystemInfo
+        return systemName
+    }
+    
+    /// The current version of the operating system (e.g. 8.4 or 9.2).  If macCatalyst, will return macCatalyst version.  If Designed for iPad, will report iPadOS version but systemName should report (Designed for iPad)
+    var systemVersion: Version {
+        let (_, systemVersion) = calculatedSystemInfo
+        return systemVersion
+    }
+
+    var environmentSystemName: String {
+        #if canImport(UIKit) && !os(watchOS)
+        return UIDevice.current.systemName
+        #else
+        return systemName
+        #endif
+    }
+    
+    var environmentSystemVersion: Version {
+        #if canImport(UIKit) && !os(watchOS)
+        return Version(UIDevice.current.systemVersion)
+        #else
+        return systemVersion
+        #endif
     }
     
     /// The model of the device (e.g. "iPhone" or "iPod Touch").
@@ -748,9 +827,10 @@ final class ActualHardwareDevice: CurrentDevice {
     
 }
 
+@MainActor
 public final class MockDevice: CurrentDevice {
     public typealias BatteryType = MockBattery
-    public var device: Device
+    public let device: Device
     
     var timer: Timer?
     public func enableMonitoring(frequency: TimeInterval) {
@@ -782,7 +862,9 @@ public final class MockDevice: CurrentDevice {
         identifier: String? = nil,
         name: String = "Mock's Device",
         systemName: String = "mockOS",
-        systemVersion: String = "00.00.00",
+        systemVersion: Version = "00.00.00",
+        environmentSystemName: String = "mockOS",
+        environmentSystemVersion: Version = "00.00.00",
         model: String = "iMock",
         localizedModel: String = "iMocké",
         
@@ -822,6 +904,8 @@ public final class MockDevice: CurrentDevice {
         self.name = name
         self.systemName = systemName
         self.systemVersion = systemVersion
+        self.environmentSystemName = environmentSystemName
+        self.environmentSystemVersion = environmentSystemVersion
         self.model = model
         self.localizedModel = localizedModel
         self.isZoomed = isZoomed
@@ -934,19 +1018,21 @@ public final class MockDevice: CurrentDevice {
         }
     }
     
-    public var isSimulator: Bool
-    public var isPlayground: Bool
-    public var isPreview: Bool
-    public var isRealDevice: Bool
-    public var isDesignedForiPad: Bool
-    public var isMacCatalyst: Bool
+    public let isSimulator: Bool
+    public let isPlayground: Bool
+    public let isPreview: Bool
+    public let isRealDevice: Bool
+    public let isDesignedForiPad: Bool
+    public let isMacCatalyst: Bool
     
-    public var identifier: String
-    public var name: String
-    public var systemName: String
-    public var systemVersion: String
-    public var model: String
-    public var localizedModel: String
+    public let identifier: String
+    public let name: String
+    public let systemName: String
+    public var systemVersion: Version
+    public let environmentSystemName: String
+    public let environmentSystemVersion: Version
+    public let model: String
+    public let localizedModel: String
     
     public var isGuidedAccessSessionActive: Bool = false
 #if canImport(Combine)
@@ -971,11 +1057,7 @@ public final class MockDevice: CurrentDevice {
     public var volumeAvailableCapacityForImportantUsage: Int64?
     public var volumeAvailableCapacityForOpportunisticUsage: Int64?
     public var volumeAvailableCapacity: Int64?
-    
-    public var id: String {
-        String(describing: self)
-    }
-    
+        
     @MainActor
     public static let animated = MockDevice(cycleAnimation: 0.1)
     @MainActor
@@ -985,8 +1067,8 @@ public final class MockDevice: CurrentDevice {
         MockDevice(isSimulator: true, brightness: 0.25, battery: MockBattery.mocks[1], thermalState: .nominal, volumeAvailableCapacityForImportantUsage: 908_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 900_500_000_000, volumeAvailableCapacity: 888_500_000_000),
         MockDevice(isPlayground: true, isGuidedAccessSessionActive: true, brightness: 0.0, battery: MockBattery.mocks[2], thermalState: .fair, volumeAvailableCapacityForImportantUsage: 708_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 600_500_000_000, volumeAvailableCapacity: 488_500_000_000),
         MockDevice(isRealDevice: true, brightness: 0.75, screenOrientation: .portrait, battery: MockBattery.mocks[3], thermalState: .serious, volumeAvailableCapacityForImportantUsage: 300_908_000_000, volumeAvailableCapacityForOpportunisticUsage: 200_900_000_000, volumeAvailableCapacity: 100_888_000_000),
-        MockDevice(isDesignedForiPad: true, isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical, volumeAvailableCapacityForImportantUsage: 98_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 80_500_000_000, volumeAvailableCapacity: 68_500_000_000),
-        MockDevice(isMacCatalyst: true, brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair, volumeAvailableCapacityForImportantUsage: 808_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 700_500_000_000, volumeAvailableCapacity: 688_500_000_000),
+        MockDevice(isDesignedForiPad: true, environmentSystemName: "iPadOS", environmentSystemVersion: "13.13", isZoomed: true, brightness: 1.0, battery: MockBattery.mocks[4], thermalState: .critical, volumeAvailableCapacityForImportantUsage: 98_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 80_500_000_000, volumeAvailableCapacity: 68_500_000_000),
+        MockDevice(isMacCatalyst: true, environmentSystemName: "iPadOS", environmentSystemVersion: "13.13", brightness: 0.8, battery: MockBattery.mocks[5], thermalState: .fair, volumeAvailableCapacityForImportantUsage: 808_500_000_000, volumeAvailableCapacityForOpportunisticUsage: 700_500_000_000, volumeAvailableCapacity: 688_500_000_000),
     ]
     
 }
@@ -997,11 +1079,7 @@ import SwiftUI
 #Preview("Animated Test") {
     List {
         CurrentDeviceInfoView(device: Device.current, includeStorage: true)
-        ForEach(MockDevice.mocks) { mock in
-            Section {
-                CurrentDeviceInfoView(device: mock, includeStorage: true)
-            }
-        }
+        DeviceMocksView(includeStorage: true)
     }
 }
 #endif

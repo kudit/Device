@@ -410,8 +410,7 @@ extension DeviceType {
         caseName = caseName.replacingOccurrences(of: "rdgeneration", with: "")
         caseName = caseName.replacingOccurrences(of: "thgeneration", with: "")
         
-        var description = description
-        var safeDescription = safeDescription.replacingOccurrences(of: "Xs", with: "XS")
+        var safeOfficialName = safeOfficialName.replacingOccurrences(of: "Xs", with: "XS")
         
         var support = "Device is a\(String(officialName[officialName.startIndex]).isVowel ? "n" : "") [\(officialName)](https://support.apple.com/kb/\(supportId))"
         support = support.replacingOccurrences(of: " (9.7-inch)", with: " 9.7-inch")
@@ -419,11 +418,11 @@ extension DeviceType {
         support = support.replacingOccurrences(of: " (11-inch)", with: " 11-inch")
         support = support.replacingOccurrences(of: " (12.9-inch)", with: " 12.9-inch")
 
-        description = description.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
-        description = description.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
+        officialName = officialName.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
+        officialName = officialName.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
 
-        safeDescription = safeDescription.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
-        safeDescription = safeDescription.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
+        safeOfficialName = safeOfficialName.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
+        safeOfficialName = safeOfficialName.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
 
 //        #warning("REMOVE WHEN Updating DeviceKit")
 //        description = description.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
@@ -559,7 +558,7 @@ extension DeviceType {
         let cellular = capabilities.cellular
 
         var returnText = """
-            Device("\(caseName)",\(nameSpace)"\(support)",\(supportSpace)"\(image)",\(imageSpace)\(identifiers),\(identifiersSpace)\(diagonal),\(diagonalSpace)\(ratio),\(ratioSpace)"\(description)", "\(safeDescription)", \(ppi), \(isPlusFormFactor.deviceKitDefinition), \(isPadMiniFormFactor.deviceKitDefinition), \(capabilities.contains(.pro).deviceKitDefinition), \(isXSeries.deviceKitDefinition), \((capabilities.biometrics == .touchID).deviceKitDefinition), \((capabilities.biometrics == .faceID).deviceKitDefinition), \(hasSensorHousing.deviceKitDefinition), \(has(.wirelessCharging).deviceKitDefinition), \(has(.roundedCorners).deviceKitDefinition), \(has(.dynamicIsland).deviceKitDefinition), \(applePencilSupport), \(has(.force3DTouch).deviceKitDefinition), \(camerasNum), \(has(.lidar).deviceKitDefinition), "\(cpu.deviceKitDefinition)", \(has(.usbC).deviceKitDefinition), \((cellular == .fiveG).deviceKitDefinition)),
+            Device("\(caseName)",\(nameSpace)"\(support)",\(supportSpace)"\(image)",\(imageSpace)\(identifiers),\(identifiersSpace)\(diagonal),\(diagonalSpace)\(ratio),\(ratioSpace)"\(officialName)", "\(safeOfficialName)", \(ppi), \(isPlusFormFactor.deviceKitDefinition), \(isPadMiniFormFactor.deviceKitDefinition), \(capabilities.contains(.pro).deviceKitDefinition), \(isXSeries.deviceKitDefinition), \((capabilities.biometrics == .touchID).deviceKitDefinition), \((capabilities.biometrics == .faceID).deviceKitDefinition), \(hasSensorHousing.deviceKitDefinition), \(has(.wirelessCharging).deviceKitDefinition), \(has(.roundedCorners).deviceKitDefinition), \(has(.dynamicIsland).deviceKitDefinition), \(applePencilSupport), \(has(.force3DTouch).deviceKitDefinition), \(camerasNum), \(has(.lidar).deviceKitDefinition), "\(cpu.deviceKitDefinition)", \(has(.usbC).deviceKitDefinition), \((cellular == .fiveG).deviceKitDefinition)),
 """
         if isAppleWatch {
             returnText = returnText.replacingOccurrences(of: "(4, 5)", with: "(4,5)")

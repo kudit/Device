@@ -145,7 +145,7 @@ public struct ScreenInfoView: View {
             ScreenInfoView(device: Device.current)
         }
         Section {
-            ForEach(MockDevice.mocks) { device in
+            ForEach(MockDevice.mocks, id: \.identifiers) { device in
                 Text(device.identifier)
                 ScreenInfoView(device: device)
             }

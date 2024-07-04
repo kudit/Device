@@ -13,7 +13,7 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
                 Text("\"\(device.name)\"")
                 Spacer()
                 MonitoredCurrentDeviceView(device: device) { currentDevice in
-                    Text("*\(device.identifier) running \(device.systemName) \(currentDevice.systemVersion)*")
+                    Text("*\(device.identifier) running \(device.systemInfo)*")
                 }
             }.font(.callout).padding(EdgeInsets(top: 0, leading: 0, bottom: 5, trailing: 0))
 //            Text("\(device.model)").opacity(0.5) // not necessary
@@ -64,8 +64,8 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
     List {
         SystemInfoView(device: Device.current)
         Divider()
-        ForEach(MockDevice.mocks, id: \.id) { device in
-            Text(String(describing: device))
+        ForEach(MockDevice.mocks, id: \.identifiers) { device in
+            Text(String(describing: device.device))
             SystemInfoView(device: device)
         }
     }

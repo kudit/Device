@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.1.19"
+    static let version = "2.2"
 }
 
 import Foundation
@@ -33,7 +33,7 @@ public extension String {
 }
 
 /// Type for inheritance of specific idiom structs which use a Device as a backing store but allows for idiom-specific variables and functions and acts like a sub-class of Device but still having value-type backing.  TODO: Make this private so we don't access DeviceType outside of here?
-public protocol DeviceType: CustomStringConvertible, SymbolRepresentable {
+public protocol DeviceType: SymbolRepresentable {
     var device: Device { get }
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
 //    var symbolName: String { get } // necessary since we have SymbolRepresentable?
@@ -93,9 +93,9 @@ public extension DeviceType {
         self.has(.esim) || self.has(.dualesim)
     }
     
-    /// A textual representation of the device.
-    var description: String { device.description }
-        
+//    /// A textual representation of the device.
+//    var description: String { device.description }
+    
     internal var idiomatic: any IdiomType {
         // convert to idiomatic device so we can reference the correct implementation of symbolName.
         guard let idiomatic = device.idiom.type.init(device: device) else {
@@ -108,11 +108,11 @@ public extension DeviceType {
         return idiomatic.symbolName
     }
         
-    /// A safe version of `description`.
+    /// A safe version of `officialName`.
     /// Example:
-    /// Device.iPhoneXR.description:     iPhone Xʀ
-    /// Device.iPhoneXR.safeDescription: iPhone XR
-    var safeDescription: String { device.safeDescription }
+    /// Device.iPhoneXR.officialName:     iPhone Xʀ
+    /// Device.iPhoneXR.safeOfficialName: iPhone XR
+    var safeOfficialName: String { device.safeOfficialName }
 }
 extension String {
     static let base = "BASE"
@@ -161,7 +161,7 @@ extension IdiomType {
     }
 }
 
-public struct Device: IdiomType, Hashable, Sendable {
+public struct Device: IdiomType, Hashable, Sendable, CustomStringConvertible {
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
     public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable {
         /// An unspecified idiom.
@@ -186,6 +186,15 @@ public struct Device: IdiomType, Hashable, Sendable {
         case vision
         
 #if os(iOS) || targetEnvironment(macCatalyst) || os(tvOS) || os(visionOS)
+        public init(_ userInterfaceIdiom: UIUserInterfaceIdiom) {
+            for idiom in Self.allCases {
+                if idiom.userInterfaceIdiom == userInterfaceIdiom {
+                    self = idiom
+                    return
+                }
+            }
+            self = .unspecified
+        }
         /// Only available on devices that support UIUserInterfaceIdiom.
         /// Returns the UIUserInterfaceIdiom for this device.
         public var userInterfaceIdiom: UIUserInterfaceIdiom {
@@ -424,17 +433,22 @@ public struct Device: IdiomType, Hashable, Sendable {
     }
     
     /// A textual representation of the device.
-//    @available(*, deprecated, message: "self.officialName or self.identifiers or property actually needing.")
+    @available(*, deprecated, message: "Use self.officialName or self.identifiers or property actually needing.")
     public var description: String {
-        return "\(self.officialName), (\(self.identifiers))" // removed since normal description is very long and messy: , \(String(describing: self.capabilities.sorted))
+        return "\(self.officialName) (\(self.identifiers))"
     }
     
-    /// A safe version of `description`.
+    /// A safe version of `officialName`.
     /// Example:
-    /// Device.iPhoneXR.description:     iPhone Xʀ
-    /// Device.iPhoneXR.safeDescription: iPhone XR
+    /// Device.iPhoneXR.officialName:     iPhone Xʀ
+    /// Device.iPhoneXR.safeOfficialName: iPhone XR
+    public var safeOfficialName: String {
+        return officialName.safeDescription
+    }
+    
+    @available(*, deprecated, renamed: "safeOfficialName", message: "Renamed to be clearer and resolve conflicts with CustomStringConvertible.description")
     public var safeDescription: String {
-        return description.safeDescription
+        return officialName.safeDescription
     }
 }
 

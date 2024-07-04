@@ -116,10 +116,9 @@ struct HardwareListView: View {
 #if os(tvOS) || os(watchOS)
                     Text("\(currentDevice)").font(.caption)
 #else
-                    TextEditor(text: .constant("\(currentDevice)"))
+                    TextEditor(text: .constant("\(currentDevice.description)"))
                         .font(.caption)
                         .fixedSize(horizontal: false, vertical: true)
-                        .background(.green)
 #endif
                     VStack {
                         Spacer()
@@ -208,7 +207,13 @@ public struct DeviceTestView: View {
                 Text("Current Device")
             }
             Section {
-                CurrentDeviceInfoView(device: animatedDevice)
+                NavigationLink(destination: {
+                    List {
+                        DeviceMocksView()
+                    }
+                }, label: {
+                    CurrentDeviceInfoView(device: animatedDevice)
+                })
             } header: {
                 Text("Animated Device")
             } footer: {
@@ -239,6 +244,18 @@ public struct DeviceTestView: View {
     public var body: some View {
         BackportNavigationStack {
             testView
+        }
+        .onAppear { // async test
+            Task.detached {
+                let isSimulator = await Device.current.isSimulator
+                let version: Version = await Device.current.systemVersion
+                let info = await Device.current.systemInfo
+                if isSimulator == !isSimulator { // don't actually print but we want the let above for testing using Device.current from background tasks. - not saying "false" so we don't get compiler warning that this will never be executed.
+                    print("Device \(isSimulator ? "is" : "is not") simulator")
+                    print("Version: \(version)\nInfo: \(info)")
+                    print("Test Version: \(Version("10.4").macOSName)")
+                }
+            }
         }
     }
     
