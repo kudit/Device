@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B52A56EB2C37353100980038 /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A56EA2C37353100980038 /* Migration.swift */; };
+		B52A56EC2C37353100980038 /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A56EA2C37353100980038 /* Migration.swift */; };
 		B5861A972BABC531002F0732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B58B62B52C23ECB40046E91C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B58B62B42C23ECB40046E91C /* Device Library */; };
 		B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
@@ -50,6 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B52A56EA2C37353100980038 /* Migration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Migration.swift; sourceTree = "<group>"; };
 		B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestApp.swift; sourceTree = "<group>"; };
 		B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestView.swift; sourceTree = "<group>"; };
 		B52ED1D52BAB7F7400056A62 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
@@ -120,6 +123,7 @@
 				B52ED1CC2BAB7F7400056A62 /* Resources */,
 				B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */,
 				B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */,
+				B52A56EA2C37353100980038 /* Migration.swift */,
 			);
 			name = Development;
 			sourceTree = "<group>";
@@ -339,6 +343,7 @@
 			files = (
 				B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */,
 				B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */,
+				B52A56EB2C37353100980038 /* Migration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,6 +369,7 @@
 			files = (
 				B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */,
 				B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */,
+				B52A56EC2C37353100980038 /* Migration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -438,7 +444,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.2.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -501,7 +507,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.2.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

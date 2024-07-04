@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.2"
+    static let version = "2.2.1"
 }
 
 import Foundation
@@ -35,9 +35,6 @@ public extension String {
 /// Type for inheritance of specific idiom structs which use a Device as a backing store but allows for idiom-specific variables and functions and acts like a sub-class of Device but still having value-type backing.  TODO: Make this private so we don't access DeviceType outside of here?
 public protocol DeviceType: SymbolRepresentable {
     var device: Device { get }
-    /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-//    var symbolName: String { get } // necessary since we have SymbolRepresentable?
-    // include symbolName here so that we use the idiomatic implementation rather than the default implementation below.
 }
 public extension DeviceType {
     var idiom: Device.Idiom { device.idiom }
@@ -104,6 +101,7 @@ public extension DeviceType {
         return idiomatic
     }
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
+    @MainActor
     var symbolName: String {
         return idiomatic.symbolName
     }
@@ -139,12 +137,15 @@ extension HasCellular {
 
 /// Type for generating and iterating over IdiomTypes for convenient initialization in Models file and for iterating over when searching for a model identifier.
 /// NOT PUBLIC since we shouldn't be initing off of identifiers outside of this module.  This is for internal device lookups.  If you need something like this external to this module, please let us know.
-protocol IdiomType: DeviceType {
-    var device: Device { get set } // Idioms can set, but external should not be directly setting this.
-    init(identifier: String) // make sure to look for .base identifier for base settings vs a .new identifier for things that should be present for unknown new devices
+protocol IdiomType: DeviceType, Sendable {
+    var device: Device { get } // Idioms can set, but external should not be directly setting this.
+    init(identifier: String) // make sure to look for .base identifier for base settings vs a .new identifier for things that should be present for unknown new devices.  Set Needed for extension initializer.
     /// Idiomatic list of all of this type.
     static var all: [Self] { get }
+    /// For creating idiomatic devices
     init?(device: Device)
+    /// For doing actual initialization (needs to be done by the struct itself since device is not settable (which is what we want so this can be Sendable).
+    init(knownDevice: Device)
 }
 extension IdiomType {
     /// List of all the actual `Device` structs.
@@ -155,13 +156,13 @@ extension IdiomType {
         guard device.idiom.type == Self.self else {
             return nil
         }
-        self.init(identifier: .base)
+//        self.init(identifier: .base) // what is this for?  So we set defaults?  Assume everything is set
         // replace the device created above
-        self.device = device
+        self.init(knownDevice: device)
     }
 }
 
-public struct Device: IdiomType, Hashable, Sendable, CustomStringConvertible {
+public struct Device: IdiomType, Hashable, CustomStringConvertible {
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
     public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable {
         /// An unspecified idiom.
@@ -321,20 +322,32 @@ public struct Device: IdiomType, Hashable, Sendable, CustomStringConvertible {
     
     // MARK: - Initialization and variables
     // Device info
-    public var idiom: Device.Idiom // need to include the Device. namespace for type checking below
-    public var officialName: String
-    public var identifiers: [String]
-    public var supportId: String
-    public var image: String?
+    public let idiom: Device.Idiom // need to include the Device. namespace for type checking below
+    public let officialName: String
+    public let identifiers: [String]
+    public let supportId: String
+    public let image: String?
     
     // All initializers should add these:
-    public var capabilities: Capabilities = []
-    public var models: [String] = []
-    public var colors: [MaterialColor] = [.silverLight]
+    public let capabilities: Capabilities// = []
+    public let models: [String]// = []
+    public let colors: [MaterialColor]// = [.silverLight]
     
     // Hardware Info
-    public var cpu: CPU
-        
+    public let cpu: CPU
+    
+    public init(knownDevice: Device) {
+        self.idiom = knownDevice.idiom
+        self.officialName = knownDevice.officialName
+        self.identifiers = knownDevice.identifiers
+        self.supportId = knownDevice.supportId
+        self.image = knownDevice.image
+        self.capabilities = knownDevice.capabilities
+        self.models = knownDevice.models
+        self.colors = knownDevice.colors
+        self.cpu = knownDevice.cpu
+    }
+
     public init(
         idiom: Idiom,
         officialName: String,
@@ -360,7 +373,7 @@ public struct Device: IdiomType, Hashable, Sendable, CustomStringConvertible {
     /// Maps an identifier to a Device. If the identifier can not be mapped to an existing device, a placeholder device for the identifier of the correct idiom is created if possible, otherwise, a placeholder device `.unknown` is returned.
     /// - parameter identifier: The device identifier, e.g. "iPhone7,1". Current device identifier can be obtained from `Device.current.identifier`.
     /// - returns: An initialized `Device`.
-    init(identifier: String) {
+    public init(identifier: String) {
         for device in Device.all {
             if device.device.identifiers.contains(identifier) {
                 self = device.device
@@ -466,7 +479,7 @@ public struct Mac: IdiomType {
         case macStudio = "macstudio"
         case iMac = "desktopcomputer"
         /// Form-specific capabilities
-        var capabilities: Capabilities {
+        public var capabilities: Capabilities {
             switch self {
             case .macProGen1:
                 [.thunderbolt]
@@ -489,7 +502,7 @@ public struct Mac: IdiomType {
             }
         }
         // TODO: func to convert an identifier to a form (Macmini, MacPro, MacBookPro, MacBook, MacBookAir, etc)
-        var hasScreen: Bool {
+        public var hasScreen: Bool {
             switch self {
             case .macProGen1:
                 return false
@@ -513,7 +526,10 @@ public struct Mac: IdiomType {
         }
     }
     
-    public var device: Device
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
 
     public init(
         officialName: String,
@@ -1668,7 +1684,11 @@ public struct Mac: IdiomType {
 }
     
 public struct iPod: IdiomType, HasScreen {
-    public var device: Device
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
+
     public init(
         officialName: String,
         identifiers: [String],
@@ -1774,8 +1794,11 @@ public struct iPod: IdiomType, HasScreen {
 }
 
 public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
-    public var device: Device
-    
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
+
     public init(
         officialName: String,
         identifiers: [String],
@@ -2289,8 +2312,11 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
 }
 
 public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
-    public var device: Device
-        
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
+
     public init(
         officialName: String,
         identifiers: [String],
@@ -2810,7 +2836,11 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
 }
 
 public struct AppleTV: IdiomType {
-    public var device: Device
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
+
     public init(
         officialName: String,
         identifiers: [String],
@@ -2883,7 +2913,10 @@ public struct AppleTV: IdiomType {
 
 
 public struct AppleWatch: IdiomType, HasScreen, HasCellular {
-    public var device: Device
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
 
     public var bandSize: WatchSize.BandSize {
         watchSize.bandSize
@@ -3179,7 +3212,10 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
 
 
 public struct HomePod: IdiomType {
-    public var device: Device
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
 
     public init(
         officialName: String,
@@ -3243,7 +3279,11 @@ public struct HomePod: IdiomType {
 
 
 public struct AppleVision: IdiomType, HasCameras {
-    public var device: Device
+    public let device: Device
+    public init(knownDevice: Device) {
+        self.device = knownDevice
+    }
+
     public init(
         officialName: String,
         identifiers: [String],

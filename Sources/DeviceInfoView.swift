@@ -61,6 +61,7 @@ public extension Image {
             self.init(symbolName, bundle: Bundle.module)
         }
     }
+    @MainActor
     init(_ symbolRepresentable: some SymbolRepresentable) {
         self.init(symbolName: symbolRepresentable.symbolName)
     }
@@ -116,6 +117,7 @@ extension Bool {
 }
 
 /// Technincally a function but present like a View struct.
+@MainActor
 public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
     var output = Text("")
     for capability in capabilities.sorted {
@@ -151,6 +153,7 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@MainActor
 public struct DeviceInfoView: View {
     public var device: DeviceType
     
@@ -165,7 +168,7 @@ public struct DeviceInfoView: View {
         ForEach(device.colors, id: \.self) { color in
             Image(device.idiomatic)
                 .foregroundColor(Color(hex: color.rawValue))
-            //                            .shadow(color: .primary, radius: 0.5)
+                .shadow(color: .gray, radius: 0.5)
         }
 }
     

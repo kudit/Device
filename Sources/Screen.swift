@@ -5,6 +5,10 @@ public struct Screen: Hashable, Sendable {
     public struct Size: Hashable, Sendable {
         public var width: Int
         public var height: Int
+        public init(width: Int, height: Int) {
+            self.width = width
+            self.height = height
+        }
         /// Reduce the size into a ratio of whole numbers.  TODO: fix so works in both dimensions
         public var ratio: Size {
             let ratio = Double(width) / Double(height)

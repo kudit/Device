@@ -25,6 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+/Users/admin/builder/spi-builder-workspace/Sources/CurrentDevice.swift:861:24: warning: cannot access property 'animationTimer' with a non-sendable type 'Timer?' from non-isolated deinit; this is an error in the Swift 6 language mode
+        animationTimer = nil
+
+v2.2.1 7/4/2024 Added Sendable conformance to IdiomType by making structs immutable and thus easily sendable.  Moved Migration out of Device framework so not included in client code.  Fixed some additional methods to be public that were not.  Added additional contrast to Device idiom icons.
+
 v2.2 7/4/2024 Removed CustomStringConvertible conformance from Device since we want to have CurrentDevice implement this (so we can have for both Mocks as well as ActualDevice) and we don't want confusion between the two implementations.  Fixed identifiability of mocks.  Added Version.swift and additional extensions on OperatingSystemVersion for better output and compatibility of version information on ALL devices.  Added hostSystemVersion and hostSystemName for macCatalyst and Designed for iPad and Linux systems.  Changed version returns from string to OperatingSystemVersion (or Version structs).  Added compatibility so that old uses should work without changing code (though if you store in typed variables that were previously strings, this may require code updates).  Removed `Device.description` and `Device.safeDescription` to prevent conflicts with `CurrentDevice.description` since CurrentDevice inherits from DeviceType.  Renamed to `safeOfficialName` for clarity and deprecated `safeDescription`.  Added macOS system name hard-coded component lookup for better system software info display.  Removed green background on visionOS.  Fixed `isDesignedForiPad` code on visionOS.  Fixed SomeCurrentDeviceView by making the device an @ObservedObject.
 
 v2.1.19 7/3/2024 Ensured CurrentDevice objects are @MainActor isolated so can be used in concurrent code.

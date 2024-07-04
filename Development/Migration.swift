@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Device
 
 extension String {
     var isVowel: Bool {
@@ -290,12 +291,15 @@ func =>(lhs: inout Int, rhs: Int) {
 extension DeviceType {
     var definition: String {
         let indentSpace = "            "
-        var idiomish = ""
+        let idiomish = ""
+        // TODO: Fix this based on our needs.  Commented out for now due to internal protection level.  Find a public way to expose what we need rather than using internal types.  Perhaps have an extension that loops through and pulls description or whatever we need.
+        /*
         if idiom.type == Device.self {
             idiomish = "idiom: \(idiom.definition),\n\(indentSpace)"
         }
 
         let control = idiom.type.init(identifier: .base) // create a base model (not the default model!)
+         */
         var capabilities = capabilities
         
         var macForm = ""
@@ -304,7 +308,7 @@ extension DeviceType {
             // remove default form capabilities like battery
             capabilities.subtract(form.capabilities)
         }
-        capabilities.subtract(control.capabilities) // do after so .macMini form isn't removed which is the default
+//        capabilities.subtract(control.capabilities) // do after so .macMini form isn't removed which is the default
         // strip out default capabilities
         // add in ringer switch to all non-iPhone 15 pro devices
         if idiom == .phone && !identifiers.first!.contains("iPhone16") {
@@ -359,8 +363,9 @@ extension DeviceType {
         if capabilities.count == 0 { // don't do this if we want to always have capabilities
             overrides = ""
         }
+        // TODO: Formerly String(describing: idiom.type) but that is internal.  Have a way of exposing type name?  Perhaps have a idiom.typeName extension??
         return """
-                \(String(describing: idiom.type))(
+                \(String(describing: idiom))(
                     \(idiomish)officialName: \(officialName.definition),
                     identifiers: \(identifiers.definition),
                     supportId: \(supportId.definition),
@@ -723,10 +728,11 @@ public struct Migration {
                 print("        ]\n\n\(idiom)s = [")
                 lastIdiom = idiom
             }
-            let str = device.idiomatic[keyPath: printProperty]
-            if str != "" {// skip blank macs.
-                print(str)
-            }
+            // TODO: See if we have another way since idiomatic is internal.
+//            let str = device.idiomatic[keyPath: printProperty]
+//            if str != "" {// skip blank macs.
+//                print(str)
+//            }
         }
     }
     static func exportDeviceKitDefinitions() {
@@ -778,16 +784,17 @@ public struct Migration {
 //        createOrder()
     }
     /// Extract the current order for saving and preserving the DeviceKit order (which isn't in identifier order which is preferable)
-    static func createOrder() {
-        for var device in iPad.all.sorted(by: { $0.identifierSortKey < $1.identifierSortKey
-        }) {
-            if !device.has(.usbC) {
-                // make sure to add in lighting connector where missing
-                device.device.capabilities.insert(.lightning)
-            }
-            print("\(device.definition)")
-        }
-    }
+//    static func createOrder() {
+//        for var device in iPad.all.sorted(by: { $0.identifierSortKey < $1.identifierSortKey
+//        }) {
+//            if !device.has(.usbC) {
+//                // make sure to add in lighting connector where missing
+//                device.device.capabilities.insert(.lightning)
+//                // TODO: Re-enable above by doing a new device with the additional capability?
+//            }
+//            print("\(device.definition)")
+//        }
+//    }
     static func convertMacs() {
         let macsRaw = """
 [
@@ -1023,10 +1030,13 @@ Watch7,5 : Apple Watch Ultra 2
                 continue
             }
             let (identifier, description) = (parts[0], parts[1])
-            var device = Device(identifier: identifier)
+            let device = Device(identifier: identifier)
             if device.officialName.contains("Unknown") {
-                device.officialName = description
-                print(device.definition)
+                var definition = device.definition
+                //                device.officialName = description (can't do this since can't modify device now that it's sendable so replace the official name definition in the output)
+                definition = definition.replacingOccurrences(of: device.officialName.definition, with: description.definition)
+                print(definition)
+                
             }
         }
     }

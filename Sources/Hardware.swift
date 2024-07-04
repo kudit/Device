@@ -536,7 +536,7 @@ public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible, Sendable {
         }
     }
 }
-extension Set<ApplePencil> {
+public extension Set<ApplePencil> {
     /// Order them based off of the order in the definition for consistency
     var sorted: [ApplePencil] {
         var sorted = [ApplePencil]()

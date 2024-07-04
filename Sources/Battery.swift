@@ -59,7 +59,8 @@ public enum BatteryChangeType: Sendable {
     case level, state, lowPowerMode
 }
 
-public protocol Battery: ObservableObject, SymbolRepresentable, CustomStringConvertible, Identifiable {
+@MainActor
+public protocol Battery: ObservableObject, SymbolRepresentable { // , CustomStringConvertible, Identifiable cannot conform since MainActor isolated
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
@@ -88,7 +89,6 @@ public extension Battery {
     }
     
     /// System Image used to render a symbol representing the current state/charge level
-    @MainActor
     var symbolName: String {
         let percent = currentLevel
         var percentWord: String
@@ -172,7 +172,6 @@ public extension Battery {
         default: return "Battery is unknown/unsupported."
         }
     }
-    var id: String { description }
 }
 
 public struct BatterySnapshot: Sendable {
@@ -228,26 +227,30 @@ public class MockBattery: Battery {
         }
         // create and schedule timer (no need to keep reference)
         _ = Timer.scheduledTimer(withTimeInterval: cycleLevelState, repeats: true) { timer in
-            switch self.currentState {
-            case .unknown:
-                // This really should never happen.  But if it does, go ahead and invalidate the timer.
-                timer.invalidate()
-            case .charging:
-                self.currentLevel+=1
-                if self.currentLevel > 99 {
-                    self.currentState = .full
-                }
-            case .full:
-                // Keep in full state for a few seconds
-                self.currentLevel+=1
-                if self.currentLevel > 104 {
-                    self.currentState = .unplugged // start to discharge
-                }
-            case .unplugged:
-                // discharge
-                self.currentLevel-=1
-                if self.currentLevel < 1 {
-                    self.currentState = .charging
+            Task { @MainActor in
+                switch self.currentState {
+                case .unknown:
+                    // This really should never happen.  But if it does, go ahead and invalidate the timer.
+//                    timer.invalidate()
+                    print("!Battery is in unknown state.  Should never happen.")
+                    break
+                case .charging:
+                    self.currentLevel+=1
+                    if self.currentLevel > 99 {
+                        self.currentState = .full
+                    }
+                case .full:
+                    // Keep in full state for a few seconds
+                    self.currentLevel+=1
+                    if self.currentLevel > 104 {
+                        self.currentState = .unplugged // start to discharge
+                    }
+                case .unplugged:
+                    // discharge
+                    self.currentLevel-=1
+                    if self.currentLevel < 1 {
+                        self.currentState = .charging
+                    }
                 }
             }
         }
@@ -261,8 +264,11 @@ public class MockBattery: Battery {
     }
     
 
+    @MainActor
     public static let missing = MockBattery(currentLevel: -1, currentState: .unknown)
+    @MainActor
     public static let animated = MockBattery(currentLevel: 50, cycleLevelState: 0.1)
+    @MainActor
     public static let mocks = mocksFor(lowPowerMode: false)
     public static func mocksFor(lowPowerMode: Bool) -> [MockBattery] {
         Self.animated.lowPowerMode = lowPowerMode
@@ -274,7 +280,9 @@ public class MockBattery: Battery {
     }
 }
 
+@MainActor
 public class DeviceBattery: Battery {
+    @MainActor
     public static let current = DeviceBattery() // only time this is initialized typically
         
     private var monitors: [BatteryMonitor] = []
@@ -316,7 +324,9 @@ public class DeviceBattery: Battery {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            self._triggerBatteryUpdate(.level)
+            Task { @MainActor in
+                self._triggerBatteryUpdate(.level)
+            }
         }
         NotificationCenter.default.addObserver(
             forName: UIDevice.batteryStateDidChangeNotification,
@@ -324,7 +334,9 @@ public class DeviceBattery: Battery {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            self._triggerBatteryUpdate(.state)
+            Task { @MainActor in
+                self._triggerBatteryUpdate(.state)
+            }
         }
 //#if targetEnvironment(macCatalyst)
 //Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
@@ -358,7 +370,9 @@ public class DeviceBattery: Battery {
             ) { notification in
                 //                print("NSProcessInfoPowerStateDidChange notification")
                 // Do your work after received notification
-                self._triggerBatteryUpdate(.lowPowerMode)
+                Task { @MainActor in
+                    self._triggerBatteryUpdate(.lowPowerMode)
+                }
             }
         }
 #endif
@@ -522,7 +536,9 @@ public class DeviceBattery: Battery {
 
 #if canImport(Combine)
 /// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
+@MainActor
 public class MonitoredDeviceBattery: Battery {
+    @MainActor
     public static let current = MonitoredDeviceBattery() // only time this is initialized typically
     
     @Published public var currentLevel: Int = -1

@@ -338,5 +338,6 @@ public extension BinaryInteger {
 
 public protocol SymbolRepresentable {
     /// An SF Symbol name string.
+    @MainActor
     var symbolName: String { get }
 }

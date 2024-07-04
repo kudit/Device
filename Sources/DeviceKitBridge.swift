@@ -10,11 +10,11 @@ import Foundation
  Previous implementation for testing for simulator was to lookup in cases.  New version actually tests the bundle to see if we're running in a simulator.
  */
 
-extension Device {
+public extension Device {
     /// Gets the identifier from the system, such as "iPhone7,1".
     @available(*, deprecated, renamed: "current.identifier")
     @MainActor
-    public static let identifier: String = Device.current.identifier
+    static let identifier: String = Device.current.identifier
     
     /// Ordered list of identifiers in DeviceKit definition file.  Used for migration export.
     /// iOS iPods, iPhones, iPads, HomePods, Apple TV, Apple Watch (doesn't include vision or macs)
@@ -130,7 +130,7 @@ extension Device {
     ]
     
     /// Returns diagonal screen length in inches
-    public var diagonal: Double {
+    var diagonal: Double {
         guard let screen = self.screen else {
             return -1
         }
@@ -139,7 +139,7 @@ extension Device {
     
     /// Returns screen ratio as a tuple.  May need to reduce as will return a resolution.
     @available(*, deprecated, message: "Please let us know how you're using this and why this might be necessary vs querying the screen dimensions.")
-    public var screenRatio: (Int, Int) {
+    var screenRatio: (Int, Int) {
         guard let screen = self.screen else {
             return (-1,-1)
         }
@@ -150,7 +150,7 @@ extension Device {
     
     /// The brightness level of the screen (between 0 and 100).  Only supported on iOS and macCatalyst.  Returns -1 if not supported.
     @MainActor
-    public var screenBrightness: Int {
+    var screenBrightness: Int {
         if let brightness = Device.current.brightness {
             return Int(brightness * 100)
         } else {
@@ -162,18 +162,18 @@ extension Device {
     
     /// Returns whether or not the device has Touch ID
     @available(*, deprecated, message: "Check instead for biometrics property.")
-    public var isTouchIDCapable: Bool {
+    var isTouchIDCapable: Bool {
         return biometrics == .touchID
     }
     
     /// Returns whether or not the device has Face ID
     @available(*, deprecated, message: "Check instead for biometrics property.")
-    public var isFaceIDCapable: Bool {
+    var isFaceIDCapable: Bool {
         return biometrics == .faceID
     }
     
     /// Returns whether or not the device has any biometric sensor (i.e. Touch ID or Face ID)
-    public var hasBiometricSensor: Bool {
+    var hasBiometricSensor: Bool {
         if let biometrics, biometrics != .none {
             return true
         }
@@ -182,37 +182,37 @@ extension Device {
     
     /// Returns whether or not the device has a sensor housing.
     @available(*, deprecated, message: "If you need this, please explain the use-case.")
-    public var hasSensorHousing: Bool {
+    var hasSensorHousing: Bool {
         return biometrics == .faceID
     }
     /// Returns whether or not the device has a screen with rounded corners.
     @available(*, deprecated, message: "If you need this, please explain the use-case.  If needed, we should probably mark it in the device definitions since this likely isn't available in the system.")
-    public var hasRoundedDisplayCorners: Bool {
+    var hasRoundedDisplayCorners: Bool {
         return biometrics == .faceID
     }
         
     /// Returns whether or not the device has 3D Touch support.
     @available(*, deprecated, renamed: "hasForce3dTouchSupport")
-    public var has3dTouchSupport: Bool {
+    var has3dTouchSupport: Bool {
         return hasForce3dTouchSupport
     }
     
     /// Returns whether or not the device has 5G support.
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .cellular == .fiveG")
-    public var has5gSupport: Bool {
+    var has5gSupport: Bool {
         return cellular == .fiveG
     }
     
     /// Returns whether or not the device has Force Touch support.
     @available(*, deprecated, renamed: "hasForce3dTouchSupport")
-    public var hasForceTouchSupport: Bool {
+    var hasForceTouchSupport: Bool {
         return hasForce3dTouchSupport
     }
     
     /// Returns whether the current device is a SwiftUI preview canvas
     @available(*, deprecated, renamed: "Device.current.isPreview")
     @MainActor
-    public var isCanvas: Bool? {
+    var isCanvas: Bool? {
         return Device.current.isPreview
     }
     
@@ -220,7 +220,7 @@ extension Device {
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
     @available(*, deprecated, renamed: "Device.current.isSimulator")
     @MainActor
-    public var isSimulator: Bool {
+    var isSimulator: Bool {
         return Device.current.isSimulator
     }
     
@@ -256,12 +256,12 @@ extension Device {
      - returns: Returns whether the current device is one of the passed in ones.
      */
     @available(*, deprecated, message: "Check the device's idiom rather than passing a list of devices.")
-    public func isOneOf(_ devices: [Device]) -> Bool {
+    func isOneOf(_ devices: [Device]) -> Bool {
         return devices.contains { $0 == self }
     }
     
     /// PPI (Pixels per Inch) on the current device's screen (if applicable). When the device is not applicable this property returns nil.
-    public var ppi: Int? {
+    var ppi: Int? {
         return screen?.ppi
     }
 }
@@ -284,7 +284,7 @@ extension Device: Equatable {
 // MARK: Battery
 #if os(iOS) || os(watchOS)
 @available(iOS 8.0, watchOS 4.0, *)
-extension Device {
+public extension Device {
     /**
      This enum describes the state of the battery.  This should not be used as there is no unknown or no-battery state.
      
@@ -292,7 +292,7 @@ extension Device {
      - Charging:  The device is plugged into power and the battery is less than 100% charged.
      - Unplugged: The device is not plugged into power; the battery is discharging.
      */
-    public enum BatteryState: CustomStringConvertible, Equatable, CaseNameConvertible, Sendable {
+    enum BatteryState: CustomStringConvertible, Equatable, CaseNameConvertible, Sendable {
         /// The device is plugged into power and the battery is 100% charged or the device is the iOS Simulator.
         case full
         /// The device is plugged into power and the battery is less than 100% charged.
@@ -343,14 +343,14 @@ extension Device {
     /// The state of the battery
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
     @MainActor
-    public var batteryState: BatteryState? {
+    var batteryState: BatteryState? {
         return BatteryState()
     }
     
     /// Battery level ranges from 0 (fully discharged) to 100 (100% charged).
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
     @MainActor
-    public var batteryLevel: Int? {
+    var batteryLevel: Int? {
         return Device.current.battery?.currentLevel
     }
     
@@ -412,9 +412,9 @@ extension Device {
      - firstGeneration:  1st Generation Apple Pencil
      - secondGeneration: 2nd Generation Apple Pencil
      */
-    public struct ApplePencilSupport: OptionSet {
+    public struct ApplePencilSupport: OptionSet, Sendable {
         
-        public var rawValue: UInt
+        public let rawValue: UInt
         
         public init(rawValue: UInt) {
             self.rawValue = rawValue

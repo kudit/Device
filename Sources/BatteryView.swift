@@ -251,7 +251,7 @@ public struct BatteryTestsView: View {
             if let battery = Device.current.battery {
                 BatteryTestsRow(battery: battery, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
-            ForEach(mocks) { mock in
+            ForEach(mocks, id: \.description) { mock in
                 BatteryTestsRow(battery: mock, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
         }
