@@ -276,20 +276,25 @@ public extension Backport where Content: View {
     }
 }
 
+@MainActor // is this necessary?
 public protocol ContainerView: View {
     associatedtype Content
+    @MainActor // is this necessary?
     init(content: @escaping () -> Content)
 }
 public extension ContainerView {
+    @MainActor // is this necessary?
     init(@ViewBuilder _ content: @escaping () -> Content) {
         self.init(content: content)
     }
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@MainActor // is this necessary?
 public struct BackportNavigationStack<Content: View>: ContainerView {
     var content: () -> Content
 
+    @MainActor // is this necessary?
     public init(content: @escaping () -> Content) {
         self.content = content
     }

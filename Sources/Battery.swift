@@ -17,7 +17,7 @@ import IOKit.ps
 public protocol ObservableObject {
     var objectWillChange: ObjectWillChangePublisher { get }
 }
-public struct ObjectWillChangePublisher {
+public struct ObjectWillChangePublisher: Sendable {
     func send() {} // dummy for calls
     static let dummyPublisher = ObjectWillChangePublisher()
 }

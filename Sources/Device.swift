@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.2.1"
+    static let version = "2.2.2"
 }
 
 import Foundation

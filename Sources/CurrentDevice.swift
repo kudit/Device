@@ -26,7 +26,7 @@ public extension Device {
     // TODO: Figure out how to handle this with concurrency.
     @MainActor
     static let current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock
-    enum Environment: CaseIterable, DeviceAttributeExpressible, Sendable {
+    enum Environment: DeviceAttributeExpressible, Sendable { // unable to conform to CaseIterable since @MainActor isolated
         case realDevice, simulator, playground, preview, designedForiPad, macCatalyst
         
         @MainActor
@@ -480,13 +480,6 @@ final class ActualHardwareDevice: CurrentDevice {
     }
     private func calculateSystemInfo() -> SystemInfo {
 #if canImport(Combine) // Perhaps this is available on Linux and can use this?
-        let operatingSystemVersionString = ProcessInfo.processInfo.operatingSystemVersionString
-//        print("ProcessInfo.operatingSystemVersionString: \(operatingSystemVersionString)")
-#else
-        // if can't import Combine, we have no way of getting info
-        return (.unknown, "0.0")
-#endif
-        
 #if os(watchOS)
         let systemName = WKInterfaceDevice.current().systemName
         let systemVersion = Version(WKInterfaceDevice.current().systemVersion)
@@ -494,6 +487,8 @@ final class ActualHardwareDevice: CurrentDevice {
 //        print("watchOS Version: \(systemVersion)")
         return (systemName, systemVersion)
 #else
+        let operatingSystemVersionString = ProcessInfo.processInfo.operatingSystemVersionString
+//        print("ProcessInfo.operatingSystemVersionString: \(operatingSystemVersionString)")
         let operatingSystemStringVersion = Version(operatingSystemVersionString.replacingOccurrences(of: "Version ", with: "").replacingOccurrences(of: " (Build ", with: "."))
 //        print("Operating system string version: \(operatingSystemStringVersion)")
         let macName = operatingSystemStringVersion.macOSName
@@ -536,6 +531,10 @@ final class ActualHardwareDevice: CurrentDevice {
 #endif // macOS
 #endif // UIKit
 #endif // watchOS
+#else
+        // if can't import Combine, we have no way of getting info
+        return (.unknown, "0.0")
+#endif // Combine
     }
     
     /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
@@ -935,14 +934,16 @@ public final class MockDevice: CurrentDevice {
     }
     var animationTimer: Timer?
     deinit {
-        if let timer {
-            timer.invalidate()
+        Task { @MainActor in
+            if let timer {
+                timer.invalidate()
+            }
+            timer = nil
+            if let animationTimer {
+                animationTimer.invalidate()
+            }
+            animationTimer = nil
         }
-        timer = nil
-        if let animationTimer {
-            animationTimer.invalidate()
-        }
-        animationTimer = nil
     }
     
     @MainActor public func update() {

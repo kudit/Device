@@ -25,8 +25,7 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-/Users/admin/builder/spi-builder-workspace/Sources/CurrentDevice.swift:861:24: warning: cannot access property 'animationTimer' with a non-sendable type 'Timer?' from non-isolated deinit; this is an error in the Swift 6 language mode
-        animationTimer = nil
+v2.2.2 7/4/2024 Fixed issue where Linux build was failing and some additional concurrency warnings.
 
 v2.2.1 7/4/2024 Added Sendable conformance to IdiomType by making structs immutable and thus easily sendable.  Moved Migration out of Device framework so not included in client code.  Fixed some additional methods to be public that were not.  Added additional contrast to Device idiom icons.
 
@@ -179,6 +178,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
 
+- [ ] See if there's a way to get visionOS version when designed for iPad mode.  This claims to do the right thing but verified it also doesn't work for visionOS (Designed for iPad): https://swiftpackageindex.com/MarcoEidinger/OSInfo
 - [ ] Move privacy manifest to the package sources resources folder so it gets processed? https://github.com/devicekit/DeviceKit/issues/408#event-12991784329
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
 - [ ] Find a way to make words WATCH and SERIES appear in smallCaps() text field and make Apple be Apple logo character  in official names?
