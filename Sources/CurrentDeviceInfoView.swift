@@ -9,6 +9,7 @@
 import SwiftUI
 import Foundation
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public extension Device.Environment {
     // TODO: Pull into extension
     var color: Color {
@@ -29,6 +30,7 @@ public extension Device.Environment {
     }
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public extension ThermalState {
     var color: Color {
         switch self {
@@ -45,9 +47,11 @@ public extension ThermalState {
 }
 
 // For adding Expressible conformance
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public extension Capability {
     var color: Color { .green }
 }
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public extension Device.Idiom {
     var color: Color {
         switch self {
@@ -75,7 +79,7 @@ public extension Device.Idiom {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 public extension Label where Title == Text, Icon == Image {
     /// Creates a label with an icon image and a title generated from a
     /// localized string.
@@ -108,6 +112,7 @@ public extension Label where Title == Text, Icon == Image {
 //    }
 //}
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 struct SomeCurrentDeviceView<SomeCurrentDevice: CurrentDevice, Content: View>: View {
     @ObservedObject var currentDevice: SomeCurrentDevice
     private let content: (any CurrentDevice) -> Content
@@ -120,6 +125,7 @@ struct SomeCurrentDeviceView<SomeCurrentDevice: CurrentDevice, Content: View>: V
     }
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public struct MonitoredCurrentDeviceView<Content: View>: View {
     var device: any DeviceType
     private let content: (any CurrentDevice) -> Content
@@ -144,7 +150,7 @@ public struct MonitoredCurrentDeviceView<Content: View>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
     @ObservedObject var device: SomeCurrentDevice
     @State var includeStorage: Bool
@@ -160,7 +166,7 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
         VStack(alignment: .leading) {
             HStack {
                 Image(device)
-                    .foregroundStyle(Color.accentColor)
+                    .backport.foregroundStyle(Color.accentColor)
                 Text("\(device.officialName)")
             }.font(.headline)
 //                .accentColor(.green)
@@ -179,7 +185,7 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 public struct DeviceMocksView: View {
     @State public var includeStorage: Bool
@@ -201,7 +207,7 @@ public struct DeviceMocksView: View {
 }
 
 #if swift(>=5.9)
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Current Device") {
     List {
         Section {

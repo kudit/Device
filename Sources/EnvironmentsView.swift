@@ -8,7 +8,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 public struct EnvironmentsView: View {
     public init() {}
     public var body: some View {
@@ -26,7 +26,7 @@ public struct EnvironmentsView: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Environments") {
     EnvironmentsView()
 }

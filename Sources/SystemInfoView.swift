@@ -1,7 +1,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
     public var device: SomeCurrentDevice
     public init(device: SomeCurrentDevice) {
@@ -59,7 +59,7 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
 }
 
 #if swift(>=5.9)
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("SystemInfo") {
     List {
         SystemInfoView(device: Device.current)

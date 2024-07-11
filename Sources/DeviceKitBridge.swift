@@ -12,6 +12,7 @@ import Foundation
 
 public extension Device {
     /// Gets the identifier from the system, such as "iPhone7,1".
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "current.identifier")
     @MainActor
     static let identifier: String = Device.current.identifier
@@ -149,6 +150,7 @@ public extension Device {
     }
     
     /// The brightness level of the screen (between 0 and 100).  Only supported on iOS and macCatalyst.  Returns -1 if not supported.
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @MainActor
     var screenBrightness: Int {
         if let brightness = Device.current.brightness {
@@ -210,6 +212,7 @@ public extension Device {
     }
     
     /// Returns whether the current device is a SwiftUI preview canvas
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.isPreview")
     @MainActor
     var isCanvas: Bool? {
@@ -218,6 +221,7 @@ public extension Device {
     
     /// Returns whether the device is any of the simulator
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.isSimulator")
     @MainActor
     var isSimulator: Bool {
@@ -302,6 +306,7 @@ public extension Device {
         /// The associated value is in percent (0—100).
         case unplugged(Int)
         
+        @available(iOS 13.0, watchOS 6, *)
         @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
         @MainActor
         fileprivate init() {
@@ -322,6 +327,7 @@ public extension Device {
         }
         
         /// The user enabled Low Power mode
+        @available(iOS 13.0, watchOS 6, *)
         @MainActor
         public var lowPowerMode: Bool {
             return Device.current.battery?.lowPowerMode ?? false
@@ -334,6 +340,7 @@ public extension Device {
         /// Battery level: 100 % (Full), device is plugged in.
         /// Battery level: \(batteryLevel)%, device is unplugged.
         /// ```
+        @available(iOS 13.0, watchOS 6, *)
         @MainActor
         public var description: String {
             return Device.current.battery?.description ?? "No Battery"
@@ -341,6 +348,7 @@ public extension Device {
     }
     
     /// The state of the battery
+    @available(iOS 13.0, watchOS 6, *)
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
     @MainActor
     var batteryState: BatteryState? {
@@ -348,6 +356,7 @@ public extension Device {
     }
     
     /// Battery level ranges from 0 (fully discharged) to 100 (100% charged).
+    @available(iOS 13.0, watchOS 6, *)
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
     @MainActor
     var batteryLevel: Int? {
@@ -396,6 +405,7 @@ public extension Device {
     // MARK: Orientation
     
     /// Defaults to `landscape` if we do not have a screen or cannot get the orientation.
+    @available(iOS 13.0, *)
     @MainActor
     var orientation: Screen.Orientation {
         return Device.current.screenOrientation ?? .unknown
@@ -452,6 +462,7 @@ extension Device {
 // MARK: DiskSpace
 extension Device {
     /// The volume’s total capacity in bytes.
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.volumeTotalCapacity")
     @MainActor
     public static var volumeTotalCapacity: Int64? {
@@ -459,6 +470,7 @@ extension Device {
     }
     
     /// The volume’s available capacity in bytes.
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacity")
     @MainActor
     public static var volumeAvailableCapacity: Int64? {
@@ -466,7 +478,7 @@ extension Device {
     }
     
     /// The volume’s available capacity in bytes for storing important resources.
-    @available(iOS 11.0, *)
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacityForImportantUsage")
     @MainActor
     public static var volumeAvailableCapacityForImportantUsage: Int64? {
@@ -474,7 +486,7 @@ extension Device {
     }
     
     /// The volume’s available capacity in bytes for storing nonessential resources.
-    @available(iOS 11.0, *)
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacityForOpportunisticUsage")
     @MainActor
     public static var volumeAvailableCapacityForOpportunisticUsage: Int64? {

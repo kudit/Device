@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "compatibility",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kudit/Compatibility",
+      "state" : {
+        "revision" : "14e39f43ffabb62c4a2a72bbe242adf8eefb4107",
+        "version" : "1.0.11"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.2.2"
+let version = "2.3.0"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -23,9 +23,9 @@ var products = [
 var targets = [
 	Target.target(
 		name: packageLibraryName,
-//            dependencies: [
-//                .product(name: "Device Library", package: "device")
-//            ],
+        dependencies: [
+            .product(name: "Compatibility Library", package: "compatibility"), // apparently needs to be lowercase.  Also note this is "Device Library" not "Device"
+        ],
 		path: "Sources",
 		resources: [ // unfortuantely cannot be conditionally compiled based on Swift version since the tool seems to be run on latest version.
             Resource.process("Resources"),
@@ -34,11 +34,20 @@ var targets = [
 ]
 
 var platforms: [SupportedPlatform] = [ // minimums for Date.now
-	.iOS("15.2"),
-	.macOS("11.0"),
-	.tvOS("14.0"),
-	.watchOS("6.0"),
+    .macOS("10.15"), // minimum for sleep, SwiftUI, ObservableObject, & @Published
+    .tvOS("11"), // 13 minimum for SwiftUI, 17 minimum for Menu
+	.watchOS("4"), // 6 minimum for SwiftUI, watchOS 7 typically needed for most UI, however (for #buildAvailability) so really should be watchOS 9+.
 ]
+
+#if canImport(PlaygroundSupport)
+platforms += [
+    .iOS("15.2"), // minimum for Swift Playgrounds support
+]
+#else
+platforms += [
+    .iOS("11"), // 13 minimum for Combine/SwiftUI
+]
+#endif
 
 #if os(visionOS)
 platforms += [
@@ -68,10 +77,9 @@ products += [
 			.landscapeLeft,
 			.portraitUpsideDown(.when(deviceFamilies: [.pad]))
 		],
-		// is this necessary for Device?
-//            capabilities: [
-//                .outgoingNetworkConnections()
-//            ],
+        capabilities: [
+            .outgoingNetworkConnections() // for networking tests and loading device images
+        ],
 		appCategory: .developerTools
 	),
 ]
@@ -107,8 +115,9 @@ let package = Package(
     platforms: platforms,
     products: products,
     // include dependencies
-//    dependencies: [
-//        .package(url: "https://github.com/kudit/Device", "2.1.4"..<"3.0.0")
-//    ],
+    dependencies: [
+        // Dependencies declare other packages that this package depends on.
+        .package(url: "https://github.com/kudit/Compatibility", "1.0.0"..<"2.0.0")
+    ],
     targets: targets
 )

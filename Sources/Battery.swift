@@ -12,21 +12,6 @@ import SwiftUI // for Color
 import IOKit
 import IOKit.ps
 #endif
-#if !canImport(Combine)
-// Add stub here to make sure we can compile
-public protocol ObservableObject {
-    var objectWillChange: ObjectWillChangePublisher { get }
-}
-public struct ObjectWillChangePublisher: Sendable {
-    func send() {} // dummy for calls
-    static let dummyPublisher = ObjectWillChangePublisher()
-}
-public extension ObservableObject {
-    var objectWillChange: ObjectWillChangePublisher {
-        return .dummyPublisher
-    }
-}
-#endif
 import Foundation // for Timer
 
 /// This enum describes the state of the battery.
@@ -59,6 +44,7 @@ public enum BatteryChangeType: Sendable {
     case level, state, lowPowerMode
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor
 public protocol Battery: ObservableObject, SymbolRepresentable { // , CustomStringConvertible, Identifiable cannot conform since MainActor isolated
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
@@ -75,6 +61,7 @@ public protocol Battery: ObservableObject, SymbolRepresentable { // , CustomStri
     /// Callback takes a `battery` parameter and the `BatteryChangeType`
     func monitor(_ monitor: @escaping BatteryMonitor)
 }
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public extension Battery {
     /// Return true if the device is actively charging.  Equivalent to testing `curerntState == .charging`
     var isCharging: Bool { currentState == .charging }
@@ -193,6 +180,7 @@ public struct BatterySnapshot: Sendable {
 }
 
 // Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public class MockBattery: Battery {
 #if canImport(Combine)
     @Published public var currentLevel: Int = -1
@@ -280,6 +268,7 @@ public class MockBattery: Battery {
     }
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor
 public class DeviceBattery: Battery {
     @MainActor
@@ -362,7 +351,7 @@ public class DeviceBattery: Battery {
 #endif
         // MacOS 11 and Linux are the only systems that wouldn't support this notification
 #if canImport(Combine)
-        if #available(iOS 9.0, macOS 12.0, macCatalyst 13.1, tvOS 9.0, watchOS 2.0, visionOS 1.0, *) {
+        if #available(macOS 12.0, macCatalyst 13.1, visionOS 1.0, *) {
             NotificationCenter.default.addObserver(
                 forName: Notification.Name.NSProcessInfoPowerStateDidChange,
                 object: nil,
@@ -536,6 +525,7 @@ public class DeviceBattery: Battery {
 
 #if canImport(Combine)
 /// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor
 public class MonitoredDeviceBattery: Battery {
     @MainActor

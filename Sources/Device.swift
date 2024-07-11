@@ -12,8 +12,10 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.2.2"
+    static let version = "2.3.0"
 }
+
+@_exported import Compatibility
 
 import Foundation
 
@@ -186,7 +188,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         /// An interface designed for visionOS and Apple Vision Pro.
         case vision
         
-#if os(iOS) || targetEnvironment(macCatalyst) || os(tvOS) || os(visionOS)
+#if canImport(UIKit) && !os(watchOS)
         public init(_ userInterfaceIdiom: UIUserInterfaceIdiom) {
             for idiom in Self.allCases {
                 if idiom.userInterfaceIdiom == userInterfaceIdiom {
@@ -201,7 +203,11 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         public var userInterfaceIdiom: UIUserInterfaceIdiom {
             switch self {
             case .mac:
-                return .mac
+                if #available(iOS 14, tvOS 14.0, *) {
+                    return .mac
+                }
+            case .pod:
+                fallthrough // iPod Touch is equivalent UI to a phone.
             case .phone:
                 return .phone
             case .pad:
@@ -213,13 +219,18 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
             case .vision:
                 if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10, *) {
                     return .vision
-                } else {
-                    // Fallback on earlier versions
-                    return .unspecified
                 }
-            default:
-                return .unspecified
+//            default:
+            // following cases are not supported by UIUserInterfaceIdiom:
+            case .unspecified:
+                break
+            case .watch:
+                break
+            case .homePod:
+                break
             }
+            // Fallback on earlier versions
+            return .unspecified
         }
 #endif
         
@@ -314,6 +325,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
             return prototypical.symbolName
         }
         
+        @available(iOS 13, tvOS 13, watchOS 6, *)
         @MainActor
         public func test(device: any CurrentDevice) -> Bool {
             return device.idiom == self

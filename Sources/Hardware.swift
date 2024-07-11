@@ -18,8 +18,10 @@ public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseN
     var symbolName: String { get }
     var label: String { get } // description doesn't work since it can cause infinite recursion
 #if canImport(SwiftUI)
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     var color: Color { get }
 #endif
+    @available(iOS 13, tvOS 13, watchOS 6, *)
     @MainActor
     func test(device: any CurrentDevice) -> Bool
 }
@@ -145,6 +147,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
         }
     }
     
+    @available(iOS 13.0, tvOS 13, watchOS 6, *)
     public func test(device: any CurrentDevice) -> Bool {
         return device.has(self)
     }

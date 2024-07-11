@@ -9,10 +9,12 @@
 import SwiftUI
 
 // TODO: Add to KuditFrameworks
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public extension EdgeInsets {
     static let zero = Self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 struct BytesView: View {
     public var label: String?
     var bytes: (any BinaryInteger)?
@@ -37,6 +39,7 @@ struct BytesView: View {
     }
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 struct StorageBytesView: View {
     var label: String?
     var bytes: (any BinaryInteger)?
@@ -52,7 +55,7 @@ struct StorageBytesView: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
     @ObservedObject public var device: SomeCurrentDevice
     @State var includeDebugInformation: Bool
@@ -102,7 +105,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
         if let capacity {
             VStack(spacing: 0) {
                 containedContent()
-                    .background {
+                    .backport.background {
                         backgroundView(color: color, width: width(for: capacity))
                     }
                 StorageBytesView(label: label, bytes: self.inverted(capacity, inverted), visible: includeDebugInformation)
@@ -137,11 +140,11 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
                 }
             }
         }
-        .background {
+        .backport.background {
             backgroundView(color: .gray, width: width(for: 0))
         }
         .font(.caption)
-        .foregroundStyle(.black)
+        .backport.foregroundStyle(.black)
         // Store width for percent calculations.  TODO: create this as a reusable modele for having percentage based dimensions...
         .overlay(GeometryReader { proxy in
             Color.clear
@@ -169,7 +172,7 @@ public struct StorageInfoView<SomeCurrentDevice: CurrentDevice>: View {
 }
 
 #if swift(>=5.9)
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Storage Info") {
     List {
         BytesView(label: "Test", bytes: 1_000_000, font: .title, countStyle: .memory)

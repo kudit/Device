@@ -17,12 +17,14 @@ import SwiftUI
  .minimumScaleFactor(0.01)  // 2
  */
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor
 class PolymorphicBattery: ObservableObject {
     @Published var monitoredDeviceBattery: MonitoredDeviceBattery?
     @Published var deviceBattery: DeviceBattery?
     @Published var mockBattery: MockBattery = .missing // guarantees that this will never be nil and the polymorphic battery will have at least one representation
 } 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 public struct BatteryView: View {
     // ObservedObject can't be used with any.
     @ObservedObject var polymorphicBattery = PolymorphicBattery()
@@ -67,6 +69,7 @@ public struct BatteryView: View {
     }
 }
 
+@available(iOS 13, tvOS 13, watchOS 6, *)
 public struct SpecificBatteryView<SomeBattery: Battery>: View {
     // ObservedObject can't be used with any.
     @ObservedObject public var battery: SomeBattery
@@ -202,7 +205,7 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 13, macOS 12, tvOS 15, watchOS 8.0, *)
 public struct BatteryTestsRow<SomeBattery: Battery>: View {
     public var battery: SomeBattery
     public var fontSize: Double
@@ -227,7 +230,7 @@ public struct BatteryTestsRow<SomeBattery: Battery>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8.0, *)
 public struct BatteryTestsView: View {
     @State public var fontSize: Double
     @State public var lowPowerMode: Bool
@@ -259,7 +262,7 @@ public struct BatteryTestsView: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 14, macOS 12, tvOS 15, watchOS 8.0, *)
 #Preview("Battery Tests") {
     BatteryTestsView()
 }

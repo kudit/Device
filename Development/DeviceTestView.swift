@@ -242,7 +242,7 @@ public struct DeviceTestView: View {
     }
     
     public var body: some View {
-        BackportNavigationStack {
+        NavigationStack {
             testView
         }
         .onAppear { // async test
@@ -251,7 +251,7 @@ public struct DeviceTestView: View {
                 let version: Version = await Device.current.systemVersion
                 let info = await Device.current.systemInfo
                 if isSimulator == !isSimulator { // don't actually print but we want the let above for testing using Device.current from background tasks. - not saying "false" so we don't get compiler warning that this will never be executed.
-                    print("Device \(isSimulator ? "is" : "is not") simulator")
+                    debug("Device \(isSimulator ? "is" : "is not") simulator", level: .DEBUG)
                     print("Version: \(version)\nInfo: \(info)")
                     print("Test Version: \(Version("10.4").macOSName)")
                 }

@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.3.0 7/11/2024 Re-worked so that now depends on Compatibility rather than including duplicate compatibility code in the framework.  Increased legacy support back to iOS 11 and watchOS 4 to match DeviceKit (without SwiftUI or CurrentDevice features since CurrentDevice requires ObservableObject to be supported...perhaps create stateless wrappers?).  Fixed so that Swift Playgrounds works even when package supports an older iOS version.  If someone needs this, let us know otherwise we'll assume it's not important for legacy projects.
+
 v2.2.2 7/4/2024 Fixed issue where Linux build was failing and some additional concurrency warnings.
 
 v2.2.1 7/4/2024 Added Sendable conformance to IdiomType by making structs immutable and thus easily sendable.  Moved Migration out of Device framework so not included in client code.  Fixed some additional methods to be public that were not.  Added additional contrast to Device idiom icons.
@@ -52,9 +54,9 @@ v2.1.11 6/1/2024 Completely re-worked Storage view to be more compact and expand
 v2.1.10 5/31/2024 Forgot to update versions!  Also added legacy symbol for screen size.
 
 v2.1.9 5/31/2024 Fails Linux test (fixed?).  Need a better way of testing on linux.  Added better information for new iPads.  Fixed bug where screen wasn't included on device detail view.  Added information on esim/dual esim capability.  Re-ordered some iPads so they are chronological.  Added full UIDeviceOrientation value set for Screen.Orientation to be more accurate and not lose information.
-b
+b - compiler errors buildling for release
 v2.1.8 5/31/2024 Fixed project so only one version check is needed not per target.  Set Swift version minimum to 5.9 since that's needed for #Preview {} functionality.  Added additional checks to allow compiling on Linux.  Added dummy ObservableObject protocol when Combine isn't available.  Removed now unnecessary MonitoredBatteryView and simplified API to just BatteryView() for simplicity and clarity.  Fixed thermal layout.  Fixed issue with enabledMonitoring frequency was ignored (and potentially generating many many timers that could cause memory leak).  Moved MockDevice to bottom to make it easier to find mocks.  Fixed error introduced in v2.1.0 where battery.slash.legacy was exported with SF Symbols 5 instead of 2 and thus crashed on devices and previews < iOS 17.
-g
+g - no compiler errors buildling for release
 v2.1.7 5/25/2024 Added Thunderbolt capability.  Added new iPads.  Re-worked package for better compatibility with swiftpackageindex.com platforms.  Added checks for SwiftUI for compilation compatibilty.  Added support for swift 5.7.
 
 v2.1.6 5/13/2024 Fixed 4 cases where iPod touch was listed as "iPhone touch".  Updated README with better feature list.  Re-worked Package.swift to be cleaner and support `swift package dump-package` for swiftpackageindex.com and enhanced for code re-use.  Added small caps to the processor views.  Fixed so Mac (non-catalyst) shows full description in text editor to make it easier to see everything and select text.  Allowed searching by processor.
@@ -178,6 +180,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
 
+- [ ] Create state-less wrappers for CurrentDevice inspection so not dependent on observable object and can provide legacy support?  If ObservableObject available, then create an observable CurrentDevice that can be monitoried for changes?
 - [ ] See if there's a way to get visionOS version when designed for iPad mode.  This claims to do the right thing but verified it also doesn't work for visionOS (Designed for iPad): https://swiftpackageindex.com/MarcoEidinger/OSInfo
 - [ ] Move privacy manifest to the package sources resources folder so it gets processed? https://github.com/devicekit/DeviceKit/issues/408#event-12991784329
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
@@ -207,3 +210,4 @@ Still waiting for reply to Apple discussions thread:
 https://developer.apple.com/forums/thread/758168?login=true  
 
 Note: If Swift Playgrounds crashes saying the module Device_Device can't be built, it's probably a bad cache build.  Delete/rename the following: ~/Library/Containers/com.apple.PlaygroundsMac/Data/Library/Caches/com.apple.PlaygroundsMac
+Possibly because Bundle.module may not exist???  removed call to see if that fixes our issue (it does not).

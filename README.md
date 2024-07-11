@@ -90,11 +90,11 @@ This is actively maintained so if there is a feature request or change, we will 
 
 ## Requirements
 
-- iOS 15.2+ (minimum required for Swift Playgrounds support)
-- tvOS 14.0+ (UI only supported on tvOS 15.0+)
-- watchOS 6.0+ (UI only supported on watchOS 8.0+)
-- macOS 11.0+ (UI only supported on macOS 12.0+)
-- macCatalyst 14.0+
+- iOS 11+ (15.2+ minimum required for Swift Playgrounds support)
+- macOS 10.5+ (UI only supported on macOS 12.0+)
+- macCatalyst 13.0+ (first version available)
+- tvOS 11.0+ (UI only supported on tvOS 15.0+)
+- watchOS 4.0+ (UI only supported on watchOS 8.0+)
 - visionOS 1.0+
 - Theoretically should work with Linux, Windows, and Vapor, but haven't tested.  If you would like to help, please let us know.
 

@@ -26,12 +26,14 @@ extension Double {
 }
 
 // Unused
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 extension Text {
     static func +=(lhs: inout Self, rhs: Self) {
         lhs = lhs + rhs
     }
 }
 
+@available(iOS 13.0, tvOS 13, watchOS 6, *)
 struct ScreenBrightnessView<SomeCurrentDevice: CurrentDevice>: View {
     @ObservedObject var currentDevice: SomeCurrentDevice
 //    init(currentDevice: SomeCurrentDevice) {
@@ -49,7 +51,7 @@ struct ScreenBrightnessView<SomeCurrentDevice: CurrentDevice>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public struct ScreenInfoView: View {
     public var device: any DeviceType
     public init(device: any DeviceType) {
@@ -66,7 +68,12 @@ public struct ScreenInfoView: View {
         HStack(spacing: 2) {
             MonitoredCurrentDeviceView(device: device) { currentDevice in
                 if let orientation = currentDevice.screenOrientation {
-                    Text(Image(orientation))
+                    if #available(iOS 14.0, *) {
+                        Text(Image(orientation))
+                    } else {
+                        // Fallback on earlier versions
+                        Text(orientation.symbolName)
+                    }
                 }
             }
             MonitoredCurrentDeviceView(device: device) { currentDevice in
@@ -137,7 +144,7 @@ public struct ScreenInfoView: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Screens") {
     List {
         Section {
