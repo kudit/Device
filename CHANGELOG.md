@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.3.1 7/14/2024 Decided not to @_exported Compatibility here.  Removed duplicative EdgeInsets.zero.  Updated Compatibility inclusion.  Added compatibility version to text description and test app.  Migrated BytesView to Compatibility.
+
 v2.3.0 7/11/2024 Re-worked so that now depends on Compatibility rather than including duplicate compatibility code in the framework.  Increased legacy support back to iOS 11 and watchOS 4 to match DeviceKit (without SwiftUI or CurrentDevice features since CurrentDevice requires ObservableObject to be supported...perhaps create stateless wrappers?).  Fixed so that Swift Playgrounds works even when package supports an older iOS version.  If someone needs this, let us know otherwise we'll assume it's not important for legacy projects.
 
 v2.2.2 7/4/2024 Fixed issue where Linux build was failing and some additional concurrency warnings.

@@ -12,12 +12,10 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.3.0"
+    static let version = "2.3.1"
 }
 
-@_exported import Compatibility
-
-import Foundation
+import Compatibility
 
 #if canImport(UIKit)
 import UIKit // for UIUserInterfaceIdiom

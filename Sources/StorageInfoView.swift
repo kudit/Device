@@ -7,37 +7,7 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
-
-// TODO: Add to KuditFrameworks
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
-public extension EdgeInsets {
-    static let zero = Self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
-}
-
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
-struct BytesView: View {
-    public var label: String?
-    var bytes: (any BinaryInteger)?
-    var font: Font? = .headline
-    var countStyle: ByteCountFormatter.CountStyle? = .file
-    var round = false
-    var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 3) {
-            if let label {
-                Text(label).opacity(0.5) // debugging: "label (\(String(describing: bytes))"
-                Spacer()
-            }
-            if let capacity = bytes {
-                let parts = capacity.byteParts(countStyle ?? .file)
-                let number = round ? "\(Int(Double(parts.count) ?? -1))" : "\(parts.count)"
-                Text(number).font(font)
-                if countStyle != nil {
-                    Text(parts.units).opacity(0.5)
-                }
-            }
-        }
-    }
-}
+import Compatibility
 
 @available(iOS 13.0, tvOS 13, watchOS 6, *)
 struct StorageBytesView: View {

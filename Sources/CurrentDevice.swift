@@ -1,4 +1,5 @@
 import Foundation
+import Compatibility
 #if os(watchOS)
 import WatchKit
 #endif
@@ -288,6 +289,7 @@ Volume Available Capacity for Important Resources: \(volumeAvailableCapacityForI
 Volume Available Capacity for Opportunistic Resources: \(volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a")
 Volume Available Capacity: \(volumeAvailableCapacity?.byteString(.file) ?? "n/a")
 Device Framework Version: v\(Device.version)
+Compatibility Framework Version: v\(Compatibility.version)
 """
         return description
     }

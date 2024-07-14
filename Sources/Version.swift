@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Compatibility
 
 // MARK: - Named OS versions
 public extension Version {

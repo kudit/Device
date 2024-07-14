@@ -1,6 +1,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 import Device
+import Compatibility
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("Capabilities") {
@@ -184,7 +185,7 @@ public struct DeviceTestView: View {
             } header: {
                 Text("Battery")
             }
-            Section("Environment (Swift \(Device.current.swiftVersion))") { 
+            Section("Environment (Swift \(Device.current.swiftVersion), Compatibility v\(Compatibility.version))") { 
                 NavigationLink {
                     List {
                         AttributeListView(header: "Environments", attributes: Device.Environment.allCases)
