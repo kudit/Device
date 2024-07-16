@@ -137,7 +137,11 @@ public struct ScreenInfoView: View {
         }
         .font(.caption)
         .padding()
+#if os(visionOS)
+        .foregroundStyle(.black) // can do background but doesn't provide enough contrast.
+#else
         .foregroundStyle(.background)
+#endif
         .background {
             RoundedRectangle(cornerRadius: .devicePanelRadius)
         }

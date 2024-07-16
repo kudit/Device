@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.3.2 7/15/2024 Updated compatibility to fix linux and watchOS support.  Updated icons to use new themeing.  Improved ScreenInfoView on visionOS (and removed completely from DeviceInfoView since really irrelevant on visionOS).
+
 v2.3.1 7/14/2024 Decided not to @_exported Compatibility here.  Removed duplicative EdgeInsets.zero.  Updated Compatibility inclusion.  Added compatibility version to text description and test app.  Migrated BytesView to Compatibility.
 
 v2.3.0 7/11/2024 Re-worked so that now depends on Compatibility rather than including duplicate compatibility code in the framework.  Increased legacy support back to iOS 11 and watchOS 4 to match DeviceKit (without SwiftUI or CurrentDevice features since CurrentDevice requires ObservableObject to be supported...perhaps create stateless wrappers?).  Fixed so that Swift Playgrounds works even when package supports an older iOS version.  If someone needs this, let us know otherwise we'll assume it's not important for legacy projects.
@@ -130,9 +132,9 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
+- [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Must be built for debug instead of release configuration when archiving/analyzing due to issue: errors linking for release like "Undefined symbols for architecture arm64:
   "protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device" and "type metadata accessor for Device.ActualHardwareDevice".  (Removed checks for #if canImport(Combine) around various classes and that helped some but didn't completely fix.) - possibly issue building against macOS 11?  Possible other #combine check?  Apple Forum Description: https://developer.apple.com/forums/thread/758168?login=true
-- [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 - [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
@@ -146,7 +148,6 @@ Known issues that need to be addressed.
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
-- [ ] Move Migration code into test module and out of the main source so that it isn't included in library.  Figure out why Device: migration needs to be part of the internal module. Perhaps have a way to expose what I need and move to the development folder so it's not included in any projects.
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
 - [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
 - [ ] Go through and make sure device images (photos) have transparent background instead of white.
@@ -178,6 +179,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
         thermalStateDidChangeNotification
         ProcessInfo.thermalState
 - [ ] Look into creating bar for screen resolution PPI to indicate if it's high resolution or not.  Have area indicated that is considered "retina" - have bar as a conditional presentation if SwiftCharts is available.
+- [ ] Add supported versions to indicate the iOS/macOS/etc versions supported by each device.
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.

@@ -175,7 +175,7 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
                 EnvironmentsView()
             }
             SystemInfoView(device: device)
-            if device.screen != nil {
+            if device.screen != nil && device.idiom != .vision { // visionOS screen doesn't really make sense at least in the current device view.
                 ScreenInfoView(device: device)
             }
             if includeStorage {

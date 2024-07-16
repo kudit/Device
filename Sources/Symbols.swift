@@ -21,7 +21,7 @@ public extension Image {
         var symbolName = symbolName
         let legacySymbolName = "\(symbolName).legacy"
         // use the new symbol name for the Xcode 15 symbol assets (should include colors and proper layering)
-        if #available(iOS 17.0, watchOS 10.0, macOS 14.0, tvOS 17.0, visionOS 1.0, macCatalyst 17.0, *) {
+        if #available(iOS 17.0, watchOS 10.0, macOS 14.0, tvOS 17.0, macCatalyst 17.0, *) { // visionOS 1.0 check unnecessary
             symbolName = symbolName.safeSymbolName(fallback: legacySymbolName)
         } else {
             // if older OS, fallback to compatible symbols.

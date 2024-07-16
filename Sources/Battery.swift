@@ -351,7 +351,7 @@ public class DeviceBattery: Battery {
 #endif
         // MacOS 11 and Linux are the only systems that wouldn't support this notification
 #if canImport(Combine)
-        if #available(macOS 12.0, macCatalyst 13.1, visionOS 1.0, *) {
+        if #available(macOS 12.0, macCatalyst 13.1, *) { // visionOS check unnecessary
             NotificationCenter.default.addObserver(
                 forName: Notification.Name.NSProcessInfoPowerStateDidChange,
                 object: nil,
