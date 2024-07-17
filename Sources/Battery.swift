@@ -12,7 +12,7 @@ import SwiftUI // for Color
 import IOKit
 import IOKit.ps
 #endif
-import Foundation // for Timer
+import Compatibility // for Foundation for Timer and backport ObservableObject
 
 /// This enum describes the state of the battery.
 public enum BatteryState: CustomStringConvertible, CaseNameConvertible, Sendable { // automatically conforms to Equatable since no associated/raw value

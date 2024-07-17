@@ -4,9 +4,8 @@
 //
 //  Created by Ben Ku on 3/25/24.
 //
-
-import Foundation
 import Device
+import Compatibility
 
 extension String {
     var isVowel: Bool {

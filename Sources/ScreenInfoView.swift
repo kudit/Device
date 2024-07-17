@@ -1,20 +1,14 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-// TODO: Remove?
-extension CGSize {
-    var transposed: CGSize {
-        CGSize(width: height, height: width)
-    }
-}
-// TODO: Remove?
 public extension Screen.Size {
+    /// Conversion of Screen.Size to CGSize
     var cgSize: CGSize {
         return CGSize(width: width, height: height)
     }
 }
 
-// TODO: Move to KuditFrameworks
+// TODO: Remove once we're using Compatibility v1.0.19 or later
 extension Double {
     var withoutZeros: String {
         let formatter = NumberFormatter()
@@ -22,14 +16,6 @@ extension Double {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 16 //maximum digits in Double after dot (maximum precision)
         return String(formatter.string(from: number) ?? "")
-    }
-}
-
-// Unused
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
-extension Text {
-    static func +=(lhs: inout Self, rhs: Self) {
-        lhs = lhs + rhs
     }
 }
 

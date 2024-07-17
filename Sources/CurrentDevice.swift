@@ -1,4 +1,3 @@
-import Foundation
 import Compatibility
 #if os(watchOS)
 import WatchKit
@@ -27,7 +26,7 @@ public extension Device {
     // TODO: Figure out how to handle this with concurrency.
     @available(iOS 13.0, tvOS 13, watchOS 6, *)
     @MainActor
-    static let current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock
+    static let current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock and never directly access.
     @available(iOS 13.0, tvOS 13, watchOS 6, *)
     enum Environment: DeviceAttributeExpressible, Sendable { // unable to conform to CaseIterable since @MainActor isolated
         case realDevice, simulator, playground, preview, designedForiPad, macCatalyst
@@ -295,6 +294,321 @@ Compatibility Framework Version: v\(Compatibility.version)
     }
 }
 
+// MARK: - Hardware calculations from the system used that can be actor-independent
+public extension Device {
+    // MARK: Environmental info
+    /// Returns `true` if running on the simulator vs actual device.
+    static var isSimulator: Bool {
+#if targetEnvironment(simulator)
+        // your simulator code
+        return true
+#else
+        // your real device code
+        return false
+#endif
+    }
+    
+    // In macOS Playgrounds Preview: swift-playgrounds-dev-previews.swift-playgrounds-app.hdqfptjlmwifrrakcettacbhdkhn.501.KuditFramework
+    // In macOS Playgrounds Running: swift-playgrounds-dev-run.swift-playgrounds-app.hdqfptjlmwifrrakcettacbhdkhn.501.KuditFrameworksApp
+    // In iPad Playgrounds Preview: swift-playgrounds-dev-previews.swift-playgrounds-app.agxhnwfqkxciovauscbmuhqswxkm.501.KuditFramework
+    // In iPad Playgrounds Running: swift-playgrounds-dev-run.swift-playgrounds-app.agxhnwfqkxciovauscbmuhqswxkm.501.KuditFrameworksApp
+    // warning: {"message":"This code path does I/O on the main thread underneath that can lead to UI responsiveness issues. Consider ways to optimize this code path","antipattern trigger":"+[NSBundle allBundles]","message type":"suppressable","show in console":"0"}
+    /// Returns `true` if running in Swift Playgrounds.
+    static var isPlayground: Bool {
+        //print("Testing inPlayground: Bundles: \(Bundle.allBundles.map { $0.bundleIdentifier }.description)")
+        if Bundle.allBundles.contains(where: { ($0.bundleIdentifier ?? "").contains("swift-playgrounds") }) {
+            //print("in playground")
+            return true
+        } else {
+            //print("not in playground")
+            return false
+        }
+    }
+    
+    /// Returns `true` if running in an XCode or Swift Playgrounds #Preview macro.
+    static var isPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+    
+    /// Returns `true` if NOT running in preview, playground, or simulator.
+    static var isRealDevice: Bool {
+        return !isPreview && !isPlayground && !isSimulator
+    }
+        
+    /// Returns `true` if is macCatalyst app on macOS
+    static var isMacCatalyst: Bool {
+#if targetEnvironment(macCatalyst)
+        return true
+#else
+        return false
+#endif
+    }
+    
+    // MARK: - Description Device Strings
+    /// Gets the identifier from the system, such as "iPhone7,1".
+    static var identifier: String {
+#if os(macOS)
+        let defaultPort: mach_port_t
+        if #available(macOS 12.0, *) {
+            defaultPort = kIOMainPortDefault
+        } else {
+            defaultPort = kIOMasterPortDefault
+        }
+        // kIOMasterPortDefault => kIOMainPortDefault
+        let service = IOServiceGetMatchingService(defaultPort,
+                                                  IOServiceMatching("IOPlatformExpertDevice"))
+        var modelIdentifier: String?
+        if let modelData = IORegistryEntryCreateCFProperty(service, "model" as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? Data {
+            modelIdentifier = String(data: modelData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters)
+        }
+        
+        IOObjectRelease(service)
+        return modelIdentifier ?? "UnknownIdentifier"
+#elseif targetEnvironment(macCatalyst)
+        var size = 0
+        sysctlbyname("hw.model", nil, &size, nil, 0)
+        
+        var modelIdentifier: [CChar] = Array(repeating: 0, count: size)
+        sysctlbyname("hw.model", &modelIdentifier, &size, nil, 0)
+        
+        return String(cString: modelIdentifier)
+#else
+        //        print(ProcessInfo().environment)
+#if canImport(Combine)
+        // TODO: Should this be ProcessInfo.processInfo since initializer is internal?
+        if let identifier = ProcessInfo().environment["SIMULATOR_MODEL_IDENTIFIER"] {
+            // machine value is likely just arm64 so return the simulator identifier
+            return identifier
+        }
+#endif
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        let mirror = Mirror(reflecting: systemInfo.machine)
+        
+        let identifier = mirror.children.reduce("") { identifier, element in
+            guard let value = element.value as? Int8, value != 0 else { return identifier }
+            return identifier + String(UnicodeScalar(UInt8(value)))
+        }
+        return identifier
+#endif
+    }
+    
+    /// The name identifying the device (e.g. "Dennis' iPhone").
+    /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
+    /// See the follwing link for more information: https://developer.apple.com/documentation/uikit/uidevice/1620015-name
+    @MainActor
+    static var name: String {
+#if os(watchOS)
+        return WKInterfaceDevice.current().name
+#elseif canImport(UIKit)
+        return UIDevice.current.name
+#elseif canImport(Combine)
+        return ProcessInfo().hostName // mac device?
+#else
+        return "Unknown Linux Device"
+#endif
+    }
+        
+    /// The model of the device (e.g. "iPhone" or "iPod Touch").
+    @MainActor
+    static var model: String {
+#if os(watchOS)
+        return WKInterfaceDevice.current().model
+#elseif canImport(UIKit)
+        return UIDevice.current.model
+#else
+        return .unknown
+#endif
+    }
+    
+    /// The model of the device as a localized string.
+    @MainActor
+    static var localizedModel: String {
+#if os(watchOS)
+        return WKInterfaceDevice.current().localizedModel
+#elseif canImport(UIKit)
+        return UIDevice.current.localizedModel
+#else
+        return .unknown
+#endif
+    }
+    
+    // MARK: - Screen Properties
+    
+    /// Returns if the screen is zoomed in.
+    static var isZoomed: Bool {
+#if os(iOS) && !os(visionOS)
+        if Int(UIScreen.main.scale.rounded()) == 3 {
+            // Plus-sized
+            return UIScreen.main.nativeScale > 2.7 && UIScreen.main.nativeScale < 3
+        } else {
+            return UIScreen.main.nativeScale > UIScreen.main.scale
+        }
+#else
+        return false
+#endif
+    }
+    
+    /// True when a Guided Access session is currently active; otherwise, false.
+    static var isGuidedAccessSessionActive: Bool {
+#if os(iOS)
+#if swift(>=4.2)
+        return UIAccessibility.isGuidedAccessEnabled
+#else
+        return UIAccessibilityIsGuidedAccessEnabled()
+#endif
+#else
+        return false
+#endif
+    }
+    
+    /// The brightness level of the screen (between 0.0 and 1.0).  Only supported on iOS and macCatalyst.  Returns nil if not supported.  Wrapper for UIScreen.main.brightness
+    static var brightness: Double? {
+        get {
+            // https://stackoverflow.com/questions/40710544/get-current-screen-brightness
+            // https://stackoverflow.com/questions/24264673/adjust-the-main-screen-brightness-using-swift/24264838#24264838
+            // https://developer.apple.com/documentation/uikit/uiscreen/1617830-brightness
+            
+            // for macOS: TODO
+            // https://stackoverflow.com/questions/67929644/getting-notified-when-the-screen-brightness-changes-in-macos
+            
+#if os(iOS) && !targetEnvironment(macCatalyst)
+            let b = UIScreen.main.brightness
+            if b < 0 {
+                return nil
+            }
+            return b
+            //#elseif canImport(IOKit)
+            //            // Does not seem to work!
+            //            var brightness: Float = 1.0
+            //            var service: io_object_t = 1
+            //            var iterator: io_iterator_t = 0
+            //            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
+            //
+            //            if result == kIOReturnSuccess {
+            //
+            //                while service != 0 {
+            //                    service = IOIteratorNext(iterator)
+            //                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
+            //                    IOObjectRelease(service)
+            //                }
+            //            }
+            //            return Double(brightness)
+#else
+            return nil
+#endif
+        }
+        set {
+            if let newValue {
+#if os(iOS) || targetEnvironment(macCatalyst)
+                UIScreen.main.brightness = newValue
+#elseif canImport(IOKit)
+                if #available(macOS 12, *) {
+                    let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IODisplayConnect"))
+                    // TODO: Figure out how to consolidate redundant code
+                    IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
+                    IOObjectRelease(service)
+                } else {
+                    let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"))
+                    IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
+                    IOObjectRelease(service)
+                }
+#endif
+            }
+        }
+    }
+    
+    /// Returns the screen orientation if applicable or `nil`
+    @MainActor
+    static var screenOrientation: Screen.Orientation? {
+#if os(iOS) && !os(visionOS)
+        switch UIDevice.current.orientation {
+        case .unknown:
+            return .unknown
+        case .portrait:
+            return .portrait
+        case .portraitUpsideDown:
+            return .portraitUpsideDown
+        case .landscapeLeft:
+            return .landscapeLeft
+        case .landscapeRight:
+            return .landscapeRight
+        case .faceUp:
+            return .faceUp
+        case .faceDown:
+            return .faceDown
+        @unknown default:
+            return .unknown
+        }
+#else
+        return nil
+#endif
+    }
+    
+    /// Returns the current thermal state of the system
+    static var thermalState: ThermalState {
+#if canImport(Combine)
+        return ProcessInfo().thermalState.thermalState
+#else
+        return .nominal
+#endif
+    }
+    
+    
+    // MARK: - Storage Info
+    
+    /// Return the root url
+    ///
+    /// - returns: the NSHomeDirectory() url
+    static let rootURL = URL(fileURLWithPath: NSHomeDirectory())
+    
+    /// The volume’s total capacity in bytes.
+    static var volumeTotalCapacity: Int64? {
+        if let vtc = (try? rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey]))?.volumeTotalCapacity {
+            return Int64(vtc)
+        } else {
+            return nil
+        }
+    }
+    
+    /// The volume’s available capacity in bytes.
+    static var volumeAvailableCapacity: Int64? {
+        if let vtc = (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity {
+            return Int64(vtc)
+        } else {
+            return nil
+        }
+    }
+    
+    /// The volume’s available capacity in bytes for storing important resources.
+    static var volumeAvailableCapacityForImportantUsage: Int64? {
+#if os(tvOS) || os(watchOS) || !canImport(Combine)
+        return nil
+#else
+        if #available(iOS 11.0, *) {
+            return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage
+        } else {
+            return nil
+        }
+#endif
+    }
+    
+    /// The volume’s available capacity in bytes for storing nonessential resources.
+    static var volumeAvailableCapacityForOpportunisticUsage: Int64? {
+#if os(tvOS) || os(watchOS) || !canImport(Combine)
+        return nil
+#else
+        if #available(iOS 11.0, *) {
+            return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForOpportunisticUsageKey]))?.volumeAvailableCapacityForOpportunisticUsage
+        } else {
+            return nil
+        }
+#endif
+    }
+}
+
+
+
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
 @available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor // All calculations/queries should be quick so we can isolate to main actor to give Sendable conformance.
@@ -349,15 +663,7 @@ final class ActualHardwareDevice: CurrentDevice {
     }
         
     /// Returns `true` if running on the simulator vs actual device.
-    public var isSimulator: Bool {
-#if targetEnvironment(simulator)
-        // your simulator code
-        return true
-#else
-        // your real device code
-        return false
-#endif
-    }
+    public let isSimulator = Device.isSimulator
     
     // In macOS Playgrounds Preview: swift-playgrounds-dev-previews.swift-playgrounds-app.hdqfptjlmwifrrakcettacbhdkhn.501.KuditFramework
     // In macOS Playgrounds Running: swift-playgrounds-dev-run.swift-playgrounds-app.hdqfptjlmwifrrakcettacbhdkhn.501.KuditFrameworksApp
@@ -365,29 +671,17 @@ final class ActualHardwareDevice: CurrentDevice {
     // In iPad Playgrounds Running: swift-playgrounds-dev-run.swift-playgrounds-app.agxhnwfqkxciovauscbmuhqswxkm.501.KuditFrameworksApp
     // warning: {"message":"This code path does I/O on the main thread underneath that can lead to UI responsiveness issues. Consider ways to optimize this code path","antipattern trigger":"+[NSBundle allBundles]","message type":"suppressable","show in console":"0"}
     /// Returns `true` if running in Swift Playgrounds.
-    var isPlayground: Bool {
-        //print("Testing inPlayground: Bundles: \(Bundle.allBundles.map { $0.bundleIdentifier }.description)")
-        if Bundle.allBundles.contains(where: { ($0.bundleIdentifier ?? "").contains("swift-playgrounds") }) {
-            //print("in playground")
-            return true
-        } else {
-            //print("not in playground")
-            return false
-        }
-    }
+    public let isPlayground = Device.isPlayground
     
     /// Returns `true` if running in an XCode or Swift Playgrounds #Preview macro.
-    var isPreview: Bool {
-        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-    }
+    public let isPreview = Device.isPreview
     
     /// Returns `true` if NOT running in preview, playground, or simulator.
-    var isRealDevice: Bool {
-        return !isPreview && !isPlayground && !isSimulator
-    }
+    public let isRealDevice = Device.isRealDevice
     
     /// Returns `true` if Built for iPad mode not a native mode (for macOS and visionOS)
-    var isDesignedForiPad: Bool {
+    @MainActor
+    public var isDesignedForiPad: Bool {
         // Check for mismatch between systemName and expected idiom based on identifier.
         if Device.current.idiom == .vision && Device.current.environmentSystemName == "iPadOS" {
             return true
@@ -403,77 +697,16 @@ final class ActualHardwareDevice: CurrentDevice {
     }
     
     /// Returns `true` if is macCatalyst app on macOS
-    var isMacCatalyst: Bool {
-#if targetEnvironment(macCatalyst)
-        return true
-#else
-        return false
-#endif
-    }
+    public let isMacCatalyst = Device.isMacCatalyst
     
     // MARK: - Description Device Strings
     /// Gets the identifier from the system, such as "iPhone7,1".
-    let identifier: String = {
-#if os(macOS)
-        let defaultPort: mach_port_t
-        if #available(macOS 12.0, *) {
-            defaultPort = kIOMainPortDefault
-        } else {
-            defaultPort = kIOMasterPortDefault
-        }
-        // kIOMasterPortDefault => kIOMainPortDefault
-        let service = IOServiceGetMatchingService(defaultPort,
-                                                  IOServiceMatching("IOPlatformExpertDevice"))
-        var modelIdentifier: String?
-        if let modelData = IORegistryEntryCreateCFProperty(service, "model" as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? Data {
-            modelIdentifier = String(data: modelData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters)
-        }
-        
-        IOObjectRelease(service)
-        return modelIdentifier ?? "UnknownIdentifier"
-#elseif targetEnvironment(macCatalyst)
-        var size = 0
-        sysctlbyname("hw.model", nil, &size, nil, 0)
-        
-        var modelIdentifier: [CChar] = Array(repeating: 0, count: size)
-        sysctlbyname("hw.model", &modelIdentifier, &size, nil, 0)
-        
-        return String(cString: modelIdentifier)
-#else
-        //        print(ProcessInfo().environment)
-        #if canImport(Combine)
-        // TODO: Should this be ProcessInfo.processInfo since initializer is internal?
-        if let identifier = ProcessInfo().environment["SIMULATOR_MODEL_IDENTIFIER"] {
-            // machine value is likely just arm64 so return the simulator identifier
-            return identifier
-        }
-        #endif
-        var systemInfo = utsname()
-        uname(&systemInfo)
-        let mirror = Mirror(reflecting: systemInfo.machine)
-        
-        let identifier = mirror.children.reduce("") { identifier, element in
-            guard let value = element.value as? Int8, value != 0 else { return identifier }
-            return identifier + String(UnicodeScalar(UInt8(value)))
-        }
-        return identifier
-#endif
-    }()
+    public let identifier = Device.identifier
     
     /// The name identifying the device (e.g. "Dennis' iPhone").
     /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
     /// See the follwing link for more information: https://developer.apple.com/documentation/uikit/uidevice/1620015-name
-    var name: String {
-#if os(watchOS)
-        return WKInterfaceDevice.current().name
-#elseif canImport(UIKit)
-        return UIDevice.current.name
-#elseif canImport(Combine)
-        return ProcessInfo().hostName // mac device?
-#else
-        return "Unknown Linux Device"
-#endif
-    }
+    public let name = Device.name
     
     private typealias SystemInfo = (String, Version)
     private var calculatedSystemInfoCache: SystemInfo?
@@ -485,6 +718,7 @@ final class ActualHardwareDevice: CurrentDevice {
         calculatedSystemInfoCache = calculateSystemInfo()
         return calculatedSystemInfoCache! // assigned to non-optional above, so will never be nil and can be safely unwrapped
     }
+    @MainActor
     private func calculateSystemInfo() -> SystemInfo {
 #if canImport(Combine) // Perhaps this is available on Linux and can use this?
 #if os(watchOS)
@@ -545,18 +779,19 @@ final class ActualHardwareDevice: CurrentDevice {
     }
     
     /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
-    var systemName: String {
+    public var systemName: String {
         let (systemName, _) = calculatedSystemInfo
         return systemName
     }
     
     /// The current version of the operating system (e.g. 8.4 or 9.2).  If macCatalyst, will return macCatalyst version.  If Designed for iPad, will report iPadOS version but systemName should report (Designed for iPad)
-    var systemVersion: Version {
+    public var systemVersion: Version {
         let (_, systemVersion) = calculatedSystemInfo
         return systemVersion
     }
 
-    var environmentSystemName: String {
+    @MainActor
+    public var environmentSystemName: String {
         #if canImport(UIKit) && !os(watchOS)
         return UIDevice.current.systemName
         #else
@@ -564,7 +799,8 @@ final class ActualHardwareDevice: CurrentDevice {
         #endif
     }
     
-    var environmentSystemVersion: Version {
+    @MainActor
+    public var environmentSystemVersion: Version {
         #if canImport(UIKit) && !os(watchOS)
         return Version(UIDevice.current.systemVersion)
         #else
@@ -573,141 +809,42 @@ final class ActualHardwareDevice: CurrentDevice {
     }
     
     /// The model of the device (e.g. "iPhone" or "iPod Touch").
-    var model: String {
-#if os(watchOS)
-        return WKInterfaceDevice.current().model
-#elseif canImport(UIKit)
-        return UIDevice.current.model
-#else
-        return .unknown
-#endif
-    }
+    public let model = Device.model
     
     /// The model of the device as a localized string.
-    var localizedModel: String {
-#if os(watchOS)
-        return WKInterfaceDevice.current().localizedModel
-#elseif canImport(UIKit)
-        return UIDevice.current.localizedModel
-#else
-        return .unknown
-#endif
-    }
+    public let localizedModel = Device.localizedModel
     
     // MARK: - Screen Properties
     
     /// Returns if the screen is zoomed in.
     public var isZoomed: Bool {
-#if os(iOS) && !os(visionOS)
-        if Int(UIScreen.main.scale.rounded()) == 3 {
-            // Plus-sized
-            return UIScreen.main.nativeScale > 2.7 && UIScreen.main.nativeScale < 3
-        } else {
-            return UIScreen.main.nativeScale > UIScreen.main.scale
-        }
-#else
-        return false
-#endif
+        Device.isZoomed
     }
     
     /// True when a Guided Access session is currently active; otherwise, false.
     public var isGuidedAccessSessionActive: Bool {
-#if os(iOS)
-#if swift(>=4.2)
-        return UIAccessibility.isGuidedAccessEnabled
-#else
-        return UIAccessibilityIsGuidedAccessEnabled()
-#endif
-#else
-        return false
-#endif
+        Device.isGuidedAccessSessionActive
     }
     
     /// The brightness level of the screen (between 0.0 and 1.0).  Only supported on iOS and macCatalyst.  Returns nil if not supported.  Wrapper for UIScreen.main.brightness
     public var brightness: Double? {
         get {
-            // https://stackoverflow.com/questions/40710544/get-current-screen-brightness
-            // https://stackoverflow.com/questions/24264673/adjust-the-main-screen-brightness-using-swift/24264838#24264838
-            // https://developer.apple.com/documentation/uikit/uiscreen/1617830-brightness
-            
-            // for macOS: TODO
-            // https://stackoverflow.com/questions/67929644/getting-notified-when-the-screen-brightness-changes-in-macos
-            
-#if os(iOS) && !targetEnvironment(macCatalyst)
-            let b = UIScreen.main.brightness
-            if b < 0 {
-                return nil
-            }
-            return b
-            //#elseif canImport(IOKit)
-            //            // Does not seem to work!
-            //            var brightness: Float = 1.0
-            //            var service: io_object_t = 1
-            //            var iterator: io_iterator_t = 0
-            //            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
-            //
-            //            if result == kIOReturnSuccess {
-            //
-            //                while service != 0 {
-            //                    service = IOIteratorNext(iterator)
-            //                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
-            //                    IOObjectRelease(service)
-            //                }
-            //            }
-            //            return Double(brightness)
-#else
-            return nil
-#endif
+            Device.brightness
         }
         set {
-            if let newValue {
-#if os(iOS) || targetEnvironment(macCatalyst)
-                UIScreen.main.brightness = newValue
-#elseif canImport(IOKit)
-                if #available(macOS 12, *) {
-                    let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IODisplayConnect"))
-                    // TODO: Figure out how to consolidate redundant code
-                    IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
-                    IOObjectRelease(service)
-                } else {
-                    let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"))
-                    IODisplaySetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, Float(newValue))
-                    IOObjectRelease(service)
-                }
-#endif
-            }
+            Device.brightness = newValue
         }
     }
     
     /// Returns the screen orientation if applicable or `nil`
-    var screenOrientation: Screen.Orientation? {
-#if os(iOS) && !os(visionOS)
-        switch UIDevice.current.orientation {
-        case .unknown:
-            return .unknown
-        case .portrait:
-            return .portrait
-        case .portraitUpsideDown:
-            return .portraitUpsideDown
-        case .landscapeLeft:
-            return .landscapeLeft
-        case .landscapeRight:
-            return .landscapeRight
-        case .faceUp:
-            return .faceUp
-        case .faceDown:
-            return .faceDown
-        @unknown default:
-            return .unknown
-        }
-#else
-        return nil
-#endif
+    public var screenOrientation: Screen.Orientation? {
+        Device.screenOrientation
     }
     
     // MARK: - Power & Hardware
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
+    @MainActor
     var battery: BatteryType? {
         if device.has(.battery) {
 #if canImport(Combine)
@@ -772,65 +909,31 @@ final class ActualHardwareDevice: CurrentDevice {
     
     /// Returns the current thermal state of the system
     public var thermalState: ThermalState {
-        #if canImport(Combine)
-        return ProcessInfo().thermalState.thermalState
-        #else
-        return .nominal
-        #endif
+        Device.thermalState
     }
     
     
     // MARK: - Storage Info
     
-    /// Return the root url
-    ///
-    /// - returns: the NSHomeDirectory() url
-    private let rootURL = URL(fileURLWithPath: NSHomeDirectory())
-    
     /// The volume’s total capacity in bytes.
     public var volumeTotalCapacity: Int64? {
-        if let vtc = (try? rootURL.resourceValues(forKeys: [.volumeTotalCapacityKey]))?.volumeTotalCapacity {
-            return Int64(vtc)
-        } else {
-            return nil
-        }
+        Device.volumeTotalCapacity
     }
     
     /// The volume’s available capacity in bytes.
     public var volumeAvailableCapacity: Int64? {
-        if let vtc = (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityKey]))?.volumeAvailableCapacity {
-            return Int64(vtc)
-        } else {
-            return nil
-        }
+        Device.volumeAvailableCapacity
     }
     
     /// The volume’s available capacity in bytes for storing important resources.
     public var volumeAvailableCapacityForImportantUsage: Int64? {
-#if os(tvOS) || os(watchOS) || !canImport(Combine)
-        return nil
-#else
-        if #available(iOS 11.0, *) {
-            return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?.volumeAvailableCapacityForImportantUsage
-        } else {
-            return nil
-        }
-#endif
+        Device.volumeAvailableCapacityForImportantUsage
     }
     
     /// The volume’s available capacity in bytes for storing nonessential resources.
     public var volumeAvailableCapacityForOpportunisticUsage: Int64? {
-#if os(tvOS) || os(watchOS) || !canImport(Combine)
-        return nil
-#else
-        if #available(iOS 11.0, *) {
-            return (try? rootURL.resourceValues(forKeys: [.volumeAvailableCapacityForOpportunisticUsageKey]))?.volumeAvailableCapacityForOpportunisticUsage
-        } else {
-            return nil
-        }
-#endif
-    }
-    
+        Device.volumeAvailableCapacityForOpportunisticUsage
+    }    
 }
 
 @available(iOS 13.0, tvOS 13, watchOS 6, *)
@@ -1092,16 +1195,3 @@ import SwiftUI
     }
 }
 #endif
-
-// Utility (included in Kudit Frameworks but copied here)
-/// Enables ++ on any enum to get the next enum value (if it's the last value, wraps around to first)
-extension CaseIterable where Self: Equatable { // equatable required to find self in list of cases
-    /// Replaces the variable with the next enum value (if it's the last value, wraps around to first)
-    static postfix func ++(e: inout Self) {
-        let allCases = Self.allCases
-        let idx = allCases.firstIndex(of: e)! // not possible to have it not be found
-        let next = allCases.index(after: idx)
-        e = allCases[next == allCases.endIndex ? allCases.startIndex : next]
-    }
-}
-

@@ -5,7 +5,6 @@
 //  Created by Ben Ku on 7/3/24.
 //
 
-import Foundation
 import Compatibility
 
 // MARK: - Named OS versions

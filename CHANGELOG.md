@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.3.3 7/17/2024 Updated to make sure ObservableObject fallback is present from compatibility when needed for Linux compatibility.  Re-worked environment checks so they can be called as static functions on Device that don't need to be actor-isolated.  This also has the benefit of providing DeviceKit compatibility and thus we have un-deprecated those static functions.  Removed several unused functions and moved some to Compatibility.  Set minimum Compatibility version to 1.0.18. 
+
 v2.3.2 7/15/2024 Updated compatibility to fix linux and watchOS support.  Updated icons to use new themeing.  Improved ScreenInfoView on visionOS (and removed completely from DeviceInfoView since really irrelevant on visionOS).
 
 v2.3.1 7/14/2024 Decided not to @_exported Compatibility here.  Removed duplicative EdgeInsets.zero.  Updated Compatibility inclusion.  Added compatibility version to text description and test app.  Migrated BytesView to Compatibility.
@@ -132,6 +134,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 ## Bugs to fix:
 Known issues that need to be addressed.
 
+- [ ] Main-actor isolated warning on .current in CurrentDevice.swift (assuming Device.current but could be UIDevice.current) and this only happens in Swift Playgrounds.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Must be built for debug instead of release configuration when archiving/analyzing due to issue: errors linking for release like "Undefined symbols for architecture arm64:
   "protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device" and "type metadata accessor for Device.ActualHardwareDevice".  (Removed checks for #if canImport(Combine) around various classes and that helped some but didn't completely fix.) - possibly issue building against macOS 11?  Possible other #combine check?  Apple Forum Description: https://developer.apple.com/forums/thread/758168?login=true

@@ -159,12 +159,12 @@ struct HardwareListView: View {
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@MainActor
 public struct DeviceTestView: View {
     @State var disableIdleTimer = false
     
     @ObservedObject var animatedDevice = MockDevice.mocks.first!
 
-    @MainActor
     @ViewBuilder
     var testView: some View {
         List {

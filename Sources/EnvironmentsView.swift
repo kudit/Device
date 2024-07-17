@@ -9,6 +9,7 @@
 import SwiftUI
 
 @available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
+@MainActor
 public struct EnvironmentsView: View {
     public init() {}
     public var body: some View {

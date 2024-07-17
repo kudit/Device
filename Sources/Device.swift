@@ -12,7 +12,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.3.2"
+    static let version = "2.3.3"
 }
 
 import Compatibility

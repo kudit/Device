@@ -11,12 +11,6 @@ import Foundation
  */
 
 public extension Device {
-    /// Gets the identifier from the system, such as "iPhone7,1".
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "current.identifier")
-    @MainActor
-    static let identifier: String = Device.current.identifier
-    
     /// Ordered list of identifiers in DeviceKit definition file.  Used for migration export.
     /// iOS iPods, iPhones, iPads, HomePods, Apple TV, Apple Watch (doesn't include vision or macs)
     static let deviceKitOrder = [
@@ -461,38 +455,6 @@ extension Device {
 
 // MARK: DiskSpace
 extension Device {
-    /// The volume’s total capacity in bytes.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.volumeTotalCapacity")
-    @MainActor
-    public static var volumeTotalCapacity: Int64? {
-        Device.current.volumeTotalCapacity
-    }
-    
-    /// The volume’s available capacity in bytes.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacity")
-    @MainActor
-    public static var volumeAvailableCapacity: Int64? {
-        Device.current.volumeAvailableCapacity
-    }
-    
-    /// The volume’s available capacity in bytes for storing important resources.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacityForImportantUsage")
-    @MainActor
-    public static var volumeAvailableCapacityForImportantUsage: Int64? {
-        Device.current.volumeAvailableCapacityForImportantUsage
-    }
-    
-    /// The volume’s available capacity in bytes for storing nonessential resources.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.volumeAvailableCapacityForOpportunisticUsage")
-    @MainActor
-    public static var volumeAvailableCapacityForOpportunisticUsage: Int64? {
-        Device.current.volumeAvailableCapacityForOpportunisticUsage
-    }
-    
     /// All volumes capacity information in bytes.
     @available(iOS 11.0, *)
     @available(*, deprecated, message: "If you need this, please let us know why.")
