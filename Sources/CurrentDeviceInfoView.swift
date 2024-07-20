@@ -202,7 +202,7 @@ public struct DeviceMocksView: View {
                 CurrentDeviceInfoView(device: mock, includeStorage: includeStorage, debug: debug)
             }
         }
-        .navigationTitle("Device Mocks")
+        .backport.navigationTitle("Device Mocks")
     }
 }
 

@@ -116,7 +116,6 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
             if !battery.isCharging {
                 if #available(iOS 15.0, watchOS 8, tvOS 15, macOS 12, *) {
                     Image(symbolName: "battery.100percent")
-                        .font(.system(size: fontSize))
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(
                             background,
@@ -124,7 +123,6 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
                 } else {
                     Image(symbolName: "battery.100percent")
                         .renderingMode(.template)
-                        .font(.system(size: fontSize))
                         .foregroundColor(background)
                 }
             }
@@ -137,7 +135,6 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
             if #available(iOS 15.0, watchOS 8, tvOS 15, macOS 12, *) {
                 // Symbol colored
                 Image(symbolName: "battery.slash") // batteryblock.slash
-                    .font(.system(size: fontSize))
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.red,
                                      .foreground,
@@ -146,7 +143,6 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
                 // Symbol colored
                 Image(symbolName: "battery.slash")
                     .renderingMode(.template)
-                    .font(.system(size: fontSize))
                     .foregroundColor(.red)
             }
         }
@@ -163,7 +159,6 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
             } else if #available(iOS 15.0, watchOS 8, tvOS 15, macOS 12, *) {
                 // Symbol colored
                 Image(battery)
-                    .font(.system(size: fontSize))
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(
                         battery.isCharging ? .yellow : color,
@@ -173,7 +168,6 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
                 // Symbol colored
                 Image(battery)
                     .renderingMode(.template)
-                    .font(.system(size: fontSize))
                     .foregroundColor(
                         battery.isCharging ? .yellow : color)
             }            
@@ -202,6 +196,29 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
                 percentOverlay
             }
         }
+        .font(.system(size: fontSize))
+    }
+}
+
+@available(iOS 13, macOS 12, tvOS 15, watchOS 8.0, *)
+public struct BatteryTestViews<SomeBattery: Battery>: View {
+    public var battery: SomeBattery
+    public var fontSize: Double
+    public var lowPowerMode: Bool
+    public var includeBacking: Bool
+    
+    public init(battery: SomeBattery, fontSize: Double = 45, lowPowerMode: Bool = false, includeBacking: Bool = true) {
+        self.battery = battery
+        self.fontSize = fontSize
+        self.lowPowerMode = lowPowerMode
+        self.includeBacking = includeBacking
+    }
+    public var body: some View {
+        BatteryView(battery: battery, useSystemColors: true, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
+        BatteryView(battery: battery, useSystemColors: true, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
+        Spacer()
+        BatteryView(battery: battery, useSystemColors: false, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
+        BatteryView(battery: battery, useSystemColors: false, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
     }
 }
 
@@ -218,14 +235,29 @@ public struct BatteryTestsRow<SomeBattery: Battery>: View {
         self.lowPowerMode = lowPowerMode
         self.includeBacking = includeBacking
     }
-
+    
+    public var fullWidthSize: Double {
+        #if os(watchOS)
+            fontSize * 2
+        #else
+            fontSize * 5
+        #endif
+    }
+    
     public var body: some View {
-        HStack {
-            BatteryView(battery: battery, useSystemColors: true, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
-            BatteryView(battery: battery, useSystemColors: true, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
-            Spacer()
-            BatteryView(battery: battery, useSystemColors: false, includePercent: false, fontSize: fontSize, includeBacking: includeBacking)
-            BatteryView(battery: battery, useSystemColors: false, includePercent: true, fontSize: fontSize, includeBacking: includeBacking)
+        NavigationLink {
+            List {
+                Text("Description:")
+                Text(battery.description)
+                Spacer()
+                BatteryTestViews(battery: battery, fontSize: fullWidthSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
+                Spacer()
+            }
+            .backport.navigationTitle(battery.description)
+        } label: {
+            HStack {
+                BatteryTestViews(battery: battery, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
+            }
         }
     }
 }
@@ -254,16 +286,17 @@ public struct BatteryTestsView: View {
             if let battery = Device.current.battery {
                 BatteryTestsRow(battery: battery, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
-            ForEach(mocks, id: \.description) { mock in
+            ForEach(mocks) { mock in
                 BatteryTestsRow(battery: mock, fontSize: fontSize, lowPowerMode: lowPowerMode, includeBacking: includeBacking)
             }
         }
-        .navigationTitle("Battery Mocks")
+        .backport.navigationTitle("Battery Mocks")
     }
 }
 
 @available(iOS 14, macOS 12, tvOS 15, watchOS 8.0, *)
 #Preview("Battery Tests") {
     BatteryTestsView()
+        .navigationWrapper()
 }
 #endif

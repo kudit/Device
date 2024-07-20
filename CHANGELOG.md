@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.3.4 7/19/2024 Added Identifiable to Battery protocol which I think works because ObservableObject requires AnyObject.  Added details for battery tests so that description can be seen and small screens can see all details.  Moved fontSize off of individual views in batteryView in preparation for extracting size entirely so can use sizes externally without having to specify font size (unfortunately, still can't due to not being able to specify relative sizes compared to base, but at least we cleaned up the code some).  Fixed so setting low power mode doesn't cause view to publish changes while rendering.
+
 v2.3.3 7/17/2024 Updated to make sure ObservableObject fallback is present from compatibility when needed for Linux compatibility.  Re-worked environment checks so they can be called as static functions on Device that don't need to be actor-isolated.  This also has the benefit of providing DeviceKit compatibility and thus we have un-deprecated those static functions.  Removed several unused functions and moved some to Compatibility.  Set minimum Compatibility version to 1.0.18. 
 
 v2.3.2 7/15/2024 Updated compatibility to fix linux and watchOS support.  Updated icons to use new themeing.  Improved ScreenInfoView on visionOS (and removed completely from DeviceInfoView since really irrelevant on visionOS).
@@ -153,6 +155,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
 - [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
+- [ ] Device: Create live activity for battery and screen orientation as example code.
 - [ ] Go through and make sure device images (photos) have transparent background instead of white.
 - [ ] Add support IDs for macs and anything that has one missing.
 - [ ] Double check and update all device color sets. (right click on the color swatches and inspect element for the hex code)  https://www.apple.com/iphone/compare/?modelList=iphone-13-mini,iphone-13,iphone-15-pro

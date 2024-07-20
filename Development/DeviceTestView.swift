@@ -15,7 +15,7 @@ import Compatibility
         .symbolRenderingMode(.hierarchical)
         Label("Foo", symbolName: "star.fill")
         Label("Bar", symbolName: "roundedcorners")
-        Label("Baz", symbolName: "bad")
+        Label("Bad", symbolName: "bad")
         Label("BS", symbolName: "battery.slash")
         Divider()
         CapabilitiesTextView(capabilities: Set(Capability.allCases))
@@ -145,7 +145,7 @@ struct HardwareListView: View {
             AttributeListView(currentDevice: currentDevice,header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
             AttributeListView(currentDevice: currentDevice,header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
-        .navigationTitle("Hardware")
+        .backport.navigationTitle("Hardware")
     }
 }
 
@@ -224,7 +224,7 @@ public struct DeviceTestView: View {
                 }
             }
         }
-        .navigationTitle("Device.swift v\(Device.version)")
+        .backport.navigationTitle("Device.swift v\(Device.version)")
         .toolbar {
             NavigationLink(destination: {
                 DeviceListView(devices: Device.all)

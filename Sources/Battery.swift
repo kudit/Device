@@ -46,7 +46,7 @@ public enum BatteryChangeType: Sendable {
 
 @available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor
-public protocol Battery: ObservableObject, SymbolRepresentable { // , CustomStringConvertible, Identifiable cannot conform since MainActor isolated
+public protocol Battery: ObservableObject, SymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
@@ -199,9 +199,9 @@ public class MockBattery: Battery {
         monitors.append(monitor)
     }
     
-    public var description: String {
-        "\(currentLevel)\(currentState)\(lowPowerMode)\(cycleLevelState)"
-    }
+//    public var id: String {
+//        "\(currentLevel)\(currentState)\(lowPowerMode)\(cycleLevelState)"
+//    }
     
     /// Creates a mock Battery object that can be passed to a BatteryView or used for various things.  Will automatically cycle battery to empty and then charge to full and then empty again if `cycleLevelStateSeconds` is greater than 0.  If so, creates a timer that will automatically drain battery to 0 and then charge to 100 and then drain again every cycleLevelStateSeconds.
     public init(currentLevel: Int = -1, currentState: BatteryState = .unplugged, cycleLevelState: TimeInterval = 0, lowPowerMode: Bool = false) {
@@ -257,10 +257,11 @@ public class MockBattery: Battery {
     @MainActor
     public static let animated = MockBattery(currentLevel: 50, cycleLevelState: 0.1)
     @MainActor
+    public static let animatedLowPowerMode = MockBattery(currentLevel: 50, cycleLevelState: 0.1, lowPowerMode: true)
+    @MainActor
     public static let mocks = mocksFor(lowPowerMode: false)
     public static func mocksFor(lowPowerMode: Bool) -> [MockBattery] {
-        Self.animated.lowPowerMode = lowPowerMode
-        var mocks = [Self.animated]
+        var mocks = [lowPowerMode ? Self.animatedLowPowerMode : Self.animated]
         mocks += BatterySnapshot.mocks.map { mock in
             MockBattery(currentLevel: mock.currentLevel, currentState: mock.currentState, lowPowerMode: lowPowerMode)
         }

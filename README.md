@@ -288,6 +288,15 @@ Some information has been sourced from the following:
 If you have the need for a specific feature that you want implemented or if you experienced a bug, please open an issue.
 If you extended the functionality of Device yourself and want others to use it too, please submit a pull request.
 
+## Donations
+This was a lot of work.  If you find this useful particularly if you use this in a commercial product, please consider making a donation to http://paypal.me/kudit
+
+## License
+Feel free to use this in projects, however, please include a link back to this project and credit somewhere in the app.  Example Markdown and string interpolation for the version:
+```swift
+Text("Open Source projects used include [Device](https://github.com/kudit/Device) v\(Device.version)
+```
+
 ## Contributors
 The complete list of people who contributed to this project is available [here](https://github.com/kudit/Device/graphs/contributors).
 A big thanks to everyone who has contributed! 🙏
