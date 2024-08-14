@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.4.0"
+let version = "2.4.1"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -24,13 +24,13 @@ var targets = [
 	Target.target(
 		name: packageLibraryName,
         dependencies: [
-            .product(name: "Color Library", package: "color"), // apparently needs to be lowercase.  Also note this is "Compatibility Library" not "Compatibility"
+            .product(name: "Color Library", package: "color"), // apparently needs to be lowercase.  Also note this is "Color Library" not "Color"
         ],
 		path: "Sources"
 		// If resources need to be included in the module, include here
-//		,resources: [ // unfortuantely cannot be conditionally compiled based on Swift version since the tool seems to be run on latest version.
-//            Resource.process("Resources"),
-//        ]
+		,resources: [ // unfortuantely cannot be conditionally compiled based on Swift version since the tool seems to be run on latest version.
+            Resource.process("Resources"),
+        ]
 //		,swiftSettings: [
 //			.enableUpcomingFeature("BareSlashRegexLiterals")
 //		]
@@ -122,7 +122,7 @@ let package = Package(
     // include dependencies
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/kudit/Color", "1.1.1"..<"2.0.0"),
+        .package(url: "https://github.com/kudit/Color", "1.1.2"..<"2.0.0"),
     ],
     targets: targets
 )

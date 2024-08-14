@@ -27,6 +27,8 @@ Real Device Apple TV
 
 TODO: Fix background tint to match better.
 
+v2.4.1 8/13/2024 Updated Color/Compatibility versions to address Swift 5.9 issues.  Previous version removed the Resources build when standardizing Package.swift!  Restored.  Explains why Bundle.module was not available since no resources included in the bundle.
+
 v2.4.0 8/13/2024 Standardized Package.swift, CHANGELOG.md, README.md, and LICENSE.txt files.  Standardized deployment targets.  Switched dependency from Compatibility to Color so we don't have to re-write color parsing code.  Added new HomePod mini Midnight color.  Added supported versions to indicate the preinstalled version and maximum version of iOS/macOS/etc supported by each device.  Have the max version be the version AFTER the version, so for late 2016 Touchbook, `launchOSVersion = "10.12.1"` and `unsupportedOSVersion = "13.0"` (max would be 12.x) - if this is `nil`, this is still currently supported.
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS*
