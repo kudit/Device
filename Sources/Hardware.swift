@@ -657,8 +657,10 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     
     // HomePod
     case whiteHome = "#f1f1f1", yellowHome = "#ffc953", orangeHome = "#e56645", blueHome = "#25485e", spacegrayHome = "#36373a", midnightHome = "#313236" // midnight is best guess
+    // added July 15, 2024: https://www.apple.com/newsroom/2024/07/apple-introduces-homepod-mini-in-midnight/
+    case midnightHomeMini = "#222428"
     static let homePod = [whiteHome, midnightHome]
-    static let homePodMini = [whiteHome, yellowHome, orangeHome, blueHome, spacegrayHome]
+    static let homePodMini = [whiteHome, yellowHome, orangeHome, blueHome, spacegrayHome, midnightHomeMini]
 }
 public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]

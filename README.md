@@ -3,12 +3,15 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fkudit%2FDevice%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/kudit/Device)
 
 # Device.swiftpm
-Device is a value-type replacement for device information on all supported platforms.  The primary goals are to be easily maintainable by multiple individuals and employ a consistent API that can be used across platforms.  APIs are present even on platforms that don't support all features so that availability checks do not have to be performed in external code and where irrelevant, code can simply unwrap optionals.  Device definitions include clear initializers so anyone can add new devices and contribute to the project even on an iPad using Swift Playgrounds rather than requiring Xcode.  No need to memorize mapping schema or use additional build tools.
+Device is a value-type replacement for device information on all supported platforms (very similar to DeviceKit but designed to be easier to maintain).  Device definitions include clear initializers so anyone can add new devices and contribute to the project even on an iPad using Swift Playgrounds rather than requiring Xcode.  No need to memorize mapping schema or use additional build tools.
+
+The primary goals are to be easily maintainable by multiple individuals, employ a consistent API that can be used across all platforms, and to be maintainable using Swift Playgrounds on iPad and macOS.  APIs are typically present even on platforms that don't support all features so that availability checks do not have to be performed in external code, and where irrelevant, code can simply return optionals.
 
 This is actively maintained so if there is a feature request or change, we will strive to address within a week.
 
-## Features
 
+## Features
+- Can develop and modify without Xcode using Swift Playgrounds on iPad!
 - Framework
     - Clearly labeled device identification
     - Device idiom detection
@@ -88,35 +91,41 @@ This is actively maintained so if there is a feature request or change, we will 
         - Crash Detection
         - Cameras
 
-## Requirements
 
+## Requirements
 - iOS 11+ (15.2+ minimum required for Swift Playgrounds support)
 - macOS 10.5+ (UI only supported on macOS 12.0+)
 - macCatalyst 13.0+ (first version available)
-- tvOS 11.0+ (UI only supported on tvOS 15.0+)
+- tvOS 11.0+ (UI only supported on tvOS 15.0+, 17+ required for most SwiftUI features)
 - watchOS 4.0+ (UI only supported on watchOS 8.0+)
 - visionOS 1.0+
 - Theoretically should work with Linux, Windows, and Vapor, but haven't tested.  If you would like to help, please let us know.
+
 
 ## Known Issues
 Built for macOS "Designed for iPad" returns an iPad profile instead of actual hardware profile.
 Custom Symbols likely won't work in macOS < 13 or watchOS < 7.
 LowPowerMode checks unavailable in macOS < 12.
+*See CHANGELOG.md for more known issues and roadmap*
+
 
 ## Installation
 Install by adding this as a package dependency to your code.  This can be done in Xcode or Swift Playgrounds!
 
 ### Swift Package Manager
 
-#### Swift 5
+#### Swift 5+
+You can try these examples in a Swift Playground by adding package: `https://github.com/kudit/Device`
+
+If the repository is private, use the following link to import: `https://<your-PAT-string>@github.com/kudit/Device.git`
+
+Or you can manually enter the following in the Package.swift file:
 ```swift
 dependencies: [
     .package(url: "https://github.com/kudit/Device.git", from: "2.0.0"),
-    /// ...
 ]
 ```
 
-You can try these examples in a Swift Playground by adding package: https://github.com/kudit/Device
 
 ## Usage
 First make sure to import the framework:
@@ -126,9 +135,14 @@ import Device
 
 Here are some usage examples.
 
+### Get the version of Device that is imported.
+```swift
+let version = Device.version
+```
+
 ### Get the device You're Running On
 ```swift
-let device = Device.current
+let device = await Device.current // await required if not on the main thread (@MainActor isolated)
 
 print(device) // prints, for example, "iPhone 6 Plus"
 
@@ -162,7 +176,7 @@ if device.idiom == .pad {
 
 ### Check if running in a Simulator
 ```swift
-if Device.current.isSimulator {
+if Device.isSimulator {
   // Running on one of the simulators
   // Skip doing something irrelevant for Simulator
 } 
@@ -170,21 +184,21 @@ if Device.current.isSimulator {
 
 ### Check if running in a Preview
 ```swift
-if Device.current.isPreview {
+if Device.isPreview {
   // Running in an XCode #Preview
 } 
 ```
 
 ### Check if running in a Playground
 ```swift
-if Device.current.isPlayground {
+if Device.isPlayground {
   // Running in an XCode #Preview
 } 
 ```
 
 ### Check if running on a physical device
 ```swift
-if Device.current.isRealDevice {
+if Device.isRealDevice {
   // Running on physical hardware and not a simulator
 } 
 ```
@@ -278,6 +292,8 @@ BatteryView()
 BatteryView(fontSize: 80)
 ```
 
+All these tests can be demonstrated using previews or by running the app executable that is bundled in the Development folder of the module.
+
 ## Source of Information
 Some information has been sourced from the following:
 - https://www.theiphonewiki.com/wiki/Models
@@ -286,16 +302,19 @@ Some information has been sourced from the following:
 
 ## Contributing
 If you have the need for a specific feature that you want implemented or if you experienced a bug, please open an issue.
-If you extended the functionality of Device yourself and want others to use it too, please submit a pull request.
+If you extended the functionality yourself and want others to use it too, please submit a pull request.
+
 
 ## Donations
 This was a lot of work.  If you find this useful particularly if you use this in a commercial product, please consider making a donation to http://paypal.me/kudit
+
 
 ## License
 Feel free to use this in projects, however, please include a link back to this project and credit somewhere in the app.  Example Markdown and string interpolation for the version:
 ```swift
 Text("Open Source projects used include [Device](https://github.com/kudit/Device) v\(Device.version)
 ```
+
 
 ## Contributors
 The complete list of people who contributed to this project is available [here](https://github.com/kudit/Device/graphs/contributors).

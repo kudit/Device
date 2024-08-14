@@ -612,6 +612,8 @@ struct MacLookup: Codable {
             officialName: officialName,
             identifiers: models.distilled,
             supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            launchOSVersion: "0.0.0",
+            unsupportedOSVersion: "0.0.0",
             form: form,
             image: nil,
             capabilities: capabilities,

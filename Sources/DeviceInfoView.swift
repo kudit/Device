@@ -7,7 +7,7 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
-import Foundation
+import Color
 
 public extension CGFloat {
     static let devicePanelRadius: Double = 15
@@ -71,7 +71,7 @@ public struct DeviceInfoView: View {
     var deviceColors: some View {
         ForEach(device.colors, id: \.self) { color in
             Image(device.idiomatic)
-                .foregroundColor(Color(hex: color.rawValue))
+                .foregroundColor(Color(string: color.rawValue))
                 .shadow(color: .gray, radius: 0.5)
         }
 }
@@ -83,20 +83,25 @@ public struct DeviceInfoView: View {
                     Text(device.officialName)
                         .font(.headline)
                     HStack {
-                        deviceColors
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                deviceColors
+                            }
+                            CapabilitiesTextView(capabilities: device.capabilities)
+                                .font(.caption)   
+                        }
                         Spacer(minLength: 0)
-                        if #available(iOS 14.0, *) {
-                            Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text(
-                                Image(symbolName: "cpu"))
-                        } else {
-                            // Fallback on earlier versions
-                            Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text("cpu")
+                        VStack(alignment: .trailing) {
+                            Text("\(device.supportedOSInfo)").font(.caption).foregroundStyle(.gray)
+                            if #available(iOS 14.0, *) {
+                                Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text(
+                                    Image(symbolName: "cpu"))
+                            } else {
+                                // Fallback on earlier versions
+                                Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text("cpu")
+                            }
                         }
                     }
-                    HStack {
-                        CapabilitiesTextView(capabilities: device.capabilities)
-                    }
-                    .font(.caption)
                 }
                 Spacer()
                 if let image = device.image {
@@ -117,6 +122,8 @@ public struct DeviceInfoView: View {
             }
             if device.screen != nil && includeScreen {
                 ScreenInfoView(device: device)
+            } else {
+                Spacer()
             }
         }
     }

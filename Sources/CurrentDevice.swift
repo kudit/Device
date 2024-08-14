@@ -1009,7 +1009,16 @@ public final class MockDevice: CurrentDevice {
         if let device {
             self.device = device
         } else {
-            self.device = Device(idiom: .unspecified, officialName: "Mock Device", identifiers: [self.identifier], supportId: "n/a", capabilities: [.screen(.undefined)], colors: [.blue], cpu: .unknown)
+            self.device = Device(
+                idiom: .unspecified,
+                officialName: "Mock Device",
+                identifiers: [self.identifier],
+                supportId: "n/a",
+                launchOSVersion: "2",
+                unsupportedOSVersion: nil,
+                capabilities: [.screen(.undefined)],
+                colors: [.blue],
+                cpu: .unknown)
         }
         self.name = name
         self.systemName = systemName

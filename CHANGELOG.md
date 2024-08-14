@@ -25,6 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+TODO: Fix background tint to match better.
+
+v2.4.0 8/13/2024 Standardized Package.swift, CHANGELOG.md, README.md, and LICENSE.txt files.  Standardized deployment targets.  Switched dependency from Compatibility to Color so we don't have to re-write color parsing code.  Added new HomePod mini Midnight color.  Added supported versions to indicate the preinstalled version and maximum version of iOS/macOS/etc supported by each device.  Have the max version be the version AFTER the version, so for late 2016 Touchbook, `launchOSVersion = "10.12.1"` and `unsupportedOSVersion = "13.0"` (max would be 12.x) - if this is `nil`, this is still currently supported.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.3.4 7/19/2024 Added Identifiable to Battery protocol which I think works because ObservableObject requires AnyObject.  Added details for battery tests so that description can be seen and small screens can see all details.  Moved fontSize off of individual views in batteryView in preparation for extracting size entirely so can use sizes externally without having to specify font size (unfortunately, still can't due to not being able to specify relative sizes compared to base, but at least we cleaned up the code some).  Fixed so setting low power mode doesn't cause view to publish changes while rendering.
 
 v2.3.3 7/17/2024 Updated to make sure ObservableObject fallback is present from compatibility when needed for Linux compatibility.  Re-worked environment checks so they can be called as static functions on Device that don't need to be actor-isolated.  This also has the benefit of providing DeviceKit compatibility and thus we have un-deprecated those static functions.  Removed several unused functions and moved some to Compatibility.  Set minimum Compatibility version to 1.0.18. 
@@ -135,7 +140,6 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 
 ## Bugs to fix:
 Known issues that need to be addressed.
-
 - [ ] Main-actor isolated warning on .current in CurrentDevice.swift (assuming Device.current but could be UIDevice.current) and this only happens in Swift Playgrounds.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Must be built for debug instead of release configuration when archiving/analyzing due to issue: errors linking for release like "Undefined symbols for architecture arm64:
@@ -151,7 +155,6 @@ Known issues that need to be addressed.
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
-
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
 - [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
@@ -185,11 +188,9 @@ Planned features and anticipated API changes.  If you want to contribute, this i
         thermalStateDidChangeNotification
         ProcessInfo.thermalState
 - [ ] Look into creating bar for screen resolution PPI to indicate if it's high resolution or not.  Have area indicated that is considered "retina" - have bar as a conditional presentation if SwiftCharts is available.
-- [ ] Add supported versions to indicate the iOS/macOS/etc versions supported by each device.
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
-
 - [ ] Create state-less wrappers for CurrentDevice inspection so not dependent on observable object and can provide legacy support?  If ObservableObject available, then create an observable CurrentDevice that can be monitoried for changes?
 - [ ] See if there's a way to get visionOS version when designed for iPad mode.  This claims to do the right thing but verified it also doesn't work for visionOS (Designed for iPad): https://swiftpackageindex.com/MarcoEidinger/OSInfo
 - [ ] Move privacy manifest to the package sources resources folder so it gets processed? https://github.com/devicekit/DeviceKit/issues/408#event-12991784329

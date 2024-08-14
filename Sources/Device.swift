@@ -1,3 +1,10 @@
+//
+//  Device.swift
+//  
+//
+//  Created by Ben Ku on 9/26/16.
+//  Copyright © 2016 Kudit, LLC. All rights reserved.
+//
 /**
  Device type and structs.
  
@@ -12,9 +19,8 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version = "2.3.4"
+    static let version: Version = "2.4.0"
 }
-
 import Compatibility
 
 #if canImport(UIKit)
@@ -30,6 +36,7 @@ public extension String {
             .replacingOccurrences(of: "", with: "Apple")
     }
     static let unknown = "Unknown"
+    static let unknownSupportId = "UNKNOWN_PLEASE_HELP_REPLACE"
 }
 
 /// Type for inheritance of specific idiom structs which use a Device as a backing store but allows for idiom-specific variables and functions and acts like a sub-class of Device but still having value-type backing.  TODO: Make this private so we don't access DeviceType outside of here?
@@ -41,6 +48,8 @@ public extension DeviceType {
     var officialName: String { device.officialName }
     var identifiers: [String] { device.identifiers }
     var supportId: String { device.supportId }
+    var launchOSVersion: Version { device.launchOSVersion }
+    var unsupportedOSVersion: Version? { device.unsupportedOSVersion }
     var image: String? { device.image }
     
     var capabilities: Capabilities { device.capabilities }
@@ -111,6 +120,16 @@ public extension DeviceType {
     /// Device.iPhoneXR.officialName:     iPhone Xʀ
     /// Device.iPhoneXR.safeOfficialName: iPhone XR
     var safeOfficialName: String { device.safeOfficialName }
+    
+    var supportedOSInfo: String {
+        var info = "\(idiom.osName) \(launchOSVersion)"
+        if let unsupportedOSVersion {
+            info += " < \(unsupportedOSVersion)"
+        } else {
+            info += "+"
+        }
+        return info                   
+    }
 }
 extension String {
     static let base = "BASE"
@@ -328,6 +347,31 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         public func test(device: any CurrentDevice) -> Bool {
             return device.idiom == self
         }
+        
+        public var osName: String {
+            switch self {
+            case .unspecified:
+                "unknownOS"
+            case .mac:
+                "macOS"
+            case .pod:
+                "iOS"
+            case .phone:
+                "iOS"
+            case .pad:
+                "iPadOS"
+            case .tv:
+                "tvOS"
+            case .carPlay:
+                "carOS"
+            case .watch:
+                "watchOS"
+            case .homePod:
+                "audioOS"
+            case .vision:
+                "visionOS"
+            }
+        }
     }
     
     // MARK: - Initialization and variables
@@ -336,6 +380,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
     public let officialName: String
     public let identifiers: [String]
     public let supportId: String
+    public let launchOSVersion: Version
+    public let unsupportedOSVersion: Version?
     public let image: String?
     
     // All initializers should add these:
@@ -351,6 +397,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         self.officialName = knownDevice.officialName
         self.identifiers = knownDevice.identifiers
         self.supportId = knownDevice.supportId
+        self.launchOSVersion = knownDevice.launchOSVersion
+        self.unsupportedOSVersion = knownDevice.unsupportedOSVersion
         self.image = knownDevice.image
         self.capabilities = knownDevice.capabilities
         self.models = knownDevice.models
@@ -363,6 +411,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String? = nil,
         capabilities: Capabilities,
         models: [String] = [],
@@ -373,6 +423,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         self.officialName = officialName
         self.identifiers = identifiers
         self.supportId = supportId
+        self.launchOSVersion = launchOSVersion
+        self.unsupportedOSVersion = unsupportedOSVersion
         self.image = image
         self.capabilities = capabilities
         self.models = models
@@ -409,7 +461,9 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
             idiom: .unspecified,
             officialName: "Unknown Device",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "0.0.0",
+            unsupportedOSVersion: nil,
             image: nil,
             capabilities: [],
             models: [],
@@ -545,6 +599,8 @@ public struct Mac: IdiomType {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         form: Form, // will indicate if there is a battery or not (only MacBooks have batteries)
         image: String?,
         capabilities: Capabilities = [],
@@ -565,14 +621,16 @@ public struct Mac: IdiomType {
         } else if form.hasScreen {
             capabilities.formUnion([.screen(.undefined)])
         }
-        device = Device(idiom: .mac, officialName: officialName, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities, models: models, colors: colors, cpu: cpu)
+        device = Device(idiom: .mac, officialName: officialName, identifiers: identifiers, supportId: supportId, launchOSVersion: launchOSVersion, unsupportedOSVersion: unsupportedOSVersion, image: image, capabilities: capabilities, models: models, colors: colors, cpu: cpu)
     }
     
     init(identifier: String) {
         self.init(
             officialName: "Unknown Mac",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "0.0.0",
+            unsupportedOSVersion: nil,
             form: .macMini, // no default battery
             image: nil,
             capabilities: identifier == .base ? [] : [
@@ -603,6 +661,8 @@ public struct Mac: IdiomType {
             officialName: "iMac (24-inch, M1, 2021)",
             identifiers: ["iMac21,2"],
             supportId: "SP839",
+            launchOSVersion: "11.3",
+            unsupportedOSVersion: nil,
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/id-imac-24-2021-2.png",
             models: ["MGTF3xx/a", "MJV83xx/a", "MJV93xx/a", "MJVA3xx/a"],
@@ -612,6 +672,8 @@ public struct Mac: IdiomType {
             officialName: "iMac (Retina 5K, 27-inch, 2020)",
             identifiers: ["iMac20,1", "iMac20,2"],
             supportId: "SP821",
+            launchOSVersion: "10.15.6",
+            unsupportedOSVersion: nil,
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2020.jpg",
             models: ["MXWT2xx/A", "MXWU2xx/A", "MXWV2xx/A"],
@@ -623,7 +685,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, 2019)",
             identifiers: ["iMac19,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.14.4",
+            unsupportedOSVersion: nil,
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -633,7 +697,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, 2019)",
             identifiers: ["iMac19,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.14.4",
+            unsupportedOSVersion: nil,
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -643,7 +709,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac Pro",
             identifiers: ["iMacPro1,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.13.2",
+            unsupportedOSVersion: nil,
             form: .iMac,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -653,7 +721,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, 2017)",
             identifiers: ["iMac18,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.4",
+            unsupportedOSVersion: "14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -663,7 +733,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, 2017)",
             identifiers: ["iMac18,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.4",
+            unsupportedOSVersion: "14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -673,7 +745,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, 2017)",
             identifiers: ["iMac18,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.4",
+            unsupportedOSVersion: "14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -683,7 +757,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, Late 2015)",
             identifiers: ["iMac17,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.11",
+            unsupportedOSVersion: "13",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -693,7 +769,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, Late 2015)",
             identifiers: ["iMac16,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.11",
+            unsupportedOSVersion: "13",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -703,7 +781,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Late 2015)",
             identifiers: ["iMac16,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.11",
+            unsupportedOSVersion: "13",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -713,7 +793,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, Late 2014 or Mid 2015)",
             identifiers: ["iMac15,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10",
+            unsupportedOSVersion: "12",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -723,7 +805,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Mid 2014)",
             identifiers: ["iMac14,4"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9.3",
+            unsupportedOSVersion: "12",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -733,7 +817,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (27-inch, Late 2013)",
             identifiers: ["iMac14,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.4",
+            unsupportedOSVersion: "11",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -743,7 +829,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Late 2013)",
             identifiers: ["iMac14,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.4",
+            unsupportedOSVersion: "11",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -753,7 +841,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (27-inch, Late 2012)",
             identifiers: ["iMac13,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.2",
+            unsupportedOSVersion: "11",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -763,7 +853,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Late 2012)",
             identifiers: ["iMac13,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.2",
+            unsupportedOSVersion: "11",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -773,7 +865,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (27-inch, Mid 2011)",
             identifiers: ["iMac12,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -783,7 +877,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Mid 2011)",
             identifiers: ["iMac12,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -793,7 +889,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (27-inch, Mid 2010)",
             identifiers: ["iMac11,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.3",
+            unsupportedOSVersion: "10.14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -802,7 +900,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Mid 2010)",
             identifiers: ["iMac11,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.3",
+            unsupportedOSVersion: "10.14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -811,7 +911,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (27-inch, Late 2009)",
             identifiers: ["iMac10,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.1",
+            unsupportedOSVersion: "10.14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -819,7 +921,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (21.5-inch, Late 2009)",
             identifiers: ["iMac10,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.1",
+            unsupportedOSVersion: "10.14",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -827,7 +931,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (24-inch, Early 2009)",
             identifiers: ["iMac9,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.6",
+            unsupportedOSVersion: "10.12",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -835,7 +941,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (20-inch, Early 2009)",
             identifiers: ["iMac9,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.6",
+            unsupportedOSVersion: "10.12",
             form: .iMac,
             image: nil,
             capabilities: [.usbC],
@@ -843,7 +951,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (Retina, 12-inch, 2017)",
             identifiers: ["MacBook10,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.5",
+            unsupportedOSVersion: "14",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -853,7 +963,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (Retina, 12-inch, Early 2016)",
             identifiers: ["MacBook9,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.11.4",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -863,7 +975,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (Retina, 12-inch, Early 2015)",
             identifiers: ["MacBook8,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10.2",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -873,7 +987,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (13-inch, Mid 2010)",
             identifiers: ["MacBook7,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.3",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -882,7 +998,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (13-inch, Late 2009)",
             identifiers: ["MacBook6,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.1",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -891,7 +1009,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (13-inch, Mid 2009)",
             identifiers: ["MacBook5,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.6",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -900,7 +1020,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (13-inch, Early 2009)",
             identifiers: ["MacBook5,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.6",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.usbC],
@@ -909,7 +1031,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (M2, 2022)",
             identifiers: ["Mac14,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "12.4",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -919,7 +1043,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (M1, 2020)",
             identifiers: ["MacBookAir10,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "11.0.1",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -929,7 +1055,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2020)",
             identifiers: ["MacBookAir9,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.15.3",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -939,7 +1067,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2019)",
             identifiers: ["MacBookAir8,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.14.5",
+            unsupportedOSVersion: "15",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -949,7 +1079,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2018)",
             identifiers: ["MacBookAir8,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.14.1",
+            unsupportedOSVersion: "15",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -959,7 +1091,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, 2017)",
             identifiers: ["MacBookAir7,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10.2",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -968,7 +1102,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Early 2015)",
             identifiers: ["MacBookAir7,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10.2",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -977,7 +1113,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Early 2015)",
             identifiers: ["MacBookAir7,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10.2",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -986,7 +1124,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Early 2014)",
             identifiers: ["MacBookAir6,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9.2",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -995,7 +1135,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Early 2014)",
             identifiers: ["MacBookAir6,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9.2",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1004,7 +1146,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Mid 2013)",
             identifiers: ["MacBookAir6,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.4",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1013,7 +1157,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Mid 2013)",
             identifiers: ["MacBookAir6,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9.2",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1022,7 +1168,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Mid 2012)",
             identifiers: ["MacBookAir5,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.2",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1031,7 +1179,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Mid 2012)",
             identifiers: ["MacBookAir5,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7.4",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1040,7 +1190,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Mid 2011)",
             identifiers: ["MacBookAir4,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1049,7 +1201,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Mid 2011)",
             identifiers: ["MacBookAir4,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1058,7 +1212,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Late 2010)",
             identifiers: ["MacBookAir3,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1067,7 +1223,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Late 2010)",
             identifiers: ["MacBookAir3,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1076,7 +1234,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (Mid 2009)",
             identifiers: ["MacBookAir2,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.7",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.air, .usbC],
@@ -1085,7 +1245,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (14-inch, 2023)",
             identifiers: ["Mac14,5", "Mac14,9"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "13.2",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1096,6 +1258,8 @@ public struct Mac: IdiomType {
             officialName: "MacBook Pro (16-inch, 2023)",
             identifiers: ["Mac14,6", "Mac14,10"],
             supportId: "SP890",
+            launchOSVersion: "13.2",
+            unsupportedOSVersion: nil,
             form: .macBookGen2,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP890/macbook-pro-2023-16in_2x.png",
             capabilities: [.pro],
@@ -1107,7 +1271,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, M2, 2022)",
             identifiers: ["Mac14,7"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "12.4",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1117,7 +1283,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (14-inch, 2021)",
             identifiers: ["MacBookPro18,3", "MacBookPro18,4"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "12.0.1",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1127,7 +1295,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (16-inch, 2021)",
             identifiers: ["MacBookPro18,1", "MacBookPro18,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "12.0.1",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1137,7 +1307,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, M1, 2020)",
             identifiers: ["MacBookPro17,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "11.0.1",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1147,7 +1319,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.15.4",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1157,7 +1331,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.15.4",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1167,7 +1343,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (16-inch, 2019)",
             identifiers: ["MacBookPro16,1", "MacBookPro16,4"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.15.1",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1177,7 +1355,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,4"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.14.5",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1187,7 +1367,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, 2019)",
             identifiers: ["MacBookPro15,1", "MacBookPro15,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.13.6",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1197,7 +1379,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.13.6",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1207,7 +1391,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, 2018)",
             identifiers: ["MacBookPro15,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.13.6",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1217,7 +1403,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.13.6",
+            unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1227,7 +1415,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, 2017)",
             identifiers: ["MacBookPro14,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.5",
+            unsupportedOSVersion: "14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1237,7 +1427,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro14,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.5",
+            unsupportedOSVersion: "14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1247,7 +1439,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro14,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.5",
+            unsupportedOSVersion: "14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1257,7 +1451,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, 2016)", // Touchbook, macOS 12
             identifiers: ["MacBookPro13,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.1",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1267,7 +1463,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2016, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro13,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12.1",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1277,7 +1475,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro13,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.12",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1287,7 +1487,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2015)",
             identifiers: ["MacBookPro11,4", "MacBookPro11,5"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10.3",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1295,7 +1497,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Early 2015)",
             identifiers: ["MacBookPro12,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10.2",
+            unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1304,7 +1508,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2014)",
             identifiers: ["MacBookPro11,2", "MacBookPro11,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1312,7 +1518,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Mid 2014)",
             identifiers: ["MacBookPro11,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1321,7 +1529,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Late 2013)",
             identifiers: ["MacBookPro11,2", "MacBookPro11,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1329,7 +1539,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Late 2013)",
             identifiers: ["MacBookPro11,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9",
+            unsupportedOSVersion: "12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1338,7 +1550,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Early 2013)",
             identifiers: ["MacBookPro10,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7.4",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1347,7 +1561,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Early 2013)",
             identifiers: ["MacBookPro10,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.2",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1356,7 +1572,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Late 2012)",
             identifiers: ["MacBookPro10,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.2",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1365,7 +1583,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2012)",
             identifiers: ["MacBookPro10,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7.4",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1373,7 +1593,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Mid 2012)",
             identifiers: ["MacBookPro9,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7.3",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1382,7 +1604,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Mid 2012)",
             identifiers: ["MacBookPro9,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7.3",
+            unsupportedOSVersion: "11",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1391,7 +1615,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Late 2011)",
             identifiers: ["MacBookPro8,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1399,7 +1625,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Late 2011)",
             identifiers: ["MacBookPro8,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7.2",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1408,7 +1636,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Late 2011)",
             identifiers: ["MacBookPro8,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1417,7 +1647,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Early 2011)",
             identifiers: ["MacBookPro8,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1425,7 +1657,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Early 2011)",
             identifiers: ["MacBookPro8,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1434,7 +1668,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Early 2011)",
             identifiers: ["MacBookPro8,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.6",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1443,7 +1679,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Mid 2010)",
             identifiers: ["MacBookPro6,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.3",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1451,7 +1689,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Mid 2010)",
             identifiers: ["MacBookPro6,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.3",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1460,7 +1700,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Mid 2010)",
             identifiers: ["MacBookPro7,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.3",
+            unsupportedOSVersion: "10.14",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1469,7 +1711,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Mid 2009)",
             identifiers: ["MacBookPro5,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.6",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1477,7 +1721,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Mid 2009)",
             identifiers: ["MacBookPro5,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.7",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1486,7 +1732,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, 2.53GHz, Mid 2009)",
             identifiers: ["MacBookPro5,3"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.7",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1494,7 +1742,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Mid 2009)",
             identifiers: ["MacBookPro5,5"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.7",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1503,7 +1753,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Early 2009)",
             identifiers: ["MacBookPro5,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.6",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1511,7 +1763,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Late 2008)",
             identifiers: ["MacBookPro5,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.5",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1519,7 +1773,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.2",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1527,7 +1783,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.5.2",
+            unsupportedOSVersion: "10.12",
             form: .macBook,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1535,7 +1793,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (2023)",
             identifiers: ["Mac14,12"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "13.2",
+            unsupportedOSVersion: nil,
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1544,7 +1804,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (M1, 2020)",
             identifiers: ["Macmini9,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "11.0.1",
+            unsupportedOSVersion: nil,
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1553,7 +1815,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (2018)",
             identifiers: ["Macmini8,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.14",
+            unsupportedOSVersion: nil,
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1562,7 +1826,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Late 2014)",
             identifiers: ["Macmini7,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.10",
+            unsupportedOSVersion: "13",
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1571,7 +1837,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Late 2012)",
             identifiers: ["Macmini6,1", "Macmini6,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.8.1",
+            unsupportedOSVersion: "11",
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1580,7 +1848,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Mid 2011)",
             identifiers: ["Macmini5,1", "Macmini5,2"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.7",
+            unsupportedOSVersion: "10.14",
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1589,7 +1859,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Mid 2010)",
             identifiers: ["Macmini4,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.14",
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1598,7 +1870,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Late 2009)",
             identifiers: ["Macmini3,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6",
+            unsupportedOSVersion: "10.12",
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1607,7 +1881,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Early 2009)",
             identifiers: ["Macmini3,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6",
+            unsupportedOSVersion: "10.12",
             form: .macMini,
             image: nil,
             capabilities: [.usbC],
@@ -1616,7 +1892,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (2019)",
             identifiers: ["MacPro7,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.15.1",
+            unsupportedOSVersion: nil,
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1624,7 +1902,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (Rack, 2019)",
             identifiers: ["MacPro7,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.15.1",
+            unsupportedOSVersion: nil,
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1632,7 +1912,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (Late 2013)",
             identifiers: ["MacPro6,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.9.1",
+            unsupportedOSVersion: "13",
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1641,7 +1923,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (Mid 2012)",
             identifiers: ["MacPro5,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.15",
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1650,7 +1934,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro Server (Mid 2012)",
             identifiers: ["MacPro5,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.15",
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1658,7 +1944,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (Mid 2010)",
             identifiers: ["MacPro5,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.15",
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1667,7 +1955,9 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro Server (Mid 2010)",
             identifiers: ["MacPro5,1"],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "10.6.4",
+            unsupportedOSVersion: "10.15",
             form: .macProGen3,
             image: nil,
             capabilities: [.pro, .usbC],
@@ -1679,6 +1969,8 @@ public struct Mac: IdiomType {
             officialName: "MacBook Pro (14-inch, 2023)",
             identifiers: ["Mac14,9"],
             supportId: "SP889",
+            launchOSVersion: "13.2",
+            unsupportedOSVersion: nil,
             form: .macBookGen2,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
             cpu: .m2pro),
@@ -1686,6 +1978,8 @@ public struct Mac: IdiomType {
             officialName: "Mac mini (2023)",
             identifiers: ["Mac14,3"],
             supportId: "SP891",
+            launchOSVersion: "13.2",
+            unsupportedOSVersion: nil,
             form: .macMini,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111837_mac-mini-2023-m2-pro.png",
             capabilities: [.usbC],
@@ -1703,6 +1997,8 @@ public struct iPod: IdiomType, HasScreen {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
@@ -1715,6 +2011,8 @@ public struct iPod: IdiomType, HasScreen {
             officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
+            launchOSVersion: launchOSVersion,
+            unsupportedOSVersion: unsupportedOSVersion,
             image: image,
             capabilities: capabilities.union([
                 .headphoneJack,
@@ -1733,7 +2031,9 @@ public struct iPod: IdiomType, HasScreen {
         self.init(
             officialName: "Unknown iPod",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "0.0",
+            unsupportedOSVersion: "0.0",
             image: nil,
             // capabilities
             // models
@@ -1752,6 +2052,8 @@ public struct iPod: IdiomType, HasScreen {
             officialName: "iPod touch (1st generation)",
             identifiers: ["iPod1,1"],
             supportId: "112532",
+            launchOSVersion: "1.0",
+            unsupportedOSVersion: "4",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-1st-gen.png",
             capabilities: [.headphoneJack, .thirtyPin, .cameras([.twoMP])], // please check specs
             colors: [.silver],
@@ -1760,6 +2062,8 @@ public struct iPod: IdiomType, HasScreen {
             officialName: "iPod touch (2nd generation)",
             identifiers: ["iPod2,1"],
             supportId: "112319",
+            launchOSVersion: "2.1",
+            unsupportedOSVersion: "5",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-2nd-gen.png",
             capabilities: [.headphoneJack, .thirtyPin, .cameras([.twoMP])], // please check specs
             colors: [.silver],
@@ -1768,6 +2072,8 @@ public struct iPod: IdiomType, HasScreen {
             officialName: "iPod touch (3rd generation)",
             identifiers: ["iPod3,1"],
             supportId: "pp115",
+            launchOSVersion: "3.1.1",
+            unsupportedOSVersion: "6",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-3rd-gen.png",
             capabilities: [.headphoneJack, .thirtyPin, .cameras([.threeMP])], // please check specs
             colors: [.silver],
@@ -1776,6 +2082,8 @@ public struct iPod: IdiomType, HasScreen {
             officialName: "iPod touch (4th generation)",
             identifiers: ["iPod4,1"],
             supportId: "112431",
+            launchOSVersion: "4.1",
+            unsupportedOSVersion: "7",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-4th-gen.png",
             capabilities: [.headphoneJack, .thirtyPin, .cameras([.iSight, .faceTimeHD720p])], // please check specs
             colors: [.white, .black],
@@ -1785,18 +2093,24 @@ public struct iPod: IdiomType, HasScreen {
             officialName: "iPod touch (5th generation)",
             identifiers: ["iPod5,1"],
             supportId: "SP657",
+            launchOSVersion: "6",
+            unsupportedOSVersion: "10",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP657/sp657_ipod-touch_size.jpg",
             cpu: .a5),
         iPod(
             officialName: "iPod touch (6th generation)",
             identifiers: ["iPod7,1"],
             supportId: "SP720",
+            launchOSVersion: "8.4",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP720/SP720-ipod-touch-specs-color-sg-2015.jpg",
             cpu: .a8),
         iPod(
             officialName: "iPod touch (7th generation)",
             identifiers: ["iPod9,1"],
             supportId: "SP796",
+            launchOSVersion: "12.3.1",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP796/ipod-touch-7th-gen_2x.png",
             cpu: .a10),
              
@@ -1813,6 +2127,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
@@ -1832,6 +2148,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
+            launchOSVersion: launchOSVersion,
+            unsupportedOSVersion: unsupportedOSVersion,
             image: image,
             capabilities: capabilities.union([.battery]), // all iPhones have batteries
             models: models,
@@ -1844,7 +2162,9 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         self.init(
             officialName: "Unknown iPhone",
             identifiers:[identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "18",
+            unsupportedOSVersion: nil,
             image: nil,
             // Assume these capabilities of phones going forward minimum.  Don't include if we're wanting the default set not the one going forward
             capabilities: identifier == .base ? [] : [
@@ -1885,6 +2205,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone",
             identifiers: ["iPhone1,1"],
             supportId: "SP2",
+            launchOSVersion: "1",
+            unsupportedOSVersion: "4",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone-original-colors.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             colors: [.silver],
@@ -1896,6 +2218,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 3G",
             identifiers: ["iPhone1,2"],
             supportId: "SP495",
+            launchOSVersion: "2",
+            unsupportedOSVersion: "5",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone3g-colors.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             colors: [.black],
@@ -1907,6 +2231,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 3GS",
             identifiers: ["iPhone2,1"],
             supportId: "SP565",
+            launchOSVersion: "3",
+            unsupportedOSVersion: "7",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone3gs-colors.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             colors: [.black],
@@ -1919,6 +2245,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 4",
             identifiers: ["iPhone3,1", "iPhone3,2", "iPhone3,3"],
             supportId: "SP587",
+            launchOSVersion: "4",
+            unsupportedOSVersion: "8",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP643/sp643_iphone4s_color_black.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             cpu: .a4,
@@ -1929,6 +2257,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 4s",
             identifiers: ["iPhone4,1"],
             supportId: "SP643",
+            launchOSVersion: "5",
+            unsupportedOSVersion: "10",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP643/sp643_iphone4s_color_black.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             cpu: .a5,
@@ -1939,6 +2269,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 5",
             identifiers: ["iPhone5,1", "iPhone5,2"],
             supportId: "SP655",
+            launchOSVersion: "6",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP655/sp655_iphone5_color.jpg",
             capabilities: [.headphoneJack, .lightning, .ringerSwitch],
             cpu: .a6,
@@ -1949,6 +2281,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 5c",
             identifiers: ["iPhone5,3", "iPhone5,4"],
             supportId: "SP684",
+            launchOSVersion: "7",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP684/SP684-color_yellow.jpg",
             capabilities: [.headphoneJack, .lightning, .ringerSwitch],
             cpu: .a6,
@@ -1959,6 +2293,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 5s",
             identifiers: ["iPhone6,1", "iPhone6,2"],
             supportId: "SP685",
+            launchOSVersion: "7",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP685/SP685-color_black.jpg",
             capabilities: [.headphoneJack, .lightning, .biometrics(.touchID), .ringerSwitch],
             cpu: .a7,
@@ -1969,6 +2305,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 6",
             identifiers: ["iPhone7,2"],
             supportId: "SP705",
+            launchOSVersion: "8",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP705/SP705-iphone_6-mul.png",
             capabilities: [.headphoneJack, .lightning, .biometrics(.touchID), .applePay, .ringerSwitch, .barometer],
             cpu: .a8,
@@ -1979,6 +2317,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 6 Plus",
             identifiers: ["iPhone7,1"],
             supportId: "SP706",
+            launchOSVersion: "8",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP706/SP706-iphone_6_plus-mul.png",
             capabilities: [.plus, .headphoneJack, .lightning, .biometrics(.touchID), .applePay, .ringerSwitch, .barometer],
             cpu: .a8,
@@ -1989,6 +2329,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 6s",
             identifiers: ["iPhone8,1"],
             supportId: "SP726",
+            launchOSVersion: "9.0.1",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP726/SP726-iphone6s-gray-select-2015.png",
             capabilities: [.headphoneJack, .lightning, .biometrics(.touchID), .applePay, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a9,
@@ -1999,6 +2341,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 6s Plus",
             identifiers: ["iPhone8,2"],
             supportId: "SP727",
+            launchOSVersion: "9.0.1",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP727/SP727-iphone6s-plus-gray-select-2015.png",
             capabilities: [.plus, .headphoneJack, .lightning, .biometrics(.touchID), .applePay, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a9,
@@ -2009,6 +2353,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone SE",
             identifiers: ["iPhone8,4"],
             supportId: "SP738",
+            launchOSVersion: "9.3",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP738/SP738.png",
             capabilities: [.headphoneJack, .lightning, .biometrics(.touchID), .applePay, .ringerSwitch],
             cpu: .a9,
@@ -2019,6 +2365,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 7",
             identifiers: ["iPhone9,1", "iPhone9,3"],
             supportId: "SP743",
+            launchOSVersion: "10",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP743/iphone7-black.png",
             capabilities: [.lightning, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a10,
@@ -2029,6 +2377,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 7 Plus",
             identifiers: ["iPhone9,2", "iPhone9,4"],
             supportId: "SP744",
+            launchOSVersion: "10",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP744/iphone7-plus-black.png",
             capabilities: [.plus, .lightning, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a10,
@@ -2039,6 +2389,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 8",
             identifiers: ["iPhone10,1", "iPhone10,4"],
             supportId: "SP767",
+            launchOSVersion: "11",
+            unsupportedOSVersion: "17",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP767/iphone8.png",
             capabilities: [.lightning, .wirelessCharging, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a11,
@@ -2049,6 +2401,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 8 Plus",
             identifiers: ["iPhone10,2", "iPhone10,5"],
             supportId: "SP768",
+            launchOSVersion: "11",
+            unsupportedOSVersion: "17",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP768/iphone8plus.png",
             capabilities: [.plus, .lightning, .wirelessCharging, .biometrics(.touchID), .applePay, .nfc, .force3DTouch, .ringerSwitch, .barometer],
             cpu: .a11,
@@ -2059,6 +2413,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone X",
             identifiers: ["iPhone10,3", "iPhone10,6"],
             supportId: "SP770",
+            launchOSVersion: "11.1",
+            unsupportedOSVersion: "17",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP770/iphonex.png",
             capabilities: [.lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a11,
@@ -2069,6 +2425,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone Xs",
             identifiers: ["iPhone11,2"],
             supportId: "SP779",
+            launchOSVersion: "12",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP779/SP779-iphone-xs.jpg",
             capabilities: [.lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a12,
@@ -2079,6 +2437,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone Xs Max",
             identifiers: ["iPhone11,4", "iPhone11,6"],
             supportId: "SP780",
+            launchOSVersion: "12",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP780/SP780-iPhone-Xs-Max.jpg",
             capabilities: [.max, .lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a12,
@@ -2089,6 +2449,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone Xʀ",
             identifiers: ["iPhone11,8"],
             supportId: "SP781",
+            launchOSVersion: "12",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP781/SP781-iPhone-xr.jpg",
             capabilities: [.lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a12,
@@ -2099,6 +2461,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 11",
             identifiers: ["iPhone12,1"],
             supportId: "SP804",
+            launchOSVersion: "13",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP804/sp804-iphone11_2x.png",
             capabilities: [.lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a13,
@@ -2109,6 +2473,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 11 Pro",
             identifiers: ["iPhone12,3"],
             supportId: "SP805",
+            launchOSVersion: "13",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP805/sp805-iphone11pro_2x.png",
             capabilities: [.pro, .lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a13,
@@ -2119,6 +2485,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 11 Pro Max",
             identifiers: ["iPhone12,5"],
             supportId: "SP806",
+            launchOSVersion: "13",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP806/sp806-iphone11pro-max_2x.png",
             capabilities: [.pro, .max, .lightning, .wirelessCharging, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a13,
@@ -2129,6 +2497,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone SE (2nd generation)",
             identifiers: ["iPhone12,8"],
             supportId: "SP820",
+            launchOSVersion: "13.4.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP820/iphone-se-2nd-gen_2x.png",
             capabilities: [.lightning, .wirelessCharging, .biometrics(.touchID), .esim, .applePay, .nfc, .ringerSwitch, .barometer],
             cpu: .a13,
@@ -2139,6 +2509,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 12",
             identifiers: ["iPhone13,2"],
             supportId: "SP830",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP830/sp830-iphone12-ios14_2x.png",
             capabilities: [.lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a14,
@@ -2149,6 +2521,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 12 mini",
             identifiers: ["iPhone13,1"],
             supportId: "SP829",
+            launchOSVersion: "14.2",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP829/sp829-iphone12mini-ios14_2x.png",
             capabilities: [.mini, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             cpu: .a14,
@@ -2159,6 +2533,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 12 Pro",
             identifiers: ["iPhone13,3"],
             supportId: "SP831",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP831/iphone12pro-ios14_2x.png",
             capabilities: [.pro, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             cpu: .a14,
@@ -2169,6 +2545,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 12 Pro Max",
             identifiers: ["iPhone13,4"],
             supportId: "SP832",
+            launchOSVersion: "14.2",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP832/iphone12promax-ios14_2x.png",
             capabilities: [.pro, .max, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .esim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             cpu: .a14,
@@ -2179,6 +2557,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 13",
             identifiers: ["iPhone14,5"],
             supportId: "SP851",
+            launchOSVersion: "15",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1092/en_US/iphone-13-240.png",
             capabilities: [.lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             colors: .iPhone13,
@@ -2190,6 +2570,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 13 mini",
             identifiers: ["iPhone14,4"],
             supportId: "SP847",
+            launchOSVersion: "15",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1091/en_US/iphone-13mini-240.png",
             capabilities: [.mini, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer],
             colors: .iPhone13,
@@ -2201,6 +2583,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 13 Pro",
             identifiers: ["iPhone14,2"],
             supportId: "SP852",
+            launchOSVersion: "15",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1093/en_US/iphone-13pro-240.png",
             capabilities: [.pro, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             colors: .iPhone13Pro,
@@ -2212,6 +2596,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 13 Pro Max",
             identifiers: ["iPhone14,3"],
             supportId: "SP848",
+            launchOSVersion: "15",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1095/en_US/iphone-13promax-240.png",
             capabilities: [.pro, .max, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .lidar, .barometer],
             colors: .iPhone13Pro,
@@ -2223,6 +2609,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone SE (3rd generation)",
             identifiers: ["iPhone14,6"],
             supportId: "SP867",
+            launchOSVersion: "15.4",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1136/en_US/iphone-se-3rd-gen-colors-240.png",
             capabilities: [.lightning, .wirelessCharging, .magSafe, .biometrics(.touchID), .dualesim, .applePay, .nfc, .ringerSwitch, .barometer],
             colors: .iPhoneSE3,
@@ -2234,6 +2622,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 14",
             identifiers: ["iPhone14,7"],
             supportId: "SP873",
+            launchOSVersion: "16",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP873/iphone-14_1_2x.png",
             capabilities: [.lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone14,
@@ -2245,6 +2635,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 14 Plus",
             identifiers: ["iPhone14,8"],
             supportId: "SP874",
+            launchOSVersion: "16",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP873/iphone-14_1_2x.png",
             capabilities: [.plus, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone14,
@@ -2256,6 +2648,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 14 Pro",
             identifiers: ["iPhone15,2"],
             supportId: "SP875",
+            launchOSVersion: "16",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
             capabilities: [.pro, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .lidar, .barometer, .crashDetection],
             colors: .iPhone14Pro,
@@ -2267,6 +2661,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 14 Pro Max",
             identifiers: ["iPhone15,3"],
             supportId: "SP876",
+            launchOSVersion: "16",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP875/sp875-sp876-iphone14-pro-promax_2x.png",
             capabilities: [.pro, .max, .lightning, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .lidar, .barometer, .crashDetection],
             colors: .iPhone14Pro,
@@ -2278,6 +2674,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 15",
             identifiers: ["iPhone15,4"],
             supportId: "SP901",
+            launchOSVersion: "17.0.2",
+            unsupportedOSVersion: nil,
             image: "https://everymac.com/images/ipod_pictures/iphone-15-colors.jpg",
             capabilities: [.usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone15,
@@ -2289,6 +2687,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 15 Plus",
             identifiers: ["iPhone15,5"],
             supportId: "SP902",
+            launchOSVersion: "17.0.2",
+            unsupportedOSVersion: nil,
             image: "https://everymac.com/images/ipod_pictures/iphone-15-plus-colors.jpg",
             capabilities: [.plus, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .ringerSwitch, .barometer, .crashDetection],
             colors: .iPhone15,
@@ -2300,6 +2700,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 15 Pro",
             identifiers: ["iPhone16,1"],
             supportId: "SP903",
+            launchOSVersion: "17.0.2",
+            unsupportedOSVersion: nil,
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-colors.jpg",
             capabilities: [.pro, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .lidar, .barometer, .crashDetection],
             colors: .iPhone15Pro,
@@ -2311,6 +2713,8 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone 15 Pro Max",
             identifiers: ["iPhone16,2"],
             supportId: "SP904",
+            launchOSVersion: "17.0.2",
+            unsupportedOSVersion: nil,
             image: "https://everymac.com/images/ipod_pictures/iphone-15-pro-max-colors.jpg",
             capabilities: [.pro, .max, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .lidar, .barometer, .crashDetection],
             colors: .iPhone15Pro,
@@ -2331,6 +2735,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
@@ -2353,6 +2759,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
+            launchOSVersion: launchOSVersion,
+            unsupportedOSVersion: unsupportedOSVersion,
             image: image,
             capabilities: capabilities.union([.battery]), // things ALL iPads have
             models: models,
@@ -2365,7 +2773,9 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         self.init(
             officialName: "Unknown iPad",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "18",
+            unsupportedOSVersion: nil,
             image: nil,
             capabilities: identifier == .base ? [] : [
                 // defaults for new unknown devices
@@ -2410,6 +2820,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad",
             identifiers: ["iPad1,1", "iPad1,2"], // 1,2 is 3g model
             supportId: "SP580",
+            launchOSVersion: "3.2",
+            unsupportedOSVersion: "6",
             image: "https://everymac.com/images/ipod_pictures/apple-ipad.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             colors: [.silver],
@@ -2421,6 +2833,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad 2",
             identifiers: ["iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4"],
             supportId: "SP622",
+            launchOSVersion: "4.3",
+            unsupportedOSVersion: "10",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP622/SP622_01-ipad2-mul.png",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             colors: [.white, .black],
@@ -2432,6 +2846,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (3rd generation)",
             identifiers: ["iPad3,1", "iPad3,2", "iPad3,3"],
             supportId: "SP647",
+            launchOSVersion: "5.1",
+            unsupportedOSVersion: "10",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP662/sp662_ipad-4th-gen_color.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             colors: [.white, .black],
@@ -2443,6 +2859,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Mini",
             identifiers: ["iPad2,5", "iPad2,6", "iPad2,7"],
             supportId: "SP661",
+            launchOSVersion: "6",
+            unsupportedOSVersion: "10",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP661/sp661_ipad_mini_color.jpg",
             capabilities: [.mini, .headphoneJack, .lightning, .ringerSwitch],
             colors: [.white, .black],
@@ -2454,6 +2872,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (4th generation)",
             identifiers: ["iPad3,4", "iPad3,5", "iPad3,6"],
             supportId: "SP662",
+            launchOSVersion: "6",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP662/sp662_ipad-4th-gen_color.jpg",
             capabilities: [.headphoneJack, .lightning, .ringerSwitch],
             colors: [.white, .black],
@@ -2465,6 +2885,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air",
             identifiers: ["iPad4,1", "iPad4,2", "iPad4,3"],
             supportId: "SP692",
+            launchOSVersion: "7.0.3",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP692/SP692-specs_color-mul.png",
             capabilities: [.headphoneJack, .lightning, .ringerSwitch],
             colors: .iPadAir,
@@ -2476,6 +2898,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Mini 2",
             identifiers: ["iPad4,4", "iPad4,5", "iPad4,6"],
             supportId: "SP693",
+            launchOSVersion: "7.0.3",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP693/SP693-specs_color-mul.png",
             capabilities: [.mini, .headphoneJack, .lightning, .ringerSwitch],
             colors: .iPadAir,
@@ -2487,6 +2911,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Mini 3",
             identifiers: ["iPad4,7", "iPad4,8", "iPad4,9"],
             supportId: "SP709",
+            launchOSVersion: "8.1",
+            unsupportedOSVersion: "13",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP709/SP709-space_gray.jpeg",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID), .ringerSwitch],
             colors: .iPhone6,
@@ -2498,6 +2924,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Mini 4",
             identifiers: ["iPad5,1", "iPad5,2"],
             supportId: "SP725",
+            launchOSVersion: "9",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP725/SP725ipad-mini-4.png",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID)],
             colors: .iPhone6,
@@ -2509,6 +2937,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air 2",
             identifiers: ["iPad5,3", "iPad5,4"],
             supportId: "SP708",
+            launchOSVersion: "8.1",
+            unsupportedOSVersion: "16",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP708/SP708-space_gray.jpeg",
             capabilities: [.lightning, .biometrics(.touchID)],
             colors: .iPhone6,
@@ -2520,6 +2950,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (5th generation)",
             identifiers: ["iPad6,11", "iPad6,12"],
             supportId: "SP751",
+            launchOSVersion: "10.3",
+            unsupportedOSVersion: "17",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP751/ipad_5th_generation.png",
             capabilities: [.lightning, .biometrics(.touchID)],
             colors: .iPhone6,
@@ -2531,6 +2963,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro (9.7-inch)",
             identifiers: ["iPad6,3", "iPad6,4"],
             supportId: "SP739",
+            launchOSVersion: "9.3",
+            unsupportedOSVersion: "17",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP739/SP739.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
             colors: [.spaceGray6, .silver6, .gold6, .roseGoldA4],
@@ -2543,6 +2977,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro (12.9-inch)",
             identifiers: ["iPad6,7", "iPad6,8"],
             supportId: "SP723",
+            launchOSVersion: "9.1",
+            unsupportedOSVersion: "17",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP723/SP723-iPad_Pro_2x.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
             colors: .iPhone6,
@@ -2555,6 +2991,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 12.9-inch (2nd generation)",
             identifiers: ["iPad7,1", "iPad7,2"],
             supportId: "SP761",
+            launchOSVersion: "10.3.2",
+            unsupportedOSVersion: "18",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-12in-hero-201706.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
             colors: .iPhone6,
@@ -2567,6 +3005,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro (10.5-inch)",
             identifiers: ["iPad7,3", "iPad7,4"],
             supportId: "SP762",
+            launchOSVersion: "10.3.2",
+            unsupportedOSVersion: "18",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP761/ipad-pro-10in-hero-201706.png",
             capabilities: [.pro, .lightning, .biometrics(.touchID)],
             colors: [.spaceGray6, .silver6, .gold6, .roseGoldSE],
@@ -2579,6 +3019,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (6th generation)",
             identifiers: ["iPad7,5", "iPad7,6"],
             supportId: "SP774",
+            launchOSVersion: "11.4",
+            unsupportedOSVersion: "18",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP774/sp774-ipad-6-gen_2x.png",
             capabilities: [.lightning, .biometrics(.touchID)],
             colors: [.spaceGray6, .silver6, .goldM5],
@@ -2591,6 +3033,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 11-inch",
             identifiers: ["iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4"],
             supportId: "SP784",
+            launchOSVersion: "12.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP784/ipad-pro-11-2018_2x.png",
             capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .notch],
             colors: [.spaceGrayM5, .silver6],
@@ -2603,6 +3047,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 12.9-inch (3rd generation)",
             identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"],
             supportId: "SP785",
+            launchOSVersion: "12.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP785/ipad-pro-12-2018_2x.png",
             capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .notch, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2615,6 +3061,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air (3rd generation)",
             identifiers: ["iPad11,3", "iPad11,4"],
             supportId: "SP787",
+            launchOSVersion: "12.2",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP787/ipad-air-2019.jpg",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
             colors: .iPadMini5,
@@ -2627,6 +3075,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Mini (5th generation)",
             identifiers: ["iPad11,1", "iPad11,2"],
             supportId: "SP788",
+            launchOSVersion: "12.2",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP788/ipad-mini-2019.jpg",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID), .esim],
             colors: .iPadMini5,
@@ -2639,6 +3089,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (7th generation)",
             identifiers: ["iPad7,11", "iPad7,12"],
             supportId: "SP807",
+            launchOSVersion: "13.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP807/sp807-ipad-7th-gen_2x.png",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
             colors: .iPadMini5,
@@ -2651,6 +3103,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 11-inch (2nd generation)",
             identifiers: ["iPad8,9", "iPad8,10"],
             supportId: "SP814",
+            launchOSVersion: "13.4",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP814/ipad-pro-11-2020.jpeg",
             capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2663,6 +3117,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 12.9-inch (4th generation)",
             identifiers: ["iPad8,11", "iPad8,12"],
             supportId: "SP815",
+            launchOSVersion: "13.4",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP815/ipad-pro-12-2020.jpeg",
             capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2675,6 +3131,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (8th generation)",
             identifiers: ["iPad11,6", "iPad11,7"],
             supportId: "SP822",
+            launchOSVersion: "14",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP822/sp822-ipad-8gen_2x.png",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
             colors: .iPadMini5,
@@ -2687,6 +3145,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (9th generation)",
             identifiers: ["iPad12,1", "iPad12,2"],
             supportId: "SP849",
+            launchOSVersion: "15",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1096/en_US/ipad-9gen-240.png",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
             colors: [.spaceGray9, .silver6],
@@ -2699,6 +3159,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air (4th generation)",
             identifiers: ["iPad13,1", "iPad13,2"],
             supportId: "SP828",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP828/sp828ipad-air-ipados14-960_2x.png",
             capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer],
             colors: [.spaceGrayM5, .silver6, .roseGoldA4, .skyBlueA4, .greenA4],
@@ -2711,6 +3173,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air (5th generation)",
             identifiers: ["iPad13,16", "iPad13,17"],
             supportId: "SP866",
+            launchOSVersion: "15.4",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP866/sp866-ipad-air-5gen_2x.png",
             capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer],
             colors: [.spaceGrayA5, .starlightA5, .pinkA5, .purpleA5, .blueA5],
@@ -2723,6 +3187,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad (10th generation)",
             identifiers: ["iPad13,18", "iPad13,19"],
             supportId: "SP884",
+            launchOSVersion: "16.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP884/sp884-ipad-10gen-960_2x.png",
             capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners],
             colors: [.macbookSilver, .pink10, .blue10, .yellow10],
@@ -2735,6 +3201,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 11-inch (3rd generation)",
             identifiers: ["iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7"],
             supportId: "SP843",
+            launchOSVersion: "14.5.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP843/ipad-pro-11_2x.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2747,6 +3215,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 12.9-inch (5th generation)",
             identifiers: ["iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11"],
             supportId: "SP844",
+            launchOSVersion: "14.5.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP844/ipad-pro-12-9_2x.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2759,6 +3229,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Mini (6th generation)",
             identifiers: ["iPad14,1", "iPad14,2"],
             supportId: "SP850",
+            launchOSVersion: "15",
+            unsupportedOSVersion: nil,
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/1000/IM1097/en_US/ipad-mini-6gen-240.png",
             capabilities: [.mini, .usbC, .biometrics(.touchID), .esim, .roundedCorners],
             colors: [.spaceGrayA5, .starlightA5, .pinkA5, .purpleA5],
@@ -2771,6 +3243,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 11-inch (4th generation)",
             identifiers: ["iPad14,3", "iPad14,4"],
             supportId: "SP882",
+            launchOSVersion: "16.1",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-11-inch-4gen-ipad-pro.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2783,6 +3257,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 12.9-inch (6th generation)",
             identifiers: ["iPad14,5", "iPad14,6"],
             supportId: "SP883",
+            launchOSVersion: "16.1",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-12-9-inch-6gen-ipad-pro.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.spaceGrayM5, .silver6],
@@ -2797,6 +3273,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air 11‑inch (M2)",
             identifiers: ["iPad14,8", "iPad14,9"],
             supportId: "https://support.apple.com/en-us/119894",
+            launchOSVersion: "17.5",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-4.png",
             capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer],
             colors: [.blueA5, .purpleA5, .starlightA5, .spaceGrayA5],
@@ -2809,6 +3287,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Air 13‑inch (M2)",
             identifiers: ["iPad14,10", "iPad14,11"],
             supportId: "https://support.apple.com/en-us/119893",
+            launchOSVersion: "17.5",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-3.png",
             capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer],
             colors: [.blueA5, .purpleA5, .starlightA5, .spaceGrayA5],
@@ -2821,6 +3301,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 11-inch (M4)",
             identifiers: ["iPad16,3", "iPad16,4"],
             supportId: "https://support.apple.com/en-us/119892",
+            launchOSVersion: "17.5",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-2.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.macbookSpaceblack, .macbookSilver],
@@ -2833,6 +3315,8 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPad Pro 13-inch (M4)",
             identifiers: ["iPad16,5", "iPad16,6"],
             supportId: "https://support.apple.com/en-us/119891",
+            launchOSVersion: "17.5",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-1.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
             colors: [.macbookSpaceblack, .macbookSilver],
@@ -2855,6 +3339,8 @@ public struct AppleTV: IdiomType {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         capabilities: Capabilities = [],
         models: [String] = [],
@@ -2865,6 +3351,8 @@ public struct AppleTV: IdiomType {
             officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
+            launchOSVersion: launchOSVersion,
+            unsupportedOSVersion: unsupportedOSVersion,
             image: image,
             capabilities: capabilities.union([.headphoneJack, .screen(.tv)]),
             models: models,
@@ -2876,7 +3364,9 @@ public struct AppleTV: IdiomType {
         self.init(
             officialName: "Unknown  TV",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "18",
+            unsupportedOSVersion: nil,
             image: nil,
             cpu: .unknown)
     }
@@ -2892,6 +3382,8 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV HD",
             identifiers: ["AppleTV5,3"],
             supportId: "SP724",
+            launchOSVersion: "9",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP724/apple-tv-hd_2x.png",
             capabilities: [.usbC],
             models: ["A1625"],
@@ -2900,6 +3392,8 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV 4K",
             identifiers: ["AppleTV6,2"],
             supportId: "SP769",
+            launchOSVersion: "11",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP769/appletv4k.png",
             models: ["A1842"],
             cpu: .a10x),
@@ -2907,6 +3401,8 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV 4K (2nd generation)",
             identifiers: ["AppleTV11,1"],
             supportId: "SP845",
+            launchOSVersion: "14.5",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP845/sp845-apple-tv-4k-2gen_2x.png",
             models: ["A2169"],
             cpu: .a12),
@@ -2914,6 +3410,8 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV 4K (3rd generation)",
             identifiers: ["AppleTV14,1"],
             supportId: "SP886",
+            launchOSVersion: "16.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP886/apple-tv-4k-3gen_2x.png",
             models: ["A2737", "A2843"],
             cpu: .a15),
@@ -2971,6 +3469,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
@@ -2984,6 +3484,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
+            launchOSVersion: launchOSVersion,
+            unsupportedOSVersion: unsupportedOSVersion,
             image: image,
             capabilities: capabilities.union([.battery, .wirelessCharging, .nfc, .applePay, .screen(size.screen), .roundedCorners, .watchSize(size)]),
             models: models,
@@ -2996,7 +3498,9 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         self.init(
             officialName: "Unknown  Watch",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "11",
+            unsupportedOSVersion: nil,
             image: nil,
             cpu: .unknown,
             size: .unknown)
@@ -3017,6 +3521,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch (1st generation) 38mm",
             identifiers: ["Watch1,1"],
             supportId: "SP735",
+            launchOSVersion: "1",
+            unsupportedOSVersion: "5",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
             capabilities: [.force3DTouch],
             cpu: .s1,
@@ -3025,6 +3531,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch (1st generation) 42mm",
             identifiers: ["Watch1,2"],
             supportId: "SP735",
+            launchOSVersion: "1",
+            unsupportedOSVersion: "5",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
             capabilities: [.force3DTouch],
             cpu: .s1,
@@ -3033,6 +3541,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 1 38mm",
             identifiers: ["Watch2,6"],
             supportId: "SP745",
+            launchOSVersion: "3",
+            unsupportedOSVersion: "7",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
             capabilities: [.force3DTouch],
             cpu: .s1p,
@@ -3041,6 +3551,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 1 42mm",
             identifiers: ["Watch2,7"],
             supportId: "SP745",
+            launchOSVersion: "3",
+            unsupportedOSVersion: "7",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM784/en_US/apple_watch_sport-240.png",
             capabilities: [.force3DTouch],
             cpu: .s1p,
@@ -3049,6 +3561,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 2 38mm",
             identifiers: ["Watch2,3"],
             supportId: "SP746",
+            launchOSVersion: "3",
+            unsupportedOSVersion: "7",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM852/en_US/applewatch-series2-hermes-240.png",
             capabilities: [.force3DTouch],
             cpu: .s2,
@@ -3057,6 +3571,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 2 42mm",
             identifiers: ["Watch2,4"],
             supportId: "SP746",
+            launchOSVersion: "3",
+            unsupportedOSVersion: "7",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM852/en_US/applewatch-series2-hermes-240.png",
             capabilities: [.force3DTouch],
             cpu: .s2,
@@ -3065,6 +3581,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 3 38mm",
             identifiers: ["Watch3,1", "Watch3,3"],
             supportId: "SP766",
+            launchOSVersion: "4",
+            unsupportedOSVersion: "9",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM893/en_US/apple-watch-s3-nikeplus-240.png",
             capabilities: [.force3DTouch],
             cpu: .s3,
@@ -3073,6 +3591,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 3 42mm",
             identifiers: ["Watch3,2", "Watch3,4"],
             supportId: "SP766",
+            launchOSVersion: "4",
+            unsupportedOSVersion: "9",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM893/en_US/apple-watch-s3-nikeplus-240.png",
             capabilities: [.force3DTouch],
             cpu: .s3,
@@ -3081,6 +3601,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 4 40mm",
             identifiers: ["Watch4,1", "Watch4,3"],
             supportId: "SP778",
+            launchOSVersion: "5",
+            unsupportedOSVersion: "11",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM911/en_US/aw-series4-nike-240.png",
             capabilities: [.force3DTouch],
             cpu: .s4,
@@ -3089,6 +3611,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 4 44mm",
             identifiers: ["Watch4,2", "Watch4,4"],
             supportId: "SP778",
+            launchOSVersion: "5",
+            unsupportedOSVersion: "11",
             image: "https://km.support.apple.com/resources/sites/APPLE/content/live/IMAGES/0/IM911/en_US/aw-series4-nike-240.png",
             capabilities: [.force3DTouch],
             cpu: .s4,
@@ -3097,6 +3621,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 5 40mm",
             identifiers: ["Watch5,1", "Watch5,3"],
             supportId: "SP808",
+            launchOSVersion: "6",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP808/sp808-apple-watch-series-5_2x.png",
             capabilities: [.force3DTouch],
             cpu: .s5,
@@ -3105,6 +3631,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 5 44mm",
             identifiers: ["Watch5,2", "Watch5,4"],
             supportId: "SP808",
+            launchOSVersion: "6",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP808/sp808-apple-watch-series-5_2x.png",
             capabilities: [.force3DTouch],
             cpu: .s5,
@@ -3113,6 +3641,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 6 40mm",
             identifiers: ["Watch6,1", "Watch6,3"],
             supportId: "SP826",
+            launchOSVersion: "7",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP826/sp826-apple-watch-series6-580_2x.png",
             cpu: .s6,
             size: .mm40),
@@ -3120,6 +3650,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 6 44mm",
             identifiers: ["Watch6,2", "Watch6,4"],
             supportId: "SP826",
+            launchOSVersion: "7",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP826/sp826-apple-watch-series6-580_2x.png",
             cpu: .s6,
             size: .mm44),
@@ -3127,6 +3659,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch SE 40mm",
             identifiers: ["Watch5,9", "Watch5,11"],
             supportId: "SP827",
+            launchOSVersion: "7",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP827/sp827-apple-watch-se-580_2x.png",
             cpu: .s5,
             size: .mm40),
@@ -3134,6 +3668,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch SE 44mm",
             identifiers: ["Watch5,10", "Watch5,12"],
             supportId: "SP827",
+            launchOSVersion: "7",
+            unsupportedOSVersion: "11",
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP827/sp827-apple-watch-se-580_2x.png",
             cpu: .s5,
             size: .mm44),
@@ -3141,6 +3677,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 7 41mm",
             identifiers: ["Watch6,6", "Watch6,8"],
             supportId: "SP860",
+            launchOSVersion: "8",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP860/series7-480_2x.png",
             cpu: .s7,
             size: .mm41),
@@ -3148,6 +3686,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 7 45mm",
             identifiers: ["Watch6,7", "Watch6,9"],
             supportId: "SP860",
+            launchOSVersion: "8",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP860/series7-480_2x.png",
             cpu: .s7,
             size: .mm45),
@@ -3155,6 +3695,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 8 41mm",
             identifiers: ["Watch6,14", "Watch6,16"],
             supportId: "SP878",
+            launchOSVersion: "9",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP878/apple-watch-series8_2x.png",
             cpu: .s8,
             size: .mm41),
@@ -3162,6 +3704,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 8 45mm",
             identifiers: ["Watch6,15", "Watch6,17"],
             supportId: "SP878",
+            launchOSVersion: "9",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP878/apple-watch-series8_2x.png",
             cpu: .s8,
             size: .mm45),
@@ -3169,6 +3713,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch SE (2nd generation) 40mm",
             identifiers: ["Watch6,10", "Watch6,12"],
             supportId: "SP877",
+            launchOSVersion: "9",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP877/apple-watch-se-2nd-gen_2x.png",
             colors: .watchSE2,
             cpu: .s8,
@@ -3177,6 +3723,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch SE (2nd generation) 44mm",
             identifiers: ["Watch6,11", "Watch6,13"],
             supportId: "SP877",
+            launchOSVersion: "9",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP877/apple-watch-se-2nd-gen_2x.png",
             colors: .watchSE2,
             cpu: .s8,
@@ -3185,6 +3733,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Ultra",
             identifiers: ["Watch6,18"],
             supportId: "SP879",
+            launchOSVersion: "9",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP879/apple-watch-ultra_2x.png",
             capabilities: [.actionButton],
             cpu: .s8,
@@ -3193,6 +3743,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 9 41mm",
             identifiers: ["Watch7,1", "Watch7,3"],
             supportId: "SP905",
+            launchOSVersion: "10.0.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-series-9-gps.png",
             capabilities: [.crashDetection],
             colors: .watch9,
@@ -3202,6 +3754,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Series 9 45mm",
             identifiers: ["Watch7,2", "Watch7,4"],
             supportId: "SP905",
+            launchOSVersion: "10.0.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-series-9-gps.png",
             capabilities: [.crashDetection],
             colors: .watch9,
@@ -3211,6 +3765,8 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Ultra 2",
             identifiers: ["Watch7,5"],
             supportId: "SP906",
+            launchOSVersion: "10.0.1",
+            unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/content/dam/edam/applecare/images/en_US/applewatch/apple-watch-ultra-2.png",
             capabilities: [.actionButton, .crashDetection],
             colors: .watchUltra2,
@@ -3231,6 +3787,8 @@ public struct HomePod: IdiomType {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
@@ -3238,14 +3796,16 @@ public struct HomePod: IdiomType {
         colors: [MaterialColor] = .default,
         cpu: CPU)
     {
-        device = Device(idiom: .homePod, officialName: officialName, identifiers: identifiers, supportId: supportId, image: image, capabilities: capabilities.union([.screen(.w38)]), models: models, colors: colors, cpu: cpu)
+        device = Device(idiom: .homePod, officialName: officialName, identifiers: identifiers, supportId: supportId, launchOSVersion: launchOSVersion, unsupportedOSVersion: unsupportedOSVersion, image: image, capabilities: capabilities.union([.screen(.w38)]), models: models, colors: colors, cpu: cpu)
     }
     
     init(identifier: String) {
         self.init(
             officialName: "Unknown HomePod",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "11",
+            unsupportedOSVersion: nil,
             image: nil,
             cpu: .unknown
         )
@@ -3265,6 +3825,8 @@ public struct HomePod: IdiomType {
             officialName: "HomePod",
             identifiers: ["AudioAccessory1,1"],
             supportId: "SP773",
+            launchOSVersion: "1",
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/homepod/2018-homepod-colors.png",
             colors: [.spacegrayHome, .whiteHome],
             cpu: .a8),
@@ -3272,6 +3834,8 @@ public struct HomePod: IdiomType {
             officialName: "HomePod mini",
             identifiers: ["AudioAccessory5,1"],
             supportId: "SP834",
+            launchOSVersion: "14.2", // audioOS
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111914_homepod-mini-colours.png",
             capabilities: [.mini],
             colors: .homePodMini,
@@ -3280,6 +3844,8 @@ public struct HomePod: IdiomType {
             officialName: "HomePod (2nd generation)",
             identifiers: ["AudioAccessory6,1"],
             supportId: "SP888",
+            launchOSVersion: "16", // audioOS
+            unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111843_homepod-2gen.png",
             colors: .homePod,
             cpu: .s7),
@@ -3298,6 +3864,8 @@ public struct AppleVision: IdiomType, HasCameras {
         officialName: String,
         identifiers: [String],
         supportId: String,
+        launchOSVersion: Version,
+        unsupportedOSVersion: Version?,
         image: String?,
         // TODO: Once converted, remove defaults for colors
         capabilities: Capabilities = [],
@@ -3309,6 +3877,8 @@ public struct AppleVision: IdiomType, HasCameras {
             officialName: officialName,
             identifiers: identifiers,
             supportId: supportId,
+            launchOSVersion: launchOSVersion,
+            unsupportedOSVersion: unsupportedOSVersion,
             image: image,
             capabilities: [.battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screen(.p720)],
             models: models,
@@ -3321,7 +3891,9 @@ public struct AppleVision: IdiomType, HasCameras {
         self.init(
             officialName: "Unknown  Vision Device",
             identifiers: [identifier],
-            supportId: "UNKNOWN_PLEASE_HELP_REPLACE",
+            supportId: .unknownSupportId,
+            launchOSVersion: "2",
+            unsupportedOSVersion: nil,
             image: nil,
             cpu: .unknown)
     }
@@ -3337,6 +3909,8 @@ public struct AppleVision: IdiomType, HasCameras {
             officialName: "Apple Vision Pro",
             identifiers: ["RealityDevice14,1"],
             supportId: "SP911",
+            launchOSVersion: "1.0.2",
+            unsupportedOSVersion: nil,
             image: "https://help.apple.com/assets/65E610E3F8593B4BE30B127E/65E610E47F977D429402E427/en_US/4609019342a9aa9c2560aaeb92e6c21a.png",
             cpu: .m2),
         

@@ -1,9 +1,10 @@
 #if canImport(SwiftUI)
 import SwiftUI
-#if canImport(Device)
+#if canImport(Device) // since this is needed in XCode but is unavailable in Playgrounds.
 import Device
 #endif
 
+@available(iOS 15.0, macOS 12, tvOS 17, watchOS 8, *)
 @main
 struct DeviceTestApp: App {
     init() {
