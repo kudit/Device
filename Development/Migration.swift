@@ -179,7 +179,7 @@ extension [String:Any]: Definable {
             if let v = value as? Definable {
                 strings.append("\"\(key)\": \(v.definition)")
             } else {
-                print("UNKNOWN NON-DEFINABLE TYPE: \(key): \(value)")
+                debug("UNKNOWN NON-DEFINABLE TYPE: \(key): \(value)", level: .ERROR)
             }
         }
         return "[\(strings.definition)]"
@@ -647,7 +647,7 @@ extension MaterialColor {
         if let mapped = map[string] {
             return mapped
         }
-        print("Unknown color string: \"\(string)\"")
+        debug("Unknown color string: \"\(string)\"", level: .WARNING)
         return .macbookSilver
     }
 }
@@ -889,6 +889,11 @@ iPhone15,4 : iPhone 15
 iPhone15,5 : iPhone 15 Plus
 iPhone16,1 : iPhone 15 Pro
 iPhone16,2 : iPhone 15 Pro Max
+iPhone17,1 : iPhone 16 Pro
+iPhone17,2 : iPhone 16 Pro Max
+iPhone17,3 : iPhone 16
+iPhone17,4 : iPhone 16 Plus
+
 iPod1,1 : 1st Gen iPod
 iPod2,1 : 2nd Gen iPod
 iPod3,1 : 3rd Gen iPod
@@ -896,6 +901,7 @@ iPod4,1 : 4th Gen iPod
 iPod5,1 : 5th Gen iPod
 iPod7,1 : 6th Gen iPod
 iPod9,1 : 7th Gen iPod
+
 iPad1,1 : iPad
 iPad1,2 : iPad 3G
 iPad2,1 : 2nd Gen iPad
@@ -978,6 +984,15 @@ iPad14,3 : iPad Pro 11 inch 4th Gen
 iPad14,4 : iPad Pro 11 inch 4th Gen
 iPad14,5 : iPad Pro 12.9 inch 6th Gen
 iPad14,6 : iPad Pro 12.9 inch 6th Gen
+iPad14,8 : iPad Air 6th Gen
+iPad14,9 : iPad Air 6th Gen
+iPad14,10 : iPad Air 7th Gen
+iPad14,11 : iPad Air 7th Gen
+iPad16,3 : iPad Pro 11 inch 5th Gen
+iPad16,4 : iPad Pro 11 inch 5th Gen
+iPad16,5 : iPad Pro 12.9 inch 7th Gen
+iPad16,6 : iPad Pro 12.9 inch 7th Gen
+
 Watch1,1 : Apple Watch 38mm case
 Watch1,2 : Apple Watch 42mm case
 Watch2,6 : Apple Watch Series 1 38mm case
@@ -1025,9 +1040,13 @@ Watch7,5 : Apple Watch Ultra 2
 """
         let lines = types.components(separatedBy: "\n")
         for line in lines {
+            guard line.trimmed != "" else {
+//                print("skipping blank line")
+                continue
+            }
             let parts = line.components(separatedBy: " : ")
             guard parts.count == 2 else {
-                print("Unknown part: \(line)")
+                debug("Unknown part: \(line)", level: .WARNING)
                 continue
             }
             let (identifier, description) = (parts[0], parts[1])

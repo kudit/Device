@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.4.1"
+    static let version: Version = "2.4.2"
 }
 import Compatibility
 
@@ -2722,6 +2722,59 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .fiveG,
             screen: .i67x1290),
+
+        iPhone(
+            officialName: "iPhone 16",
+            identifiers: ["iPhone17,3"],
+            supportId: "TODO",
+            launchOSVersion: "18.0",
+            unsupportedOSVersion: nil,
+            image: "https://everymac.com/images/ipod_pictures/iphone-16-colors.png",
+            capabilities: [.usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .cameraControl, .barometer, .crashDetection],
+            colors: .iPhone16,
+            cpu: .a16,
+            cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
+            cellular: .fiveG,
+            screen: .i61x1179),
+        iPhone(
+            officialName: "iPhone 16 Plus",
+            identifiers: ["iPhone17,4"],
+            supportId: "TODO",
+            launchOSVersion: "18.0",
+            unsupportedOSVersion: nil,
+            image: "https://everymac.com/images/ipod_pictures/iphone-16-colors.png",
+            capabilities: [.plus, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .cameraControl, .barometer, .crashDetection],
+            colors: .iPhone16,
+            cpu: .a16,
+            cameras: [.iSight, .wide, .ultraWide, .faceTimeHD720p, .trueDepth],
+            cellular: .fiveG,
+            screen: .i67x1290),
+        iPhone(
+            officialName: "iPhone 16 Pro",
+            identifiers: ["iPhone17,1"],
+            supportId: "TODO",
+            launchOSVersion: "18.0",
+            unsupportedOSVersion: nil,
+            image: "https://everymac.com/images/ipod_pictures/iphone-16-pro-colors.png",
+            capabilities: [.pro, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection],
+            colors: .iPhone16Pro,
+            cpu: .a17pro,
+            cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
+            cellular: .fiveG,
+            screen: .i63),
+        iPhone(
+            officialName: "iPhone 16 Pro Max",
+            identifiers: ["iPhone17,2"],
+            supportId: "TODO",
+            launchOSVersion: "18.0",
+            unsupportedOSVersion: nil,
+            image: "https://everymac.com/images/ipod_pictures/iphone-16-pro-colors.png",
+            capabilities: [.pro, .max, .usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .dynamicIsland, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection],
+            colors: .iPhone16Pro,
+            cpu: .a17pro,
+            cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
+            cellular: .fiveG,
+            screen: .i69),
     ]
 }
 

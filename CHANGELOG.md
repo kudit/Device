@@ -25,8 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-TODO: Fix background tint to match better.
+NOTE: Awaiting DTS/Feedback response on Device errors with release build.  Works if built for DEBUG but has errors with RELEASE compile for some reason.
 
+v2.4.2 9/11/2024 Added new iPhones and `cameraControl` button.  Apple Watch updates not available yet.  Attempted to improve background tint to match better.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.4.1 8/13/2024 Updated Color/Compatibility versions to address Swift 5.9 issues.  Previous version removed the Resources build when standardizing Package.swift!  Restored.  Explains why Bundle.module was not available since no resources included in the bundle.
 
 v2.4.0 8/13/2024 Standardized Package.swift, CHANGELOG.md, README.md, and LICENSE.txt files.  Standardized deployment targets.  Switched dependency from Compatibility to Color so we don't have to re-write color parsing code.  Added new HomePod mini Midnight color.  Added supported versions to indicate the preinstalled version and maximum version of iOS/macOS/etc supported by each device.  Have the max version be the version AFTER the version, so for late 2016 Touchbook, `launchOSVersion = "10.12.1"` and `unsupportedOSVersion = "13.0"` (max would be 12.x) - if this is `nil`, this is still currently supported.
@@ -224,3 +227,43 @@ https://developer.apple.com/forums/thread/758168?login=true
 
 Note: If Swift Playgrounds crashes saying the module Device_Device can't be built, it's probably a bad cache build.  Delete/rename the following: ~/Library/Containers/com.apple.PlaygroundsMac/Data/Library/Caches/com.apple.PlaygroundsMac
 Possibly because Bundle.module may not exist???  removed call to see if that fixes our issue (it does not).
+
+
+
+#DTS Issue:
+Case-ID: 8753208
+
+##Title:
+Errors in release configuration.
+
+##PLATFORM AND VERSION
+iOS
+Development environment: Xcode 15.4, macOS 14.6.1
+Run-time configuration: iOS 17.6.1, macOS 14.6.1, watchOS 10.5, visionOS 1.2
+
+##DESCRIPTION OF PROBLEM
+I have a project that seems to build fine and passes all error checks including on swiftpackageindex.com, however, when building in Xcode for RELEASE configuration, it generates errors and will not build, however, the error messages are not helpful and I'm unable to determine what the issue is or how to fix it.
+
+##STEPS TO REPRODUCE
+Download the project here: https://github.com/kudit/Device/releases/tag/v2.4.1
+Unzip and add .swiftpm to the folder name.
+Note that this runs fine in Swift Playgrounds including the previews.
+Right-click to show package contents and open /Developement/Device.xcodeproj
+Note that Analyze and Run both work fine (for example building for macOS current device).
+Go to DeviceTest -> Edit Scheme...
+Change Analyze or Run Build Configuration from Debug to Release.
+Note that there are now 5 errors that prevent building/running:
+Undefined symbol: protocol conformance descriptor for Device.ActualHardwareDevice : Combine.ObservableObject in Device
+Undefined symbol: protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device
+Undefined symbol: type metadata accessor for Device.ActualHardwareDevice
+Undefined symbol: nominal type descriptor for Device.ActualHardwareDevice
+Linker command failed with exit code 1 (use -v to see invocation)
+
+###What code level support issue are you having?
+Building, configuring, or running my project in Xcode or Swift Playgrounds
+
+##FEEDBACK ASSISTANT ID
+FB14827858
+
+##Developer Forum Thread (unanswered since June 26, 2024)
+https://developer.apple.com/forums/thread/758168

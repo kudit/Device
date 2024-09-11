@@ -54,16 +54,18 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case roundedCorners
     case notch // newer macs and original faceID phones.
     case dynamicIsland
+    // TODO: add always on screen capability for watches and iPhones??
     // features
     case ringerSwitch // mini 2, 3, iPad up to 10"? iPhone up to iPhone 15 Pro
     case actionButton // iPhone 15 Pro+, Apple Watch Ultra
+    case cameraControl // iPhone 16+
     case pencils(Set<ApplePencil>)
     // sensors
     case lidar, barometer, crashDetection // iPhone 14+
     
     /// Lists all non-associated value cases
     /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
-    public static let allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .esim, .dualesim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .lidar, .barometer, .crashDetection]
+    public static let allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .esim, .dualesim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection]
     
     static let screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
     
@@ -131,6 +133,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return "car.side.rear.and.collision.and.car.side.front"
         case .actionButton:
             return "button.horizontal.top.press"
+        case .cameraControl:
+            return "camera.shutter.button"
         case .pencils(_):
             return "applepencil"
         case .force3DTouch:
@@ -643,6 +647,12 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // iPhone 15 Pro
     case titanium = "#837f7d", blueTitanium = "#2f4452", whiteTitanium = "#dddddd", blackTitanium = "#1b1b1b"
     static let iPhone15Pro = [titanium, blueTitanium, whiteTitanium, blackTitanium]
+    // iPhone 16
+    case ultramarine = "#6467e6", teal = "#85adac", pink16 = "#ee94ca", white16 = "#e7e7e7", black16 = "#202020"
+    static let iPhone16 = [ultramarine, teal, pink16, white16, black16]
+    // iPhone 16 Pro
+    case titaniumBlack = "#181919", titaniumWhite = "#d3d1cd", titaniumGray = "#959086", titaniumRose = "#977e6b"
+    static let iPhone16Pro = [titaniumBlack, titaniumWhite, titaniumGray, titaniumRose]
 
     //  Watch SE
     case midnightW = "#1a2530", starlightW = "#ded6d1", silverW = "#e0e0e0"
@@ -676,6 +686,8 @@ public extension [MaterialColor] {
     static let iPhone14Pro = MaterialColor.iPhone14Pro
     static let iPhone15 = MaterialColor.iPhone15
     static let iPhone15Pro = MaterialColor.iPhone15Pro
+    static let iPhone16 = MaterialColor.iPhone16
+    static let iPhone16Pro = MaterialColor.iPhone16Pro
     static let iPadAir = MaterialColor.iPadAir
     static let iPadAirM2 = MaterialColor.iPadAirM2
     static let iPadMini5 = MaterialColor.iPadMini5
@@ -697,6 +709,8 @@ public extension [MaterialColor] {
         iPhone14Pro: "iPhone14Pro",
         iPhone15: "iPhone15",
         iPhone15Pro: "iPhone15Pro",
+        iPhone16: "iPhone16",
+        iPhone16Pro: "iPhone16Pro",
         iPadAir: "iPadAir",
         iPadAirM2: "iPadAirM2",
         iPadMini5: "iPadMini5",

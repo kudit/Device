@@ -229,7 +229,7 @@ public struct DeviceTestView: View {
             NavigationLink(destination: {
                 DeviceListView(devices: Device.all)
                     .toolbar {
-                        if Device.current.isSimulator {
+                        if Application.isDebug {
                             Button("Migrate") {
                                 migrateContent()
                             }
