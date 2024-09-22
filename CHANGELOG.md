@@ -26,6 +26,10 @@ Real Device Apple Watch
 Real Device Apple TV
 
 NOTE: Awaiting DTS/Feedback response on Device errors with release build.  Works if built for DEBUG but has errors with RELEASE compile for some reason.
+TODO: Check Apple Watch support images.
+
+
+v2.4.3 9/21/2024 Fixed CPU issues with new iPhones and `cameraControl` button and added new Apple Watch stubs and colors.  Added black titanium to Apple Watch Ultra 2.  Fixed deinit task warning with Xcode 16 GM.  Added wrapping on colors to prevent squishing.  Updated colors and added colors for Apple Watches before Series 6 and re-named some colors to match Apple CSS.  Added iPhone colors before iPhone 13.  Updated Apple TV HD image.  Updated iPhone images to all use the identification page for consistency (https://support.apple.com/en-us/108044).
 
 v2.4.2 9/11/2024 Added new iPhones and `cameraControl` button.  Apple Watch updates not available yet.  Attempted to improve background tint to match better.
 
@@ -209,7 +213,7 @@ This is where proposals can be discussed for potential movement to the roadmap.
 - [ ] Convert SF Symbol names to an enum to allow version checking?  May need to use other project.
 - [ ] If there's a way to fetch the actual model number (like MN572LL/A), then we can use this to give information of the state of the device (new, refurb, replaced, personalized, etc): https://osxdaily.com/2018/01/27/determine-iphone-new-refurbished-replaced/
 - [ ] Should forceTouch and touch3d be separated?  Discuss in issues or here.
-- [ ] Add volume controls and power button and home button capabilities?  Possibly with rumored camera button?
+- [ ] Add always on capability to watches and phones.
 - [ ] Add orientation and brightness to current device description?
 - [ ] Device: have code to make battery monitor dimmed and grayed out if App switches or goes to sleep so the wind coming back it doesn't show misinformation”.  Test with iPhone.  Maybe shouldn’t happen because would be problematic with visionOS?
 - [ ] Getting Computer Information (must give reason since can be used for fingerprinting so not included currently):

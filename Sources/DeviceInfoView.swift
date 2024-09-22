@@ -38,7 +38,7 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
                     if #available(iOS 15, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
                         output = output + Text(Image(symbolName: capability.symbolName).symbolRenderingMode(.hierarchical)
                         ) + Text(" ")
-                    } else {
+                    } else { // symbolRenderingMode not available
                         output = output + Text(Image(capability)
                         ) + Text(" ")
                     }
@@ -56,6 +56,28 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
     return output
 }
 
+/// Technincally a function but present like a View struct.
+@available(iOS 13, tvOS 13, watchOS 6, *)
+@MainActor
+public func ColorsTextView(symbol: SymbolRepresentable, colors: [MaterialColor]) -> Text {
+    var output = Text("")
+    for color in colors {
+        // Fallback on earlier versions
+        if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
+            output = output
+                + Text(Image(symbol))
+                    .foregroundColor(Color(string: color.rawValue))
+//                        + Text(" ")
+        } else {
+            // Fallback on earlier versions
+            output = output + Text("\(symbol.symbolName.first ?? "x")")
+                .foregroundColor(Color(string: color.rawValue))
+            + Text(" ")
+        }
+    }
+    return output
+}
+
 @available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public struct DeviceInfoView: View {
@@ -67,15 +89,7 @@ public struct DeviceInfoView: View {
         self.device = device
         self.includeScreen = includeScreen
     }
-    
-    var deviceColors: some View {
-        ForEach(device.colors, id: \.self) { color in
-            Image(device.idiomatic)
-                .foregroundColor(Color(string: color.rawValue))
-                .shadow(color: .gray, radius: 0.5)
-        }
-}
-    
+        
     public var body: some View {
         VStack {
             HStack(alignment: .top) {
@@ -84,13 +98,13 @@ public struct DeviceInfoView: View {
                         .font(.headline)
                     HStack {
                         VStack(alignment: .leading, spacing: 5) {
-                            HStack {
-                                deviceColors
-                            }
+                            ColorsTextView(symbol: device.idiomatic, colors: device.colors)
+                                .shadow(color: .gray, radius: 0.5)
                             CapabilitiesTextView(capabilities: device.capabilities)
                                 .font(.caption)   
                         }
                         Spacer(minLength: 0)
+                        // Don't squish - need to wrap colors above if necessary.  Accompished by creating ColorsTextView creator.
                         VStack(alignment: .trailing) {
                             Text("\(device.supportedOSInfo)").font(.caption).foregroundStyle(.gray)
                             if #available(iOS 14.0, *) {
@@ -125,6 +139,14 @@ public struct DeviceInfoView: View {
             } else {
                 Spacer()
             }
+        }
+    }
+}
+@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+#Preview("DeviceInfoView") {
+    NavigationView {
+        List {
+            DeviceInfoView(device: Device(identifier: "AudioAccessory5,1"))
         }
     }
 }

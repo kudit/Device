@@ -1,4 +1,4 @@
-import Foundation
+import Compatibility
 
 #if canImport(SwiftUI)
 import SwiftUI
@@ -27,14 +27,17 @@ public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseN
 }
 
 // MARK: Capabilities
-public typealias Capabilities = Set<Capability>
+extension Device {
+    public typealias Capabilities = Set<Capability>
+}
+public typealias Capabilities = Device.Capabilities
 public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     // model attributes
     case pro, air, mini, plus, max
     case macForm(Mac.Form)
     case watchSize(AppleWatch.WatchSize)
     // connections
-    case headphoneJack, thirtyPin, lightning, usbC, thunderbolt
+    case headphoneJack, thirtyPin, lightning, usbC, thunderbolt // TODO: Add Ethernet for Macs and Apple TV models
     // power
     case battery
     case wirelessCharging // qi charging
@@ -62,6 +65,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case pencils(Set<ApplePencil>)
     // sensors
     case lidar, barometer, crashDetection // iPhone 14+
+    // TODO: Add Compass!  Works on watch and iPhone.
+    // TODO: altimeter, ecg(electricalHeartSensor?), bloodO2, sleepTracking, wristTemp(thermometer?temperatureSensing?), fallDetection, sleepApnea, depthGauge, waterTemperatureSensor, doubleTap,
     
     /// Lists all non-associated value cases
     /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
@@ -166,10 +171,13 @@ public extension Capabilities {
     /// Order them based off of the order in the Capability definition for consistency
     var sorted: [Capability] {
         var sorted = [Capability]()
+        var skipped = [Capability]()
         // model attributes
         for item in [Capability.pro, .air, .mini, .plus, .max] {
             if self.contains(item) {
                 sorted.append(item)
+            } else {
+                skipped.append(item)
             }
         }
         if let macForm {
@@ -182,6 +190,8 @@ public extension Capabilities {
         for item in [Capability.headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3] {
             if self.contains(item) {
                 sorted.append(item)
+            } else {
+                skipped.append(item)
             }
         }
         if let biometrics {
@@ -196,15 +206,19 @@ public extension Capabilities {
         for item in [Capability.esim, .dualesim, .applePay, .nfc] {
             if self.contains(item) {
                 sorted.append(item)
+            } else {
+                skipped.append(item)
             }
         }
         // display
         if let screen {
             sorted.append(.screen(screen))
         }
-        for item in [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton] {
+        for item in [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland/* TODO: AlwaysOnDisplay, ProMotion */, .ringerSwitch, .actionButton, .cameraControl] {
             if self.contains(item) {
                 sorted.append(item)
+            } else {
+                skipped.append(item)
             }
         }
         // features
@@ -214,6 +228,15 @@ public extension Capabilities {
         // sensors
         for item in [Capability.lidar, .barometer, .crashDetection] {
             if self.contains(item) {
+                sorted.append(item)
+            } else {
+                skipped.append(item)
+            }
+        }
+        // check for missing!
+        for item in Capability.allCases {
+            if !sorted.contains(item) && !skipped.contains(item) {
+                debug("Found missing capability: \(item)!  Please make sure the capability is included in the sort.", level: .ERROR)
                 sorted.append(item)
             }
         }
@@ -420,6 +443,8 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     case a14
     case a16
     case a17pro
+    case a18
+    case a18pro
     //  TV
     case a8
     case a10x
@@ -436,6 +461,7 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     case s7
     case s8
     case s9
+    case s10
 }
 
 // MARK: Biometrics
@@ -590,9 +616,26 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // MacBook
     case macbookRoseGold = "#E1C3C8"
     
+    // iPod Touch (5th generation)
+    case iPodBlack = "#4d5663", iPodSilver = "#c9cbca", iPodPink = "#fb797e", iPodYellow = "#cace39", iPodBlue = "#26c4e5"
+    static let iPodTouch5thGen = [iPodBlack, iPodSilver, iPodPink, iPodYellow, iPodBlue]
+    
+    // iPod Touch (6th generation)
+    case iPodBlack6 = "#68686e", iPodGold6 = "#e3cfb9", iPodSilver6 = "#d0d3d0", iPodPink6 = "#fd4193", iPodBlue6 = "#357ed3"
+    static let iPodTouch6thGen = [iPodBlack6, iPodGold6, iPodSilver6, iPodPink6, iPodBlue6]
+
+    // iPod Touch (7th generation)
+    case iPodProductRed = "#ed3135"
+    static let iPodTouch7thGen = [iPodProductRed, iPodBlack6, iPodGold6, iPodSilver6, iPodPink6, iPodBlue6]
+
+    // iPhone 3GS—5
+    static let iPhoneBW = [black, white]
+    // iPhone 5c
+    case green5c = "#96e264", blue5c = "#41b1eb", yellow5c = "#feef6e", pink5c = "#ff6d6e", white5c = "#f0f0f2"
+    static let iPhone5c = [green5c, blue5c, yellow5c, pink5c, white5c]
     // SE 1
     case silverSE = "#e4e4e2", spaceGraySE = "#262529", goldSE = "#fadcc2", roseGoldSE = "#ecc6c1"
-    static let se = [silverSE, spaceGraySE, goldSE, roseGoldSE]
+    static let iPhoneSE = [silverSE, spaceGraySE, goldSE, roseGoldSE]
     // iPhone 6
     case silver6 = "#e2e3e4", spaceGray6 = "#b1b2b7", gold6 = "#e3ccb4"
     static let iPhone6 = [spaceGray6, silver6, gold6]
@@ -601,7 +644,76 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // iPhone 7
     case black7 = "#2e3034"
     static let iPhone7 = [silver6, black7, gold6, roseGoldSE]
-        
+    
+    // iPhone 8
+    case spaceGray8 = "#272729", gold8 = "#f7e8dd"
+    static let iPhone8 = [silver6, spaceGray8, gold8]
+    
+    // iPhone X
+    static let iPhoneX = [silverSE, spaceGraySE]
+    
+    // iPhone Xʀ
+    case blueXʀ = "#48aee6", whiteXʀ = "#f3f3f3", yellowXʀ = "#f9d045", coralXʀ = "#ff6e5a", redXʀ = "#b41325"
+    static let iPhoneXʀ = [blueXʀ, whiteXʀ, black7, yellowXʀ, coralXʀ, redXʀ]
+    
+    // iPhone Xs
+    static let iPhoneXs = [silverSE, spaceGraySE, goldSE]
+    
+    // iPhone SE 2
+    static let iPhoneSE2 = [spaceGraySE, whiteXʀ, redXʀ]
+    
+    // iPhone 11
+    case purple11 = "#d1cdda", yellow11 = "#ffe681", green11 = "#aee1cd", black11 = "#1f2020", white11 = "#f9f6ef", red11 = "#ba0c2e"
+    static let iPhone11 = [purple11, yellow11, green11, black11, white11, red11]
+    
+    // iPhone 11 Pro
+    case midnightGreen = "#4e5851", silver11 = "#ebebe3", spaceGray11 = "#535150", gold11 = "#fad7bd"
+    static let iPhone11Pro = [midnightGreen, silver11, spaceGray11, gold11]
+    
+    // iPhone 12
+    case purple12 = "#b7afe6", blue12 = "#023b63", green12 = "#d8efd5", red12 = "#d82e2e", white12 = "#f6f2ef", black12 = "#25212b"
+    static let iPhone12 = [purple12, blue12, green12, red12, white12, black12]
+    
+    // iPhone 12 Pro
+    case pacificBlue = "#2d4e5c", gold12 = "#fcebd3", graphite12 = "#52514d", silver12 = "#e3e4df"
+    static let iPhone12Pro = [pacificBlue, gold12, graphite12, silver12]
+    
+    // iPhone 13
+    case green13 = "#394c38", pink13 = "#faddd7", blue13 = "#276787", midnight13 = "#232a31", starlight13 = "#faf6f2", productRed13 = "#bf0013"
+    static let iPhone13 = [green13, pink13, blue13, midnight13, starlight13, productRed13]
+    
+    // iPhone 13 Pro
+    case alpineGreen = "#576856", gold13 = "#fae7cf", graphite = "#54524f", sierraBlue = "#a7c1d9"
+    static let iPhone13Pro = [alpineGreen, starlight13, gold13, graphite, sierraBlue]
+    
+    // iPhone SE 3
+    static let iPhoneSE3 = [midnight13, starlight13, productRed13]
+
+    // iPhone 14
+    case blue14 = "#a0b4c7", purple14 = "#e6ddeb", yellow14 = "#f9e479", midnight14 = "#222930", productRed14 = "#fc0324"
+    static let iPhone14 = [blue14, purple14, yellow14, midnight14, starlight13, productRed14]
+
+    // iPhone 14 Pro
+    case deepPurple14 = "#594f63", gold14 = "#f4e8ce", silver14 = "#f0f2f2", spaceBlack14 = "#403e3d"
+    static let iPhone14Pro = [deepPurple14, gold14, silver14, spaceBlack14]
+
+    // iPhone 15
+    case pink15 = "#E3C8CA", yellow15 = "#E6E0C1", green15 = "#CAD4C5", blue15 = "#CED5D9", black15 = "#35393B"
+    static let iPhone15 = [pink15, yellow15, green15, blue15, black15]
+
+    // iPhone 15 Pro
+    case naturalTitanium = "#837f7d", blueTitanium = "#2f4452", whiteTitanium = "#dddddd", blackTitanium = "#1b1b1b"
+    static let iPhone15Pro = [naturalTitanium, blueTitanium, whiteTitanium, blackTitanium]
+
+    // iPhone 16
+    case ultramarine = "#9aadf6", teal = "#b0d4d2", pink16 = "#f2adda", white16 = "#fafafa", black16 = "#3c4042"
+    static let iPhone16 = [ultramarine, teal, pink16, white16, black16]
+
+    // iPhone 16 Pro
+    case blackTitanium16 = "#3c3c3d", whiteTitanium16 = "#f2f1ed", naturalTitanium16 = "#c2bcb2", desertTitanium = "#bfa48f"
+    static let iPhone16Pro = [blackTitanium16, whiteTitanium16, naturalTitanium16, desertTitanium]
+
+
     // iPad Air
     static let iPadAir = [spaceGray6, silver6]
     
@@ -624,46 +736,64 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // iPad Air 2024
     case starlightAir = "#e3dcd1", purpleAir = "#e3dee9", blueAir = "#d7e5e6"
     static let iPadAirM2 = [spaceGrayA5, starlightAir, purpleAir, blueAir]
+
     
-    // iPhone 13
-    case green13 = "#394c38", pink13 = "#faddd7", blue13 = "#276787", midnight13 = "#232a31", starlight13 = "#faf6f2", productRed13 = "#bf0013"
-    static let iPhone13 = [green13, pink13, blue13, midnight13, starlight13, productRed13]
-    
-    // iPhone 13 Pro
-    case alpineGreen = "#576856", gold13 = "#fae7cf", graphite = "#54524f", sierraBlue = "#a7c1d9"
-    static let iPhone13Pro = [alpineGreen, starlight13, gold13, graphite, sierraBlue]
-    
-    // iPhone SE 3
-    static let iPhoneSE3 = [midnight13, starlight13, productRed13]
-    // iPhone 14
-    case blue14 = "#a0b4c7", purple14 = "#e6ddeb", yellow14 = "#f9e479", midnight14 = "#222930", productRed14 = "#fc0324"
-    static let iPhone14 = [blue14, purple14, yellow14, midnight14, starlight13, productRed14]
-    // iPhone 14 Pro
-    case deepPurple14 = "#594f63", gold14 = "#f4e8ce", silver14 = "#f0f2f2", spaceBlack14 = "#403e3d"
-    static let iPhone14Pro = [deepPurple14, gold14, silver14, spaceBlack14]
-    // iPhone 15
-    case pink15 = "#E3C8CA", yellow15 = "#E6E0C1", green15 = "#CAD4C5", blue15 = "#CED5D9", black15 = "#35393B"
-    static let iPhone15 = [pink15, yellow15, green15, blue15, black15]
-    // iPhone 15 Pro
-    case titanium = "#837f7d", blueTitanium = "#2f4452", whiteTitanium = "#dddddd", blackTitanium = "#1b1b1b"
-    static let iPhone15Pro = [titanium, blueTitanium, whiteTitanium, blackTitanium]
-    // iPhone 16
-    case ultramarine = "#6467e6", teal = "#85adac", pink16 = "#ee94ca", white16 = "#e7e7e7", black16 = "#202020"
-    static let iPhone16 = [ultramarine, teal, pink16, white16, black16]
-    // iPhone 16 Pro
-    case titaniumBlack = "#181919", titaniumWhite = "#d3d1cd", titaniumGray = "#959086", titaniumRose = "#977e6b"
-    static let iPhone16Pro = [titaniumBlack, titaniumWhite, titaniumGray, titaniumRose]
+    //  Watch Series 0
+    case aluminumRoseGold = "#f6d9cd", aluminumSilver = "#e0e0e0", aluminumSpaceGray = "#727272", aluminumGold = "#f3e4d1", stainlessSpaceBlack = "#2e3a36", stainlessSilver = "#e6e6e7", yellowGold = "#dfc386", roseGold = "#e0b496"
+    static let watch0 = [aluminumRoseGold, aluminumSilver, aluminumSpaceGray, aluminumGold, stainlessSpaceBlack, stainlessSilver, yellowGold, roseGold]
+
+    //  Watch Series 1
+    static let watch1 = [aluminumRoseGold, aluminumSilver, aluminumSpaceGray, aluminumGold]
+
+    //  Watch Series 2
+    case ceramicWhite = "#f9f9f7"
+    static let watch2 = [aluminumSilver, aluminumSpaceGray, aluminumGold, aluminumRoseGold, stainlessSilver, stainlessGraphite, ceramicWhite]
+
+    //  Watch Series 3
+    case aluminumBrushGold = "#f4d4c6", ceramicGray = "#615f5a"
+    static let watch3 = [aluminumSpaceGray, aluminumSilver, aluminumBrushGold, stainlessSilver, stainlessSpaceBlack, ceramicWhite, ceramicGray]
+
+    //  Watch Series 4
+    case stainlessGold = "#d4bda1"
+    static let watch4 = [stainlessGold, aluminumSilver, aluminumSpaceGray, aluminumBrushGold, stainlessSilver, stainlessSpaceBlack]
+
+    //  Watch Series 5
+    case titanium = "#dedbd9", titaniumSpaceBlack = "#47433f"
+    static let watch5 = [aluminumBrushGold, aluminumSilver, aluminumSpaceGray, stainlessSilver, stainlessSpaceBlack, stainlessGold, titanium, titaniumSpaceBlack, ceramicWhite]
 
     //  Watch SE
-    case midnightW = "#1a2530", starlightW = "#ded6d1", silverW = "#e0e0e0"
-    static let watchSE2 = [midnightW, starlightW, silverW]
+    static let watchSE = [aluminumBrushGold, aluminumSilver, aluminumSpaceGray]
+
+    //  Watch Series 6
+    case aluminumBlue = "#6e8eba", aluminumRed = "#c80e2d", stainlessGraphite = "#3e3a36"
+    static let watch6 = [aluminumBlue, aluminumSilver, aluminumSpaceGray, aluminumBrushGold, aluminumRed, stainlessSilver, stainlessGraphite, stainlessGold, titanium, titaniumSpaceBlack]
+    
+    //  Watch Series 7
+    case aluminumGreen = "#36382b", aluminumMidnight = "#1a2530", aluminumStarlight = "#ded6d1"
+    static let watch7 = [aluminumGreen, aluminumMidnight, aluminumStarlight, aluminumBlue, aluminumRed, stainlessSilver, stainlessGraphite, stainlessGold, titanium, titaniumSpaceBlack]
+    
+    //  Watch Series 8
+    static let watch8 = [aluminumMidnight, aluminumStarlight, aluminumSilver, aluminumRed, stainlessSilver, stainlessGraphite, stainlessGold]
+
+    //  Watch SE 2
+    static let watchSE2 = [aluminumMidnight, aluminumStarlight, aluminumSilver]
+    
+    //  Watch Ultra
+    case titaniumNatural = "#ccc4bc"
+    static let watchUltra = [titaniumNatural]
+    
     //  Watch Series 9
-    case pinkW9 = "#fadcde", productRedW9 = "#d61139"
-    case graphitePVD = "#3e3a36", silverSS = "#e6e6e7", goldPVD = "#d4bda1"
-    static let watch9 = [midnightW, starlightW, silverW, pinkW9, productRedW9, graphitePVD, silverSS, goldPVD]
+    case aluminumPink = "#fadcde" // new comparison swatch uses consistent aluminumRed color not productRedW9 = "#d61139"
+    static let watch9 = [aluminumMidnight, aluminumStarlight, aluminumSilver, aluminumPink, aluminumRed, stainlessSilver, stainlessGraphite, stainlessGold]
+
+    //  Watch Series 10
+    case aluminumJetBlack = "#010203", titaniumSlate = "#47423d", titaniumGold = "#f4dec8"
+    static let watch10 = [aluminumJetBlack, aluminumRoseGold, aluminumSilver, titaniumSlate, titaniumGold, titaniumNatural]
+
     //  Watch Ultra 2
-    case naturalW = "#ccc4bc"
-    static let watchUltra2 = [naturalW]
+    case titaniumBlackU2 = "#0f0e0e"
+    static let watchUltra2 = [titaniumBlackU2, titaniumNatural]
+    
     
     // HomePod
     case whiteHome = "#f1f1f1", yellowHome = "#ffc953", orangeHome = "#e56645", blueHome = "#25485e", spacegrayHome = "#36373a", midnightHome = "#313236" // midnight is best guess
@@ -676,9 +806,24 @@ public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]
     
     static let iMac = MaterialColor.iMac
-    static let se = MaterialColor.se
+    static let iPodTouch5thGen = MaterialColor.iPodTouch5thGen
+    static let iPodTouch6thGen = MaterialColor.iPodTouch6thGen
+    static let iPodTouch7thGen = MaterialColor.iPodTouch7thGen
+    static let iPhoneBW = MaterialColor.iPhoneBW
+    static let iPhone5c = MaterialColor.iPhone5c
+    static let iPhoneSE = MaterialColor.iPhoneSE
     static let iPhone6 = MaterialColor.iPhone6
+    static let iPhone6s = MaterialColor.iPhone6s
     static let iPhone7 = MaterialColor.iPhone7
+    static let iPhone8 = MaterialColor.iPhone8
+    static let iPhoneX = MaterialColor.iPhoneX
+    static let iPhoneXʀ = MaterialColor.iPhoneXʀ
+    static let iPhoneXs = MaterialColor.iPhoneXs
+    static let iPhoneSE2 = MaterialColor.iPhoneSE2
+    static let iPhone11 = MaterialColor.iPhone11
+    static let iPhone11Pro = MaterialColor.iPhone11Pro
+    static let iPhone12 = MaterialColor.iPhone12
+    static let iPhone12Pro = MaterialColor.iPhone12Pro
     static let iPhone13 = MaterialColor.iPhone13
     static let iPhone13Pro = MaterialColor.iPhone13Pro
     static let iPhoneSE3 = MaterialColor.iPhoneSE3
@@ -691,17 +836,43 @@ public extension [MaterialColor] {
     static let iPadAir = MaterialColor.iPadAir
     static let iPadAirM2 = MaterialColor.iPadAirM2
     static let iPadMini5 = MaterialColor.iPadMini5
+    static let watch0 = MaterialColor.watch0
+    static let watch1 = MaterialColor.watch1
+    static let watch2 = MaterialColor.watch2
+    static let watch3 = MaterialColor.watch3
+    static let watch4 = MaterialColor.watch4
+    static let watch5 = MaterialColor.watch5
+    static let watchSE = MaterialColor.watchSE
+    static let watch6 = MaterialColor.watch6
+    static let watch7 = MaterialColor.watch7
+    static let watch8 = MaterialColor.watch8
     static let watchSE2 = MaterialColor.watchSE2
+    static let watchUltra = MaterialColor.watchUltra
     static let watch9 = MaterialColor.watch9
+    static let watch10 = MaterialColor.watch10
     static let watchUltra2 = MaterialColor.watchUltra2
     static let homePod = MaterialColor.homePod
     static let homePodMini = MaterialColor.homePodMini
     
     static let colorSets = [
         iMac: "iMac",
-        se: "se",
+        iPodTouch5thGen: "iPodTouch5thGen",
+        iPodTouch6thGen: "iPodTouch6thGen",
+        iPodTouch7thGen: "iPodTouch7thGen",
+        iPhoneBW: "iPhoneBW",
+        iPhone5c: "iPhone5c",
+        iPhoneSE: "se",
         iPhone6: "iPhone6",
+        iPhone6s: "iPhone6s",
         iPhone7: "iPhone7",
+        iPhone8: "iPhone8",
+        iPhoneX: "iPhoneX",
+        iPhoneXʀ: "iPhoneXR",
+        iPhoneXs: "iPhoneXs",
+        iPhone11: "iPhone11",
+        iPhone11Pro: "iPhone11Pro",
+        iPhone12: "iPhone12",
+        iPhone12Pro: "iPhone12Pro",
         iPhone13: "iPhone13",
         iPhone13Pro: "iPhone13Pro",
         iPhoneSE3: "iPhoneSE3",
@@ -714,8 +885,20 @@ public extension [MaterialColor] {
         iPadAir: "iPadAir",
         iPadAirM2: "iPadAirM2",
         iPadMini5: "iPadMini5",
+        watch0: "watch0",
+        watch1: "watch1",
+        watch2: "watch2",
+        watch3: "watch3",
+        watch4: "watch4",
+        watch5: "watch5",
+        watchSE: "watchSE",
+        watch6: "watch6",
+        watch7: "watch7",
+        watch8: "watch8",
         watchSE2: "watchSE2",
+        watchUltra: "watchUltra",
         watch9: "watch9",
+        watch10: "watch10",
         watchUltra2: "watchUltra2",
         homePod: "homePod",
         homePodMini: "homePodMini",

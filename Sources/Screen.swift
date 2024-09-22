@@ -133,8 +133,10 @@ public struct Screen: Hashable, Sendable {
     public static let w40 = Screen(diagonal: 1.8, resolution: (324,394), ppi: 326)
     public static let w41 = Screen(diagonal: 1.8, resolution: (352,430), ppi: 326)
     public static let w42 = Screen(diagonal: 1.65, resolution: (312,390), ppi: 303) // 326?
+    public static let w42s = Screen(diagonal: 2.0, resolution: (374,446), ppi: 326)
     public static let w44 = Screen(diagonal: 2.0, resolution: (368,448), ppi: 326)
     public static let w45 = Screen(diagonal: 2.0, resolution: (396,484), ppi: 326)
+    public static let w46 = Screen(diagonal: 2.1, resolution: (416,496), ppi: 326)
     public static let w49 = Screen(diagonal: 2.2, resolution: (410,502), ppi: 338)
     
     /**

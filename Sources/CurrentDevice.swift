@@ -875,6 +875,7 @@ final class ActualHardwareDevice: CurrentDevice {
     private func _disableIdleTimer(_ disabled: Bool = true) {
         // https://developer.apple.com/documentation/uikit/uiapplication/1623070-isidletimerdisabled
 #if canImport(UIKit) && !os(watchOS)
+        debug("Disabling idle timer: \(disabled)", level: .DEBUG)
         UIApplication.shared.isIdleTimerDisabled = disabled
 #endif
     }
@@ -1054,16 +1055,14 @@ public final class MockDevice: CurrentDevice {
     }
     var animationTimer: Timer?
     deinit {
-        Task { @MainActor in
-            if let timer {
-                timer.invalidate()
-            }
-            timer = nil
-            if let animationTimer {
-                animationTimer.invalidate()
-            }
-            animationTimer = nil
+        if let timer {
+            timer.invalidate()
         }
+        timer = nil
+        if let animationTimer {
+            animationTimer.invalidate()
+        }
+        animationTimer = nil
     }
     
     @MainActor public func update() {
