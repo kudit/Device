@@ -1051,6 +1051,10 @@ Watch7,5 : Apple Watch Ultra 2
             }
             let (identifier, description) = (parts[0], parts[1])
             let device = Device(identifier: identifier)
+            if device.officialName.contains("iPhone Simulator") {
+                // skip simulator entries
+                continue
+            }
             if device.officialName.contains("Unknown") {
                 var definition = device.definition
                 //                device.officialName = description (can't do this since can't modify device now that it's sendable so replace the official name definition in the output)

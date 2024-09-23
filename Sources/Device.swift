@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.4.3"
+    static let version: Version = "2.4.4"
 }
 import Compatibility
 
@@ -3881,7 +3881,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             size: .mm49),
         AppleWatch(
             officialName: "Apple Watch Series 10 42mm",
-            identifiers: ["Watch8,1", "Watch8,3"], // Guess!
+            identifiers: ["Watch7,8", "Watch7,10"],
             supportId: "SP905",
             launchOSVersion: "11",
             unsupportedOSVersion: nil,
@@ -3892,7 +3892,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             size: .mm42s),
         AppleWatch(
             officialName: "Apple Watch Series 10 46mm",
-            identifiers: ["Watch8,2", "Watch8,4"],
+            identifiers: ["Watch7,9", "Watch7,11"],
             supportId: "SP905",
             launchOSVersion: "11",
             unsupportedOSVersion: nil,

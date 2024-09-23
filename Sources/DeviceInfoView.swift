@@ -134,6 +134,9 @@ public struct DeviceInfoView: View {
                     }
                 }
             }
+            if includeScreen {
+                Text(device.identifiers.joined(separator: ", ")).font(.caption)
+            }
             if device.screen != nil && includeScreen {
                 ScreenInfoView(device: device)
             } else {
