@@ -23,7 +23,7 @@ public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseN
 #endif
     @available(iOS 13, tvOS 13, watchOS 6, *)
     @MainActor
-    func test(device: any CurrentDevice) -> Bool
+    func test(device: DeviceType) -> Bool
 }
 
 // MARK: Capabilities
@@ -157,7 +157,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     }
     
     @available(iOS 13.0, tvOS 13, watchOS 6, *)
-    public func test(device: any CurrentDevice) -> Bool {
+    public func test(device: DeviceType) -> Bool {
         return device.has(self)
     }
     

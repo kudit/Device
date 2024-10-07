@@ -28,6 +28,8 @@ Real Device Apple TV
 NOTE: Awaiting DTS/Feedback response on Device errors with release build.  Works if built for DEBUG but has errors with RELEASE compile for some reason.
 TODO: Check Apple Watch support images.
 
+v2.5.0 10/7/2024 Tweaked to allow releasing app on the App Store.  Since must be built for DEBUG, tweaked check for Migration code.  Re-worked AttributeListView so can include in framework.  Added links to support documents.  Including attribute list in device details.  Fixed duplicate Mac14,9.  Fixed so Thunderbolt named devices definitely show thunderbolt capability.  Uploaded to App Store as "Device Information Tool"."
+
 v2.4.4 9/22/2024 Added identifiers to device detail view.  Fixed Apple Watch 10 identifiers.
 
 v2.4.3 9/21/2024 Fixed CPU issues with new iPhones and `cameraControl` button and added new Apple Watch stubs and colors.  Added black titanium to Apple Watch Ultra 2.  Fixed deinit task warning with Xcode 16 GM.  Added wrapping on colors to prevent squishing.  Updated colors and added colors for Apple Watches before Series 6 and re-named some colors to match Apple CSS.  Added iPhone colors before iPhone 13.  Updated Apple TV HD image.  Updated iPhone images to all use the identification page for consistency (https://support.apple.com/en-us/108044).
@@ -272,3 +274,23 @@ FB14827858
 
 ##Developer Forum Thread (unanswered since June 26, 2024)
 https://developer.apple.com/forums/thread/758168
+
+
+
+#AppStore Copy
+##Promotional Text (170)
+Tool for looking up Apple device information in the open source Kudit Device framework.
+
+##Description (4,000)
+This is a tool for exposing the information in the open source Kudit Device framework.  Useful for looking up specific information or support articles on Apple Devices.  Can also be used to check on the device's thermal state, battery level, disable the idle timer, and check reported device orientation.
+
+Feel free to contribute to this project at http://github.com/kudit/Device
+
+If you have any suggestions or feedback, please reach out to us at support+device@kudit.com!
+
+https://www.kudit.com/terms.php
+
+
+##Keywords (100)
+device,devicekit,framework,github,iphone,identifier,info,support,capabilities,screen,open source
+

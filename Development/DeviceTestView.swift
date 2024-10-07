@@ -65,38 +65,26 @@ struct SymbolTests<T: DeviceAttributeExpressible>: View {
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 @MainActor
-struct AttributeListView<T: DeviceAttributeExpressible>: View {
-    @State var currentDevice: any CurrentDevice = Device.current
+struct TestAttributeListView<T: DeviceAttributeExpressible>: View {
+    @State var device: DeviceType
     @State var header: String
     @State var attributes: [T]
     var styleView = false
     var size: Double = .defaultFontSize
     var body: some View {
-        Section {
-            ForEach(attributes, id: \.self) { attribute in
-                let label = Label(attribute.label, symbolName: attribute.symbolName)
-                    .foregroundColor(.primary)
-                    .font(.headline)
-                if styleView {
-                    SymbolTests(attribute: attribute, size: size)
-                } else {
-                    if attribute.test(device: currentDevice) {
-                        label
-                            .listRowBackground(attribute.color)
-                    } else {
-                        label
-                    }
-                }
+        AttributeListView(device: device, header: header, attributes: attributes) { attribute in
+            if styleView {
+                SymbolTests(attribute: attribute, size: size)
+            } else {
+                AttributeTestView(attribute: attribute, device: device)
             }
-        } header: {
-            Text(header)
         }
     }
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 @MainActor
-struct HardwareListView: View {
+struct CurrentDeviceDetailsView: View {
     @State var currentDevice: any CurrentDevice = Device.current
     @State var styleView = false
     @State var size: Double = .defaultFontSize
@@ -141,17 +129,17 @@ struct HardwareListView: View {
                     }
                 }
             }
-            AttributeListView(currentDevice: currentDevice, header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
-            AttributeListView(currentDevice: currentDevice,header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
-            AttributeListView(currentDevice: currentDevice,header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
+            TestAttributeListView(device: currentDevice, header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
+            TestAttributeListView(device: currentDevice,header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
+            TestAttributeListView(device: currentDevice,header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
         .backport.navigationTitle("Hardware")
     }
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
-#Preview("HardwareList") {
-    HardwareListView()
+#Preview("CurrentDeviceDetailsView") {
+    CurrentDeviceDetailsView()
 }
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 #Preview("DeviceList") {
@@ -188,7 +176,7 @@ public struct DeviceTestView: View {
             Section("Environment (Swift \(Device.current.swiftVersion), Compatibility v\(Compatibility.version))") { 
                 NavigationLink {
                     List {
-                        AttributeListView(header: "Environments", attributes: Device.Environment.allCases)
+                        AttributeListView(device: Device.current, header: "Environments", attributes: Device.Environment.allCases)
                     }
                 } label: {
                     HStack {
@@ -200,7 +188,7 @@ public struct DeviceTestView: View {
             }
             Section {
                 NavigationLink(destination: {
-                    HardwareListView()
+                    CurrentDeviceDetailsView()
                 }, label: {
                     CurrentDeviceInfoView(device: Device.current)
                 })
@@ -229,7 +217,8 @@ public struct DeviceTestView: View {
             NavigationLink(destination: {
                 DeviceListView(devices: Device.all)
                     .toolbar {
-                        if Application.isDebug {
+                        // TODO: FIXME: figure out why can't build for release and then remove the `&& false`
+                        if Application.isDebug && false {
                             Button("Migrate") {
                                 migrateContent()
                             }

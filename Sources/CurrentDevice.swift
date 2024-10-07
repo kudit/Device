@@ -78,8 +78,10 @@ public extension Device {
             }
         }
         
+        /// Note: this test will always return false unless passed a current device object.
         @MainActor
-        public func test(device: any CurrentDevice) -> Bool {
+        public func test(device: DeviceType) -> Bool {
+            guard let device = device as? (any CurrentDevice) else { return false }
             switch self {
             case .realDevice:
                 return device.isRealDevice

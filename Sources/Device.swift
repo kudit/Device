@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.4.4"
+    static let version: Version = "2.5.0"
 }
 import Compatibility
 
@@ -48,6 +48,20 @@ public extension DeviceType {
     var officialName: String { device.officialName }
     var identifiers: [String] { device.identifiers }
     var supportId: String { device.supportId }
+    var supportURL: URL {
+        if supportId.isNumeric {
+            return URL(string: "https://support.apple.com/en-us/\(supportId)")!
+        }
+        if supportId.hasPrefix("http") {
+            return URL(string: supportId)!
+        }
+        var searchTerm = supportId
+        if supportId == .unknownSupportId {
+            searchTerm = officialName 
+        }
+        return URL(string: "https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=\(searchTerm.urlEncoded)")!
+        //URL(string: "https://support.apple.com/en-us/docs")!
+    }
     var launchOSVersion: Version { device.launchOSVersion }
     var unsupportedOSVersion: Version? { device.unsupportedOSVersion }
     var image: String? { device.image }
@@ -344,7 +358,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible {
         
         @available(iOS 13, tvOS 13, watchOS 6, *)
         @MainActor
-        public func test(device: any CurrentDevice) -> Bool {
+        public func test(device: DeviceType) -> Bool {
             return device.idiom == self
         }
         
@@ -664,7 +678,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "11.3",
             unsupportedOSVersion: nil,
             form: .iMac,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/id-imac-24-2021-2.png",
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111895_imac-24-inch--m1.png",
             models: ["MGTF3xx/a", "MJV83xx/a", "MJV93xx/a", "MJVA3xx/a"],
             colors: [.silverLight, .pinkLight, .blueLight, .greenLight],
             cpu: .m1),
@@ -707,13 +721,13 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .intel),
         Mac(
-            officialName: "iMac Pro",
+            officialName: "iMac Pro (2017)",
             identifiers: ["iMacPro1,1"],
-            supportId: .unknownSupportId,
+            supportId: "111995",
             launchOSVersion: "10.13.2",
             unsupportedOSVersion: nil,
             form: .iMac,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111995_SP771-imac-pro-2017.png",
             capabilities: [.pro, .usbC],
             models: ["MQ2Y2xx/A", "MHLV3xx/A"],
             colors: [.macSpacegray],
@@ -987,7 +1001,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (13-inch, Mid 2010)",
             identifiers: ["MacBook7,1"],
-            supportId: .unknownSupportId,
+            supportId: "112581",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
             form: .macBook,
@@ -1047,7 +1061,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "11.0.1",
             unsupportedOSVersion: nil,
             form: .macBook,
-            image: nil,
+            image: "https://cdsassets.apple.com/content/services/pub/image?productid=300267&size=240x240",
             capabilities: [.air, .usbC],
             models: ["MGN63xx/A", "MGN93xx/A", "MGND3xx/A", "MGN73xx/A", "MGNA3xx/A", "MGNE3xx/A"],
             colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
@@ -1245,15 +1259,15 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (14-inch, 2023)",
             identifiers: ["Mac14,5", "Mac14,9"],
-            supportId: .unknownSupportId,
+            supportId: "SP889",
             launchOSVersion: "13.2",
             unsupportedOSVersion: nil,
-            form: .macBook,
-            image: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
             capabilities: [.pro, .usbC],
             models: ["MPHE3xx/A", "MPHF3xx/A", "MPHG3xx/A", "MPHH3xx/A", "MPHJ3xx/A", "MPHK3xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
-            cpu: .intel),
+            cpu: .m2pro),
         Mac(
             officialName: "MacBook Pro (16-inch, 2023)",
             identifiers: ["Mac14,6", "Mac14,10"],
@@ -1319,12 +1333,12 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,3"],
-            supportId: .unknownSupportId,
+            supportId: "111981",
             launchOSVersion: "10.15.4",
             unsupportedOSVersion: nil,
             form: .macBook,
-            image: nil,
-            capabilities: [.pro, .usbC],
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111339_sp818-mbp13touch-space-select-202005.png",
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MXK32xx/A", "MXK52xx/A", "MXK62xx/A", "MXK72xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1336,7 +1350,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MWP42xx/A", "MWP52xx/A", "MWP62xx/A", "MWP72xx/A", "MWP82xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1355,12 +1369,12 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,4"],
-            supportId: .unknownSupportId,
+            supportId: "SP799",
             launchOSVersion: "10.14.5",
             unsupportedOSVersion: nil,
             form: .macBook,
-            image: nil,
-            capabilities: [.pro, .usbC],
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111945_sp799-mbp13touch-space.jpg",
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MUHN2xx/A", "MUHP2xx/a", "MUHQ2xx/A", "MUHR2xx/A", "MUHR2xx/B"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1384,7 +1398,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MV962xx/A", "MV972xx/A", "MV982xx/A", "MV992xx/A", "MV9A2xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1408,7 +1422,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: nil,
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MR9Q2xx/A", "MR9R2xx/A", "MR9T2xx/A", "MR9U2xx/A", "MR9V2xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1432,7 +1446,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "14",
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MPXV2xx/A", "MPXW2xx/A", "MPXX2xx/A", "MPXY2xx/A", "MQ002xx/A", "MQ012xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1444,7 +1458,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "14",
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MPXQ2xx/A", "MPXR2xx/A", "MPXT2xx/A", "MPXU2xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1468,7 +1482,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MLH12xx/A", "MLVP2xx/A", "MNQF2xx/A", "MNQG2xx/A", "MPDK2xx/A", "MPDL2xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1480,7 +1494,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "13",
             form: .macBook,
             image: nil,
-            capabilities: [.pro, .usbC],
+            capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MLL42xx/A", "MLUQ2xx/A"],
             colors: [.macbookSilver, .macbookSpacegray],
             cpu: .intel),
@@ -1792,67 +1806,77 @@ public struct Mac: IdiomType {
             cpu: .intel),
         Mac(
             officialName: "Mac mini (2023)",
-            identifiers: ["Mac14,12"],
-            supportId: .unknownSupportId,
+            identifiers: ["Mac14,3"],
+            supportId: "SP891",
             launchOSVersion: "13.2",
             unsupportedOSVersion: nil,
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111837_mac-mini-2023-m2-pro.png",
+            capabilities: [.usbC],
+            cpu: .m2),
+        Mac(
+            officialName: "Mac mini (2023)",
+            identifiers: ["Mac14,12"],
+            supportId: "111837",
+            launchOSVersion: "13.2",
+            unsupportedOSVersion: nil,
+            form: .macMini,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2023-m2-pro.png",
             capabilities: [.usbC],
             models: ["MNH73xx/A"],
             cpu: .intel),
         Mac(
             officialName: "Mac mini (M1, 2020)",
             identifiers: ["Macmini9,1"],
-            supportId: .unknownSupportId,
+            supportId: "111894",
             launchOSVersion: "11.0.1",
             unsupportedOSVersion: nil,
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2020-m1.png",
             capabilities: [.usbC],
             models: ["MGNR3xx/A", "MGNT3xx/A"],
             cpu: .m1),
         Mac(
             officialName: "Mac mini (2018)",
             identifiers: ["Macmini8,1"],
-            supportId: .unknownSupportId,
+            supportId: "111912",
             launchOSVersion: "10.14",
             unsupportedOSVersion: nil,
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2018.png",
             capabilities: [.usbC],
             models: ["MRTR2xx/A", "MRTT2xx/A", "MXNF2xx/A", "MXNG2xx/A"],
             cpu: .intel),
         Mac(
             officialName: "Mac mini (Late 2014)",
             identifiers: ["Macmini7,1"],
-            supportId: .unknownSupportId,
+            supportId: "111931",
             launchOSVersion: "10.10",
             unsupportedOSVersion: "13",
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-late-2014.png",
             capabilities: [.usbC],
             models: ["MGEM2xx/A", "MGEN2xx/A", "MGEQ2xx/A"],
             cpu: .intel),
         Mac(
             officialName: "Mac mini (Late 2012)",
             identifiers: ["Macmini6,1", "Macmini6,2"],
-            supportId: .unknownSupportId,
+            supportId: "111926",
             launchOSVersion: "10.8.1",
             unsupportedOSVersion: "11",
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-late-2012.png",
             capabilities: [.usbC],
             models: ["MD387xx/A", "MD388xx/A", "MD389xx/A"],
             cpu: .intel),
         Mac(
             officialName: "Mac mini (Mid 2011)",
             identifiers: ["Macmini5,1", "Macmini5,2"],
-            supportId: .unknownSupportId,
+            supportId: "112007",
             launchOSVersion: "10.7",
             unsupportedOSVersion: "10.14",
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-mid-2011.png",
             capabilities: [.usbC],
             models: ["MC815xx/A", "MC816xx/A", "MC936xx/A"],
             cpu: .intel),
@@ -1863,7 +1887,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.14",
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-mid-2010.png",
             capabilities: [.usbC],
             models: ["MC438xx/A", "MC270xx/A"],
             cpu: .intel),
@@ -1874,7 +1898,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "10.6",
             unsupportedOSVersion: "10.12",
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-late-2009.png",
             capabilities: [.usbC],
             models: ["MC238xx/A", "MC239xx/A", "MC408xx/A"],
             cpu: .intel),
@@ -1885,7 +1909,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "10.6",
             unsupportedOSVersion: "10.12",
             form: .macMini,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-early-2009.png",
             capabilities: [.usbC],
             models: ["MB464xx/A", "MB463xx/A"],
             cpu: .intel),
@@ -1963,27 +1987,6 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
         
-        
-        
-        Mac(
-            officialName: "MacBook Pro (14-inch, 2023)",
-            identifiers: ["Mac14,9"],
-            supportId: "SP889",
-            launchOSVersion: "13.2",
-            unsupportedOSVersion: nil,
-            form: .macBookGen2,
-            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
-            cpu: .m2pro),
-        Mac(
-            officialName: "Mac mini (2023)",
-            identifiers: ["Mac14,3"],
-            supportId: "SP891",
-            launchOSVersion: "13.2",
-            unsupportedOSVersion: nil,
-            form: .macMini,
-            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111837_mac-mini-2023-m2-pro.png",
-            capabilities: [.usbC],
-            cpu: .m2),
     ]
 }
     
