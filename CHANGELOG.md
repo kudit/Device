@@ -28,8 +28,14 @@ Real Device Apple TV
 NOTE: Awaiting DTS/Feedback response on Device errors with release build.  Works if built for DEBUG but has errors with RELEASE compile for some reason.
 TODO: Check Apple Watch support images.
 
+v2.5.1 10/8/2024 Needed to rename app for Mac App Store.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
+v2.5.0 (build 2) 10/7/2024 - added 512 version of app icon.
+
 v2.5.0 10/7/2024 Tweaked to allow releasing app on the App Store.  Since must be built for DEBUG, tweaked check for Migration code.  Re-worked AttributeListView so can include in framework.  Added links to support documents.  Including attribute list in device details.  Fixed duplicate Mac14,9.  Fixed so Thunderbolt named devices definitely show thunderbolt capability.  Uploaded to App Store as "Device Information Tool"."
 
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.4.4 9/22/2024 Added identifiers to device detail view.  Fixed Apple Watch 10 identifiers.
 
 v2.4.3 9/21/2024 Fixed CPU issues with new iPhones and `cameraControl` button and added new Apple Watch stubs and colors.  Added black titanium to Apple Watch Ultra 2.  Fixed deinit task warning with Xcode 16 GM.  Added wrapping on colors to prevent squishing.  Updated colors and added colors for Apple Watches before Series 6 and re-named some colors to match Apple CSS.  Added iPhone colors before iPhone 13.  Updated Apple TV HD image.  Updated iPhone images to all use the identification page for consistency (https://support.apple.com/en-us/108044).

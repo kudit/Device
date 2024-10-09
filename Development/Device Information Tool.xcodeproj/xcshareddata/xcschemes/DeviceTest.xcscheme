@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1540"
+   LastUpgradeVersion = "1600"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-               BuildableName = "DeviceTest.app"
-               BlueprintName = "DeviceTest"
-               ReferencedContainer = "container:Device.xcodeproj">
+               BuildableName = "Device Information Tool.app"
+               BlueprintName = "Device Information Tool"
+               ReferencedContainer = "container:Device Information Tool.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,9 +50,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-            BuildableName = "DeviceTest.app"
-            BlueprintName = "DeviceTest"
-            ReferencedContainer = "container:Device.xcodeproj">
+            BuildableName = "Device Information Tool.app"
+            BlueprintName = "Device Information Tool"
+            ReferencedContainer = "container:Device Information Tool.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -67,9 +67,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-            BuildableName = "DeviceTest.app"
-            BlueprintName = "DeviceTest"
-            ReferencedContainer = "container:Device.xcodeproj">
+            BuildableName = "Device Information Tool.app"
+            BlueprintName = "Device Information Tool"
+            ReferencedContainer = "container:Device Information Tool.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
