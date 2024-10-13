@@ -28,6 +28,9 @@ Real Device Apple TV
 NOTE: Awaiting DTS/Feedback response on Device errors with release build.  Works if built for DEBUG but has errors with RELEASE compile for some reason.
 TODO: Check Apple Watch support images.
 
+v2.5.2 10/13/2024 Moved Xcode project back to original name to prevent opening crash issues.  Fixed missing project marketing version update!  Updated resolved package versions.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.5.1 10/8/2024 Needed to rename app for Mac App Store.
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS*

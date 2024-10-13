@@ -19,7 +19,6 @@
 		B5CCE9D02BC94DB6005CC2D2 /* DeviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */; };
 		B5CCE9D12BC94DBD005CC2D2 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */; };
 		B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
-		B5FA5E972CB5DDA2006E3B55 /* Color Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5FA5E962CB5DDA2006E3B55 /* Color Library */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,7 +69,7 @@
 		B5B1A2272C23EEB9002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5B1A22B2C23EF14002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS10.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceUITests.swift; sourceTree = "<group>"; };
-		B5DD79B32BC94C8800457681 /* Device Information Tool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Information Tool.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5DD79B32BC94C8800457681 /* DeviceTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5DD79CD2BC94C8A00457681 /* DeviceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5F033FF2BABA93500CA6396 /* DeviceTest Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DeviceTest Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,7 +81,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B58B62B52C23ECB40046E91C /* Device Library in Frameworks */,
-				B5FA5E972CB5DDA2006E3B55 /* Color Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,7 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				B5F033FF2BABA93500CA6396 /* DeviceTest Watch App.app */,
-				B5DD79B32BC94C8800457681 /* Device Information Tool.app */,
+				B5DD79B32BC94C8800457681 /* DeviceTest.app */,
 				B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */,
 				B5DD79CD2BC94C8A00457681 /* DeviceUITests.xctest */,
 			);
@@ -182,9 +180,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B5DD79B22BC94C8800457681 /* Device Information Tool */ = {
+		B5DD79B22BC94C8800457681 /* DeviceTest */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "Device Information Tool" */;
+			buildConfigurationList = B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "DeviceTest" */;
 			buildPhases = (
 				B5DD79AF2BC94C8800457681 /* Sources */,
 				B5DD79B02BC94C8800457681 /* Frameworks */,
@@ -197,10 +195,9 @@
 			name = "Device Information Tool";
 			packageProductDependencies = (
 				B58B62B42C23ECB40046E91C /* Device Library */,
-				B5FA5E962CB5DDA2006E3B55 /* Color Library */,
 			);
 			productName = DeviceTest;
-			productReference = B5DD79B32BC94C8800457681 /* Device Information Tool.app */;
+			productReference = B5DD79B32BC94C8800457681 /* DeviceTest.app */;
 			productType = "com.apple.product-type.application";
 		};
 		B5DD79C22BC94C8A00457681 /* DeviceTests */ = {
@@ -268,7 +265,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1530;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1540;
 				TargetAttributes = {
 					B5DD79B22BC94C8800457681 = {
 						CreatedOnToolsVersion = 15.3;
@@ -287,7 +284,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B5C1B6182BAB7997001D5CFA /* Build configuration list for PBXProject "Device Information Tool" */;
+			buildConfigurationList = B5C1B6182BAB7997001D5CFA /* Build configuration list for PBXProject "Device" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -296,14 +293,11 @@
 				Base,
 			);
 			mainGroup = B5C1B6142BAB7997001D5CFA;
-			packageReferences = (
-				B5FA5E952CB5DDA2006E3B55 /* XCRemoteSwiftPackageReference "Color" */,
-			);
 			productRefGroup = B5C1B61E2BAB7997001D5CFA /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B5DD79B22BC94C8800457681 /* Device Information Tool */,
+				B5DD79B22BC94C8800457681 /* DeviceTest */,
 				B5F033FE2BABA93500CA6396 /* DeviceTest Watch App */,
 				B5DD79C22BC94C8A00457681 /* DeviceTests */,
 				B5DD79CC2BC94C8A00457681 /* DeviceUITests */,
@@ -386,12 +380,12 @@
 /* Begin PBXTargetDependency section */
 		B5DD79C52BC94C8A00457681 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B5DD79B22BC94C8800457681 /* Device Information Tool */;
+			target = B5DD79B22BC94C8800457681 /* DeviceTest */;
 			targetProxy = B5DD79C42BC94C8A00457681 /* PBXContainerItemProxy */;
 		};
 		B5DD79CF2BC94C8A00457681 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B5DD79B22BC94C8800457681 /* Device Information Tool */;
+			target = B5DD79B22BC94C8800457681 /* DeviceTest */;
 			targetProxy = B5DD79CE2BC94C8A00457681 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -452,7 +446,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.5.1;
+				MARKETING_VERSION = 2.5.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -515,7 +509,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.5.1;
+				MARKETING_VERSION = 2.5.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -761,7 +755,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B5C1B6182BAB7997001D5CFA /* Build configuration list for PBXProject "Device Information Tool" */ = {
+		B5C1B6182BAB7997001D5CFA /* Build configuration list for PBXProject "Device" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5C1B6292BAB7999001D5CFA /* Debug */,
@@ -770,7 +764,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "Device Information Tool" */ = {
+		B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "DeviceTest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5DD79D62BC94C8A00457681 /* Debug */,
@@ -808,17 +802,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		B5FA5E952CB5DDA2006E3B55 /* XCRemoteSwiftPackageReference "Color" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kudit/Color";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
 		B58B62B42C23ECB40046E91C /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -827,11 +810,6 @@
 		B5B1A2292C23EF14002C848D /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
-		};
-		B5FA5E962CB5DDA2006E3B55 /* Color Library */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B5FA5E952CB5DDA2006E3B55 /* XCRemoteSwiftPackageReference "Color" */;
-			productName = "Color Library";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
