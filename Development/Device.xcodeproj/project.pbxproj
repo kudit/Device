@@ -69,7 +69,7 @@
 		B5B1A2272C23EEB9002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5B1A22B2C23EF14002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS10.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceUITests.swift; sourceTree = "<group>"; };
-		B5DD79B32BC94C8800457681 /* DeviceTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeviceTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5DD79B32BC94C8800457681 /* Device Information Tool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Information Tool.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5DD79CD2BC94C8A00457681 /* DeviceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeviceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5F033FF2BABA93500CA6396 /* DeviceTest Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DeviceTest Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -161,7 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				B5F033FF2BABA93500CA6396 /* DeviceTest Watch App.app */,
-				B5DD79B32BC94C8800457681 /* DeviceTest.app */,
+				B5DD79B32BC94C8800457681 /* Device Information Tool.app */,
 				B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */,
 				B5DD79CD2BC94C8A00457681 /* DeviceUITests.xctest */,
 			);
@@ -180,9 +180,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B5DD79B22BC94C8800457681 /* DeviceTest */ = {
+		B5DD79B22BC94C8800457681 /* Device Information Tool */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "DeviceTest" */;
+			buildConfigurationList = B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "Device Information Tool" */;
 			buildPhases = (
 				B5DD79AF2BC94C8800457681 /* Sources */,
 				B5DD79B02BC94C8800457681 /* Frameworks */,
@@ -197,7 +197,7 @@
 				B58B62B42C23ECB40046E91C /* Device Library */,
 			);
 			productName = DeviceTest;
-			productReference = B5DD79B32BC94C8800457681 /* DeviceTest.app */;
+			productReference = B5DD79B32BC94C8800457681 /* Device Information Tool.app */;
 			productType = "com.apple.product-type.application";
 		};
 		B5DD79C22BC94C8A00457681 /* DeviceTests */ = {
@@ -297,7 +297,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B5DD79B22BC94C8800457681 /* DeviceTest */,
+				B5DD79B22BC94C8800457681 /* Device Information Tool */,
 				B5F033FE2BABA93500CA6396 /* DeviceTest Watch App */,
 				B5DD79C22BC94C8A00457681 /* DeviceTests */,
 				B5DD79CC2BC94C8A00457681 /* DeviceUITests */,
@@ -380,12 +380,12 @@
 /* Begin PBXTargetDependency section */
 		B5DD79C52BC94C8A00457681 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B5DD79B22BC94C8800457681 /* DeviceTest */;
+			target = B5DD79B22BC94C8800457681 /* Device Information Tool */;
 			targetProxy = B5DD79C42BC94C8A00457681 /* PBXContainerItemProxy */;
 		};
 		B5DD79CF2BC94C8A00457681 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B5DD79B22BC94C8800457681 /* DeviceTest */;
+			target = B5DD79B22BC94C8800457681 /* Device Information Tool */;
 			targetProxy = B5DD79CE2BC94C8A00457681 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -446,7 +446,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.5.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -509,7 +509,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.5.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -764,7 +764,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "DeviceTest" */ = {
+		B5DD79D52BC94C8A00457681 /* Build configuration list for PBXNativeTarget "Device Information Tool" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B5DD79D62BC94C8A00457681 /* Debug */,

@@ -611,17 +611,17 @@ public extension Device {
 
 
 
-// this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.
+// this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.  However, making this internal causes issues with the release build and analyze so made public.
 @available(iOS 13.0, tvOS 13, watchOS 6, *)
 @MainActor // All calculations/queries should be quick so we can isolate to main actor to give Sendable conformance.
-final class ActualHardwareDevice: CurrentDevice {
+public final class ActualHardwareDevice: CurrentDevice {
 #if canImport(Combine)
-    typealias BatteryType = MonitoredDeviceBattery
+    public typealias BatteryType = MonitoredDeviceBattery
 #else
-    typealias BatteryType = DeviceBattery
+    public typealias BatteryType = DeviceBattery
 #endif
     
-    let device: Device
+    public let device: Device
 
     // since there should only ever be one ActualHardwareDevice, we can make this static
     @MainActor
@@ -847,7 +847,7 @@ final class ActualHardwareDevice: CurrentDevice {
     
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return nil.
     @MainActor
-    var battery: BatteryType? {
+    public var battery: BatteryType? {
         if device.has(.battery) {
 #if canImport(Combine)
             return MonitoredDeviceBattery.current
@@ -864,7 +864,7 @@ final class ActualHardwareDevice: CurrentDevice {
     private var _isIdleTimerDisabled = false
 #endif
     /// Ability to change/get the idle timeout setting.
-    var isIdleTimerDisabled: Bool {
+    public var isIdleTimerDisabled: Bool {
         get {
             _isIdleTimerDisabled
         }
@@ -887,7 +887,7 @@ final class ActualHardwareDevice: CurrentDevice {
     private var _disableIdleTimerWhenPluggedIn = false
 #endif
     /// Automatically start monitoring the battery state to disable idle timer when plugged in and re-enable when unplugged.
-    func disableIdleTimerWhenPluggedIn() {
+    public func disableIdleTimerWhenPluggedIn() {
         guard !_disableIdleTimerWhenPluggedIn else {
             // atttempting to disable idle timer multiple times.  This should only be set on launch.
             print("WARNING: attempting to disable idle timer when this has already been set.  You should only call this function once (probably at launch or main init).  Set a breakpoint to see why there's a duplicate call.")
