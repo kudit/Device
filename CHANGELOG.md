@@ -25,9 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-NOTE: Awaiting DTS/Feedback response on Device errors with release build.  Works if built for DEBUG but has errors with RELEASE compile for some reason.
 TODO: Check Apple Watch support images.
 
+v2.5.4 10/14/2024 Should fix Linux support by updating Compatibility framework.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
 v2.5.3 10/13/2024 Fixed Release build information by changing visibility of ActualHardwareDevice.
 
 v2.5.2 10/13/2024 Moved Xcode project back to original name to prevent opening crash issues.  Fixed missing project marketing version update!  Updated resolved package versions.
@@ -163,10 +165,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 
 ## Bugs to fix:
 Known issues that need to be addressed.
-- [ ] Main-actor isolated warning on .current in CurrentDevice.swift (assuming Device.current but could be UIDevice.current) and this only happens in Swift Playgrounds.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
-- [ ] Must be built for debug instead of release configuration when archiving/analyzing due to issue: errors linking for release like "Undefined symbols for architecture arm64:
-  "protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device" and "type metadata accessor for Device.ActualHardwareDevice".  (Removed checks for #if canImport(Combine) around various classes and that helped some but didn't completely fix.) - possibly issue building against macOS 11?  Possible other #combine check?  Apple Forum Description: https://developer.apple.com/forums/thread/758168?login=true
 - [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 - [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
@@ -286,6 +285,8 @@ FB14827858
 ##Developer Forum Thread (unanswered since June 26, 2024)
 https://developer.apple.com/forums/thread/758168
 
+##Found FIX!
+Make ActualHardwareDevice public instead of internal.
 
 
 #AppStore Copy
