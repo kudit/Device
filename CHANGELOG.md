@@ -27,6 +27,9 @@ Real Device Apple TV
 
 TODO: Check Apple Watch support images.
 
+v2.5.5 10/18/2024 Tried updating minimum Color framework to try to fix Linux support.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
 v2.5.4 10/14/2024 Should fix Linux support by updating Compatibility framework.
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
