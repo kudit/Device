@@ -14,6 +14,9 @@ struct DeviceTestApp: App {
         WindowGroup {
             if #available(watchOS 8.0, tvOS 15.0, macOS 12.0, *) {
                 DeviceTestView()
+//                    .onAppear {
+//                        Device.current.isIdleTimerDisabled = true
+//                    }
             } else {
                 // Fallback on earlier versions
                 Text("UI Tests not available on older platforms.  However, framework code should still work.")

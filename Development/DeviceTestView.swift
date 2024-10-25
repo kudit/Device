@@ -148,9 +148,7 @@ struct CurrentDeviceDetailsView: View {
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
 @MainActor
-public struct DeviceTestView: View {
-    @State var disableIdleTimer = false
-    
+public struct DeviceTestView: View {    
     @ObservedObject var animatedDevice = MockDevice.mocks.first!
 
     @ViewBuilder
@@ -163,10 +161,10 @@ public struct DeviceTestView: View {
                     BatteryView(fontSize: 80)
                 }
 #if os(iOS) // only works on iOS so don't show on other devices.
+                // TODO: Change to a picker with a mode: enabled, disabled when plugged in, disabled.
                 Toggle("Disable Idle Timer", isOn: Binding(get: {
-                    return disableIdleTimer 
+                    return Device.current.isIdleTimerDisabled
                 }, set: { newValue in
-                    disableIdleTimer = newValue
                     Device.current.isIdleTimerDisabled = newValue
                 }))
 #endif

@@ -25,9 +25,10 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-TODO: Check Apple Watch support images.
+v2.6.0 10/25/2024 Added new iPad mini devices.  Test Device with setting idle timer disabled on launch to make sure works as intended (updated instructions to indicate this needs to be done on view appear and NOT in the init).  Updated the idle timer toggle to reference the current state rather than a shadow variable.  Updated Apple Watch images to match the Identify your Apple Watch support page: https://support.apple.com/en-us/108056
 
-v2.5.5 10/18/2024 Tried updating minimum Color framework to try to fix Linux support.
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
+v2.5.5 10/18/2024 Tried updating minimum Color framework to try to fix Linux support (Does!)
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
 v2.5.4 10/14/2024 Should fix Linux support by updating Compatibility framework.
@@ -181,6 +182,8 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
+- [ ] Add Apple Intelligence as a capability feature.
+- [ ] Create migration export that checks values against defaults primarily to check definitions are in the correct order and that named color sets are being used (test to see if color set is equal to named colorset and if so, replace with the named case rather than the listed colors).
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
 - [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
 - [ ] Device: Create live activity for battery and screen orientation as example code.

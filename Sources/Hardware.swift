@@ -736,6 +736,9 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // iPad Air 2024
     case starlightAir = "#e3dcd1", purpleAir = "#e3dee9", blueAir = "#d7e5e6"
     static let iPadAirM2 = [spaceGrayA5, starlightAir, purpleAir, blueAir]
+    
+    // iPad mini (A17 Pro)
+    static let iPadMiniA17 = [spaceGrayA5, blueAir, purpleAir, starlightAir]
 
     
     //  Watch Series 0
@@ -836,6 +839,7 @@ public extension [MaterialColor] {
     static let iPadAir = MaterialColor.iPadAir
     static let iPadAirM2 = MaterialColor.iPadAirM2
     static let iPadMini5 = MaterialColor.iPadMini5
+    static let iPadMiniA17 = MaterialColor.iPadMiniA17
     static let watch0 = MaterialColor.watch0
     static let watch1 = MaterialColor.watch1
     static let watch2 = MaterialColor.watch2
@@ -885,6 +889,7 @@ public extension [MaterialColor] {
         iPadAir: "iPadAir",
         iPadAirM2: "iPadAirM2",
         iPadMini5: "iPadMini5",
+        iPadMiniA17: "iPadMiniA17",
         watch0: "watch0",
         watch1: "watch1",
         watch2: "watch2",
