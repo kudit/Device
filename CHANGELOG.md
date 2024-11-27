@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.6.1 11/26/2024 Added new MacBook Pro M4 and Mac mini M4 models.  Updated dependent frameworks.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.6.0 10/25/2024 Added new iPad mini devices.  Test Device with setting idle timer disabled on launch to make sure works as intended (updated instructions to indicate this needs to be done on view appear and NOT in the init).  Updated the idle timer toggle to reference the current state rather than a shadow variable.  Updated Apple Watch images to match the Identify your Apple Watch support page: https://support.apple.com/en-us/108056
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS*

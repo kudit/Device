@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.6.0"
+    static let version: Version = "2.6.1"
 }
 import Compatibility
 
@@ -551,8 +551,8 @@ public struct Mac: IdiomType {
         case macProGen3 = "macpro.gen3"
 //        case macProGen3Server = "macpro.gen3.server" // MacPro Rack configuration
         case macBook = "macbook"
-        case macBookGen1 = "macbook.gen1"
-        case macBookGen2 = "macbook.gen2"
+        case macBookGen1 = "macbook.gen1" // magSafe 2
+        case macBookGen2 = "macbook.gen2" // magSafe 3, notch
         case macMini = "macmini"
         case macStudio = "macstudio"
         case iMac = "desktopcomputer"
@@ -1282,6 +1282,159 @@ public struct Mac: IdiomType {
             cpu: .m2pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254) // 16.2" 16:10
         ),
+
+        
+        Mac(
+            officialName: "MacBook Pro (14-inch, Nov 2023)",
+            identifiers: ["Mac15,3"],
+            supportId: "SP890",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-nov-2023-silver-space-gray.png",
+            capabilities: [.pro],
+            models: ["MR7J3xx/A", "MR7K3xx/A", "MRX23xx/A", "MTL73xx/A", "MTL83xx/A", "MTLC3xx/A", "MXE03xx/A", "MXE13xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m3,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (14-inch, Nov 2023)",
+            identifiers: ["Mac15,6"],
+            supportId: "https://support.apple.com/en-us/117736",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
+            capabilities: [.pro],
+            models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m3pro,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (14-inch, Nov 2023)",
+            identifiers: ["Mac15,8", "Mac15,10"],
+            supportId: "https://support.apple.com/en-us/117736",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
+            capabilities: [.pro],
+            models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m3max,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (16-inch, Nov 2023)",
+            identifiers: ["Mac15,7"],
+            supportId: "https://support.apple.com/en-us/117737",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
+            capabilities: [.pro],
+            models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m3pro,
+            screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (16-inch, Nov 2023)",
+            identifiers: ["Mac15,9", "Mac15,11"],
+            supportId: "https://support.apple.com/en-us/117737",
+            launchOSVersion: "14.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
+            capabilities: [.pro],
+            models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m3max,
+            screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
+        ),
+
+        
+        
+        
+
+        Mac(
+            officialName: "MacBook Pro (14-inch, 2024)",
+            identifiers: ["Mac16,1"],
+            supportId: "https://support.apple.com/en-us/121552",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-colors.png",
+            capabilities: [.pro],
+            models: ["MCX04xx/A", "MCX14xx/A", "MW2U3xx/A", "MW2V3xx/A", "MW2W3xx/A", "MW2X3xx/A", "MXCM3xx/A", "MXCN3xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m4,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (14-inch, 2024)",
+            identifiers: ["Mac16,6"],
+            supportId: "https://support.apple.com/en-us/121553",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
+            capabilities: [.pro],
+            models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m4pro,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (14-inch, 2024)",
+            identifiers: ["Mac16,8"],
+            supportId: "https://support.apple.com/en-us/121553",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
+            capabilities: [.pro],
+            models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m4max,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (16-inch, 2024)",
+            identifiers: ["Mac16,7"],
+            supportId: "https://support.apple.com/en-us/121554",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
+            capabilities: [.pro],
+            models: ["MX2T3xx/A", "MX2U3xx/A", "MX2V3xx/A", "MX2W3xx/A", "MX2X3xx/A", "MX2Y3xx/A", "MX303xx/A", "MX313xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m4max,
+            screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
+        ),
+        Mac(
+            officialName: "MacBook Pro (16-inch, 2024)",
+            identifiers: ["Mac16,5"],
+            supportId: "https://support.apple.com/en-us/121554",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
+            capabilities: [.pro],
+            models: ["MX2T3xx/A", "MX2U3xx/A", "MX2V3xx/A", "MX2W3xx/A", "MX2X3xx/A", "MX2Y3xx/A", "MX303xx/A", "MX313xx/A"],
+            colors: [.macbookSilver, .macbookSpacegray],
+            cpu: .m4pro,
+            screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
+        ),
+
+
+
+
+
+
         Mac(
             officialName: "MacBook Pro (13-inch, M2, 2022)",
             identifiers: ["Mac14,7"],
@@ -1804,6 +1957,31 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             cpu: .intel),
+
+        
+        
+        Mac(
+            officialName: "Mac mini (2024)",
+            identifiers: ["Mac16,15", "Mac16,11"],
+            supportId: "https://support.apple.com/en-us/121555",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macMini,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2024.png",
+            capabilities: [.usbC],
+            cpu: .m4pro),
+        Mac(
+            officialName: "Mac mini (2024)",
+            identifiers: ["Mac16,10"],
+            supportId: "https://support.apple.com/en-us/121555",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .macMini,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2024.png",
+            capabilities: [.usbC],
+            cpu: .m4),
+
+
         Mac(
             officialName: "Mac mini (2023)",
             identifiers: ["Mac14,3"],
@@ -1811,7 +1989,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "13.2",
             unsupportedOSVersion: nil,
             form: .macMini,
-            image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111837_mac-mini-2023-m2-pro.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2023-m2.png",
             capabilities: [.usbC],
             cpu: .m2),
         Mac(

@@ -421,6 +421,8 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     case m3pro
     case m3max
     case m4
+    case m4pro
+    case m4max
     // iPod/iPhone
     case s5L8900 // Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch
     case sAPL0298C05 // iPhone 3GS
