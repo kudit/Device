@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+
+v2.6.2 12/15/2024 Added iMac "M4" models.  Renamed `macbookSilver` to `solidSilver`.  Fixed crashes by making sure official names were never identical and images are different and not reused.
+
 v2.6.1 11/26/2024 Added new MacBook Pro M4 and Mac mini M4 models.  Updated dependent frameworks.
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS*

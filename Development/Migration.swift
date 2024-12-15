@@ -640,7 +640,7 @@ extension MaterialColor {
             "greenlight": .greenLight,
             "rose gold": .macbookRoseGold,
             "gold": .macbookGold,
-            "silver": .macbookSilver,
+            "silver": .solidSilver,
             "starlight": .macbookairStarlight,
             "midnight": .macbookairMidnight,
         ]
@@ -648,7 +648,7 @@ extension MaterialColor {
             return mapped
         }
         debug("Unknown color string: \"\(string)\"", level: .WARNING)
-        return .macbookSilver
+        return .solidSilver
     }
 }
 extension CPU {

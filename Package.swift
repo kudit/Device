@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // WARNING:
@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.6.1"
+let version = "2.6.2"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.

@@ -597,6 +597,13 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     case blue = "#26476d"
     case purple = "#353b71"
     case silver = "#c7c8ca"
+    case pinkDark = "#de5f7d"
+    case orangeDark = "#e3704b"
+    case yellowDark = "#edd142"
+    case greenDark = "#3e935c"
+    case blueDark = "#547eae"
+    case purpleDark = "#827eb2"
+    case solidSilver = "#e3e4e5"
     case pinkLight = "#edb9af"
     case orangeLight = "#e9aa95"
     case yellowLight = "#e9ca95"
@@ -606,7 +613,6 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     case silverLight = "#d9dadb"
     case macSpacegray = "#7a7b80"
     case macbookSpacegray = "#7d7e80"
-    case macbookSilver = "#e3e4e5"
     case macbookGold = "#F9D4C2"
     case macbookSpaceblack = "#2e2c2e"
     case macbookairMidnight = "#2e3642"
@@ -614,6 +620,7 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     
     // iMac
     static let iMac = [blueLight, greenLight, pinkLight, silverLight, yellowLight, orangeLight, purpleLight]
+    static let iMac2024 = [blueDark, purpleDark, pinkDark, orangeDark, yellowDark, greenDark, solidSilver]
     
     // MacBook
     case macbookRoseGold = "#E1C3C8"
@@ -811,6 +818,7 @@ public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]
     
     static let iMac = MaterialColor.iMac
+    static let iMac2024 = MaterialColor.iMac2024
     static let iPodTouch5thGen = MaterialColor.iPodTouch5thGen
     static let iPodTouch6thGen = MaterialColor.iPodTouch6thGen
     static let iPodTouch7thGen = MaterialColor.iPodTouch7thGen

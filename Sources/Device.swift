@@ -672,6 +672,29 @@ public struct Mac: IdiomType {
         // Support IDs and images can be found here: https://support.apple.com/en-us/108054
 
         Mac(
+            officialName: "iMac (24-inch, 2024, Four ports)",
+            identifiers: ["Mac16,3"],
+            supportId: "https://support.apple.com/en-us/121557",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .iMac,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-24in-2024-four-ports-colors.png",
+            models: ["MCR24xx/A", "MD2P4xx/A", "MD2Q4xx/A", "MD2T4xx/A", "MD2U4xx/A", "MD2V4xx/A", "MD2W4xx/A", "MD2X4xx/A", "MD2Y4xx/A", "MD3A4xx/A", "MD3D4xx/A", "MD3E4xx/A", "MD3F4xx/A", "MD3G4xx/A", "MD3H4xx/A", "MWUU3xx/A", "MWUV3xx/A", "MWUW3xx/A", "MWUX3xx/A", "MWUY3xx/A", "MWV03xx/A", "MWV13xx/A", "MWV33xx/A", "MWV43xx/A", "MWV53xx/A", "MWV63xx/A", "MWV73xx/A", "MWV83xx/A", "MWV93xx/A", "MWVA3xx/A", "MWVC3xx/A", "MWVD3xx/A", "MWVE3xx/A", "MWVF3xx/A", "MWVG3xx/A", "MWVH3xx/A", "MWVJ3xx/A", "MWVK3xx/A", "MWVL3xx/A", "MWVN3xx/A", "MWVP3xx/A", "MWVQ3xx/A", "MWVR3xx/A"],
+            colors: .iMac2024,
+            cpu: .m4),
+        Mac(
+            officialName: "iMac (24-inch, 2024, Two ports)",
+            identifiers: ["Mac16,2"],
+            supportId: "https://support.apple.com/en-us/121556",
+            launchOSVersion: "15.0",
+            unsupportedOSVersion: nil,
+            form: .iMac,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-24in-2024-two-ports-colors.png",
+            models: ["MWUD3xx/A", "MWUE3xx/A", "MWUF3xx/A", "MWUG3xx/A", "MWUH3xx/A", "MWUJ3xx/A", "MWUK3xx/A", "MWUL3xx/A", "MWUN3xx/A", "MWUPxx/A", "MWUQ3xx/A", "MWUR3xx/A", "MWUT3xx/A"],
+            colors: .iMac2024,
+            cpu: .m4),
+        
+        Mac(
             officialName: "iMac (24-inch, M1, 2021)",
             identifiers: ["iMac21,2"],
             supportId: "SP839",
@@ -972,7 +995,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.usbC],
             models: ["MNYF2XX/A", "MNYG2XX/A", "MNYH2XX/A", "MNYJ2XX/A", "MNYK2XX/A", "MNYL2XX/A", "MNYM2XX/A", "MNYN2XX/A"],
-            colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .intel),
         Mac(
             officialName: "MacBook (Retina, 12-inch, Early 2016)",
@@ -984,7 +1007,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.usbC],
             models: ["MLH72xx/A", "MLH82xx/A", "MLHA2xx/A", "MLHC2xx/A", "MLHE2xx/A", "MLHF2xx/A", "MMGL2xx/A", "MMGM2xx/A"],
-            colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .intel),
         Mac(
             officialName: "MacBook (Retina, 12-inch, Early 2015)",
@@ -996,7 +1019,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.usbC],
             models: ["MF855xx/A", "MF865xx/A", "MJY32xx/A", "MJY42xx/A", "MK4M2xx/A", "MK4N2xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .intel),
         Mac(
             officialName: "MacBook (13-inch, Mid 2010)",
@@ -1052,7 +1075,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.air, .usbC],
             models: ["MLXW3xx/A", "MLXX3xx/A", "MLXY3xx/A", "MLY03xx/A", "MLY13xx/A", "MLY23xx/A", "MLY33xx/A", "MLY43xx/A"],
-            colors: [.macbookSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
             cpu: .m2),
         Mac(
             officialName: "MacBook Air (M1, 2020)",
@@ -1064,7 +1087,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/content/services/pub/image?productid=300267&size=240x240",
             capabilities: [.air, .usbC],
             models: ["MGN63xx/A", "MGN93xx/A", "MGND3xx/A", "MGN73xx/A", "MGNA3xx/A", "MGNE3xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .m1),
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2020)",
@@ -1076,7 +1099,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.air, .usbC],
             models: ["MVH22xx/A", "MVH42xx/A", "MVH52xx/A", "MWTJ2xx/A", "MWTK2xx/A", "MWTL2xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .intel),
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2019)",
@@ -1088,7 +1111,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.air, .usbC],
             models: ["MVFH2xx/A", "MVFJ2xx/A", "MVFK2xx/A", "MVFL2xx/A", "MVFM2xx/A", "MVFN2xx/A", "MVH62xx/A", "MVH82xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .intel),
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2018)",
@@ -1100,7 +1123,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.air, .usbC],
             models: ["MRE82xx/A", "MREA2xx/A", "MREE2xx/A", "MRE92xx/A", "MREC2xx/A", "MREF2xx/A", "MUQT2xx/A", "MUQU2xx/A", "MUQV2xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .macbookSilver],
+            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
             cpu: .intel),
         Mac(
             officialName: "MacBook Air (13-inch, 2017)",
@@ -1266,7 +1289,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111340_macbook-pro-2023-14in.png",
             capabilities: [.pro, .usbC],
             models: ["MPHE3xx/A", "MPHF3xx/A", "MPHG3xx/A", "MPHH3xx/A", "MPHJ3xx/A", "MPHK3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m2pro),
         Mac(
             officialName: "MacBook Pro (16-inch, 2023)",
@@ -1278,14 +1301,14 @@ public struct Mac: IdiomType {
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP890/macbook-pro-2023-16in_2x.png",
             capabilities: [.pro],
             models: ["MNWG3xx/A", "MNW93xx/A", "MNWK3xx/A", "MNWD3xx/A", "MNWF3xx/A", "MNW83xx/A", "MNWJ3xx/A", "MNWC3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m2pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254) // 16.2" 16:10
         ),
 
         
         Mac(
-            officialName: "MacBook Pro (14-inch, Nov 2023)",
+            officialName: "MacBook Pro M3 (14-inch, Nov 2023)",
             identifiers: ["Mac15,3"],
             supportId: "SP890",
             launchOSVersion: "14.1",
@@ -1294,12 +1317,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-nov-2023-silver-space-gray.png",
             capabilities: [.pro],
             models: ["MR7J3xx/A", "MR7K3xx/A", "MRX23xx/A", "MTL73xx/A", "MTL83xx/A", "MTLC3xx/A", "MXE03xx/A", "MXE13xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m3,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (14-inch, Nov 2023)",
+            officialName: "MacBook Pro M3 Pro (14-inch, Nov 2023)",
             identifiers: ["Mac15,6"],
             supportId: "https://support.apple.com/en-us/117736",
             launchOSVersion: "14.1",
@@ -1308,26 +1331,26 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m3pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (14-inch, Nov 2023)",
+            officialName: "MacBook Pro M3 Max (14-inch, Nov 2023)",
             identifiers: ["Mac15,8", "Mac15,10"],
-            supportId: "https://support.apple.com/en-us/117736",
+            supportId: "https://support.apple.com/en-us/117736#max",
             launchOSVersion: "14.1",
             unsupportedOSVersion: nil,
             form: .macBookGen2,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m3max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (16-inch, Nov 2023)",
+            officialName: "MacBook Pro (16-inch, Nov 2023) M3 Pro",
             identifiers: ["Mac15,7"],
             supportId: "https://support.apple.com/en-us/117737",
             launchOSVersion: "14.1",
@@ -1336,21 +1359,21 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m3pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (16-inch, Nov 2023)",
+            officialName: "MacBook Pro (16-inch, Nov 2023) M3 Max",
             identifiers: ["Mac15,9", "Mac15,11"],
-            supportId: "https://support.apple.com/en-us/117737",
+            supportId: "https://support.apple.com/en-us/117737#Max",
             launchOSVersion: "14.1",
             unsupportedOSVersion: nil,
             form: .macBookGen2,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png?",
             capabilities: [.pro],
             models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m3max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
         ),
@@ -1369,12 +1392,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-colors.png",
             capabilities: [.pro],
             models: ["MCX04xx/A", "MCX14xx/A", "MW2U3xx/A", "MW2V3xx/A", "MW2W3xx/A", "MW2X3xx/A", "MXCM3xx/A", "MXCN3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m4,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (14-inch, 2024)",
+            officialName: "MacBook Pro (14-inch, 2024) M4 Pro",
             identifiers: ["Mac16,6"],
             supportId: "https://support.apple.com/en-us/121553",
             launchOSVersion: "15.0",
@@ -1383,40 +1406,40 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
             capabilities: [.pro],
             models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m4pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (14-inch, 2024)",
+            officialName: "MacBook Pro (14-inch, 2024) M4 Max",
             identifiers: ["Mac16,8"],
-            supportId: "https://support.apple.com/en-us/121553",
+            supportId: "https://support.apple.com/en-us/121553#Max",
             launchOSVersion: "15.0",
             unsupportedOSVersion: nil,
             form: .macBookGen2,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png?",
             capabilities: [.pro],
             models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m4max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (16-inch, 2024)",
+            officialName: "MacBook Pro (16-inch, 2024) M4 Max",
             identifiers: ["Mac16,7"],
-            supportId: "https://support.apple.com/en-us/121554",
+            supportId: "https://support.apple.com/en-us/121554#Max",
             launchOSVersion: "15.0",
             unsupportedOSVersion: nil,
             form: .macBookGen2,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png?",
             capabilities: [.pro],
             models: ["MX2T3xx/A", "MX2U3xx/A", "MX2V3xx/A", "MX2W3xx/A", "MX2X3xx/A", "MX2Y3xx/A", "MX303xx/A", "MX313xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m4max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
         ),
         Mac(
-            officialName: "MacBook Pro (16-inch, 2024)",
+            officialName: "MacBook Pro (16-inch, 2024) M4 Pro",
             identifiers: ["Mac16,5"],
             supportId: "https://support.apple.com/en-us/121554",
             launchOSVersion: "15.0",
@@ -1425,7 +1448,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
             capabilities: [.pro],
             models: ["MX2T3xx/A", "MX2U3xx/A", "MX2V3xx/A", "MX2W3xx/A", "MX2X3xx/A", "MX2Y3xx/A", "MX303xx/A", "MX313xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m4pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)
         ),
@@ -1445,7 +1468,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MNEH3xx/A", "MNEJ3xx/A", "MNEP3xx/A", "MNEQ3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m2),
         Mac(
             officialName: "MacBook Pro (14-inch, 2021)",
@@ -1457,7 +1480,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MKGP3xx/A", "MKGQ3xx/A", "MKGR3xx/A", "MKGT3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (16-inch, 2021)",
@@ -1469,7 +1492,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MK183xx/A", "MK193xx/A", "MK1A3xx/A", "MK1E3xx/A", "MK1F3xx/A", "MK1H3xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, M1, 2020)",
@@ -1481,7 +1504,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MYD83xx/A", "MYD92xx/A", "MYDA2xx/A", "MYDC2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .m1),
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",
@@ -1493,7 +1516,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111339_sp818-mbp13touch-space-select-202005.png",
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MXK32xx/A", "MXK52xx/A", "MXK62xx/A", "MXK72xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",
@@ -1505,7 +1528,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MWP42xx/A", "MWP52xx/A", "MWP62xx/A", "MWP72xx/A", "MWP82xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (16-inch, 2019)",
@@ -1517,7 +1540,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MVVJ2xx/A", "MVVK2xx/A", "MVVL2xx/A", "MVVM2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",
@@ -1529,7 +1552,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111945_sp799-mbp13touch-space.jpg",
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MUHN2xx/A", "MUHP2xx/a", "MUHQ2xx/A", "MUHR2xx/A", "MUHR2xx/B"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2019)",
@@ -1541,7 +1564,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MV902xx/A", "MV912xx/A", "MV922xx/A", "MV932xx/A", "MV942xx/A", "MV952xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",
@@ -1553,7 +1576,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MV962xx/A", "MV972xx/A", "MV982xx/A", "MV992xx/A", "MV9A2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2018)",
@@ -1565,7 +1588,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MR932xx/A", "MR942xx/A", "MR952xx/A", "MR962xx/A", "MR972xx/A", "MUQH2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",
@@ -1577,7 +1600,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MR9Q2xx/A", "MR9R2xx/A", "MR9T2xx/A", "MR9U2xx/A", "MR9V2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2017)",
@@ -1589,7 +1612,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MPTR2xx/A", "MPTT2xx/A", "MPTU2xx/A", "MPTV2xx/A", "MPTW2xx/A", "MPTX2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports)",
@@ -1601,7 +1624,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MPXV2xx/A", "MPXW2xx/A", "MPXX2xx/A", "MPXY2xx/A", "MQ002xx/A", "MQ012xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)",
@@ -1613,7 +1636,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MPXQ2xx/A", "MPXR2xx/A", "MPXT2xx/A", "MPXU2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2016)", // Touchbook, macOS 12
@@ -1625,7 +1648,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             models: ["MLH32xx/A", "MLH42xx/A", "MLH52xx/A", "MLW72xx/A", "MLW82xx/A", "MLW92xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2016, Four Thunderbolt 3 ports)",
@@ -1637,7 +1660,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MLH12xx/A", "MLVP2xx/A", "MNQF2xx/A", "MNQG2xx/A", "MPDK2xx/A", "MPDL2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)",
@@ -1649,7 +1672,7 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MLL42xx/A", "MLUQ2xx/A"],
-            colors: [.macbookSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpacegray],
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2015)",
@@ -1958,20 +1981,20 @@ public struct Mac: IdiomType {
             capabilities: [.pro, .usbC],
             cpu: .intel),
 
-        
-        
+
         Mac(
-            officialName: "Mac mini (2024)",
+            officialName: "Mac mini (2024) M4 Pro", // have to be different from next item or will crash
             identifiers: ["Mac16,15", "Mac16,11"],
-            supportId: "https://support.apple.com/en-us/121555",
+            supportId: "https://support.apple.com/en-us/121555#pro", // have to be different from next item or will crash - not sure why since identifiers and officialName are different
             launchOSVersion: "15.0",
             unsupportedOSVersion: nil,
             form: .macMini,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2024.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2024.png?", // have to be different from next item or will crash - not sure why since identifiers and officialName are different
             capabilities: [.usbC],
+            models: ["MCX44xx/A", "MCYT4xx/A", "MDAP4xx/A", "MDAQ4xx/A", "MDAY4xx/A", "MU9D3xx/A", "MU9E3xx/A"],
             cpu: .m4pro),
         Mac(
-            officialName: "Mac mini (2024)",
+            officialName: "Mac mini (2024) M4",
             identifiers: ["Mac16,10"],
             supportId: "https://support.apple.com/en-us/121555",
             launchOSVersion: "15.0",
@@ -1981,9 +2004,8 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             cpu: .m4),
 
-
         Mac(
-            officialName: "Mac mini (2023)",
+            officialName: "Mac mini (2023) M2",
             identifiers: ["Mac14,3"],
             supportId: "SP891",
             launchOSVersion: "13.2",
@@ -1993,7 +2015,7 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             cpu: .m2),
         Mac(
-            officialName: "Mac mini (2023)",
+            officialName: "Mac mini (2023) M2 Pro",
             identifiers: ["Mac14,12"],
             supportId: "111837",
             launchOSVersion: "13.2",
@@ -2002,7 +2024,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2023-m2-pro.png",
             capabilities: [.usbC],
             models: ["MNH73xx/A"],
-            cpu: .intel),
+            cpu: .m2pro),
         Mac(
             officialName: "Mac mini (M1, 2020)",
             identifiers: ["Macmini9,1"],
@@ -2164,7 +2186,6 @@ public struct Mac: IdiomType {
             image: nil,
             capabilities: [.pro, .usbC],
             cpu: .intel),
-        
     ]
 }
     
@@ -3454,7 +3475,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             unsupportedOSVersion: nil,
             image: "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP884/sp884-ipad-10gen-960_2x.png",
             capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners],
-            colors: [.macbookSilver, .pink10, .blue10, .yellow10],
+            colors: [.solidSilver, .pink10, .blue10, .yellow10],
             cpu: .a14,
             cameras: [.iSight],
             cellular: .fiveG,
@@ -3568,7 +3589,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-2.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
-            colors: [.macbookSpaceblack, .macbookSilver],
+            colors: [.macbookSpaceblack, .solidSilver],
             cpu: .m4,
             cameras: [.wide, .trueDepth],
             cellular: .fiveG,
@@ -3582,7 +3603,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-1.png",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .notch, .lidar, .barometer],
-            colors: [.macbookSpaceblack, .macbookSilver],
+            colors: [.macbookSpaceblack, .solidSilver],
             cpu: .m4,
             cameras: [.wide, .trueDepth],
             cellular: .fiveG,
