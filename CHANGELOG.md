@@ -25,8 +25,15 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.6.3 12/20/2024 Set CURRENT_PROJECT_VERSION = ${MARKETING_VERSION} so that it will set the correct value when submitting to Mac App Store.  Fixed missing version update in Device.swift.
+App Store Change Log:
+Added MacBook Air 2024 & 2023 models.
 
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.6.2 12/15/2024 Added iMac "M4" models.  Renamed `macbookSilver` to `solidSilver`.  Fixed crashes by making sure official names were never identical and images are different and not reused.
+App Store Change Log:
+Dependent frameworks updated.
+Added iMac M4 models, MacBook Pro M4 models, Mac mini M4 models, and iPad mini A17 Pro models.
 
 v2.6.1 11/26/2024 Added new MacBook Pro M4 and Mac mini M4 models.  Updated dependent frameworks.
 

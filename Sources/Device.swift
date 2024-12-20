@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.6.1"
+    static let version: Version = "2.6.3"
 }
 import Compatibility
 
@@ -1065,6 +1065,48 @@ public struct Mac: IdiomType {
             capabilities: [.usbC],
             models: ["MB881xx/A"],
             cpu: .intel),
+
+
+        Mac(
+            officialName: "MacBook Air (15-inch, M3, 2024)",
+            identifiers: ["Mac15,13"],
+            supportId: .unknownSupportId,
+            launchOSVersion: "14.4",
+            unsupportedOSVersion: nil,
+            form: .macBook,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2024-macbook-air-15in-m3-colors.png",
+            capabilities: [.air, .usbC, .notch],
+            models: ["MRYM3xx/A", "MRYP3xx/A", "MRYR3xx/A", "MRYU3xx/A", "MRYN3xx/A", "MRYQ3xx/A", "MRYT3xx/A", "MRYV3xx/A", "MXD13xx/A", "MXD23xx/A", "MXD33xx/A", "MXD43xx/A"],
+            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            cpu: .m3),
+        Mac(
+            officialName: "MacBook Air (13-inch, M3, 2024)",
+            identifiers: ["Mac15,12"],
+            supportId: .unknownSupportId,
+            launchOSVersion: "14.4",
+            unsupportedOSVersion: nil,
+            form: .macBook,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2024-macbook-air-13in-m3-colors.png",
+            capabilities: [.air, .usbC, .notch],
+            models: ["MRXN3xx/A", "MRXQ3xx/A", "MRXT3xx/A", "MRXV3xx/A", "MRXP3xx/A", "MRXR3xx/A", "MRXU3xx/A", "MRXW3xx/A", "MXCR3xx/A", "MXCT3xx/A", "MXCU3xx/A", "MXCV3xx/A"],
+            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            cpu: .m3),
+
+
+        Mac(
+            officialName: "MacBook Air (15-inch, M2, 2023)",
+            identifiers: ["Mac14,15"],
+            supportId: .unknownSupportId,
+            launchOSVersion: "13.4",
+            unsupportedOSVersion: nil,
+            form: .macBook,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2023-macbook-air-15in-m2-colors.png",
+            capabilities: [.air, .usbC, .notch],
+            models: ["MQKP3xx/A, MQKQ3xx/A, MQKR3xx/A, MQKT3xx/A, MQKU3xx/A, MQKV3xx/A, MQKW3xx/A, MQKX3xx/A"],
+            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            cpu: .m2),
+
+
         Mac(
             officialName: "MacBook Air (M2, 2022)",
             identifiers: ["Mac14,2"],
@@ -1072,7 +1114,7 @@ public struct Mac: IdiomType {
             launchOSVersion: "12.4",
             unsupportedOSVersion: nil,
             form: .macBook,
-            image: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/2022-macbook-air-m2-colors.png",
             capabilities: [.air, .usbC],
             models: ["MLXW3xx/A", "MLXX3xx/A", "MLXY3xx/A", "MLY03xx/A", "MLY13xx/A", "MLY23xx/A", "MLY33xx/A", "MLY43xx/A"],
             colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
