@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.6.4 1/15/2025 Fixed missing package version update.  Updated resolved package versions.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.6.3 12/20/2024 Set CURRENT_PROJECT_VERSION = ${MARKETING_VERSION} so that it will set the correct value when submitting to Mac App Store.  Fixed missing version update in Device.swift.
 App Store Change Log:
 Added MacBook Air 2024 & 2023 models.
