@@ -721,6 +721,8 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // iPhone 16 Pro
     case blackTitanium16 = "#3c3c3d", whiteTitanium16 = "#f2f1ed", naturalTitanium16 = "#c2bcb2", desertTitanium = "#bfa48f"
     static let iPhone16Pro = [blackTitanium16, whiteTitanium16, naturalTitanium16, desertTitanium]
+    
+    static let iPhone16e = [white16, black16]
 
 
     // iPad Air
@@ -846,6 +848,7 @@ public extension [MaterialColor] {
     static let iPhone15Pro = MaterialColor.iPhone15Pro
     static let iPhone16 = MaterialColor.iPhone16
     static let iPhone16Pro = MaterialColor.iPhone16Pro
+    static let iPhone16e = MaterialColor.iPhone16e
     static let iPadAir = MaterialColor.iPadAir
     static let iPadAirM2 = MaterialColor.iPadAirM2
     static let iPadMini5 = MaterialColor.iPadMini5
@@ -896,6 +899,7 @@ public extension [MaterialColor] {
         iPhone15Pro: "iPhone15Pro",
         iPhone16: "iPhone16",
         iPhone16Pro: "iPhone16Pro",
+        iPhone16e: "iPhone16e",
         iPadAir: "iPadAir",
         iPadAirM2: "iPadAirM2",
         iPadMini5: "iPadMini5",

@@ -292,6 +292,18 @@ BatteryView()
 BatteryView(fontSize: 80)
 ```
 
+### Getting the device's user-specified name
+You need to make sure to request the device name entitlement:
+https://developer.apple.com/contact/request/user-assigned-device-name/
+Then add this to the entitlements file:
+```xml
+```
+Then simply call:
+```swift
+let userDeviceName = Device.name
+```
+
+
 All these tests can be demonstrated using previews or by running the app executable that is bundled in the Development folder of the module.
 
 ## Source of Information

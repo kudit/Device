@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.6.4"
+    static let version: Version = "2.6.5"
 }
 import Compatibility
 
@@ -59,7 +59,10 @@ public extension DeviceType {
         if supportId == .unknownSupportId {
             searchTerm = officialName 
         }
-        return URL(string: "https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=\(searchTerm.urlEncoded)")!
+        // try https://duckduckgo.com/?q=!ducky+%22Technical+Specifications%22+site%3Asupport.apple.com+%22MacBook+(Retina%2C+12-inch%2C+Early+2015)%22&
+        // https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=MacBook+(Retina%2C+12-inch%2C+Early+2015)
+//        return URL(string: "https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=\(searchTerm.urlEncoded)")!
+        return URL(string: "https://duckduckgo.com/?q=!ducky+%22Technical+Specifications%22+site%3Asupport.apple.com+%22\(searchTerm.urlEncoded)%22&")!
         //URL(string: "https://support.apple.com/en-us/docs")!
     }
     var launchOSVersion: Version { device.launchOSVersion }
@@ -722,7 +725,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, 2019)",
             identifiers: ["iMac19,1"],
-            supportId: .unknownSupportId,
+            supportId: "https://support.apple.com/en-us/111998",
             launchOSVersion: "10.14.4",
             unsupportedOSVersion: nil,
             form: .iMac,
@@ -734,7 +737,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, 2019)",
             identifiers: ["iMac19,2"],
-            supportId: .unknownSupportId,
+            supportId: "https://support.apple.com/en-us/111963",
             launchOSVersion: "10.14.4",
             unsupportedOSVersion: nil,
             form: .iMac,
@@ -758,7 +761,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, 2017)",
             identifiers: ["iMac18,3"],
-            supportId: .unknownSupportId,
+            supportId: "https://support.apple.com/en-us/111969",
             launchOSVersion: "10.12.4",
             unsupportedOSVersion: "14",
             form: .iMac,
@@ -770,7 +773,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, 2017)",
             identifiers: ["iMac18,2"],
-            supportId: .unknownSupportId,
+            supportId: "https://support.apple.com/en-us/112026",
             launchOSVersion: "10.12.4",
             unsupportedOSVersion: "14",
             form: .iMac,
@@ -1070,7 +1073,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (15-inch, M3, 2024)",
             identifiers: ["Mac15,13"],
-            supportId: .unknownSupportId,
+            supportId: "SP913",
             launchOSVersion: "14.4",
             unsupportedOSVersion: nil,
             form: .macBook,
@@ -1082,7 +1085,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, M3, 2024)",
             identifiers: ["Mac15,12"],
-            supportId: .unknownSupportId,
+            supportId: "SP912",
             launchOSVersion: "14.4",
             unsupportedOSVersion: nil,
             form: .macBook,
@@ -2999,7 +3002,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         iPhone(
             officialName: "iPhone 16",
             identifiers: ["iPhone17,3"],
-            supportId: "https://www.apple.com/iphone-16/specs/",
+            supportId: "https://support.apple.com/121029",
             launchOSVersion: "18.0",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-16-colors.png",
@@ -3012,7 +3015,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         iPhone(
             officialName: "iPhone 16 Plus",
             identifiers: ["iPhone17,4"],
-            supportId: "https://www.apple.com/iphone-16/specs/",
+            supportId: "https://support.apple.com/121030",
             launchOSVersion: "18.0",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-16-plus-colors.png",
@@ -3025,7 +3028,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         iPhone(
             officialName: "iPhone 16 Pro",
             identifiers: ["iPhone17,1"],
-            supportId: "https://www.apple.com/iphone-16-pro/specs/",
+            supportId: "https://support.apple.com/121031",
             launchOSVersion: "18.0",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-16-pro-colors.png",
@@ -3038,7 +3041,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         iPhone(
             officialName: "iPhone 16 Pro Max",
             identifiers: ["iPhone17,2"],
-            supportId: "https://www.apple.com/iphone-16-pro/specs/",
+            supportId: "https://support.apple.com/121032",
             launchOSVersion: "18.0",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-16-pro-max-colors.png",
@@ -3048,6 +3051,22 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cameras: [.iSight, .wide, .telephoto, .ultraWide, .faceTimeHD720p, .trueDepth],
             cellular: .fiveG,
             screen: .i69),
+
+        iPhone(
+            officialName: "iPhone 16e",
+            identifiers: ["iPhone17,5"],
+            supportId: "https://support.apple.com/en-us/122208",
+            launchOSVersion: "18.3.1",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-16e/iphone-16e-colors.png",
+            capabilities: [.usbC, .wirelessCharging, .biometrics(.faceID), .dualesim, .applePay, .nfc, .roundedCorners, .notch, .actionButton, .barometer, .crashDetection],
+            colors: .iPhone16e,
+            cpu: .a18,
+            cameras: [.iSight, .wide, .faceTimeHD720p, .trueDepth],
+            cellular: .fiveG,
+            screen: .i61x1170),
+        
+        // Get images and support links/IDs from: https://support.apple.com/en-us/108044
     ]
 }
 
@@ -4140,7 +4159,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         AppleWatch(
             officialName: "Apple Watch Series 10 42mm",
             identifiers: ["Watch7,8", "Watch7,10"],
-            supportId: "SP905",
+            supportId: "https://support.apple.com/en-us/121202",
             launchOSVersion: "11",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series-10-aluminum-gps.png",
@@ -4151,7 +4170,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
         AppleWatch(
             officialName: "Apple Watch Series 10 46mm",
             identifiers: ["Watch7,9", "Watch7,11"],
-            supportId: "SP905",
+            supportId: "https://support.apple.com/en-us/121202",
             launchOSVersion: "11",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series-10-titanium.png",

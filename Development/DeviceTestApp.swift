@@ -2,6 +2,7 @@
 import SwiftUI
 #if canImport(Device) // since this is needed in XCode but is unavailable in Playgrounds.
 import Device
+import Compatibility // TODO: Import KuditConnect??
 #endif
 
 @available(iOS 15.0, macOS 12, tvOS 17, watchOS 8, *)
@@ -9,6 +10,8 @@ import Device
 struct DeviceTestApp: App {
     init() {
         Device.current.disableIdleTimerWhenPluggedIn()
+        Application.track()
+        //Application.appleID = "6736626499"
     }
     var body: some Scene {
         WindowGroup {

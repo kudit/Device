@@ -25,6 +25,13 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.6.5 3/5/2025 App Store changes:
+Added iPhone 16e.
+Fixed some incorrect support IDs.
+Added Application tracking for demo app.
+Changed to use duckduckgo feeling ducky feature to direct to product technical support pages with unknown identifiers.
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.6.4 1/15/2025 Fixed missing package version update.  Updated resolved package versions.
 
 *PASSES ALL SWIFTPACKAGEINDEX TESTS*

@@ -89,7 +89,7 @@ public struct Screen: Hashable, Sendable {
     public static let i61x828 = Screen(diagonal: 6.1, resolution: (828,1792), ppi: 326)
     // iPhone 11 Pro
     public static let i61x1125 = Screen(diagonal: 6.1, resolution: (1125,2436), ppi: 458)
-    // iPhone 12 Pro, 13 Pro, 14
+    // iPhone 12 Pro, 13 Pro, 14, 16e
     public static let i61x1170 = Screen(diagonal: 6.1, resolution: (1170,2532), ppi: 460)
     // iPhone 14 Pro
     public static let i61x1179 = Screen(diagonal: 6.1, resolution: (1179,2556), ppi: 460)
