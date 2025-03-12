@@ -58,6 +58,11 @@ extension String: Definable {
         return "\"\(self)\""
     }
 }
+extension Version: Definable {
+    var definition: String {
+        return "\"\(self.rawValue)\""
+    }
+}
 extension Optional where Wrapped: Definable {
     var definition: String {
         if let unwrapped = self {
@@ -309,10 +314,11 @@ extension DeviceType {
         }
 //        capabilities.subtract(control.capabilities) // do after so .macMini form isn't removed which is the default
         // strip out default capabilities
-        // add in ringer switch to all non-iPhone 15 pro devices
-        if idiom == .phone && !identifiers.first!.contains("iPhone16") {
-            capabilities.insert(.ringerSwitch)
-        }
+//        // add in ringer switch to all non-iPhone 15 pro devices
+//        if idiom == .phone, let identifier = identifiers.first, !identifier.contains("iPhone16") {
+//            capabilities.insert(.ringerSwitch)
+//        } DONE!
+        
         // remove .macForm from capabilities
         capabilities.macForm = nil // remove so not appears in capabilities list
         var models = "models: \(models.definition),\n\(indentSpace)"
@@ -324,6 +330,7 @@ extension DeviceType {
         if self.colors.count == 0 || self.colors == .default || idiom == .vision { // don't do this if we want to always have colors.  Remove once we've gone through and added all colors.
             colors = ""
         }
+//        debug("\(colors)") // for figuring out duplicate key crash
         if let key = [MaterialColor].colorSets[self.colors] {
             colors = "colors: .\(key),\n\(indentSpace)"
         }
@@ -364,10 +371,12 @@ extension DeviceType {
         }
         // TODO: Formerly String(describing: idiom.type) but that is internal.  Have a way of exposing type name?  Perhaps have a idiom.typeName extension??
         return """
-                \(String(describing: idiom))(
+                \(idiom.constructor)(
                     \(idiomish)officialName: \(officialName.definition),
                     identifiers: \(identifiers.definition),
                     supportId: \(supportId.definition),
+                    launchOSVersion: \(launchOSVersion.definition),
+                    unsupportedOSVersion: \(unsupportedOSVersion.definition),
                     \(macForm)image: \(image.definition),
                     \(overrides)\(models)\(colors)cpu: \(cpu.definition)\(cameras)\(cellular)\(screen)\(pencils)\(watchSize)),
         """

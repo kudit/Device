@@ -148,7 +148,7 @@ public struct ScreenInfoView: View {
             }
         }
         Section {
-            ForEach(Device.all, id: \.self) { device in
+            ForEach(Device.all) { device in
                 if device.screen != nil && device.screen != .undefined {
                     Text(device.officialName)
                     ScreenInfoView(device: device)

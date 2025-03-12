@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-               BuildableName = "Device Information Tool.app"
-               BlueprintName = "Device Information Tool"
+               BuildableName = "Device Info.app"
+               BlueprintName = "Device Info"
                ReferencedContainer = "container:Device.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,8 +50,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-            BuildableName = "Device Information Tool.app"
-            BlueprintName = "Device Information Tool"
+            BuildableName = "Device Info.app"
+            BlueprintName = "Device Info"
             ReferencedContainer = "container:Device.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -67,8 +67,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B5DD79B22BC94C8800457681"
-            BuildableName = "Device Information Tool.app"
-            BlueprintName = "Device Information Tool"
+            BuildableName = "Device Info.app"
+            BlueprintName = "Device Info"
             ReferencedContainer = "container:Device.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

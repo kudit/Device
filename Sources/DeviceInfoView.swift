@@ -128,7 +128,7 @@ public struct DeviceInfoView: View {
                     } placeholder: {
                         ProgressView()
                     }
-                    .frame(width: 60, height: 60)
+                    .frame(width: 60, height: 60, alignment: .trailing)
                 } else {
                     // Fallback on earlier versions
                     // Don't show the image on devices less than iOS 15

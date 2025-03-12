@@ -5,6 +5,6 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>CBBundleDisplayName</key>
-	<string>Device Information Tool</string>
+	<string>Device Info</string>
 </dict>
 </plist>

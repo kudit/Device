@@ -273,9 +273,12 @@ extension Device: Equatable {
     /// - parameter rhs: Another device.
     ///
     /// - returns: `true` iff the underlying identifier is the same.
-    @available(*, deprecated, message: "How is this used?  Is it necessary?")
     public static func == (lhs: Device, rhs: Device) -> Bool {
-        return lhs.officialName == rhs.officialName // assumes official names are unique?  Identifiers may or may not be the same if current device has one identifier and comparing device with multiple identifiers.  Resulting officialName should be the same though...
+        return lhs.officialName == rhs.officialName // assumes official names are unique?  Identifiers may or may not be the same if current device has one identifier and comparing device with multiple identifiers.  Resulting officialName should be unique though...
+        // but go ahead and make sure other fields match
+        && lhs.identifiers == rhs.identifiers
+        && lhs.models == rhs.models
+        && lhs.supportId == rhs.supportId
     }
 }
 

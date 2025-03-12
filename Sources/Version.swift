@@ -7,40 +7,65 @@
 
 import Compatibility
 
+// TODO: Move to Compatibility
+
+
 // MARK: - Named OS versions
 public extension Version {
-    var macOSCodename: String {
-        switch majorVersion {
-        case 15: return "Sequoia"
-        case 14: return "Sonoma"
-        case 13: return "Ventura"
-        case 12: return "Monterey"
-        case 11: return "Big Sur"
-        case 10: // Mac OS X
-            switch minorVersion {
-            case 15: return "Catalina"
-            case 14: return "Mojave"
-            case 13: return "High Sierra"
-            case 12: return "Sierra"
-            case 11: return "El Capitan"
-            case 10: return "Yosemite"
-            case 9: return "Mavericks"
-            case 8: return "Mountain Lion"
-            case 7: return "Lion"
-            case 6: return "Snow Leopard"
-            case 5: return "Leopard"
-            case 4: return "Tiger"
-            case 3: return "Panther"
-            case 2: return "Jaguar"
-            case 1: return "Puma"
-            case 0: return "Cheetah"
-            default: break
+    // TODO: Re-work this back into an ordered dictionary so that we only need to add one line when new versions come out rather than having to update in 2 places.
+    static let macOSs: OrderedDictionary<Version, String> = [
+        // Mac OS X
+        "10.0": "Cheetah",
+        "10.1": "Puma",
+        "10.2": "Jaguar",
+        "10.3": "Panther",
+        "10.4": "Tiger",
+        "10.5": "Leopard",
+        "10.6": "Snow Leopard",
+        "10.7": "Lion",
+        "10.8": "Mountain Lion",
+        "10.9": "Mavericks",
+        "10.10": "Yosemite",
+        "10.11": "El Capitan",
+        // macOS
+        "10.12": "Sierra",
+        "10.13": "High Sierra",
+        "10.14": "Mojave",
+        "10.15": "Catalina",
+        "11": "Big Sur",
+        "12": "Monterey",
+        "13": "Ventura",
+        "14": "Sonoma",
+        "15": "Sequoia",
+    ]
+    
+    func matchesMac(version: Version) -> Bool {
+        return version.majorVersion == majorVersion && (majorVersion != 10 || self.minorVersion == version.minorVersion)
+    }
+    
+    func previousMacOS() -> Version {
+        var previousVersion: Version = "0.0"
+        for (version, _) in Version.macOSs {
+            if matchesMac(version: version) {
+                return previousVersion
             }
-        default: break
+            previousVersion = version
         }
-        return "\(majorVersion)"
+        return previousVersion
+    }
+    var macOSCodename: String {
+        for (key, value) in Version.macOSs {
+            if matchesMac(version: key) {
+                return value
+            }
+        }
+        return "\(majorVersion) Codename"
     }
     var macOSName: String {
-        return "macOS \(macOSCodename)"
+        if majorVersion == 10 && minorVersion < 12 {
+            return "OS X \(macOSCodename)"
+        } else {
+            return "macOS \(macOSCodename)"
+        }
     }
 }

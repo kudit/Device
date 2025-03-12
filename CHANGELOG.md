@@ -25,6 +25,18 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.7.0 3/12/2025 App Store Changes:
+Added new 2025 MacBook Air, iPad Air, and iPad models and all Mac Studios.
+Updated images, support links, and models for many many devices.
+Not reported changes:
+Renamed to "Device Info" to be shorter app name.
+Changed so colors parameter is required on all devices.
+Changed how System Versions is coded to make updating easier.
+Added `constructor` String to `Device.Idiom`.
+Reordered Apple TV devices from newest to oldest.
+Replaced non-breaking hyphen ("‑") with normal hyphen ("-").
+
+*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.6.5 3/5/2025 App Store changes:
 Added iPhone 16e.
 Fixed some incorrect support IDs.
@@ -44,6 +56,7 @@ v2.6.2 12/15/2024 Added iMac "M4" models.  Renamed `macbookSilver` to `solidSilv
 App Store Change Log:
 Dependent frameworks updated.
 Added iMac M4 models, MacBook Pro M4 models, Mac mini M4 models, and iPad mini A17 Pro models.
+Fixed redundant iPadAirM2 (iPadMiniA17) colorset.
 
 v2.6.1 11/26/2024 Added new MacBook Pro M4 and Mac mini M4 models.  Updated dependent frameworks.
 

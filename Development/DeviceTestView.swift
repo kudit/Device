@@ -151,6 +151,8 @@ struct CurrentDeviceDetailsView: View {
 public struct DeviceTestView: View {    
     @ObservedObject var animatedDevice = MockDevice.mocks.first!
 
+    @State var showListings = false
+    
     @ViewBuilder
     var testView: some View {
         List {
@@ -215,10 +217,12 @@ public struct DeviceTestView: View {
             NavigationLink(destination: {
                 DeviceListView(devices: Device.all)
                     .toolbar {
-                        // TODO: FIXME: figure out why can't build for release and then remove the `&& false`
-                        if Application.isDebug && false {
-                            Button("Migrate") {
-                                migrateContent()
+                        if Application.isDebug { // This feature should only be for developers, not in the actual app.
+                            Button("Check Listings") {
+                                showListings = true
+                            }
+                            .backport.navigationDestination(isPresented: $showListings) {
+                                IdentifyModelParsingView()
                             }
                         }
                     }
@@ -230,7 +234,7 @@ public struct DeviceTestView: View {
     }
     
     public var body: some View {
-        NavigationStack {
+        BackportNavigationStack {
             testView
         }
         .onAppear { // async test
@@ -247,10 +251,10 @@ public struct DeviceTestView: View {
         }
     }
     
-    /// For testing and migrating code during development.
-    func migrateContent() {
-        Migration.migrate()
-    }
+//    /// For testing and migrating code during development.
+//    func migrateContent() {
+//        Migration.migrate()
+//    }
 }
 
 @available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)

@@ -50,7 +50,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case esim, dualesim
     case applePay // iPhone 6+
     case nfc // iPhone 7+
-    // Should we add: wifi, bluetooth, bluetoothLE, 30pin, AC Power?, ethernet, HDMI, SDCard?
+    // Should we add: wifi (don't all devices have this?  Perhaps wifi version?), bluetooth (do all have this?  bluetooth version?), bluetoothLE, 30pin, AC Power?, ethernet, gigabitEthernet?, 10GBEthernet?, ir receiver, HDMI, SDCard?
     // display
     case screen(Screen)
     case force3DTouch
@@ -420,9 +420,11 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     case m3
     case m3pro
     case m3max
+    case m3ultra
     case m4
     case m4pro
     case m4max
+    // NO M4 Ultra version
     // iPod/iPhone
     case s5L8900 // Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch
     case sAPL0298C05 // iPhone 3GS
@@ -565,7 +567,7 @@ public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible, Sendable {
         case .secondGeneration:
             " Pencil (2nd generation)"
         case .usbC:
-            " Pencil (USB‑C)"
+            " Pencil (USB-C)"
         case .pro:
             " Pencil Pro"
         }
@@ -590,40 +592,51 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // standard colors
     case black = "#000000" // complete black for default color
     case white = "#FFFFFF" // complete white for default white plastic color
-    case pink = "#b62c31"
+    case pink = "#b62c31" // iMac M1—M3
     case orange = "#e86740"
     case yellow = "#e0901a"
     case green = "#10505b"
     case blue = "#26476d"
     case purple = "#353b71"
     case silver = "#c7c8ca"
-    case pinkDark = "#de5f7d"
+    case pinkDark = "#de5f7d" // iMac 2024 (goes along with pale versions)
     case orangeDark = "#e3704b"
     case yellowDark = "#edd142"
     case greenDark = "#3e935c"
     case blueDark = "#547eae"
     case purpleDark = "#827eb2"
-    case solidSilver = "#e3e4e5"
+    case solidSilver = "#e3e4e5" // macbookSilver
     case pinkLight = "#edb9af"
     case orangeLight = "#e9aa95"
     case yellowLight = "#e9ca95"
     case greenLight = "#a3beb4"
     case blueLight = "#a8bed2"
     case purpleLight = "#acaccb"
-    case silverLight = "#d9dadb"
+    case silverLight = "#d9dadb" // Mac Studio 2025
+    case pinkPale = "#f3b5c3" // iMac M1—M3
+    case orangePale = "#f5c1a7"
+    case yellowPale = "#f5E4ae"
+    case greenPale = "#a4c2ae"
+    case bluePale = "#acbfd8"
+    case purplePale = "#b8b2cf"
     case macSpacegray = "#7a7b80"
     case macbookSpacegray = "#7d7e80"
     case macbookGold = "#F9D4C2"
     case macbookSpaceblack = "#2e2c2e"
     case macbookairMidnight = "#2e3642"
     case macbookairStarlight = "#f0e4d3"
-    
+    case macbookairSkyblue = "#c8d8e0"
+
     // iMac
+    static let iMac2Ports = [blueLight, greenLight, pinkLight, silverLight]
     static let iMac = [blueLight, greenLight, pinkLight, silverLight, yellowLight, orangeLight, purpleLight]
     static let iMac2024 = [blueDark, purpleDark, pinkDark, orangeDark, yellowDark, greenDark, solidSilver]
     
     // MacBook
+    static let legacySilverMacs = [solidSilver]
     case macbookRoseGold = "#E1C3C8"
+    
+    static let macbookAir2025 = [macbookairSkyblue, solidSilver, macbookairStarlight, macbookairMidnight]
     
     // iPod Touch (5th generation)
     case iPodBlack = "#4d5663", iPodSilver = "#c9cbca", iPodPink = "#fb797e", iPodYellow = "#cace39", iPodBlue = "#26c4e5"
@@ -741,15 +754,13 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     // iPad 9th gen
     case spaceGray9 = "#68696e"
     
-    // iPad 10th gen
+    // iPad 10th gen & A16 2025
     case pink10 = "#de6274", blue10 = "#6480a3", yellow10 = "#f0d95b"
+    static let iPad10 = [solidSilver, pink10, blue10, yellow10]
     
-    // iPad Air 2024
+    // iPad Air 2024, iPad mini (A17 Pro)
     case starlightAir = "#e3dcd1", purpleAir = "#e3dee9", blueAir = "#d7e5e6"
-    static let iPadAirM2 = [spaceGrayA5, starlightAir, purpleAir, blueAir]
-    
-    // iPad mini (A17 Pro)
-    static let iPadMiniA17 = [spaceGrayA5, blueAir, purpleAir, starlightAir]
+    static let iPadAirM2 = [spaceGrayA5, blueAir, purpleAir, starlightAir] // also iPadAirM3, original order: [spaceGrayA5, starlightAir, purpleAir, blueAir]
 
     
     //  Watch Series 0
@@ -820,7 +831,10 @@ public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]
     
     static let iMac = MaterialColor.iMac
+    static let iMac2Ports = MaterialColor.iMac2Ports
     static let iMac2024 = MaterialColor.iMac2024
+    static let legacySilverMacs = MaterialColor.legacySilverMacs
+    static let macbookAir2025 = MaterialColor.macbookAir2025
     static let iPodTouch5thGen = MaterialColor.iPodTouch5thGen
     static let iPodTouch6thGen = MaterialColor.iPodTouch6thGen
     static let iPodTouch7thGen = MaterialColor.iPodTouch7thGen
@@ -850,9 +864,9 @@ public extension [MaterialColor] {
     static let iPhone16Pro = MaterialColor.iPhone16Pro
     static let iPhone16e = MaterialColor.iPhone16e
     static let iPadAir = MaterialColor.iPadAir
+    static let iPad10 = MaterialColor.iPad10
     static let iPadAirM2 = MaterialColor.iPadAirM2
     static let iPadMini5 = MaterialColor.iPadMini5
-    static let iPadMiniA17 = MaterialColor.iPadMiniA17
     static let watch0 = MaterialColor.watch0
     static let watch1 = MaterialColor.watch1
     static let watch2 = MaterialColor.watch2
@@ -873,12 +887,17 @@ public extension [MaterialColor] {
     
     static let colorSets = [
         iMac: "iMac",
+        iMac2Ports: "iMac2Ports",
+        iMac2024: "iMac2024",
+        legacySilverMacs: "legacySilverMacs",
+        macbookAir2025: "macbookAir2025",
         iPodTouch5thGen: "iPodTouch5thGen",
         iPodTouch6thGen: "iPodTouch6thGen",
         iPodTouch7thGen: "iPodTouch7thGen",
         iPhoneBW: "iPhoneBW",
         iPhone5c: "iPhone5c",
         iPhoneSE: "se",
+        iPhoneSE2: "iPhoneSE2",
         iPhone6: "iPhone6",
         iPhone6s: "iPhone6s",
         iPhone7: "iPhone7",
@@ -901,9 +920,9 @@ public extension [MaterialColor] {
         iPhone16Pro: "iPhone16Pro",
         iPhone16e: "iPhone16e",
         iPadAir: "iPadAir",
+        iPad10: "iPad10",
         iPadAirM2: "iPadAirM2",
         iPadMini5: "iPadMini5",
-        iPadMiniA17: "iPadMiniA17",
         watch0: "watch0",
         watch1: "watch1",
         watch2: "watch2",
