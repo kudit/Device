@@ -4,16 +4,6 @@ import Compatibility
 import SwiftUI
 #endif
 
-public protocol CaseNameConvertible {
-    var caseName: String { get }
-}
-public extension CaseNameConvertible {
-    // exposes the case name for an enum without having to have a string rawValue
-    var caseName: String {
-        // for enums
-        (Mirror(reflecting: self).children.first?.label ?? String(describing: self))
-    }
-}
 public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseNameConvertible {
     var symbolName: String { get }
     var label: String { get } // description doesn't work since it can cause infinite recursion
@@ -37,7 +27,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case macForm(Mac.Form)
     case watchSize(AppleWatch.WatchSize)
     // connections
-    case headphoneJack, thirtyPin, lightning, usbC, thunderbolt // TODO: Add Ethernet for Macs and Apple TV models
+    case headphoneJack, ethernet, thirtyPin, lightning, usbC, thunderbolt // TODO: Add .sdcReader for SDCard Reader, FireWire 800, HDMI, DisplayPort?, USB-A?
     // power
     case battery
     case wirelessCharging // qi charging
@@ -57,23 +47,37 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case roundedCorners
     case notch // newer macs and original faceID phones.
     case dynamicIsland
-    // TODO: add always on screen capability for watches and iPhones??
+    case alwaysOnDisplay
+    // TODO: add ProMotion support
+    // TODO: add HDR support?
+    // TODO: figure out what a Fluid Display is??  Maybe it refers to Liquid Retina XDR display on iPad Pro 12.9-inch (5th and 6th generation). https://support.apple.com/en-us/102255
     // features
+    // TODO: Touchbar?
     case ringerSwitch // mini 2, 3, iPad up to 10"? iPhone up to iPhone 15 Pro
     case actionButton // iPhone 15 Pro+, Apple Watch Ultra
     case cameraControl // iPhone 16+
     case pencils(Set<ApplePencil>)
     // sensors
-    case lidar, barometer, crashDetection // iPhone 14+
+    case compass, lidar, barometer, crashDetection // iPhone 14+
+    // software features
+    case appleIntelligence
     // TODO: Add Compass!  Works on watch and iPhone.
     // TODO: altimeter, ecg(electricalHeartSensor?), bloodO2, sleepTracking, wristTemp(thermometer?temperatureSensing?), fallDetection, sleepApnea, depthGauge, waterTemperatureSensor, doubleTap,
     
+    public static let modelAttributes = [Capability.pro, .air, .mini, .plus, .max]
+    public static let connections = [Capability.headphoneJack, .ethernet, .thirtyPin, .lightning, .usbC, .thunderbolt]
+    public static let power = [Capability.battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3]
+    public static let allBiometrics = [Capability.biometrics(.touchID), .biometrics(.faceID), .biometrics(.opticID)]
+    public static let wirelessConnections = [Capability.esim, .dualesim, .nfc]
+    public static let screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland, .alwaysOnDisplay]
+    public static let hardware = [Capability.ringerSwitch, .actionButton, .cameraControl]
+    public static let sensors = [Capability.compass, .lidar, .barometer, .crashDetection]
+    public static let software = [Capability.applePay, .appleIntelligence]
+
     /// Lists all non-associated value cases
     /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
-    public static let allCases = [Capability.pro, .air, .mini, .plus, .max, .headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3, .esim, .dualesim, .applePay, .nfc, .force3DTouch, .roundedCorners, .notch, .dynamicIsland, .ringerSwitch, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection]
-    
-    static let screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland]
-    
+    public static let allCases = modelAttributes + connections + power + allBiometrics + wirelessConnections + screenFeatures + hardware + sensors + software
+
     public var symbolName: String {
         switch self {
         case .pro:
@@ -92,6 +96,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return "applewatch.side.right"
         case .headphoneJack:
             return "headphones"
+        case .ethernet:
+            return "network" // TODO: Add custom symbol
         case .thirtyPin:
             return "cable.connector.30.pin"
         case .lightning:
@@ -114,6 +120,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return "roundedcorners"
         case .dynamicIsland:
             return "dynamicisland"
+        case .alwaysOnDisplay:
+            return "sun.max.fill" // TODO: Create custom icon sun in square?  Lines in square?  Clock badge?
         case .battery:
             return "battery.100percent"
         case .ringerSwitch:
@@ -122,9 +130,6 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return "esim.fill"
         case .dualesim:
             return "simcard.2"
-        case .applePay:
-            return "applepay"
-            //            return "creditcard"
         case .magSafe:
             return "magsafe"
         case .magSafe1:
@@ -144,6 +149,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return "applepencil"
         case .force3DTouch:
             return "hand.tap"
+        case .compass:
+            return "location.north.circle" // use "location.north.line" for legacy support.  TODO: Backport so we can use "location.north.circle" (SF Symbols 3 required)
         case .lidar:
             return "lidar"
             //            return "circle.hexagongrid.fill"
@@ -153,6 +160,11 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return biometrics.symbolName
         case .cameras(_):
             return "camera"
+        case .applePay:
+            return "applepay"
+            //            return "creditcard"
+        case .appleIntelligence:
+            return "apple.intelligence" // legacy can use "quote.bubble", requires SF Symbols 6 TODO: Create version for backport
         }
     }
     
@@ -166,20 +178,31 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
 }
 // device specific have functions for getting a wrapped capability out.
 public extension Capabilities {
+    static let modelAttributes = Set(Capability.screenFeatures)
+    static let connections = Set(Capability.connections)
+    static let allBiometrics = Set(Capability.allBiometrics)
+    static let wirelessConnections = Set(Capability.wirelessConnections)
     static let screenFeatures = Set(Capability.screenFeatures)
+    static let hardware = Set(Capability.hardware)
+    static let sensors = Set(Capability.sensors)
+    static let software = Set(Capability.software)
 
-    /// Order them based off of the order in the Capability definition for consistency
-    var sorted: [Capability] {
-        var sorted = [Capability]()
-        var skipped = [Capability]()
-        // model attributes
-        for item in [Capability.pro, .air, .mini, .plus, .max] {
+    internal func check(orderedCapabilities: [Capability], sorted: inout [Capability], skipped: inout [Capability]) {
+        for item in orderedCapabilities {
             if self.contains(item) {
                 sorted.append(item)
             } else {
                 skipped.append(item)
             }
         }
+    }
+
+    /// Order them based off of the order in the Capability definition for consistency
+    var sorted: [Capability] {
+        var sorted = [Capability]()
+        var skipped = [Capability]()
+        // model attributes
+        check(orderedCapabilities: Capability.modelAttributes, sorted: &sorted, skipped: &skipped)
         if let macForm {
             sorted.append(.macForm(macForm))
         }
@@ -187,52 +210,25 @@ public extension Capabilities {
             sorted.append(.watchSize(watchSize))
         }
         // connections
-        for item in [Capability.headphoneJack, .thirtyPin, .lightning, .usbC, .thunderbolt, .battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3] {
-            if self.contains(item) {
-                sorted.append(item)
-            } else {
-                skipped.append(item)
-            }
-        }
-        if let biometrics {
-            sorted.append(.biometrics(biometrics))
-        }
+        check(orderedCapabilities: Capability.connections + Capability.power + Capability.allBiometrics, sorted: &sorted, skipped: &skipped)
         if cameras.count > 0 {
             sorted.append(.cameras(cameras))
         }
         if let cellular {
             sorted.append(.cellular(cellular))
         }
-        for item in [Capability.esim, .dualesim, .applePay, .nfc] {
-            if self.contains(item) {
-                sorted.append(item)
-            } else {
-                skipped.append(item)
-            }
-        }
+        check(orderedCapabilities: Capability.wirelessConnections, sorted: &sorted, skipped: &skipped)
         // display
         if let screen {
             sorted.append(.screen(screen))
         }
-        for item in [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland/* TODO: AlwaysOnDisplay, ProMotion */, .ringerSwitch, .actionButton, .cameraControl] {
-            if self.contains(item) {
-                sorted.append(item)
-            } else {
-                skipped.append(item)
-            }
-        }
-        // features
+        check(orderedCapabilities: Capability.screenFeatures + Capability.hardware, sorted: &sorted, skipped: &skipped)
         if pencils.count > 0 {
             sorted.append(.pencils(pencils))
         }
         // sensors
-        for item in [Capability.lidar, .barometer, .crashDetection] {
-            if self.contains(item) {
-                sorted.append(item)
-            } else {
-                skipped.append(item)
-            }
-        }
+        check(orderedCapabilities: Capability.sensors + Capability.software, sorted: &sorted, skipped: &skipped)
+
         // check for missing!
         for item in Capability.allCases {
             if !sorted.contains(item) && !skipped.contains(item) {
@@ -400,34 +396,48 @@ public extension Capabilities {
 
 // MARK: CPU
 // https://en.wikipedia.org/wiki/List_of_Mac_models_grouped_by_CPU_type
-public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
+public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConvertible, Sendable {
     // Only 2013+ really need to be included since Swift won't run on devices prior to this.
-    case unknown
+    case unknown = "Unknown"
+    // accessories
+    case u1 = "Apple U1"
+    /// AirPods
+    case h1 = "Apple H1"
+    /// AirPods Pro
+    case h2 = "Apple H2"
     // Mac/iPad
     case i3
     case xeonE5
     case i5
-    case i7
-    case intel // for models that have both i5 and i7 variants
-    case m1
-    case m1pro
-    case m1max
-    case m1ultra
-    case m2 // also  Vision
-    case m2pro
-    case m2max
-    case m2ultra
-    case m3
-    case m3pro
-    case m3max
-    case m3ultra
-    case m4
-    case m4pro
-    case m4max
+    case i7 = "Intel Core i7"
+    /// for models that have both i5 and i7 variants
+    case intel
+    case m1 = "Apple M1"
+    case m1pro = "Apple M1 Pro"
+    case m1max = "Apple M1 Max"
+    case m1ultra = "Apple M1 Ultra"
+    /// also  Vision
+    case m2 = "Apple M2"
+    case m2pro = "Apple M2 Pro"
+    case m2max = "Apple M2 Max"
+    case m2ultra = "Apple M2 Ultra"
+    case m3 = "Apple M3"
+    case m3pro = "Apple M3 Pro"
+    case m3max = "Apple M3 Max"
+    case m3ultra = "Apple M3 Ultra"
+    case m4 = "Apple M4"
+    case m4pro = "Apple M4 Pro"
+    case m4max = "Apple M4 Max"
     // NO M4 Ultra version
     // iPod/iPhone
-    case s5L8900 // Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch
-    case sAPL0298C05 // iPhone 3GS
+    /// Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch (ARM 8900B and APL0098) (max iOS 4.2.1)/
+    case s5L8900 = "Samsung S5L8900"
+    /// iPod touch 2nd generation/
+    case s5L8720 = "Samsung S5L8720"
+    /// iPod touch 3rd generation/
+    case s5L8922 = "Samsung S5L8922"
+    /// iPhone 3GS (S5L8920)/
+    case s5L8920 = "Samsung S5L8920"
     case a4
     case a5
     case a5x
@@ -440,19 +450,20 @@ public enum CPU: Hashable, CaseIterable, CaseNameConvertible, Sendable {
     case a9
     case a9x
     case a10
-    case a11
+    case a11 = "Apple A11 Bionic"
+    case a12 = "Apple A12 Bionic" // also Apple TV
     case a12x
     case a12z
     case a13
-    case a14
-    case a16
+    case a14 = "Apple A14 Bionic"
+    case a16 = "Apple A16 Bionic"
     case a17pro
     case a18
     case a18pro
     //  TV
+    case intel_pm1 = "Intel Pentium M (1GHz)"
     case a8
     case a10x
-    case a12
     case a15
     //  Watch
     case s1
@@ -885,6 +896,7 @@ public extension [MaterialColor] {
     static let homePod = MaterialColor.homePod
     static let homePodMini = MaterialColor.homePodMini
     
+    // TODO: Figure out how to use introspection or definition to get string
     static let colorSets = [
         iMac: "iMac",
         iMac2Ports: "iMac2Ports",
@@ -896,14 +908,14 @@ public extension [MaterialColor] {
         iPodTouch7thGen: "iPodTouch7thGen",
         iPhoneBW: "iPhoneBW",
         iPhone5c: "iPhone5c",
-        iPhoneSE: "se",
+        iPhoneSE: "iPhoneSE",
         iPhoneSE2: "iPhoneSE2",
         iPhone6: "iPhone6",
         iPhone6s: "iPhone6s",
         iPhone7: "iPhone7",
         iPhone8: "iPhone8",
         iPhoneX: "iPhoneX",
-        iPhoneXʀ: "iPhoneXR",
+        iPhoneXʀ: "iPhoneXʀ",
         iPhoneXs: "iPhoneXs",
         iPhone11: "iPhone11",
         iPhone11Pro: "iPhone11Pro",

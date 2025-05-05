@@ -7,12 +7,9 @@
 
 import Compatibility
 
-// TODO: Move to Compatibility
-
-
 // MARK: - Named OS versions
 public extension Version {
-    // TODO: Re-work this back into an ordered dictionary so that we only need to add one line when new versions come out rather than having to update in 2 places.
+    /// An ordered dictionary  of Version to CodeName so that we only need to add one line when new versions come out rather than having to update in 2 places.
     static let macOSs: OrderedDictionary<Version, String> = [
         // Mac OS X
         "10.0": "Cheetah",

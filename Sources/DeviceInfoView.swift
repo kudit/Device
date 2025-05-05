@@ -108,12 +108,22 @@ public struct DeviceInfoView: View {
                     // Don't squish - need to wrap colors above if necessary.  Accompished by creating ColorsTextView creator.
                     VStack(alignment: .trailing) {
                         Text("\(device.supportedOSInfo)").font(.caption).foregroundStyle(.gray)
-                        if #available(iOS 14.0, *) {
-                            Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text(
-                                Image(symbolName: "cpu"))
-                        } else {
-                            // Fallback on earlier versions
-                            Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())+Text("cpu")
+                        HStack {
+                            Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())
+                            if #available(iOS 14.0, *) {
+                                Text(Image(symbolName: "cpu"))
+                            } else {
+                                // Fallback on earlier versions
+                                Text("cpu")
+                            }
+                            if let year = device.introduction?.date?.year {
+                                Text(String(year))
+                                    .font(.footnote.smallCaps())
+                                    .padding(.init(top: 0, leading: 4, bottom: 1, trailing: 3))
+                                    .foregroundStyle(.background)
+                                    .background(.gray)
+                                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                            }
                         }
                     }
                 }
@@ -135,13 +145,24 @@ public struct DeviceInfoView: View {
                 }
             }
         }
+        // TODO: Figure out how to speed this up.
         if includeScreen {
             HStack {
                 Spacer()
                 Link(device.identifiers.joined(separator: ", "), destination: device.supportURL)
                 //                    Text(device.identifiers.joined(separator: ", "))
                     .font(.caption)
+                    .backport.textSelection(.enabled)
                 Spacer()
+            }
+            if device.models.count > 0 {
+                HStack {
+                    Spacer()
+                    Text(device.models.joined(separator: ", "))
+                        .font(.caption)
+                        .backport.textSelection(.enabled)
+                    Spacer()
+                }
             }
         }
         if device.screen != nil && includeScreen {
@@ -205,7 +226,23 @@ public struct DeviceListView<Destination: View>: View {
                 }
                 lastIdiom = device.idiom
             }
-            if searchText == "" || "\(device.safeOfficialName) \(device.cpu.caseName) \(device.identifiers.joined(separator: " "))".lowercased().contains(searchText.lowercased()) {
+            var searchableTerms = device.officialName.components(separatedBy: " ") + [device.cpu.caseName] + device.identifiers + device.models
+            // TODO: include all os versions so can search for all devices that support iOS15 or macOS16
+            if let year = device.introduction?.date?.year {
+                searchableTerms += [year.string]
+            }
+            // normalize
+            searchableTerms = searchableTerms.map { $0.asSearchTerm }
+            
+            let searchText = searchText.asSearchTerm
+            var show = true
+            if searchText.contains(" ") {
+                show = searchableTerms.containsAll(searchText.components(separatedBy: " "))
+            } else if searchText != "" {
+                show = searchableTerms.joined(separator: " ").contains(searchText)
+            }
+            
+            if show {
                 sectionDevices.append(device)
             }
         }

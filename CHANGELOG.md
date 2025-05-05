@@ -25,6 +25,25 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.0 5/4/2025
+Added `introduction` to devices (need to pull from everymac) and created test export for superepicstudios/apple-devices data format.
+Broke up Device models into smaller swift files for easier updates and to go easier on the compiler.
+Added `ethernet`, `alwaysOnDisplay`, `appleIntelligence`, and `compass` to hardware capabilities.
+Reordered `.applePay` to end under software features.
+Created default capabilities list for idioms so can automatically remove from capabilities in definition.
+Added capability lists for sorting and grouping.
+Added ability to get all devices for an idiom.
+Added many Apple Watch models.
+Fixed bug with color set se.
+Improved so search terms are disjoint and will match devices that contain all terms.
+For App Store:
+Added introduction date to devices.
+Allowed searching by introduction year.
+Added Apple Intelligence, Compass, Ethernet, and Always On Display flags for device capabilities.
+Hid animated test to prevent confusion.
+Added several model codes for devices and added ability to search by model code.
+
+
 v2.7.0 3/12/2025 App Store Changes:
 Added new 2025 MacBook Air, iPad Air, and iPad models and all Mac Studios.
 Updated images, support links, and models for many many devices.
@@ -205,6 +224,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 
 ## Bugs to fix:
 Known issues that need to be addressed.
+- [ ] Fix so highlighted row inverts primary color text in light mode.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
@@ -217,6 +237,7 @@ Known issues that need to be addressed.
 
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
+- [ ] Add tests like in Compatiblity.
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
 - [ ] Add Apple Intelligence as a capability feature.
 - [ ] Create migration export that checks values against defaults primarily to check definitions are in the correct order and that named color sets are being used (test to see if color set is equal to named colorset and if so, replace with the named case rather than the listed colors).

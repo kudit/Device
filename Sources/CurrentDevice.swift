@@ -1016,6 +1016,7 @@ public final class MockDevice: CurrentDevice {
                 idiom: .unspecified,
                 officialName: "Mock Device",
                 identifiers: [self.identifier],
+                introduction: 1999.introductionYear,
                 supportId: "n/a",
                 launchOSVersion: "2",
                 unsupportedOSVersion: nil,

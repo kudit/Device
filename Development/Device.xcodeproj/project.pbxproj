@@ -7,14 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B52A56EB2C37353100980038 /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A56EA2C37353100980038 /* Migration.swift */; };
-		B52A56EC2C37353100980038 /* Migration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A56EA2C37353100980038 /* Migration.swift */; };
+		B539FA892DBD83060017BE25 /* appleDeviceData.json in Resources */ = {isa = PBXBuildFile; fileRef = B539FA842DBD83060017BE25 /* appleDeviceData.json */; };
+		B539FA8A2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */; };
+		B539FA8B2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */; };
+		B539FA8C2DBD83060017BE25 /* DeviceKitConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */; };
+		B539FA8E2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */; };
+		B539FA8F2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */; };
+		B539FA902DBD83060017BE25 /* DeviceKitConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */; };
+		B539FA922DBD83060017BE25 /* appleDeviceData.json in Resources */ = {isa = PBXBuildFile; fileRef = B539FA842DBD83060017BE25 /* appleDeviceData.json */; };
+		B539FA9A2DBD836D0017BE25 /* Definable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA962DBD836D0017BE25 /* Definable.swift */; };
+		B539FA9B2DBD836D0017BE25 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA972DBD836D0017BE25 /* DiffView.swift */; };
+		B539FA9D2DBD836D0017BE25 /* Definable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA962DBD836D0017BE25 /* Definable.swift */; };
+		B539FA9E2DBD836D0017BE25 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA972DBD836D0017BE25 /* DiffView.swift */; };
+		B539FAA32DBD8A550017BE25 /* DeviceDefinable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAA22DBD8A550017BE25 /* DeviceDefinable.swift */; };
+		B539FAA42DBD8A550017BE25 /* DeviceDefinable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAA22DBD8A550017BE25 /* DeviceDefinable.swift */; };
+		B539FAA92DBDDDD60017BE25 /* Diffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAA82DBDDDCE0017BE25 /* Diffable.swift */; };
+		B539FAAA2DBDDDD60017BE25 /* Diffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAA82DBDDDCE0017BE25 /* Diffable.swift */; };
+		B539FAAF2DBDF9580017BE25 /* DeviceBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAAE2DBDF9550017BE25 /* DeviceBridge.swift */; };
+		B539FAB02DBDF9580017BE25 /* DeviceBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAAE2DBDF9550017BE25 /* DeviceBridge.swift */; };
+		B539FAB52DBEA10C0017BE25 /* MigrationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAB42DBEA1010017BE25 /* MigrationViews.swift */; };
+		B539FAB62DBEA10C0017BE25 /* MigrationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAB42DBEA1010017BE25 /* MigrationViews.swift */; };
+		B539FABE2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */; };
+		B539FABF2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */; };
 		B5861A972BABC531002F0732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B58B62B52C23ECB40046E91C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B58B62B42C23ECB40046E91C /* Device Library */; };
 		B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
 		B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
-		B5B0E7832D7F9C010001DA9E /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B0E7822D7F9C010001DA9E /* IdentifyModelParsing.swift */; };
-		B5B0E7842D7F9C010001DA9E /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B0E7822D7F9C010001DA9E /* IdentifyModelParsing.swift */; };
 		B5B1A22A2C23EF14002C848D /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5B1A2292C23EF14002C848D /* Device Library */; };
 		B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 		B5CCE9CC2BC94D93005CC2D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
@@ -54,12 +72,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B52A56EA2C37353100980038 /* Migration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Migration.swift; sourceTree = "<group>"; };
 		B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestApp.swift; sourceTree = "<group>"; };
 		B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestView.swift; sourceTree = "<group>"; };
 		B52ED1D52BAB7F7400056A62 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
 		B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTests.swift; sourceTree = "<group>"; };
 		B52ED1D82BAB7F7400056A62 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleDeviceConversion.swift; sourceTree = "<group>"; };
+		B539FA842DBD83060017BE25 /* appleDeviceData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appleDeviceData.json; sourceTree = "<group>"; };
+		B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceKitConversion.swift; sourceTree = "<group>"; };
+		B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifyModelParsing.swift; sourceTree = "<group>"; };
+		B539FA932DBD832A0017BE25 /* DeviceTest-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DeviceTest-Info.plist"; sourceTree = "<group>"; };
+		B539FA962DBD836D0017BE25 /* Definable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Definable.swift; sourceTree = "<group>"; };
+		B539FA972DBD836D0017BE25 /* DiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
+		B539FAA22DBD8A550017BE25 /* DeviceDefinable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDefinable.swift; sourceTree = "<group>"; };
+		B539FAA82DBDDDCE0017BE25 /* Diffable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diffable.swift; sourceTree = "<group>"; };
+		B539FAAE2DBDF9550017BE25 /* DeviceBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceBridge.swift; sourceTree = "<group>"; };
+		B539FAB42DBEA1010017BE25 /* MigrationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationViews.swift; sourceTree = "<group>"; };
+		B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileDeviceConversion.swift; sourceTree = "<group>"; };
 		B55DE1BB2C0E4BDE00D2192C /* .spi.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = .spi.yml; path = ../.spi.yml; sourceTree = "<group>"; };
 		B56332102BC793F5006DDB84 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE.txt; path = ../LICENSE.txt; sourceTree = "<group>"; };
 		B56A31C32BC972880077FBE9 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
@@ -67,8 +96,6 @@
 		B58985FA2BAB99C3002B8E05 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B58B62B12C23EC5C0046E91C /* Device.swiftpm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Device.swiftpm; path = ..; sourceTree = "<group>"; };
 		B598DCC92C239165000B5517 /* DeviceTest.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DeviceTest.xctestplan; sourceTree = "<group>"; };
-		B5A5C1CB2CB451B6005AACAD /* DeviceTest-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "DeviceTest-Info.plist"; sourceTree = "<group>"; };
-		B5B0E7822D7F9C010001DA9E /* IdentifyModelParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifyModelParsing.swift; sourceTree = "<group>"; };
 		B5B1A2272C23EEB9002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5B1A22B2C23EF14002C848D /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS10.5.sdk/System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = DEVELOPER_DIR; };
 		B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceUITests.swift; sourceTree = "<group>"; };
@@ -124,11 +151,16 @@
 		B52ED1D22BAB7F7400056A62 /* Development */ = {
 			isa = PBXGroup;
 			children = (
+				B539FA882DBD83060017BE25 /* Conversions */,
 				B52ED1CC2BAB7F7400056A62 /* Resources */,
 				B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */,
 				B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */,
-				B52A56EA2C37353100980038 /* Migration.swift */,
-				B5B0E7822D7F9C010001DA9E /* IdentifyModelParsing.swift */,
+				B539FAB42DBEA1010017BE25 /* MigrationViews.swift */,
+				B539FA932DBD832A0017BE25 /* DeviceTest-Info.plist */,
+				B539FA962DBD836D0017BE25 /* Definable.swift */,
+				B539FAA22DBD8A550017BE25 /* DeviceDefinable.swift */,
+				B539FAA82DBDDDCE0017BE25 /* Diffable.swift */,
+				B539FA972DBD836D0017BE25 /* DiffView.swift */,
 			);
 			name = Development;
 			sourceTree = "<group>";
@@ -144,17 +176,29 @@
 			path = ../Tests;
 			sourceTree = "<group>";
 		};
+		B539FA882DBD83060017BE25 /* Conversions */ = {
+			isa = PBXGroup;
+			children = (
+				B539FAAE2DBDF9550017BE25 /* DeviceBridge.swift */,
+				B539FA842DBD83060017BE25 /* appleDeviceData.json */,
+				B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */,
+				B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */,
+				B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */,
+				B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */,
+			);
+			path = Conversions;
+			sourceTree = "<group>";
+		};
 		B5C1B6142BAB7997001D5CFA = {
 			isa = PBXGroup;
 			children = (
-				B5A5C1CB2CB451B6005AACAD /* DeviceTest-Info.plist */,
 				B56A31C32BC972880077FBE9 /* CHANGELOG.md */,
 				B52ED1D82BAB7F7400056A62 /* README.md */,
 				B56332102BC793F5006DDB84 /* LICENSE.txt */,
 				B52ED1D52BAB7F7400056A62 /* Package.swift */,
+				B52ED1D22BAB7F7400056A62 /* Development */,
 				B58B62B12C23EC5C0046E91C /* Device.swiftpm */,
 				B55DE1BB2C0E4BDE00D2192C /* .spi.yml */,
-				B52ED1D22BAB7F7400056A62 /* Development */,
 				B52ED1D72BAB7F7400056A62 /* Tests */,
 				B5C1B61E2BAB7997001D5CFA /* Products */,
 				B5EB67F32BC1F3EB005DAB8C /* Frameworks */,
@@ -269,7 +313,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1530;
-				LastUpgradeCheck = 1540;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					B5DD79B22BC94C8800457681 = {
 						CreatedOnToolsVersion = 15.3;
@@ -314,6 +358,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B539FA922DBD83060017BE25 /* appleDeviceData.json in Resources */,
 				B5CCE9CC2BC94D93005CC2D2 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,6 +381,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B539FA892DBD83060017BE25 /* appleDeviceData.json in Resources */,
 				B5861A972BABC531002F0732 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -347,10 +393,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B539FAAA2DBDDDD60017BE25 /* Diffable.swift in Sources */,
 				B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */,
 				B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */,
-				B5B0E7842D7F9C010001DA9E /* IdentifyModelParsing.swift in Sources */,
-				B52A56EB2C37353100980038 /* Migration.swift in Sources */,
+				B539FA8E2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */,
+				B539FA9A2DBD836D0017BE25 /* Definable.swift in Sources */,
+				B539FA9B2DBD836D0017BE25 /* DiffView.swift in Sources */,
+				B539FA8F2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */,
+				B539FAAF2DBDF9580017BE25 /* DeviceBridge.swift in Sources */,
+				B539FA902DBD83060017BE25 /* DeviceKitConversion.swift in Sources */,
+				B539FABF2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */,
+				B539FAA42DBD8A550017BE25 /* DeviceDefinable.swift in Sources */,
+				B539FAB52DBEA10C0017BE25 /* MigrationViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,10 +428,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B539FAA92DBDDDD60017BE25 /* Diffable.swift in Sources */,
 				B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */,
 				B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */,
-				B5B0E7832D7F9C010001DA9E /* IdentifyModelParsing.swift in Sources */,
-				B52A56EC2C37353100980038 /* Migration.swift in Sources */,
+				B539FA8A2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */,
+				B539FA9D2DBD836D0017BE25 /* Definable.swift in Sources */,
+				B539FA9E2DBD836D0017BE25 /* DiffView.swift in Sources */,
+				B539FA8B2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */,
+				B539FAB02DBDF9580017BE25 /* DeviceBridge.swift in Sources */,
+				B539FA8C2DBD83060017BE25 /* DeviceKitConversion.swift in Sources */,
+				B539FABE2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */,
+				B539FAA32DBD8A550017BE25 /* DeviceDefinable.swift in Sources */,
+				B539FAB62DBEA10C0017BE25 /* MigrationViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,7 +515,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.7.0;
+				MARKETING_VERSION = 2.8.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -517,7 +579,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.7.0;
+				MARKETING_VERSION = 2.8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import Compatibility
 
 /**
  Previous implementation for testing for simulator was to lookup in cases.  New version actually tests the bundle to see if we're running in a simulator.
