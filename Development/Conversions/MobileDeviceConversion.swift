@@ -311,7 +311,7 @@ Watch7,11 : Apple Watch Series 10 46mm (GPS+Cellular)
             image: device.image,
             capabilities: device.capabilities,
             colors: device.colors,
-            cpu: device.cpu,
+            cpu: device.cpu
         ).merged(from: device)
     }
     

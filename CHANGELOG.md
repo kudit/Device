@@ -25,6 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.1 5/14/2025
+Added `.disableIdleTimer()` method to view since this should be run in UI after appearing rather than in an init.
+Improved Swift Playground support with more compatible code.
+Updated Compatibility.
+
 v2.8.0 5/4/2025
 Added `introduction` to devices (need to pull from everymac) and created test export for superepicstudios/apple-devices data format.
 Broke up Device models into smaller swift files for easier updates and to go easier on the compiler.

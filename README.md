@@ -279,6 +279,8 @@ if Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000) {
 ### Disabling the Idle Timer
 ```swift
 Device.current.isIdleTimerDisabled = true // must be run on the main actor AFTER most of the UI is loaded (so do on a view onAppear and NOT during the app init)
+// You can use this in SwiftUI:
+view.disableIdleTimer()
 
 // Disable automatically when plugged in.  Only call this once (This would be appropriate to call during init).
 Device.current.disableIdleTimerWhenPluggedIn()

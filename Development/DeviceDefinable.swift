@@ -198,4 +198,8 @@ public extension Device {
     }
 }
 
+#if swift(>=6.0)
 extension Device: @retroactive PropertyIterable {}
+#else
+extension Device: PropertyIterable {}
+#endif
