@@ -44,7 +44,7 @@ public enum BatteryChangeType: Sendable {
     case level, state, lowPowerMode
 }
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
 public protocol Battery: ObservableObject, SymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
@@ -61,7 +61,7 @@ public protocol Battery: ObservableObject, SymbolRepresentable, Identifiable { /
     /// Callback takes a `battery` parameter and the `BatteryChangeType`
     func monitor(_ monitor: @escaping BatteryMonitor)
 }
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Battery {
     /// Return true if the device is actively charging.  Equivalent to testing `curerntState == .charging`
     var isCharging: Bool { currentState == .charging }
@@ -180,7 +180,7 @@ public struct BatterySnapshot: Sendable {
 }
 
 // Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public class MockBattery: Battery {
 #if canImport(Combine)
     @Published public var currentLevel: Int = -1
@@ -269,7 +269,7 @@ public class MockBattery: Battery {
     }
 }
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
 public class DeviceBattery: Battery {
     @MainActor
@@ -526,7 +526,7 @@ public class DeviceBattery: Battery {
 
 #if canImport(Combine)
 /// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
 public class MonitoredDeviceBattery: Battery {
     @MainActor

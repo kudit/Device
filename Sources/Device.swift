@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.8.1"
+    static let version: Version = "2.8.2"
 }
 import Compatibility
 
@@ -430,7 +430,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         }
 
         
-        @available(iOS 13, tvOS 13, watchOS 6, *)
+        @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
         @MainActor
         public func test(device: DeviceType) -> Bool {
             return device.idiom == self

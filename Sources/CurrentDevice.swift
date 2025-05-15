@@ -24,10 +24,10 @@ public extension String {
 public extension Device {
     /// An object representing the current device this software is running on.
     // TODO: Figure out how to handle this with concurrency.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @MainActor
     static let current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock and never directly access.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     enum Environment: DeviceAttributeExpressible, Sendable { // unable to conform to CaseIterable since @MainActor isolated
         case realDevice, simulator, playground, preview, designedForiPad, macCatalyst
         
@@ -151,7 +151,7 @@ public extension ProcessInfo.ThermalState {
 //#if canImport(Observable)
 //@Observable
 //#endif // TODO: this is only supported in iOS 17+ so wait to implement until we no longer need backwards compatibility
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor // Inferred conformance to Sendable
 public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs explicit conformance to for background await usage.
     associatedtype BatteryType: Battery
@@ -225,33 +225,11 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs
     /// will enable monitoring at the specified frequency.  If this is called multiple times, it will replace the existing monitor.
     func enableMonitoring(frequency: TimeInterval)
 }
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension CurrentDevice {
     /// Returns the version number of Swift being used to compile
     public var swiftVersion: String {
-#if swift(>=8.0)
-        "8.0"
-#elseif swift(>=7.0)
-        "7.0"
-#elseif swift(>=6.1)
-        "6.1"
-#elseif swift(>=6.0)
-        "6.0"
-#elseif swift(>=5.12)
-        "5.12"
-#elseif swift(>=5.11)
-        "5.11"
-#elseif swift(>=5.10)
-        "5.10"
-#elseif swift(>=5.9)
-        "5.9"
-#elseif swift(>=5.8)
-        "5.8"
-#elseif swift(>=5.7)
-        "5.7"
-#else
-        "Unsupported"
-#endif
+        Application.swiftVersion
     }
     
     public var systemInfo: String {
@@ -612,7 +590,7 @@ public extension Device {
 
 
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.  However, making this internal causes issues with the release build and analyze so made public.
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor // All calculations/queries should be quick so we can isolate to main actor to give Sendable conformance.
 public final class ActualHardwareDevice: CurrentDevice {
 #if canImport(Combine)
@@ -939,7 +917,7 @@ public final class ActualHardwareDevice: CurrentDevice {
     }    
 }
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
 public final class MockDevice: CurrentDevice {
     public typealias BatteryType = MockBattery
@@ -1198,7 +1176,7 @@ public final class MockDevice: CurrentDevice {
 
 #if canImport(SwiftUI) && swift(>=5.9)
 import SwiftUI
-@available(iOS 15, watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Animated Test") {
     List {
         CurrentDeviceInfoView(device: Device.current, includeStorage: true)

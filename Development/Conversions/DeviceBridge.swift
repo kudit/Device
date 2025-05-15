@@ -7,11 +7,13 @@
 
 import Device
 
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 protocol DeviceBridge: DeviceType, Identifiable {
     var source: String { get }
     var matched: Device { get } // TODO: Have matched pull multiple so we can return multiple?  May need to break out some with multiple identifiers like the Apple TVs or various year revisions of devices?
     static func generate() -> String
 }
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension DeviceBridge {
     var source: String {
         self.device.definition
@@ -127,6 +129,7 @@ extension Device {
     }
 }
 
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension Array where Element: DeviceBridge {
     /// Sorted using the order they appear in Device.all list (order as appears in code).
     var sorted: [Element] {

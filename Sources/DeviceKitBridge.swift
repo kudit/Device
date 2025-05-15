@@ -145,7 +145,7 @@ public extension Device {
     }
     
     /// The brightness level of the screen (between 0 and 100).  Only supported on iOS and macCatalyst.  Returns -1 if not supported.
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @MainActor
     var screenBrightness: Int {
         if let brightness = Device.current.brightness {
@@ -207,7 +207,7 @@ public extension Device {
     }
     
     /// Returns whether the current device is a SwiftUI preview canvas
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.isPreview")
     @MainActor
     var isCanvas: Bool? {
@@ -216,7 +216,7 @@ public extension Device {
     
     /// Returns whether the device is any of the simulator
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
-    @available(iOS 13.0, tvOS 13, watchOS 6, *)
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Device.current.isSimulator")
     @MainActor
     var isSimulator: Bool {

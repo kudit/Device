@@ -1,3 +1,5 @@
+import Compatibility
+import Device
 
 extension String {
     var identifierVersion: Version {
@@ -201,5 +203,9 @@ public extension Device {
 #if swift(>=6.0)
 extension Device: @retroactive PropertyIterable {}
 #else
-extension Device: PropertyIterable {}
+// put here to silence warning
+extension Compatibility {
+    typealias PropertyIterableType = PropertyIterable
+}
+extension Device: Compatibility.PropertyIterableType {}
 #endif

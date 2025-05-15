@@ -25,10 +25,15 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.2 5/14/2025
+Improved error suppression for `@retroactive` conformances.
+Moved `swiftVersion` to Compatibility.
+Fixed missing `@availability` checks and standardized order (iOS, macOS, tvOS, watchOS).
+
 v2.8.1 5/14/2025
 Added `.disableIdleTimer()` method to view since this should be run in UI after appearing rather than in an init.
 Improved Swift Playground support with more compatible code.
-Updated Compatibility.
+Updated Compatibility.  **FAILS SWIFTPACKAGEINDEX TESTS: 5.10, 5.9, Linux**
 
 v2.8.0 5/4/2025
 Added `introduction` to devices (need to pull from everymac) and created test export for superepicstudios/apple-devices data format.
@@ -368,7 +373,7 @@ Feel free to contribute to this project at http://github.com/kudit/Device
 
 If you have any suggestions or feedback, please reach out to us at support+device@kudit.com!
 
-https://www.kudit.com/terms.php
+https://www.kudit.com/terms
 
 
 ##Keywords (100)

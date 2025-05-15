@@ -6,6 +6,8 @@
 //
 
 // TODO: Remove all this?  Not necessary?
+import Device
+import Compatibility
 
 // Figure out how to compare two Devices.  ~= operator which has a looser interpretation on the right side since it might have bad data.  Go through each attribute.
 

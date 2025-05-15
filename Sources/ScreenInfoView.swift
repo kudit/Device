@@ -19,7 +19,7 @@ extension Double {
     }
 }
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct ScreenBrightnessView<SomeCurrentDevice: CurrentDevice>: View {
     @ObservedObject var currentDevice: SomeCurrentDevice
 //    init(currentDevice: SomeCurrentDevice) {

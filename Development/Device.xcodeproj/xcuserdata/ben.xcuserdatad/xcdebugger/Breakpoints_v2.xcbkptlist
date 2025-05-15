@@ -43,13 +43,13 @@
             filePath = "Diffable.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "37"
-            endingLineNumber = "37"
+            startingLineNumber = "39"
+            endingLineNumber = "39"
             landmarkName = "~=(lhs:rhs:)"
             landmarkType = "9">
             <Locations>
                <Location
-                  uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C - 33ffaed66b18c30a"
+                  uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C - 33ffaed66b18c3c8"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -59,11 +59,11 @@
                   urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Diffable.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "37"
-                  endingLineNumber = "37">
+                  startingLineNumber = "39"
+                  endingLineNumber = "39">
                </Location>
                <Location
-                  uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C - 33ffaed66b18c30a"
+                  uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C - 33ffaed66b18c3c8"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -73,8 +73,8 @@
                   urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Diffable.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "37"
-                  endingLineNumber = "37">
+                  startingLineNumber = "39"
+                  endingLineNumber = "39">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -93,22 +93,6 @@
             endingLineNumber = "292"
             landmarkName = "fromJSON"
             landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "A418F3EA-2610-4FA7-B104-240467AE00DD"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../../../../Library/Developer/Xcode/DerivedData/Device-cdmglsutiobtczbiwxmmkosnrmcs/SourcePackages/checkouts/Compatibility/Sources/Core/Debug.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "50"
-            endingLineNumber = "50"
-            landmarkName = "checkBreakpoint(level:)"
-            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -188,8 +172,8 @@
             filePath = "Diffable.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "28"
-            endingLineNumber = "28"
+            startingLineNumber = "30"
+            endingLineNumber = "30"
             landmarkName = "~=(lhs:rhs:)"
             landmarkType = "9">
          </BreakpointContent>

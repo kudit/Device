@@ -9,7 +9,7 @@
 import SwiftUI
 import Foundation
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Device.Environment {
     // TODO: Pull into extension
     var color: Color {
@@ -30,7 +30,7 @@ public extension Device.Environment {
     }
 }
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension ThermalState {
     var color: Color {
         switch self {
@@ -47,11 +47,11 @@ public extension ThermalState {
 }
 
 // For adding Expressible conformance
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Capability {
     var color: Color { .green }
 }
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Device.Idiom {
     var color: Color {
         switch self {
@@ -112,7 +112,7 @@ public extension Label where Title == Text, Icon == Image {
 //    }
 //}
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct SomeCurrentDeviceView<SomeCurrentDevice: CurrentDevice, Content: View>: View {
     @ObservedObject var currentDevice: SomeCurrentDevice
     private let content: (any CurrentDevice) -> Content
@@ -125,7 +125,7 @@ struct SomeCurrentDeviceView<SomeCurrentDevice: CurrentDevice, Content: View>: V
     }
 }
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public struct MonitoredCurrentDeviceView<Content: View>: View {
     var device: any DeviceType
     private let content: (any CurrentDevice) -> Content

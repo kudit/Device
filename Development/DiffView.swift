@@ -1,4 +1,5 @@
 import SwiftUI
+import Compatibility
 
 // Replace this with CustomStringConvertible?
 
@@ -36,12 +37,14 @@ extension Optional: StringRepresentable {
 }
 
 
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Text {
     @inlinable
     static func += (lhs: inout Text, rhs: Text) {
         lhs = lhs + rhs
     }
 }
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension [Text] {
     func joined(separator: Text = Text("")) -> Text {
         var joined = Text("")
@@ -230,6 +233,7 @@ struct DiffObjectView<Object: PropertyIterable>: View {
     }
 }
 
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview {
     DiffObjectView(
         left: Device(identifier: "iPhone1,1"),

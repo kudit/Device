@@ -38,6 +38,7 @@ struct ParsedItem: DeviceBridge {
     }
 }
 
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 8, *)
 actor PageParserProcessor {
     let url: String
     var content: String?
@@ -112,7 +113,7 @@ actor PageParserProcessor {
             introduction = DateString(yearIntroducedString.introductionYear)
         } else {
             // try looking for year in officialName
-            for year in 2000...Date.now.year {
+            for year in 2000...Date.nowBackport.year {
                 if officialName.contains("\(year)") {
                     introduction = year.introductionYear
                 }
@@ -376,6 +377,7 @@ actor PageParserProcessor {
 }
 
 
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 8, *)
 @MainActor
 class PageParser: ObservableObject {
     static var identifyPages = [

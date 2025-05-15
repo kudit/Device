@@ -3,7 +3,7 @@ import SwiftUI
 import Device
 import Compatibility
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Capabilities") {
     VStack {
         HStack {
@@ -32,7 +32,7 @@ extension Double {
     static let defaultFontSize: Double = 44
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 struct SymbolTests<T: DeviceAttributeExpressible>: View {
     @State var attribute: T
     var size: Double = .defaultFontSize
@@ -63,7 +63,7 @@ struct SymbolTests<T: DeviceAttributeExpressible>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 struct TestAttributeListView<T: DeviceAttributeExpressible>: View {
     @State var device: DeviceType
@@ -82,7 +82,7 @@ struct TestAttributeListView<T: DeviceAttributeExpressible>: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 struct CurrentDeviceDetailsView: View {
     @State var currentDevice: any CurrentDevice = Device.current
@@ -137,16 +137,16 @@ struct CurrentDeviceDetailsView: View {
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("CurrentDeviceDetailsView") {
     CurrentDeviceDetailsView()
 }
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("DeviceList") {
     DeviceListView(devices: Device.all)
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 public struct DeviceTestView: View {    
     @ObservedObject var animatedDevice = MockDevice.mocks.first!
@@ -249,17 +249,16 @@ public struct DeviceTestView: View {
                 let isSimulator = await Device.current.isSimulator
                 let version: Version = await Device.current.systemVersion
                 let info = await Device.current.systemInfo
-                if isSimulator == !isSimulator { // don't actually print but we want the let above for testing using Device.current from background tasks. - not saying "false" so we don't get compiler warning that this will never be executed.
-                    debug("Device \(isSimulator ? "is" : "is not") simulator", level: .DEBUG)
-                    print("Version: \(version)\nInfo: \(info)")
-                    print("Test Version: \(Version("10.4").macOSName)")
-                }
+                // don't actually print but we want the let above for testing using Device.current from background tasks. - not saying "false" so we don't get compiler warning that this will never be executed.
+                debug("Device \(isSimulator ? "is" : "is not") simulator", level: .SILENT)
+                debug("Version: \(version)\nInfo: \(info)", level: .SILENT)
+                debug("Test Version: \(Version("10.4").macOSName)", level: .SILENT)
             }
         }
     }
 }
 
-@available(watchOS 8.0, tvOS 15.0, macOS 12.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview {
     DeviceTestView()
 }

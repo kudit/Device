@@ -14,7 +14,7 @@ public extension CGFloat {
 }
 
 /// Technincally a function but present like a View struct.
-@available(iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
 public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
     var output = Text("")
@@ -57,7 +57,7 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
 }
 
 /// Technincally a function but present like a View struct.
-@available(iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
 public func ColorsTextView(symbol: SymbolRepresentable, colors: [MaterialColor]) -> Text {
     var output = Text("")
@@ -78,7 +78,7 @@ public func ColorsTextView(symbol: SymbolRepresentable, colors: [MaterialColor])
     return output
 }
 
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 public struct DeviceInfoView: View {
     public var device: DeviceType
@@ -174,14 +174,14 @@ public struct DeviceInfoView: View {
     }
 }
 
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("DeviceInfoView") {
     List {
         DeviceInfoView(device: Device(identifier: "AudioAccessory5,1"))
     }
 }
 
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public struct DeviceDetailView: View {
     var device: DeviceType
     public init(device: DeviceType) {
@@ -195,13 +195,13 @@ public struct DeviceDetailView: View {
     }
 }
 
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("DeviceDetailView") {
     DeviceDetailView(device: Device.current)
 }
 
 
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public struct DeviceListView<Destination: View>: View {
     public var devices: [DeviceType]
     
@@ -270,7 +270,7 @@ public struct DeviceListView<Destination: View>: View {
         .searchable(text: $searchText, prompt: "Devices")
     }
 }
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public extension DeviceListView where Destination == DeviceDetailView {
     init(devices: [any DeviceType]) {
         self.init(devices: devices) { device in
@@ -279,7 +279,7 @@ public extension DeviceListView where Destination == DeviceDetailView {
     }
 }
 
-@available(iOS 15, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("All Devices") {
     NavigationView {
         DeviceListView(devices: Device.all) { device in

@@ -39,7 +39,7 @@ extension CloudStatus: SymbolRepresentable {}
 #if canImport(SwiftUI)
 import SwiftUI
 // for switching between asset images and systemImages
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Image {
     /// Create image with a symbol name using system SF symbol or fall back to the symbol asset embedded in Device library.
     init(symbolName: String) {
@@ -67,7 +67,7 @@ public extension Image {
         self.init(symbolName: symbolRepresentable.symbolName)
     }
 }
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension String {
     public static let defaultFallback = "questionmark.square.fill"
     /*
@@ -102,7 +102,7 @@ import UIKit
 import AppKit
 #endif
 
-@available(iOS 13.0, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension Bool {
     static func nativeSymbolCheck(_ symbolName: String) -> Bool {
 #if canImport(UIKit)
