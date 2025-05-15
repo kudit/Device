@@ -13,9 +13,9 @@ import Compatibility
 public extension View {
     func disableIdleTimer(_ disabled: Bool = true) -> some View {
         onAppear {
-//            main {
+            main {
                 Device.current.isIdleTimerDisabled = disabled // must be run on the main actor AFTER most of the UI is loaded (so do on a view onAppear and NOT during the app init)
-//            }
+            }
         }
     }
 }
