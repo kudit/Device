@@ -95,7 +95,7 @@ public extension Label where Title == Text, Icon == Image {
             Text(titleKey)
         }, icon: {
             var image = Image(symbolName: symbolName)
-            if #available(iOS 15.0, macCatalyst 15, *) {
+            if #available(iOS 15, macCatalyst 15, *) {
                 image = image.symbolRenderingMode(.hierarchical)
             }
             return image

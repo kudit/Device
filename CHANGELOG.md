@@ -25,8 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.4 5/16/2025
+Added a more generic optional fallback to account for problems in Swift 5.9...
+
 v2.8.3 5/15/2025
-Forgot to un-comment `main { }` code for disabling idle timer.
+Forgot to un-comment `main { }` code for disabling idle timer. ** Failed Swift 5.9 all except Linux **
 
 v2.8.2 5/14/2025
 Improved error suppression for `@retroactive` conformances.

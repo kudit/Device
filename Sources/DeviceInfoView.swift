@@ -32,10 +32,10 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
         // and watches don't need watch size
         else if case .watchSize = capability {}
         else {
-            if #available(watchOS 7.0, *) {
+            if #available(watchOS 7, *) {
                 // Fallback on earlier versions
-                if #available(iOS 14, macOS 11.0, tvOS 14, *) {
-                    if #available(iOS 15, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+                if #available(iOS 14, macOS 11, tvOS 14, *) {
+                    if #available(iOS 15, macOS 12, watchOS 8, tvOS 15, *) {
                         output = output + Text(Image(symbolName: capability.symbolName).symbolRenderingMode(.hierarchical)
                         ) + Text(" ")
                     } else { // symbolRenderingMode not available

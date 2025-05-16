@@ -668,7 +668,7 @@ public final class ActualHardwareDevice: CurrentDevice {
         }
 #if canImport(Combine)
         // Note: this will be "false" under Catalyst which is what we want.
-        if #available(iOS 14, watchOS 7.0, macOS 11, tvOS 14, *) { // not available on watchOS 6
+        if #available(iOS 14, watchOS 7, macOS 11, tvOS 14, *) { // not available on watchOS 6
             return ProcessInfo.processInfo.isiOSAppOnMac
         }
 #endif
