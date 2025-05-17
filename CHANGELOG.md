@@ -25,8 +25,11 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.5 5/17/2025
+Odd error with Swift 5.9 about attributes being used before being initialized.  This led to the solution to fix: https://stackoverflow.com/questions/58758370/how-could-i-initialize-the-state-variable-in-the-init-function-in-swiftui (setting initial values for state values before being initailized.  Guessing that there was some update in Swift 5.10 that made this unnecessary for @State values).
+
 v2.8.4 5/16/2025
-Added a more generic optional fallback to account for problems in Swift 5.9...
+Added a more generic optional fallback to account for problems in Swift 5.9... ** Failed Swift 5.9 all except Linux **
 
 v2.8.3 5/15/2025
 Forgot to un-comment `main { }` code for disabling idle timer. ** Failed Swift 5.9 all except Linux **
@@ -386,3 +389,7 @@ https://www.kudit.com/terms
 ##Keywords (100)
 device,devicekit,framework,github,iphone,identifier,info,support,capabilities,screen,open source
 
+
+#Monetization
+for development expenses
+$0.99 single purchase.
