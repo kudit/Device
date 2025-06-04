@@ -38,7 +38,6 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case cameras(Set<Camera>)
     case cellular(Cellular)
     case esim, dualesim
-    case applePay // iPhone 6+
     case nfc // iPhone 7+
     // Should we add: wifi (don't all devices have this?  Perhaps wifi version?), bluetooth (do all have this?  bluetooth version?), bluetoothLE, 30pin, AC Power?, ethernet, gigabitEthernet?, 10GBEthernet?, ir receiver, HDMI, SDCard?
     // display
@@ -51,7 +50,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     // TODO: add ProMotion support
     // TODO: add HDR support?
     // TODO: figure out what a Fluid Display is??  Maybe it refers to Liquid Retina XDR display on iPad Pro 12.9-inch (5th and 6th generation). https://support.apple.com/en-us/102255
-    // features
+    // hardware features
     // TODO: Touchbar?
     case ringerSwitch // mini 2, 3, iPad up to 10"? iPhone up to iPhone 15 Pro
     case actionButton // iPhone 15 Pro+, Apple Watch Ultra
@@ -60,6 +59,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     // sensors
     case compass, lidar, barometer, crashDetection // iPhone 14+
     // software features
+    case applePay // iPhone 6+
     case appleIntelligence
     // TODO: Add Compass!  Works on watch and iPhone.
     // TODO: altimeter, ecg(electricalHeartSensor?), bloodO2, sleepTracking, wristTemp(thermometer?temperatureSensing?), fallDetection, sleepApnea, depthGauge, waterTemperatureSensor, doubleTap,

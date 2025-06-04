@@ -21,6 +21,7 @@ This is actively maintained so if there is a feature request or change, we will 
         - Preview
         - Designed for iPad
         - macCataylst
+        - Swift Compile version
 - Debugging
     - Provides UI for quickly showing information about devices and batteries.
 - Device Information
@@ -65,6 +66,7 @@ This is actively maintained so if there is a feature request or change, we will 
         -  Watch size
     - Connections
         - Headphone Jack
+        - Ethernet
         - 30-pin Connector
         - Lightning Connector
         - USB-C
@@ -73,23 +75,35 @@ This is actively maintained so if there is a feature request or change, we will 
         - Battery
         - Wireless Charging
         - MagSafe (MacBook and iPhone)
+    - Biometrics
+        - TouchID
+        - FaceID
+        - OpticID
+    - Wireless Connections
+        - Cellular (generation)
+        - ESIM
+        - Dual SIM
+        - NFC
     - Dislplay Features
         - Force/3D Touch
         - Rounded Corners
         - Notch
         - Dynamic Island
-    - Additional Features
+        - Always On Display
+    - Hardware
         - Ringer Switch
-        -  Pay
-        - NFC
         - Action Button
+        - Camera Control
         -  Pencil Support
     - Sensors
-        - Biometrics
+        - Cameras
+        - Compass
         - LIDAR
         - Barometer
         - Crash Detection
-        - Cameras
+    - Software Features
+        -  Pay
+        - Apple Intelligence
 
 
 ## Requirements
@@ -278,7 +292,7 @@ if Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000) {
 
 ### Disabling the Idle Timer
 ```swift
-Device.current.isIdleTimerDisabled = true // must be run on the main actor AFTER most of the UI is loaded (so do on a view onAppear and NOT during the app init)
+Device.current.isIdleTimerDisabled = true // must be run on the main actor AFTER most of the UI is loaded (so do on a view onAppear and NOT during the app init or use the SwiftUI method below)
 // You can use this in SwiftUI:
 view.disableIdleTimer()
 
@@ -303,6 +317,12 @@ Then add this to the entitlements file:
 Then simply call:
 ```swift
 let userDeviceName = Device.name
+```
+
+### Getting all your window screenshots
+Simply call the following to get an array of SwiftUI Image objects.
+```swift
+Application.main.screenshots()
 ```
 
 

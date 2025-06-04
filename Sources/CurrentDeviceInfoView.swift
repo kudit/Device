@@ -8,6 +8,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 import Foundation
+import Compatibility
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Device.Environment {
@@ -190,6 +191,7 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
 public struct DeviceMocksView: View {
     @State public var includeStorage: Bool
     @State public var debug: Bool
+    @State public var screenshot: Image?
 
     public init(includeStorage: Bool = true, debug: Bool = false) {
         self.includeStorage = includeStorage
@@ -197,9 +199,24 @@ public struct DeviceMocksView: View {
     }
 
     public var body: some View {
-        ForEach(MockDevice.mocks, id: \.identifier) { mock in
-            Section {
-                CurrentDeviceInfoView(device: mock, includeStorage: includeStorage, debug: debug)
+        VStack {
+            Section("Screenshot Test") {
+                if let screenshot {
+                    screenshot
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .backport.draggable(screenshot)
+                } else {
+                    Text("No Screenshot")
+                }
+                Button("Screenshot") {
+                    screenshot = Application.main.screenshots().first
+                }
+            }
+            ForEach(MockDevice.mocks, id: \.identifier) { mock in
+                Section {
+                    CurrentDeviceInfoView(device: mock, includeStorage: includeStorage, debug: debug)
+                }
             }
         }
         .backport.navigationTitle("Device Mocks")

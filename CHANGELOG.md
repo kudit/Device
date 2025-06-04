@@ -25,25 +25,32 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.6 6/4/2025
+Updated change log with SWIFTPACKAGEINDEX test format to be part of description and not separate lines.
+Updated the README to have an updated list of Capabilities to match the new additions in a similar order.
+Removed DTS Case-ID: 8753208 since it appears this no longer applies in current version of Xcode.
+Moved Apple Pay capability to be first under additional features.
+Added initial screenshot feature (likely should be improved like including the status bar) but should work on iOS & macOS & tvOS.
+
 v2.8.5 5/17/2025
-Odd error with Swift 5.9 about attributes being used before being initialized.  This led to the solution to fix: https://stackoverflow.com/questions/58758370/how-could-i-initialize-the-state-variable-in-the-init-function-in-swiftui (setting initial values for state values before being initailized.  Guessing that there was some update in Swift 5.10 that made this unnecessary for @State values).
+Odd error with Swift 5.9 about attributes being used before being initialized.  This led to the solution to fix: https://stackoverflow.com/questions/58758370/how-could-i-initialize-the-state-variable-in-the-init-function-in-swiftui (setting initial values for state values before being initailized.  Guessing that there was some update in Swift 5.10 that made this unnecessary for @State values).  ** ALL SWIFTPACKAGEINDEX TESTS PASSED! **
 
 v2.8.4 5/16/2025
-Added a more generic optional fallback to account for problems in Swift 5.9... ** Failed Swift 5.9 all except Linux **
+Added a more generic optional fallback to account for problems in Swift 5.9... *Failed Swift 5.9 all except Linux*
 
 v2.8.3 5/15/2025
-Forgot to un-comment `main { }` code for disabling idle timer. ** Failed Swift 5.9 all except Linux **
+Forgot to un-comment `main { }` code for disabling idle timer. *Failed Swift 5.9 all except Linux*
 
 v2.8.2 5/14/2025
 Improved error suppression for `@retroactive` conformances.
 Moved `swiftVersion` to Compatibility.
 Fixed missing `@availability` checks and standardized order (iOS, macOS, tvOS, watchOS).
-** Failed Swift 5.10 and 5.9 for all except Linux ** 
+*Failed Swift 5.10 and 5.9 for all except Linux* 
 
 v2.8.1 5/14/2025
 Added `.disableIdleTimer()` method to view since this should be run in UI after appearing rather than in an init.
 Improved Swift Playground support with more compatible code.
-Updated Compatibility.  **FAILS SWIFTPACKAGEINDEX TESTS: 5.10, 5.9, Linux**
+Updated Compatibility.  *FAILS SWIFTPACKAGEINDEX TESTS: 5.10, 5.9, Linux*
 
 v2.8.0 5/4/2025
 Added `introduction` to devices (need to pull from everymac) and created test export for superepicstudios/apple-devices data format.
@@ -63,7 +70,6 @@ Added Apple Intelligence, Compass, Ethernet, and Always On Display flags for dev
 Hid animated test to prevent confusion.
 Added several model codes for devices and added ability to search by model code.
 
-
 v2.7.0 3/12/2025 App Store Changes:
 Added new 2025 MacBook Air, iPad Air, and iPad models and all Mac Studios.
 Updated images, support links, and models for many many devices.
@@ -75,23 +81,20 @@ Added `constructor` String to `Device.Idiom`.
 Reordered Apple TV devices from newest to oldest.
 Replaced non-breaking hyphen ("‑") with normal hyphen ("-").
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
 v2.6.5 3/5/2025 App Store changes:
 Added iPhone 16e.
 Fixed some incorrect support IDs.
 Added Application tracking for demo app.
 Changed to use duckduckgo feeling ducky feature to direct to product technical support pages with unknown identifiers.
-
 *PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.6.4 1/15/2025 Fixed missing package version update.  Updated resolved package versions.
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.6.3 12/20/2024 Set CURRENT_PROJECT_VERSION = ${MARKETING_VERSION} so that it will set the correct value when submitting to Mac App Store.  Fixed missing version update in Device.swift.
+v2.6.4 1/15/2025 Fixed missing package version update.  Updated resolved package versions. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
+
+v2.6.3 12/20/2024 Set CURRENT_PROJECT_VERSION = ${MARKETING_VERSION} so that it will set the correct value when submitting to Mac App Store.  Fixed missing version update in Device.swift. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 App Store Change Log:
 Added MacBook Air 2024 & 2023 models.
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.6.2 12/15/2024 Added iMac "M4" models.  Renamed `macbookSilver` to `solidSilver`.  Fixed crashes by making sure official names were never identical and images are different and not reused.
+v2.6.2 12/15/2024 Added iMac "M4" models.  Renamed `macbookSilver` to `solidSilver`.  Fixed crashes by making sure official names were never identical and images are different and not reused. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 App Store Change Log:
 Dependent frameworks updated.
 Added iMac M4 models, MacBook Pro M4 models, Mac mini M4 models, and iPad mini A17 Pro models.
@@ -99,42 +102,33 @@ Fixed redundant iPadAirM2 (iPadMiniA17) colorset.
 
 v2.6.1 11/26/2024 Added new MacBook Pro M4 and Mac mini M4 models.  Updated dependent frameworks.
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.6.0 10/25/2024 Added new iPad mini devices.  Test Device with setting idle timer disabled on launch to make sure works as intended (updated instructions to indicate this needs to be done on view appear and NOT in the init).  Updated the idle timer toggle to reference the current state rather than a shadow variable.  Updated Apple Watch images to match the Identify your Apple Watch support page: https://support.apple.com/en-us/108056
+v2.6.0 10/25/2024 Added new iPad mini devices.  Test Device with setting idle timer disabled on launch to make sure works as intended (updated instructions to indicate this needs to be done on view appear and NOT in the init).  Updated the idle timer toggle to reference the current state rather than a shadow variable.  Updated Apple Watch images to match the Identify your Apple Watch support page: https://support.apple.com/en-us/108056 *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.5.5 10/18/2024 Tried updating minimum Color framework to try to fix Linux support (Does!)
+v2.5.5 10/18/2024 Tried updating minimum Color framework to try to fix Linux support (Does!) *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
-v2.5.4 10/14/2024 Should fix Linux support by updating Compatibility framework.
+v2.5.4 10/14/2024 Should fix Linux support by updating Compatibility framework. *PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
-v2.5.3 10/13/2024 Fixed Release build information by changing visibility of ActualHardwareDevice.
+v2.5.3 10/13/2024 Fixed Release build information by changing visibility of ActualHardwareDevice.  This addresses DTS Case-ID: 8753208. *PASSES ALL SWIFTPACKAGEINDEX TESTS - except Linux*
 
 v2.5.2 10/13/2024 Moved Xcode project back to original name to prevent opening crash issues.  Fixed missing project marketing version update!  Updated resolved package versions.
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.5.1 10/8/2024 Needed to rename app for Mac App Store.
+v2.5.1 10/8/2024 Needed to rename app for Mac App Store. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.5.0 (build 2) 10/7/2024 - added 512 version of app icon.
+v2.5.0 (build 2) 10/7/2024 - added 512 version of app icon. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
 v2.5.0 10/7/2024 Tweaked to allow releasing app on the App Store.  Since must be built for DEBUG, tweaked check for Migration code.  Re-worked AttributeListView so can include in framework.  Added links to support documents.  Including attribute list in device details.  Fixed duplicate Mac14,9.  Fixed so Thunderbolt named devices definitely show thunderbolt capability.  Uploaded to App Store as "Device Information Tool"."
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.4.4 9/22/2024 Added identifiers to device detail view.  Fixed Apple Watch 10 identifiers.
+v2.4.4 9/22/2024 Added identifiers to device detail view.  Fixed Apple Watch 10 identifiers. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
 v2.4.3 9/21/2024 Fixed CPU issues with new iPhones and `cameraControl` button and added new Apple Watch stubs and colors.  Added black titanium to Apple Watch Ultra 2.  Fixed deinit task warning with Xcode 16 GM.  Added wrapping on colors to prevent squishing.  Updated colors and added colors for Apple Watches before Series 6 and re-named some colors to match Apple CSS.  Added iPhone colors before iPhone 13.  Updated Apple TV HD image.  Updated iPhone images to all use the identification page for consistency (https://support.apple.com/en-us/108044).
 
 v2.4.2 9/11/2024 Added new iPhones and `cameraControl` button.  Apple Watch updates not available yet.  Attempted to improve background tint to match better.
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.4.1 8/13/2024 Updated Color/Compatibility versions to address Swift 5.9 issues.  Previous version removed the Resources build when standardizing Package.swift!  Restored.  Explains why Bundle.module was not available since no resources included in the bundle.
+v2.4.1 8/13/2024 Updated Color/Compatibility versions to address Swift 5.9 issues.  Previous version removed the Resources build when standardizing Package.swift!  Restored.  Explains why Bundle.module was not available since no resources included in the bundle. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
 v2.4.0 8/13/2024 Standardized Package.swift, CHANGELOG.md, README.md, and LICENSE.txt files.  Standardized deployment targets.  Switched dependency from Compatibility to Color so we don't have to re-write color parsing code.  Added new HomePod mini Midnight color.  Added supported versions to indicate the preinstalled version and maximum version of iOS/macOS/etc supported by each device.  Have the max version be the version AFTER the version, so for late 2016 Touchbook, `launchOSVersion = "10.12.1"` and `unsupportedOSVersion = "13.0"` (max would be 12.x) - if this is `nil`, this is still currently supported.
 
-*PASSES ALL SWIFTPACKAGEINDEX TESTS*
-v2.3.4 7/19/2024 Added Identifiable to Battery protocol which I think works because ObservableObject requires AnyObject.  Added details for battery tests so that description can be seen and small screens can see all details.  Moved fontSize off of individual views in batteryView in preparation for extracting size entirely so can use sizes externally without having to specify font size (unfortunately, still can't due to not being able to specify relative sizes compared to base, but at least we cleaned up the code some).  Fixed so setting low power mode doesn't cause view to publish changes while rendering.
+v2.3.4 7/19/2024 Added Identifiable to Battery protocol which I think works because ObservableObject requires AnyObject.  Added details for battery tests so that description can be seen and small screens can see all details.  Moved fontSize off of individual views in batteryView in preparation for extracting size entirely so can use sizes externally without having to specify font size (unfortunately, still can't due to not being able to specify relative sizes compared to base, but at least we cleaned up the code some).  Fixed so setting low power mode doesn't cause view to publish changes while rendering. *PASSES ALL SWIFTPACKAGEINDEX TESTS*
 
 v2.3.3 7/17/2024 Updated to make sure ObservableObject fallback is present from compatibility when needed for Linux compatibility.  Re-worked environment checks so they can be called as static functions on Device that don't need to be actor-isolated.  This also has the benefit of providing DeviceKit compatibility and thus we have un-deprecated those static functions.  Removed several unused functions and moved some to Compatibility.  Set minimum Compatibility version to 1.0.18. 
 
@@ -246,7 +240,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 Known issues that need to be addressed.
 - [ ] Fix so highlighted row inverts primary color text in light mode.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
-- [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.)
+- [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.  Doesn't work at all for macOS (build for iPad).  Battery works but brightness does not on macOS Catalyst)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 - [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
         Info.plist contained no UIScene configuration dictionary (looking for configuration named "Default Configuration")
@@ -302,7 +296,6 @@ This is where proposals can be discussed for potential movement to the roadmap.
 - [ ] Do we need to have a way of tearing down a battery monitor when a monitor host disappears?  Not as relevant now that we're auto-monitoring with an observable object.
 - [ ] Find a way to make words WATCH and SERIES appear in smallCaps() text field and make Apple be Apple logo character  in official names?
 - [ ] For more example code, Make widget for Device tests for Home Screen view and live activity (battery monitor?) Lock Screen widget?
-- [ ] Add easy way to capture screenshots of entire view (have `.screenshottable()` view modifier and then Device.current.captureScreenshot() -> Image that can be attached or exported or whatevered.)
 - [ ] Add hook for monitoring when screenshot is taken. `Device.current.monitorForScreenshot { image in } 
 - [ ] Create better way of scaling battery so that it can scale with dynamic type?  Use relative type?
 - [ ] Add a way to check that privacy checks have been added when using APIs that need privacy permissions (have a configuration flag that needs to be set to ensure that privacy flags have been set).
@@ -328,48 +321,6 @@ https://developer.apple.com/forums/thread/758168?login=true
 Note: If Swift Playgrounds crashes saying the module Device_Device can't be built, it's probably a bad cache build.  Delete/rename the following: ~/Library/Containers/com.apple.PlaygroundsMac/Data/Library/Caches/com.apple.PlaygroundsMac
 Possibly because Bundle.module may not exist???  removed call to see if that fixes our issue (it does not).
 
-
-
-#DTS Issue:
-Case-ID: 8753208
-
-##Title:
-Errors in release configuration.
-
-##PLATFORM AND VERSION
-iOS
-Development environment: Xcode 15.4, macOS 14.6.1
-Run-time configuration: iOS 17.6.1, macOS 14.6.1, watchOS 10.5, visionOS 1.2
-
-##DESCRIPTION OF PROBLEM
-I have a project that seems to build fine and passes all error checks including on swiftpackageindex.com, however, when building in Xcode for RELEASE configuration, it generates errors and will not build, however, the error messages are not helpful and I'm unable to determine what the issue is or how to fix it.
-
-##STEPS TO REPRODUCE
-Download the project here: https://github.com/kudit/Device/releases/tag/v2.4.1
-Unzip and add .swiftpm to the folder name.
-Note that this runs fine in Swift Playgrounds including the previews.
-Right-click to show package contents and open /Developement/Device.xcodeproj
-Note that Analyze and Run both work fine (for example building for macOS current device).
-Go to DeviceTest -> Edit Scheme...
-Change Analyze or Run Build Configuration from Debug to Release.
-Note that there are now 5 errors that prevent building/running:
-Undefined symbol: protocol conformance descriptor for Device.ActualHardwareDevice : Combine.ObservableObject in Device
-Undefined symbol: protocol conformance descriptor for Device.ActualHardwareDevice : Device.CurrentDevice in Device
-Undefined symbol: type metadata accessor for Device.ActualHardwareDevice
-Undefined symbol: nominal type descriptor for Device.ActualHardwareDevice
-Linker command failed with exit code 1 (use -v to see invocation)
-
-###What code level support issue are you having?
-Building, configuring, or running my project in Xcode or Swift Playgrounds
-
-##FEEDBACK ASSISTANT ID
-FB14827858
-
-##Developer Forum Thread (unanswered since June 26, 2024)
-https://developer.apple.com/forums/thread/758168
-
-##Found FIX!
-Make ActualHardwareDevice public instead of internal.
 
 
 #AppStore Copy
