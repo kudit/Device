@@ -414,7 +414,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             introduction: 2019.introductionYear,
             supportId: "SP807",
             launchOSVersion: "13.1",
-            unsupportedOSVersion: nil,
+            unsupportedOSVersion: "26",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-7th-gen.png",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
             models: ["A2197", "A2200", "A2198"],

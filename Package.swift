@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.8.6"
+let version = "2.8.7"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.

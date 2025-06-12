@@ -7,15 +7,16 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
+import Compatibility
 
 @available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 public struct AttributeTestView: View {
     // assign defaults so we don't have assignment errors in Swift 5.9
-    @State var attribute: any DeviceAttributeExpressible = Capability.air
-    @State var device: DeviceType = Mac(identifier: .base)
+    @State var attribute: any DeviceAttributeExpressible
+    @State var device: DeviceType
     public init(attribute: any DeviceAttributeExpressible, device: DeviceType) {
-        self.attribute = attribute
-        self.device = device
+        _attribute = .init(initialValue: attribute)
+        _device = .init(initialValue: device)
     }
     public var body: some View {
         let label = Label(attribute.label, symbolName: attribute.symbolName)
@@ -33,19 +34,20 @@ public struct AttributeTestView: View {
 @available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 public struct AttributeListView<T: DeviceAttributeExpressible, Content: View>: View {
-    @State var device: DeviceType = Mac(identifier: .base)
-    @State var header: String = .unknown
-    @State var attributes: [T] = []
+    @State var device: DeviceType
+    @State var header: String
+    @State var attributes: [T]
     var content: (T) -> Content
     public init(device: DeviceType? = nil, header: String, attributes: [T], @ViewBuilder content: @escaping (T) -> Content) {
-        self.content = content
         if let device {
-            self.device = device
+            _device = .init(initialValue: device)
         } else {
-            self.device = Device.current
+            _device = .init(initialValue: Device.current)
         }
-        self.header = header
-        self.attributes = attributes
+        _header = .init(initialValue: header)
+        _attributes = .init(initialValue: attributes)
+        
+        self.content = content
     }
     public var body: some View {
         Section {
@@ -69,7 +71,11 @@ public extension AttributeListView where Content == AttributeTestView {
 @available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)
 #Preview {
     List {
-        AttributeListView(device: Device(identifier: "iPhone17,2"), header: "Capabilities", attributes: Capability.allCases)
+        AttributeListView(device: Device(identifier: "iPhone17,2"), header: "Capabilities", attributes: Capability.allCases) {
+            attribute in
+            Image(symbolName: attribute.symbolName)
+                
+        }
     }
 }
 

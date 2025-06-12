@@ -25,6 +25,13 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.7 6/11/2025
+Fixed typo in example license code in README.
+Fixed issue with AttributesListView that was introduced in 2.8.5.
+Updated Compatibility for WASM and Android support.
+For App Store:
+Added software unsupported versions for devices that won't support xOS 26 (very few devices were dropped!)
+
 v2.8.6 6/4/2025
 Updated change log with SWIFTPACKAGEINDEX test format to be part of description and not separate lines.
 Updated the README to have an updated list of Capabilities to match the new additions in a similar order.
@@ -33,7 +40,7 @@ Moved Apple Pay capability to be first under additional features.
 Added initial screenshot feature (likely should be improved like including the status bar) but should work on iOS & macOS & tvOS.
 
 v2.8.5 5/17/2025
-Odd error with Swift 5.9 about attributes being used before being initialized.  This led to the solution to fix: https://stackoverflow.com/questions/58758370/how-could-i-initialize-the-state-variable-in-the-init-function-in-swiftui (setting initial values for state values before being initailized.  Guessing that there was some update in Swift 5.10 that made this unnecessary for @State values).  ** ALL SWIFTPACKAGEINDEX TESTS PASSED! **
+Odd error with Swift 5.9 about attributes being used before being initialized.  This led to the solution to fix: https://stackoverflow.com/questions/58758370/how-could-i-initialize-the-state-variable-in-the-init-function-in-swiftui (setting initial values for state values before being initailized.  Guessing that there was some update in Swift 5.10 that made this unnecessary for @State values).  ** ALL SWIFTPACKAGEINDEX TESTS PASSED! ** - caused capabilities list UI to break!
 
 v2.8.4 5/16/2025
 Added a more generic optional fallback to account for problems in Swift 5.9... *Failed Swift 5.9 all except Linux*
@@ -240,7 +247,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 Known issues that need to be addressed.
 - [ ] Fix so highlighted row inverts primary color text in light mode.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
-- [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.  Doesn't work at all for macOS (build for iPad).  Battery works but brightness does not on macOS Catalyst)
+- [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.  Doesn't work at all for macOS (build for iPad).  Battery works but brightness does not on macOS Catalyst and macOS native)
 - [ ] Designed for iPad running on macOS has all appearance of being an actual iPad and battery status seems incorrect.  Need help on this edge case (or use macCatalyst or macOS development).  Building from Playground (not using Xcode project), Designed for iPad doesn't report properly but identifier is correct (systemName reports iPadOS) - same when buildling for Mac Catalyst.  Buildling from the Xcode project Designed for iPad does propertly report isDesignedForiPad but the battery indicator and device is wrong.  Buildling for Mac Catalyst does propertly report device and battery.
 - [ ] Retain error on device list scrolling quickly to the bottom on watchOS (simulator and device). Figure out why the all devices list crashes on Apple Watch (simulator and actual device scrolling down to the bottom).
         Info.plist contained no UIScene configuration dictionary (looking for configuration named "Default Configuration")
@@ -290,6 +297,9 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
+- [ ] Add code to device to detect whether screen recording or screenshot is in progress.  Add notification callback?  `addScreenRecordingModeChangeCallback { oldMode, newMode in }`
+    https://developer.apple.com/documentation/swiftui/environmentvalues/isscenecaptured#
+    https://stackoverflow.com/questions/63954077/swiftui-detect-when-the-user-takes-a-screenshot-or-screen-recording
 - [ ] Create state-less wrappers for CurrentDevice inspection so not dependent on observable object and can provide legacy support?  If ObservableObject available, then create an observable CurrentDevice that can be monitoried for changes?
 - [ ] See if there's a way to get visionOS version when designed for iPad mode.  This claims to do the right thing but verified it also doesn't work for visionOS (Designed for iPad): https://swiftpackageindex.com/MarcoEidinger/OSInfo
 - [ ] Move privacy manifest to the package sources resources folder so it gets processed? https://github.com/devicekit/DeviceKit/issues/408#event-12991784329

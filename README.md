@@ -346,7 +346,7 @@ This was a lot of work.  If you find this useful particularly if you use this in
 ## License
 Feel free to use this in projects, however, please include a link back to this project and credit somewhere in the app.  Example Markdown and string interpolation for the version:
 ```swift
-Text("Open Source projects used include [Device](https://github.com/kudit/Device) v\(Device.version)
+Text("Open Source projects used include [Device](https://github.com/kudit/Device) v\(Device.version)")
 ```
 
 

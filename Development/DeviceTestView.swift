@@ -83,6 +83,12 @@ struct TestAttributeListView<T: DeviceAttributeExpressible>: View {
 }
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+#Preview("TestAttributeListView") {
+    TestAttributeListView(device: Device.current, header: "Environments", attributes: Device.Environment.allCases, styleView: true)
+}
+
+
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 @MainActor
 struct CurrentDeviceDetailsView: View {
     @State var currentDevice: any CurrentDevice = Device.current

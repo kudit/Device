@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kudit/Color",
       "state" : {
-        "revision" : "6fa46a5828bd4379d14dd69d3793a93d963a2981",
-        "version" : "1.3.5"
+        "revision" : "09657d4aaf1fccec26ca6299045cff76035f016c",
+        "version" : "1.3.6"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kudit/Compatibility",
       "state" : {
-        "revision" : "c4fe0cf1e03811d7f619baea936bad1e031d072b",
-        "version" : "1.10.9"
+        "revision" : "1ae08d2a42cfccd36e4575c5879780fb53cb7ab5",
+        "version" : "1.10.15"
       }
     }
   ],
