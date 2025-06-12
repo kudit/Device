@@ -361,6 +361,7 @@ public extension Device {
             return identifier
         }
 #endif
+#if !os(Android)
         var systemInfo = utsname()
         uname(&systemInfo)
         let mirror = Mirror(reflecting: systemInfo.machine)
@@ -370,6 +371,9 @@ public extension Device {
             return identifier + String(UnicodeScalar(UInt8(value)))
         }
         return identifier
+#else
+        return "Unknown Android Device"
+#endif // os(Android)
 #endif
     }
     

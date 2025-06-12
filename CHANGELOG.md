@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.8 6/12/2025
+Addressed missing utsname and uname in Android.
+
 v2.8.7 6/11/2025
 Fixed typo in example license code in README.
 Fixed issue with AttributesListView that was introduced in 2.8.5.
