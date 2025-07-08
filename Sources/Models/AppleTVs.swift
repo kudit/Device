@@ -115,8 +115,9 @@ public struct AppleTV: IdiomType {
             cpu: .a8),
         // These models don't support app development but are here since they're in the identification page and are here for reference.
         AppleTV(
-            officialName: "Apple TV (3rd generation) rev A",
+            officialName: "Apple TV (3rd generation) rev A", // separate model due to quiet replacement: https://everymac.com/systems/apple/apple-tv/specs/apple-tv-3rd-generation-early-2013-specs.html
             identifiers: ["AppleTV3,2"],
+            introduction: "2013-01-29",
             supportId: "SP648",
             launchOSVersion: "6.1",
             unsupportedOSVersion: "8",
@@ -126,14 +127,14 @@ public struct AppleTV: IdiomType {
             cpu: .a5),
         AppleTV(
             officialName: "Apple TV (3rd generation)",
-            identifiers: ["AppleTV3,1", "AppleTV3,2"],
+            identifiers: ["AppleTV3,1"],
             introduction: 2012.introductionYear,
             supportId: "SP648",
             launchOSVersion: "5.1",
             unsupportedOSVersion: "8",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-3gen.jpg",
             capabilities: [.ethernet], // .microUSB
-            models: ["A1427", "A1469"],
+            models: ["A1427"],
             cpu: .a5),
         AppleTV(
             officialName: "Apple TV (2nd generation)",

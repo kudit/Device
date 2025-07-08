@@ -176,6 +176,7 @@ struct AppleDevice: Codable, Equatable, DeviceBridge {
         "iPad (11th Gen)": "iPad (A16)",
         "(3rd Gen)": "(3rd generation)",
         "(4th Gen)": "(4th generation)",
+        "Ultra (2nd Gen)" : "Ultra 2",
         ]
 
     var device: Device {

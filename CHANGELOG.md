@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.8.9 7/8/2025
+Updated AppleDevice json since it fixed several mismatches.  Added Apple Watch Ultra 2 naming conversion.
+
 v2.8.8 6/12/2025
 Addressed missing utsname and uname in Android.
 
