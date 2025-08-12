@@ -34,6 +34,7 @@ public extension Version {
         "13": "Ventura",
         "14": "Sonoma",
         "15": "Sequoia",
+        "26": "Tahoe",
     ]
     
     func matchesMac(version: Version) -> Bool {

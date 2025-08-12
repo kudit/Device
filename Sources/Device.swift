@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.8.9"
+    static let version: Version = "2.8.10"
 }
 import Compatibility
 
@@ -396,6 +396,9 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         
         /// Return a prototypical symbol for this idiom.
         public var symbolName: String {
+            if self == .carPlay {
+                return "carplay"
+            }
             let prototypical = self.type.init(identifier: .base) // create a dummy version but don't include prefix or it will recursively loop (not sure why).
 //            print(String(describing: prototypical))
             return prototypical.symbolName

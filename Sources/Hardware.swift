@@ -57,7 +57,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     case cameraControl // iPhone 16+
     case pencils(Set<ApplePencil>)
     // sensors
-    case compass, lidar, barometer, crashDetection // iPhone 14+
+    case compass, lidar, barometer, fallDetection, electrocardiogram, oxygenSensor /* capability - this may be disabled in newer devices in the US */, crashDetection // iPhone 14+
     // software features
     case applePay // iPhone 6+
     case appleIntelligence
@@ -71,7 +71,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     public static let wirelessConnections = [Capability.esim, .dualesim, .nfc]
     public static let screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland, .alwaysOnDisplay]
     public static let hardware = [Capability.ringerSwitch, .actionButton, .cameraControl]
-    public static let sensors = [Capability.compass, .lidar, .barometer, .crashDetection]
+    public static let sensors = [Capability.compass, .lidar, .barometer, .fallDetection, .electrocardiogram, .oxygenSensor, .crashDetection]
     public static let software = [Capability.applePay, .appleIntelligence]
 
     /// Lists all non-associated value cases
@@ -139,8 +139,6 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             return "magsafe2"
         case .magSafe3:
             return "magsafe3"
-        case .crashDetection:
-            return "car.side.rear.and.collision.and.car.side.front"
         case .actionButton:
             return "button.horizontal.top.press"
         case .cameraControl:
@@ -156,6 +154,14 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
             //            return "circle.hexagongrid.fill"
         case .barometer:
             return "barometer"
+        case .fallDetection:
+            return "figure.fall"
+        case .electrocardiogram:
+            return "waveform.path.ecg"
+        case .oxygenSensor:
+            return "lungs.fill"
+        case .crashDetection:
+            return "car.side.rear.and.collision.and.car.side.front"
         case .biometrics(let biometrics):
             return biometrics.symbolName
         case .cameras(_):

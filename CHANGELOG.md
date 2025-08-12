@@ -25,6 +25,24 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.9.0 TODO
+Should have renumbered the last version since features were added.
+
+
+v2.8.10 8/11/2025
+Added macOS Tahoe and recompiled to correctly report iOS 26 vs iOS 19.
+Added fall detection, ecg, and oxygen sensor to device capabilities.
+Added CarPlay symbol.
+Added Apple Intelligence legacy symbol (not great, but better than nothing).
+Removed several symbols from the resources that exist in SF Symbols so we can use the built in version when available and fall back only when not present.  Removed custom modern symbols where there isn't any additions like coloring in the modern version.
+App Store Changes:
+Added many Apple Watch models.
+Added Fall Detection, ECG, and Oxygen Sensor to device capabilities.
+Added macOS Tahoe and recompiled to correctly report iOS 26 vs iOS 19.
+Added CarPlay symbol.
+Added software unsupported versions for devices that won't support xOS 26 (very few devices were dropped!)
+
+
 v2.8.9 7/8/2025
 Updated AppleDevice json since it fixed several mismatches.  Added Apple Watch Ultra 2 naming conversion.
 
@@ -251,6 +269,7 @@ v1.0.0 2/16/2024 Initial Project based off of DeviceKit but designed to be more 
 
 ## Bugs to fix:
 Known issues that need to be addressed.
+- [ ] On iPhone 7, Migration button not present.  When going into detail screen for a device, after transitioning, the view resets to the list.
 - [ ] Fix so highlighted row inverts primary color text in light mode.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
 - [ ] Device fix so brightness and battery update immediately (seems to be working on iOS and visionOS, but not on macOS.  Doesn't work at all for macOS (build for iPad).  Battery works but brightness does not on macOS Catalyst and macOS native)
@@ -303,6 +322,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
+- [ ] add a way of searching by capability
 - [ ] Add code to device to detect whether screen recording or screenshot is in progress.  Add notification callback?  `addScreenRecordingModeChangeCallback { oldMode, newMode in }`
     https://developer.apple.com/documentation/swiftui/environmentvalues/isscenecaptured#
     https://stackoverflow.com/questions/63954077/swiftui-detect-when-the-user-takes-a-screenshot-or-screen-recording

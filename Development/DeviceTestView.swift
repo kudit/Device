@@ -227,7 +227,13 @@ public struct DeviceTestView: View {
         }
         .backport.navigationTitle("Device.swift v\(Device.version)")
         .toolbar {
-#if DEBUG
+            NavigationLink(destination: {
+                DeviceListView(devices: Device.all)
+            }, label: {
+                Text("All Devices")
+                    .font(.headline)
+            })
+#if DEBUG // reordered because only first item is visible on iPhone 7.
             if Application.isDebug { // This feature should only be for developers, not in the actual app.
                 Button("Migration") {
                     showMigrations = true
@@ -237,12 +243,6 @@ public struct DeviceTestView: View {
                 }
             }
 #endif
-            NavigationLink(destination: {
-                DeviceListView(devices: Device.all)
-            }, label: {
-                Text("All Devices")
-                    .font(.headline)
-            })
         }
     }
     

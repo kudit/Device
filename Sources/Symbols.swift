@@ -87,7 +87,7 @@ extension String {
                 if fallback == .defaultFallback {
                     return fallback
                 } else {
-                    // go through the fallback symbol to make sure it's valid (should never really happen)
+                    // go through the fallback symbol to make sure it's valid (only time that would be invalid would be if we missed including it in the legacy resources).
                     return fallback.safeSymbolName()
                 }
             }
