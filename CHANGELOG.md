@@ -25,9 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-v2.9.0 TODO
-Should have renumbered the last version since features were added.
-
+v2.9.0 8/13/2025
+Should have renumbered the last version since features were added.  Fixed issues with included Compatibility version.  Fixed CarPlay and Apple Intelligence legacy symbol file format.  (Legacy SF Symbols should be Symbol export (not Template) for Xcode version 12)
 
 v2.8.10 8/11/2025
 Added macOS Tahoe and recompiled to correctly report iOS 26 vs iOS 19.
@@ -41,7 +40,6 @@ Added Fall Detection, ECG, and Oxygen Sensor to device capabilities.
 Added macOS Tahoe and recompiled to correctly report iOS 26 vs iOS 19.
 Added CarPlay symbol.
 Added software unsupported versions for devices that won't support xOS 26 (very few devices were dropped!)
-
 
 v2.8.9 7/8/2025
 Updated AppleDevice json since it fixed several mismatches.  Added Apple Watch Ultra 2 naming conversion.
