@@ -1,8 +1,8 @@
 import Foundation
 
-public struct Screen: Hashable, Sendable {
+public struct Screen: Hashable, Sendable, Codable {
     public static let undefined = Screen(resolution: (-1,-1))
-    public struct Size: Hashable, Sendable {
+    public struct Size: Hashable, Sendable, Codable {
         public var width: Int
         public var height: Int
         public init(width: Int, height: Int) {
@@ -11,6 +11,9 @@ public struct Screen: Hashable, Sendable {
         }
         /// Reduce the size into a ratio of whole numbers.  TODO: fix so works in both dimensions
         public var ratio: Size {
+            guard height > 0 else {
+                return Size(width: -1, height: -1)
+            }
             let ratio = Double(width) / Double(height)
             if 68...79 ~= Int(round(100 * ratio)) { // 75  // ~= is the official "pattern-matching" operator
                 return Size(width: 3, height: 4)
@@ -101,6 +104,8 @@ public struct Screen: Hashable, Sendable {
     public static let i63 = Screen(diagonal: 6.3, resolution: (1206,2622), ppi: 460)
     // iPhone 16 Pro Max
     public static let i69 = Screen(diagonal: 6.9, resolution: (1320,2868), ppi: 460)
+    // iPhone Air
+    public static let i65Air = Screen(diagonal: 6.5, resolution: (1260,2736), ppi: 460)
     // MARK: iPads
     // iPad 2
     public static let i97x768 = Screen(diagonal: 9.7, resolution: (768,1024), ppi: 132)
@@ -138,7 +143,8 @@ public struct Screen: Hashable, Sendable {
     public static let w45 = Screen(diagonal: 2.0, resolution: (396,484), ppi: 326)
     public static let w46 = Screen(diagonal: 2.1, resolution: (416,496), ppi: 326)
     public static let w49 = Screen(diagonal: 2.2, resolution: (410,502), ppi: 338)
-    
+    public static let w49b = Screen(diagonal: 2.2, resolution: (422,514), ppi: 326)
+
     /**
      This enum describes the state of the orientation.
      - Landscape: The device is in Landscape Orientation

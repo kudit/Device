@@ -41,6 +41,7 @@ extension Screen: Definable {
         "i55":.i55,
         "i58":.i58,
         "i65":.i65,
+        "i65Air":.i65Air,
         "i61x828":.i61x828,
         "i61x1125":.i61x1125,
         "i61x1170":.i61x1170,

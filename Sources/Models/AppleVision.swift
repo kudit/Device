@@ -41,7 +41,7 @@ public struct AppleVision: IdiomType, HasCameras {
         )
     }
     
-    init(identifier: String) {
+    public init(identifier: String) { // Public for DeviceKit testing
         self.init(
             officialName: "Unknown  Vision Device",
             identifiers: [identifier],
@@ -58,14 +58,14 @@ public struct AppleVision: IdiomType, HasCameras {
         return "visionpro"
     }
 
-    static let all = [
+    public static let all = [ // Public for DeviceKit testing
 
         AppleVision(
             officialName: "Apple Vision Pro",
             identifiers: ["RealityDevice14,1"],
             introduction: 2024.introductionYear,
             supportId: "SP911",
-            launchOSVersion: "1.0.2",
+            launchOSVersion: "1.0.1",
             unsupportedOSVersion: nil,
             image: "https://help.apple.com/assets/65E610E3F8593B4BE30B127E/65E610E47F977D429402E427/en_US/4609019342a9aa9c2560aaeb92e6c21a.png",
             models: ["A2117"],

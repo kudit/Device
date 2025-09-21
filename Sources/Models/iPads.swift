@@ -51,7 +51,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         )
     }
     
-    init(identifier: String) {
+    public init(identifier: String) { // Public for DeviceKit testing
         self.init(
             officialName: "Unknown iPad",
             identifiers: [identifier],
@@ -65,7 +65,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             ],
             colors: .default,
             cpu: .unknown,
-            cameras: [.wide, .trueDepth],
+            cameras: [.wide, .trueDepth12MP],
             cellular: identifier == .base ? .none : .fiveG,
             screen: identifier == .base ? .wUnknown : .i129,
             pencils: [.usbC])
@@ -97,7 +97,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         return capabilities.pencils
     }
 
-    static let all = [
+    public static let all = [ // Public for DeviceKit testing
         
         iPad(
             officialName: "iPad",
@@ -436,7 +436,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2228", "A2068", "A2230", "A2231"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .a12z,
-            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth7MP],
             cellular: .lte,
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
@@ -452,7 +452,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2229", "A2069", "A2232", "A2233"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .a12z,
-            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth7MP],
             cellular: .lte,
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
@@ -548,7 +548,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2377", "A2459", "A2301", "A2460"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
-            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
@@ -564,7 +564,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2378", "A2379", "A2461", "A2462"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
-            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
@@ -596,7 +596,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2759", "A2761", "A2435", "A2762"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
-            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i11,
             pencils: [.secondGeneration, .usbC]),
@@ -612,7 +612,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2436", "A2437", "A2764", "A2766"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
-            cameras: [.iSight, .wide, .ultraWide, .trueDepth],
+            cameras: [.iSight, .wide, .ultraWide, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
@@ -662,7 +662,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2836", "A2837", "A3006"],
             colors: [.macbookSpaceblack, .solidSilver],
             cpu: .m4,
-            cameras: [.wide, .trueDepth],
+            cameras: [.wide, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i11,
             pencils: [.usbC, .pro]),
@@ -678,7 +678,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             models: ["A2925", "A2926", "A3007"],
             colors: [.macbookSpaceblack, .solidSilver],
             cpu: .m4,
-            cameras: [.wide, .trueDepth],
+            cameras: [.wide, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i13,
             pencils: [.usbC, .pro]),

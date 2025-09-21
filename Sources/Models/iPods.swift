@@ -16,7 +16,7 @@ public struct iPod: IdiomType, HasScreen {
     public init(
         officialName: String,
         identifiers: [String],
-        introduction: DateString,
+        introduction: DateString?,
         supportId: String,
         launchOSVersion: Version,
         unsupportedOSVersion: Version?,
@@ -42,7 +42,7 @@ public struct iPod: IdiomType, HasScreen {
         )
     }
     
-    init(identifier: String) {
+    public init(identifier: String) { // public for DeviceKit testing
         self.init(
             officialName: "Unknown iPod",
             identifiers: [identifier],
@@ -62,15 +62,15 @@ public struct iPod: IdiomType, HasScreen {
         return "ipodtouch"
     }
     
-    static let all = [
+    public static let all = [
     
         iPod(
 //            officialName: "iPod touch (1st generation)", // Apple tech specs page seems to have gone back to dropping 1st gen here.
             officialName: "iPod touch",
             identifiers: ["iPod1,1"],
-            introduction: 2007.introductionYear,
+            introduction: "2007-09-05",
             supportId: "112532",
-            launchOSVersion: "1.0",
+            launchOSVersion: "1.1",
             unsupportedOSVersion: "4",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-1st-gen.png",
             capabilities: [.headphoneJack, .thirtyPin, .cameras([.twoMP])], // please check specs
@@ -78,11 +78,23 @@ public struct iPod: IdiomType, HasScreen {
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
-            officialName: "iPod touch (2nd generation)",
+            officialName: "Unknown",
             identifiers: ["iPod2,1"],
             introduction: 2008.introductionYear,
             supportId: "112319",
-            launchOSVersion: "2.1",
+            launchOSVersion: "2.1.1",
+            unsupportedOSVersion: "5",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-2nd-gen.png",
+            capabilities: [.thirtyPin],
+            models: ["A1288", "A1319"],
+            colors: [.silver],
+            cpu: .s5L8720),
+        iPod(
+            officialName: "iPod touch (2nd generation)",
+            identifiers: ["iPod2,1"],
+            introduction: "2008-09-09",
+            supportId: "112319",
+            launchOSVersion: "2.1.1",
             unsupportedOSVersion: "5",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-2nd-gen.png",
             capabilities: [.headphoneJack, .thirtyPin, .cameras([.twoMP])], // please check specs

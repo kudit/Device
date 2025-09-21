@@ -25,8 +25,27 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+TODO: update IdentifyModelParsing to check model numbers when split.
+TODO: DeviceKit export checks work through.
+
+v2.10.0 9/21/2025
+Updated camera naming to specify the MP and zoom levels do better differentiate cameras.  Note that this renames several which may be a breaking change, but it's unlikely people are using those camera names so not quite worth a major version number update.
+Completely re-worked Conversions to allow for better code reuse and more flexible and streamlined checks using fetched project files rather than including files.
+Ensured all conversions pass (as of now)
+Added DeviceKit comparison.
+Made Device conform to Codable.
+Added PropertyIterable to DeviceBridge.
+Updated Compatibility.
+**App Store**
+Added new September 2025 devices.
+Added missing Compass feature to Apple Watch > Series 3.
+Added information for several devices that do not support xOS 26.
+Fixed missing Touch ID flag for several MacBook models.
+Fixed MacBook generation and MagSafe 1 availability on several MacBook models.
+Several additional minor data corrections.
+
 v2.9.0 8/13/2025
-Should have renumbered the last version since features were added.  Fixed issues with included Compatibility version.  Fixed CarPlay and Apple Intelligence legacy symbol file format.  (Legacy SF Symbols should be Symbol export (not Template) for Xcode version 12)
+Should have renumbered the last version since features were added.  Fixed issues with included Compatibility version.  Fixed CarPlay and Apple Intelligence legacy symbol file format.  (Legacy SF Symbols should be Symbol export (not Template) for Xcode version 12)  ** ALL SWIFTPACKAGEINDEX TESTS PASSED! ** 
 
 v2.8.10 8/11/2025
 Added macOS Tahoe and recompiled to correctly report iOS 26 vs iOS 19.
@@ -282,7 +301,9 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 - [ ] Add tests like in Compatiblity.
+- [ ] Add in symbols into comparison diff views for capabilities rather than the string representations.
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
+- [ ] In definition, have a lookup for pre-defined screens like we do for colorsets so it shows the predefined set reather than the full definition.
 - [ ] Add Apple Intelligence as a capability feature.
 - [ ] Create migration export that checks values against defaults primarily to check definitions are in the correct order and that named color sets are being used (test to see if color set is equal to named colorset and if so, replace with the named case rather than the listed colors).
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.

@@ -21,7 +21,7 @@ extension Device {
     public typealias Capabilities = Set<Capability>
 }
 public typealias Capabilities = Device.Capabilities
-public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
+public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Codable {
     // model attributes
     case pro, air, mini, plus, max
     case macForm(Mac.Form)
@@ -61,8 +61,8 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable {
     // software features
     case applePay // iPhone 6+
     case appleIntelligence
-    // TODO: Add Compass!  Works on watch and iPhone.
-    // TODO: altimeter, ecg(electricalHeartSensor?), bloodO2, sleepTracking, wristTemp(thermometer?temperatureSensing?), fallDetection, sleepApnea, depthGauge, waterTemperatureSensor, doubleTap,
+    // TODO: altimeter, sleepTracking, wristTemp(thermometer?temperatureSensing?), sleepApnea, depthGauge, waterTemperatureSensor, doubleTap, siren, wristFlick (The wrist flick gesture is available on Apple Watch Series 9 and later and Apple Watch Ultra 2. Not available on Apple Watch SE.)
+    // .spatialPhotography, .satellite (watch ultra 3+)
     
     public static let modelAttributes = [Capability.pro, .air, .mini, .plus, .max]
     public static let connections = [Capability.headphoneJack, .ethernet, .thirtyPin, .lightning, .usbC, .thunderbolt]
@@ -402,7 +402,7 @@ public extension Capabilities {
 
 // MARK: CPU
 // https://en.wikipedia.org/wiki/List_of_Mac_models_grouped_by_CPU_type
-public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConvertible, Sendable {
+public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConvertible, Sendable, Codable {
     // Only 2013+ really need to be included since Swift won't run on devices prior to this.
     case unknown = "Unknown"
     // accessories
@@ -455,7 +455,7 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case a8x
     case a9
     case a9x
-    case a10
+    case a10 // fusion
     case a11 = "Apple A11 Bionic"
     case a12 = "Apple A12 Bionic" // also Apple TV
     case a12x
@@ -466,11 +466,13 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case a17pro
     case a18
     case a18pro
+    case a19
+    case a19pro
     //  TV
     case intel_pm1 = "Intel Pentium M (1GHz)"
     case a8
-    case a10x
-    case a15
+    case a10x = "Apple A10X Fusion"
+    case a15 // Bionic
     //  Watch
     case s1
     case s1p
@@ -486,7 +488,7 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
 }
 
 // MARK: Biometrics
-public enum Biometrics: Hashable, CaseNameConvertible, Sendable {
+public enum Biometrics: Hashable, CaseNameConvertible, Sendable, Codable {
     case none
     case touchID
     case faceID
@@ -510,28 +512,52 @@ public enum Biometrics: Hashable, CaseNameConvertible, Sendable {
 }
 
 // MARK: Camera
-public enum Camera: Hashable, CaseIterable, CaseNameConvertible, Sendable { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
-    case twoMP // original iPhone
-    case threeMP // iPhone 3GS
+public enum Camera: Hashable, CaseIterable, CaseNameConvertible, Sendable, Codable { // TODO: Do we want to include the focal length in these?  Perhaps position, focal length, megapixels, field of view?
+    /// original iPhone
+    case twoMP
+    /// iPhone 3GS
+    case threeMP
     /// 8mp iPod touch 7th gen/iPhone 6
     case iSight
-    case vga // iPad 2 front camera
-    case standard
-    case wide // ƒ/1.6 aperture 12 MP iPhone 12, ƒ/1.5 aperture iPhone 13 Pro, 26 mm, ƒ/1.5 aperture, iPhone 14 Plus
-    case telephoto // ƒ/2.0 aperture 12 MP iPhone 12 Pro, ƒ/2.8 aperture iPhone 13 Pro
-    case ultraWide // ƒ/2.4 aperture 12 MP iPhone 12, ƒ/1.8 aperture and 120° field of view iPhone 13 Pro, 13 mm, ƒ/2.4 aperture and 120° field of view iPhone 14 Plus
-    /// front facing
-    /// mac front facing 720p
+    /// iPad 2 front camera
+    case vga
+    /// 12MP ƒ/1.6 aperture iPhone 12, ƒ/1.5 aperture iPhone 13 Pro, 26 mm, ƒ/1.5 aperture, iPhone 14 Plus
+    case wide
+    /// 2x 12MP ƒ/2.0 aperture 12 MP iPhone 12 Pro, ƒ/2.8 aperture iPhone 13 Pro
+    case telephoto
+    /// 12MP iPhone 12 Pro Max
+    case telephoto2½x
+    /// 12MP iPhone 13 Pro
+    case telephoto3x
+    /// 12MP iPhone 15 Pro Max
+    case telephoto5x
+    /// 12MP ƒ/2.4 aperture 12 MP iPhone 12, ƒ/1.8 aperture and 120° field of view iPhone 13 Pro, 13 mm, ƒ/2.4 aperture and 120° field of view iPhone 14 Plus
+    case ultraWide
+    case ultraWide48MP
+    case main12MP
+    case main48MP
+    /// 48 MP
+    case fusionMain
+    /// 48 MP
+    case fusionUltraWide
+    /// 48 MP 8x
+    case fusionTelephoto
+    // MARK: - front facing
+    /// mac front facing 720p 7MP
     case faceTimeHD720p
-    /// mac front facing 1080p
+    /// mac front facing 1080p 7MP
     case faceTimeHD1080p
-    case trueDepth // ƒ/2.2 aperture 12 MP iPhone 12 Pro, ƒ/1.9 aperture iPhone 14 Plus
+    case trueDepth7MP
+    /// ƒ/2.2 aperture 12 MP iPhone 12 Pro, ƒ/1.9 aperture iPhone 14 Plus
+    case trueDepth12MP
+    /// 18MP Center Stage front camera in iPhone 17+
+    case centerStage
     /// vision pro
     case stereoscopic
     case persona
 }
 public extension Set<Camera> {
-    static let `default`: Set<Camera> = [.wide,.ultraWide,.trueDepth]
+    static let `default`: Set<Camera> = [.wide,.ultraWide,.trueDepth7MP]
     /// Order them based off of the order in the definition for consistency
     var sorted: [Camera] {
         var sorted = [Camera]()
@@ -546,7 +572,7 @@ public extension Set<Camera> {
 }
 
 // MARK: Cellular
-public enum Cellular: Hashable, Comparable, CaseNameConvertible, Sendable {
+public enum Cellular: Hashable, Comparable, CaseNameConvertible, Sendable, Codable {
     case none // TODO: Take this out?  Do we need it for anything?  This should only be available in iPhone and iPad (protocol CellularCapable)
     case gprs // 1G
     case edge // 2G
@@ -556,7 +582,7 @@ public enum Cellular: Hashable, Comparable, CaseNameConvertible, Sendable {
 }
 
 // MARK: Pencil
-public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible, Sendable {
+public enum ApplePencil: Hashable, CaseIterable, CaseNameConvertible, Sendable, Codable {
     case firstGeneration
     case secondGeneration
     case usbC
@@ -605,7 +631,7 @@ public extension Set<ApplePencil> {
 }
 
 // MARK: Material Color
-public enum MaterialColor: String, CaseNameConvertible, Sendable {
+public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     // standard colors
     case black = "#000000" // complete black for default color
     case white = "#FFFFFF" // complete white for default white plastic color
@@ -753,7 +779,18 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     static let iPhone16Pro = [blackTitanium16, whiteTitanium16, naturalTitanium16, desertTitanium]
     
     static let iPhone16e = [white16, black16]
+    
+    // iPhone 17
+    case lavender = "#dfceea", sage = "#a9b689", mistBlue = "#96aed1", white17 = "#f5f5f5", black17 = "#353839"
+    static let iPhone17 = [lavender, sage, mistBlue, white17, black17]
+    
+    // iPhone Air
+    case skyBlue = "#f0f9ff", lightGold = "#fffcf5", cloudWhite = "#fcfcfc"
+    static let iPhoneAir = [skyBlue, lightGold, cloudWhite, black]
 
+    // iPhone 17 Pro
+    case cosmicOrange = "#F77E2D", deepBlue = "#32374a"
+    static let iPhone17Pro = [cosmicOrange, deepBlue, white17]
 
     // iPad Air
     static let iPadAir = [spaceGray6, silver6]
@@ -817,13 +854,6 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     //  Watch Series 8
     static let watch8 = [aluminumMidnight, aluminumStarlight, aluminumSilver, aluminumRed, stainlessSilver, stainlessGraphite, stainlessGold]
 
-    //  Watch SE 2
-    static let watchSE2 = [aluminumMidnight, aluminumStarlight, aluminumSilver]
-    
-    //  Watch Ultra
-    case titaniumNatural = "#ccc4bc"
-    static let watchUltra = [titaniumNatural]
-    
     //  Watch Series 9
     case aluminumPink = "#fadcde" // new comparison swatch uses consistent aluminumRed color not productRedW9 = "#d61139"
     static let watch9 = [aluminumMidnight, aluminumStarlight, aluminumSilver, aluminumPink, aluminumRed, stainlessSilver, stainlessGraphite, stainlessGold]
@@ -832,6 +862,19 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable {
     case aluminumJetBlack = "#010203", titaniumSlate = "#47423d", titaniumGold = "#f4dec8"
     static let watch10 = [aluminumJetBlack, aluminumRoseGold, aluminumSilver, titaniumSlate, titaniumGold, titaniumNatural]
 
+    //  Watch Series 11
+    static let watch11 = [aluminumRoseGold, aluminumSilver, aluminumSpaceGray, aluminumJetBlack, titaniumNatural, titaniumGold, titaniumSlate]
+
+    //  Watch SE 2
+    static let watchSE2 = [aluminumMidnight, aluminumStarlight, aluminumSilver]
+
+    //  Watch SE 2
+    static let watchSE3 = [aluminumMidnight, aluminumStarlight]
+
+    //  Watch Ultra
+    case titaniumNatural = "#ccc4bc"
+    static let watchUltra = [titaniumNatural]
+    
     //  Watch Ultra 2
     case titaniumBlackU2 = "#0f0e0e"
     static let watchUltra2 = [titaniumBlackU2, titaniumNatural]
@@ -880,6 +923,9 @@ public extension [MaterialColor] {
     static let iPhone16 = MaterialColor.iPhone16
     static let iPhone16Pro = MaterialColor.iPhone16Pro
     static let iPhone16e = MaterialColor.iPhone16e
+    static let iPhone17 = MaterialColor.iPhone17
+    static let iPhoneAir = MaterialColor.iPhoneAir
+    static let iPhone17Pro = MaterialColor.iPhone17Pro
     static let iPadAir = MaterialColor.iPadAir
     static let iPad10 = MaterialColor.iPad10
     static let iPadAirM2 = MaterialColor.iPadAirM2
@@ -895,9 +941,11 @@ public extension [MaterialColor] {
     static let watch7 = MaterialColor.watch7
     static let watch8 = MaterialColor.watch8
     static let watchSE2 = MaterialColor.watchSE2
+    static let watchSE3 = MaterialColor.watchSE3
     static let watchUltra = MaterialColor.watchUltra
     static let watch9 = MaterialColor.watch9
     static let watch10 = MaterialColor.watch10
+    static let watch11 = MaterialColor.watch11
     static let watchUltra2 = MaterialColor.watchUltra2
     static let homePod = MaterialColor.homePod
     static let homePodMini = MaterialColor.homePodMini
@@ -937,6 +985,9 @@ public extension [MaterialColor] {
         iPhone16: "iPhone16",
         iPhone16Pro: "iPhone16Pro",
         iPhone16e: "iPhone16e",
+        iPhone17: "iPhone17",
+        iPhoneAir: "iPhoneAir",
+        iPhone17Pro: "iPhone17Pro",
         iPadAir: "iPadAir",
         iPad10: "iPad10",
         iPadAirM2: "iPadAirM2",
@@ -952,9 +1003,11 @@ public extension [MaterialColor] {
         watch7: "watch7",
         watch8: "watch8",
         watchSE2: "watchSE2",
+        watchSE3: "watchSE3",
         watchUltra: "watchUltra",
         watch9: "watch9",
         watch10: "watch10",
+        watch11: "watch11",
         watchUltra2: "watchUltra2",
         homePod: "homePod",
         homePodMini: "homePodMini",

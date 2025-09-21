@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.9.0"
+    static let version: Version = "2.10.0"
 }
 import Compatibility
 
@@ -97,6 +97,7 @@ public extension DeviceType {
     var image: String? { device.image }
     
     var capabilities: Capabilities { device.capabilities }
+    /// Device part numbers/models like "MGPC3xx/A" or "A2473"
     var models: [String] { device.models }
     var colors: [MaterialColor] { device.colors }
     
@@ -146,7 +147,7 @@ public extension DeviceType {
 //    /// A textual representation of the device.
 //    var description: String { device.description }
     
-    internal var idiomatic: any IdiomType {
+    var idiomatic: any IdiomType {
         // convert to idiomatic device so we can reference the correct implementation of symbolName.
         guard let idiomatic = device.idiom.type.init(device: device) else {
             return device // use default if we can't convert for some reason
@@ -206,7 +207,7 @@ public protocol PublicDeviceIdiom {
 
 /// Type for generating and iterating over IdiomTypes for convenient initialization in Models file and for iterating over when searching for a model identifier.
 /// NOT PUBLIC since we shouldn't be initing off of identifiers outside of this module.  This is for internal device lookups.  If you need something like this external to this module, please let us know.
-protocol IdiomType: DeviceType, Sendable, PublicDeviceIdiom {
+public protocol IdiomType: DeviceType, Sendable, PublicDeviceIdiom {
     var device: Device { get } // Idioms can set, but external should not be directly setting this.
     init(identifier: String) // make sure to look for .base identifier for base settings vs a .new identifier for things that should be present for unknown new devices.  Set Needed for extension initializer.
     /// Idiomatic list of all of this type.
@@ -216,12 +217,12 @@ protocol IdiomType: DeviceType, Sendable, PublicDeviceIdiom {
     /// For doing actual initialization (needs to be done by the struct itself since device is not settable (which is what we want so this can be Sendable).
     init(knownDevice: Device)
 }
-extension IdiomType {
+public extension IdiomType {
     /// List of all the actual `Device` structs.
-    public static var allDevices: [Device] {
+    static var allDevices: [Device] {
         all.map { $0.device }
     }
-    init?(device: Device) {
+    init?(device: Device) { // only public for conversion testing for DeviceKit
         guard device.idiom.type == Self.self else {
             return nil
         }
@@ -235,9 +236,9 @@ extension IdiomType {
 //    }
 }
 
-public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable {
+public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable, Codable {
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
-    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable {
+    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable, Codable {
         /// An unspecified idiom.  Used for accessories that don't have a UI.
         case unspecified
         /// An interface designed for the Mac.
