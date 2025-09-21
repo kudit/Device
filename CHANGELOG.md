@@ -28,6 +28,17 @@ Real Device Apple TV
 TODO: update IdentifyModelParsing to check model numbers when split.
 TODO: DeviceKit export checks work through.
 
+v2.10.1 9/21/2025
+Updated App Store descritption.
+Fixed DeviceKitLoader extension accidentally being included in release.
+**App Store**
+Added new September 2025 devices.
+Added missing Compass feature to Apple Watch > Series 3.
+Added information for several devices that do not support xOS 26.
+Fixed missing Touch ID flag for several MacBook models.
+Fixed MacBook generation and MagSafe 1 availability on several MacBook models.
+Several additional minor data corrections.
+
 v2.10.0 9/21/2025
 Updated camera naming to specify the MP and zoom levels do better differentiate cameras.  Note that this renames several which may be a breaking change, but it's unlikely people are using those camera names so not quite worth a major version number update.
 Completely re-worked Conversions to allow for better code reuse and more flexible and streamlined checks using fetched project files rather than including files.
@@ -36,13 +47,6 @@ Added DeviceKit comparison.
 Made Device conform to Codable.
 Added PropertyIterable to DeviceBridge.
 Updated Compatibility.
-**App Store**
-Added new September 2025 devices.
-Added missing Compass feature to Apple Watch > Series 3.
-Added information for several devices that do not support xOS 26.
-Fixed missing Touch ID flag for several MacBook models.
-Fixed MacBook generation and MagSafe 1 availability on several MacBook models.
-Several additional minor data corrections.
 
 v2.9.0 8/13/2025
 Should have renumbered the last version since features were added.  Fixed issues with included Compatibility version.  Fixed CarPlay and Apple Intelligence legacy symbol file format.  (Legacy SF Symbols should be Symbol export (not Template) for Xcode version 12)  ** ALL SWIFTPACKAGEINDEX TESTS PASSED! ** 
@@ -379,13 +383,37 @@ Possibly because Bundle.module may not exist???  removed call to see if that fix
 
 
 #AppStore Copy
+##Title
+Device Information Tool
+
+##Subtitle (30)
+123456789012345678901234567890
+Detailed device information
+
 ##Promotional Text (170)
-Tool for looking up Apple device information in the open source Kudit Device framework.
+Download today to get full visibility into your Apple devices, know what’s under the hood, stay ahead of updates, and troubleshoot with confidence.
 
 ##Description (4,000)
-This is a tool for exposing the information in the open source Kudit Device framework.  Useful for looking up specific information or support articles on Apple Devices.  Can also be used to check on the device's thermal state, battery level, disable the idle timer, and check reported device orientation.
+A fast, accurate, and privacy-first utility that shows everything you want to know about your Apple devices.
 
-Feel free to contribute to this project at http://github.com/kudit/Device
+This tool has the most complete information available. By downloading, you are supporting a small independent open source developer who makes this information freely available to everyone and keeps it updatable by everyone.
+
+What you get:
+• Detailed hardware and software information including model, chip, storage, memory, introduction date, and minimum and maximum OS versions.
+• Battery information showing level and charge status.
+• Thermal indicator to recognize device temperature.
+• Orientation and display data showing how the system reports screen state.
+• Idle timer control to prevent the screen from dimming or locking when needed.
+• Device capabilities and sensors such as biometrics, LIDAR, ECG, Fall Detection, Oxygen Sensor, and more.
+• Direct support and reference links to Apple documentation based on your exact device.
+
+Why you’ll love it:
+• Privacy-first design with no data collection. All device information stays on your device.
+• Lightweight and fast with minimal battery or resource usage.
+• Continuously updated with new Apple devices, sensors, and operating system support.
+• Ideal for developers, IT support, and anyone who wants to know the exact capabilities of their Apple devices.
+
+This is a tool for exposing the information in the open source Kudit Device framework.  Feel free to contribute to this project at http://github.com/kudit/Device
 
 If you have any suggestions or feedback, please reach out to us at support+device@kudit.com!
 
@@ -393,7 +421,8 @@ https://www.kudit.com/terms
 
 
 ##Keywords (100)
-device,devicekit,framework,github,iphone,identifier,info,support,capabilities,screen,open source
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+device,devicekit,framework,github,iphone,identifier,info,ipad,mac,os,screen,capabilities,open,source
 
 
 #Monetization

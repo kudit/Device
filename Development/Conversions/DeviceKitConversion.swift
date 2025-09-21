@@ -627,7 +627,6 @@ struct DeviceKitLoader: DeviceBridgeLoader {
 //        return Device.allDevices.map { DeviceKitDevice($0).source }.joined(separator: "\n")
 //    }
 }
-#endif
 
 
 // MARK: Legacy code (unused?)
@@ -900,3 +899,4 @@ public struct Migration {
 //    }
 }
 */
+#endif
