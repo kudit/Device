@@ -48,7 +48,7 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
                     Text($0.rawValue).tag($0)
                 }
             }
-            .pickerStyle(.segmented)
+            .pickerStyle(.segmentedBackport)
         }
         .padding(.vertical, 8)
     }
@@ -287,7 +287,7 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
                     bridgeDiff.toggle()
                 }
                 Button("Copy Device") {
-                    Compatibility.copyToPasteboard(bridge.merged.definition)
+                    Compatibility.copyToPasteboard(bridge.merged.definition + "\n\n")
                 }
             }
             if bridgeDiff {

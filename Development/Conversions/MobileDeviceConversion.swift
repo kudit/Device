@@ -83,9 +83,9 @@ struct MobileDevice: DeviceBridge {
             let ordinal = "\(gen)\(gen.ordinal)"
             officialName = officialName.replacingOccurrences(of: "\(ordinal) Gen", with: "(\(ordinal) generation)")
         }
-        if identifier.identifierVersion.majorVersion == 6 && officialName.contains("Apple Watch SE") {
-            officialName = officialName.replacingOccurrences(of: "SE ", with: "SE (2nd generation) ")
-        }
+//        if identifier.identifierVersion.majorVersion == 6 && officialName.contains("Apple Watch SE") {
+//            officialName = officialName.replacingOccurrences(of: "SE ", with: "SE (2nd generation) ")
+//        }
         if identifier.identifierVersion.majorVersion == 14 && officialName.contains("iPad Pro 11-inch") {
             officialName = "iPad Pro 11-inch (4th generation)"
         }
@@ -111,7 +111,7 @@ struct MobileDevice: DeviceBridge {
 //        }
         let identifierIndex = device.identifiers.firstIndex(of: identifier) ?? -1
         var officialName = device.officialName
-            .replacingOccurrences(of: "(3nd generation)", with: "3")
+            .replacingOccurrences(of: "(3rd generation)", with: "3")
         if device.idiom == .watch {
             if identifier.identifierNumber < 7.9 {
                 officialName += " case"

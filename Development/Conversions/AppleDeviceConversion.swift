@@ -73,6 +73,7 @@ struct AppleDeviceChip: Codable, Equatable, Hashable {
         Self("a13", "Apple A13 Bionic"): .a13,
         Self("a17pro", "Apple A17 Pro"): .a17pro,
         Self("a18pro", "Apple A18 Pro"): .a18pro,
+        Self("a19pro", "Apple A19 Pro"): .a19pro,
     ]
     var cpu: CPU {
         for cpu in CPU.allCases {
@@ -137,24 +138,43 @@ extension Device.Idiom {
     }
 }
 
+enum AppleDeviceTrait: String, Codable, RawRepresentable {
+    case actionButton = "button.action"
+    case cameraControl = "button.camera"
+    case homeButton = "button.home"
+    case alwaysOnDisplay = "display.always-on"
+    case dynamicIsland = "display.dynamic-island"
+    case fluidDisplay = "display.fluid" // edge-to-edge display?  ignore since we don't really use this.
+    case proMotion = "display.pro-motion"
+    case displayNotch = "display.notch"
+    case faceID = "id.face"
+    case opticID = "id.optic"
+    case touchID = "id.touch"
+    case appleIntelligence = "intelligence"
+    // For AirPods
+    case audioANC = "audio.anc" // active noise cancellation?
+    case audioSpatial = "audio.spatial"
+    static let unmappedTraits: [AppleDeviceTrait] = [.fluidDisplay, .proMotion]
+}
+
 extension Capability {
-    static let appleDeviceTraits: [String: Capability] = [
-        "button.action": .actionButton,
-        "button.camera": .cameraControl,
-//        "button.home": .biometrics(.touchID), // not all button.home has touchID
+    static let appleDeviceTraits: [AppleDeviceTrait: Capability] = [
+        .actionButton: .actionButton,
+        .cameraControl: .cameraControl,
+//        .homeButton: .biometrics(.touchID), // not all button.home has touchID
         // this can be determined if we have touchID or no biometrics so we don't actually need to set anything
-        "display.always-on": .alwaysOnDisplay,
-        "display.dynamic-island": .dynamicIsland,
-//        "display.fluid": .adaptiveRefreshRate,?
-        "display.notch": .notch,
-//        "display.pro-motion": .proMotion,
-        "id.face": .biometrics(.faceID),
-        "id.optic": .biometrics(.opticID),
-        "id.touch": .biometrics(.touchID),
-        "intelligence": .appleIntelligence,
+        .alwaysOnDisplay: .alwaysOnDisplay,
+        .dynamicIsland: .dynamicIsland,
+//        .fluidDisplay: ?,
+        .displayNotch: .notch,
+//        .proMotion: .proMotion,
+        .faceID: .biometrics(.faceID),
+        .opticID: .biometrics(.opticID),
+        .touchID: .biometrics(.touchID),
+        .appleIntelligence: .appleIntelligence,
     ]
         
-    init?(appleDeviceTrait: String) {
+    init?(appleDeviceTrait: AppleDeviceTrait) {
         for (key, value) in Capability.appleDeviceTraits {
             if key == appleDeviceTrait {
                 self = value
@@ -164,7 +184,7 @@ extension Capability {
         return nil
     }
     
-    var appleDeviceTrait: String? {
+    var appleDeviceTrait: AppleDeviceTrait? {
         for (key, value) in Capability.appleDeviceTraits {
             if self == value {
                 return key
@@ -204,7 +224,7 @@ struct AppleDevice: DeviceBridge {
     var family: String
     var chip: AppleDeviceChip
     var software: [AppleDeviceSoftwareItem]
-    var traits: [String]
+    var traits: [AppleDeviceTrait]
     var internal_names: [String]
     var a_numbers: [String]
     var ids: [String]
@@ -256,30 +276,36 @@ struct AppleDevice: DeviceBridge {
     }
 
     func bridge(from device: Device) -> Self {
-        var traits = [String]()
+        var traits = [AppleDeviceTrait]()
         if (device.biometrics == nil || device.biometrics == Biometrics.none) && [.phone, .pod, .pad].contains(device.idiom) {
-            traits.append("button.home")
+            traits.append(.homeButton)
         }
-        if self.traits.contains("display.fluid") {
-            traits.append("display.fluid") // edge-to-edge display?  ignore since we don't really use this.
-        }
-        if self.traits.contains("display.pro-motion") {
-            traits.append("display.pro-motion") // not tracking (yet)
+        for unmapped in AppleDeviceTrait.unmappedTraits {
+            if self.traits.contains(unmapped) {
+                traits.append(unmapped) // not tracking (yet)
+            }
         }
         // go through capabilities and map
         traits.append(contentsOf: device.capabilities.compactMap { $0.appleDeviceTrait })
-        // "fix" because Apple Device list is all over the place for iPads.
-        if device.biometrics == .touchID {
-            if !self.traits.contains("id.touch") {
-                traits.remove("id.touch")
-            }
-            if self.traits.contains("button.home") {
-                traits.append("button.home")
+        // It's all over the place for iPads.
+        if device.biometrics == .touchID { // TODO: Restrict to iPads before a certain year?
+//            if !self.traits.contains(.touchID) { // Hack to remove touchID flag if the parsed device doesn't have it
+//                traits.remove(.touchID)
+//            }
+            if self.traits.contains(.homeButton) { // only include homeButton if the parsed device has a homeButton since we're not tracking it in this framework.
+                traits.append(.homeButton)
             }
         }
-        if traits.contains("display.notch") && device.idiom == .pad {
-            traits.remove("display.notch")
+/*
+        // "fix"es because Apple Device list has some bad data
+        if traits.contains(.displayNotch) && device.idiom == .pad {
+//            traits.remove(.displayNotch) // Figure out which devices are showing notch on iPad??
         }
+        // "fix" because Apple Device list is missing action button
+        if device.identifiers.contains("Watch7,12") {
+            traits.remove(.actionButton)
+        }*/
+        
         if Set(traits) == Set(self.traits) {
             traits = self.traits // make sure this is the same order since it isn't a set.
         }

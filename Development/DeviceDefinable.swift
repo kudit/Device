@@ -192,7 +192,7 @@ public extension Device {
                     \(idiomish)officialName: \(officialName.definition),
                     identifiers: \(identifiers.definition),
                     introduction: \(introduction.definition),
-                    supportId: \(supportId.definition),
+                    supportId: \(supportId == .unknown ? ".unknown" : supportId.definition),
                     launchOSVersion: \(launchOSVersion.definition),
                     unsupportedOSVersion: \(unsupportedOSVersion.definition),
                     \(macForm)image: \(image.definition),

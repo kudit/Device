@@ -95,7 +95,7 @@ public extension Application {
 //            }
 //        }
         // fallback version (but may want to use as primary since scene version may not include menu bar)
-        for window in UIApplication.shared.windows {
+        for window in UIApplication.shared.windows { // NOTE: May not work in visionOS?
             if let image = window.renderImage() {
                 images.append(Image(uiImage: image))
             }

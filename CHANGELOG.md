@@ -25,8 +25,20 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-TODO: update IdentifyModelParsing to check model numbers when split.
-TODO: DeviceKit export checks work through.
+v2.10.2 9/27/2025
+Updated Compatibility.
+Fixed watchOS AppIcon warning by splitting into separate item.
+Updated IdentifyModelParsing to match model numbers when split.
+Fixed issues with "SE (3nd generation)".
+Fixed iPod screen sizes, resolutions, and cameras.
+**App Store**
+Fixed launch version for 2025 iPhones.
+Fixed incorrect name for Apple Watch SE (3rd generation).
+Fixed missing always-on display for Apple Watch SE (3rd generation) 40mm.
+Fixed issue where several iPad models were erroneously listed as having a notch.
+Updated change in official naming convention of Apple Watch SE (3rd generation) to Apple Watch SE 3.
+Removed duplicate iPod2,1 entry causing it to sometimes be mislabeled as "Unknown“.
+Updated watch images to be more consistent (uses the stainless or titanium version for the larger version and aluminum for the smaller ones).
 
 v2.10.1 9/21/2025
 Updated App Store descritption.

@@ -114,7 +114,7 @@ struct ParsedItem: DeviceBridge {
             capabilities = self.capabilities
         }
         var models = device.models
-        if models.containsAll(self.partNumbers) {
+        if models.containsAll(self.partNumbers) || self.partNumbers.containsAll(models) && device.identifiers.containsAny(["Mac16,7"]) { // check for split items
             models = self.partNumbers
         }
         var cpu = device.cpu
@@ -163,9 +163,9 @@ actor PageParser: DeviceBridgeLoader {
 
     func devices() async -> [ParsedItem] {
         let content = try? await fetchURL(urlString: url)
-        if content?.contains("<h2 id=\"one\" class=\"gb-header\">") ?? false, let parts = content?.components(separatedBy: "<h2 ") {
+        if content?.contains("Identify your Apple Watch") ?? false, let parts = content?.components(separatedBy: "<h2 ") {
             // Apple Watch pages
-            let parts = parts.dropFirst().dropFirst()
+            let parts = parts.dropFirst().dropFirst() // top header & find your part header
             parts.forEach { parseItem(source: $0) }
         } else if content?.contains("<h2 class=\"gb-header") ?? false, let parts = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), parts.count > 1 {
             // iPod Touch page is sectioned differently
@@ -186,6 +186,7 @@ actor PageParser: DeviceBridgeLoader {
         var supportId = String.unknownSupportId
         var unsupportedOSVersion: Version? = nil
         var image: String? = nil
+        var image2: String? = nil
         var capabilities = Capabilities()
         var partNumbers: [String] = []
         var cpu = CPU.unknown
@@ -222,7 +223,7 @@ actor PageParser: DeviceBridgeLoader {
                 debug("Unable to get name for Apple Watch!")
                 return
             }
-            officialName = trimmed
+            officialName = trimmed.tagsStripped
             idiom = .watch
         }
         officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: " M4 Pro or M4 Max", with: "")
@@ -254,6 +255,19 @@ actor PageParser: DeviceBridgeLoader {
         let imageTag = string.extract(from: "<img class=\"gb-image\"", to: "/>") ?? string
         if let imageURL = imageTag.extract(from: "src=\"", to: "\"") {
             image = imageURL
+        }
+        // for Apple Watch (get alternate image for larger size)
+        if idiom == .watch {
+            let imageParts = string.components(separatedBy: "<img").compactMap { $0.extract(from: "src=\"", to: "\"") }
+            for ip in imageParts {
+                if ip.containsAny(["stainless", "titanium"]) {
+                    image2 = ip
+                    break
+                }
+            }
+            if image2 == nil {
+                image2 = image
+            }
         }
         
         let isiPhone = string.contains("iPhone")
@@ -341,7 +355,7 @@ actor PageParser: DeviceBridgeLoader {
             supportId = sid
         } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/kb/", to: "\"") {
             supportId = sid
-        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/", to: "\"") {
+        } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/", to: "\"") {
             // iPads don't have the /kb/ part.
             supportId = sid
         }
@@ -505,20 +519,28 @@ actor PageParser: DeviceBridgeLoader {
         }
 //        debug(watchIdentifiers)
         for (caseName, identifiers) in watchIdentifiers {
+            var image = image
             var officialName = officialName
             if idiom == .watch {
                 // just do for this scope so we can reset for each case name
-                officialName = "\(officialName) \(caseName)"
+                if !officialName.contains("Ultra") { // Ultras don't include case size.
+                    officialName = "\(officialName) \(caseName)"
+                }
                 partNumbers = (watchCaseModels[caseName] ?? []).unique
+                // pick image (first one for smaller version, first non-aluminum for larger variant)
+                let cases = watchCaseModels.keys.sorted()
+                if caseName == cases.last {
+                    image = image2
+                }
             }
             var identifiers = identifiers.unique
             for identifier in identifiers {
-                let matched = Device.forcedLookup(identifier: identifier, officialNameHint: officialName) // or create a blank device with identifier
-                
-                // Apple Watches have issues with which image, so assume that the matched one is correct if available
-                if idiom == .watch {
-                    image = matched.image // TODO: Change to pick the aluminum variant if available
-                }
+//                let matched = Device.forcedLookup(identifier: identifier, officialNameHint: officialName) // or create a blank device with identifier
+//                
+//                // Apple Watches have issues with which image, so assume that the matched one is correct if available
+//                if idiom == .watch {
+//                    image = matched.image // TODO: Change to pick the aluminum variant if available
+//                }
                 
                 var ids = [identifier]
                 var mergeDuplicates = false

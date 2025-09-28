@@ -49,9 +49,9 @@ extension CPU {
 extension Set<Camera> {
     /// convert sets of cameras to numbers
     var deviceKitNum: Int {
-        let wide = self.contains(.wide)
-        let telephoto = self.contains(.telephoto)
-        let ultraWide = self.contains(.ultraWide)
+        let wide = self.containsAny([.wide, .main12MP, .main48MP, .fusionMain])
+        let telephoto = self.containsAny([.telephoto, .telephoto2½x, .telephoto3x, .telephoto5x, .fusionTelephoto])
+        let ultraWide = self.containsAny([.ultraWide, .ultraWide48MP, .fusionUltraWide])
         var camerasNum = 0
         if wide && telephoto && ultraWide {
             camerasNum = 123
@@ -102,25 +102,29 @@ extension Set<Camera> {
 }
 
 extension Set<ApplePencil> {
+    static let deviceKitMap: [Int: Set<ApplePencil>] = [
+        1: [.firstGeneration],
+        2: [.secondGeneration],
+        3: [.usbC],
+        4: [.pro],
+        13: [.firstGeneration, .usbC],
+        23: [.secondGeneration, .usbC],
+        234: [.secondGeneration, .usbC, .pro],
+        24: [.secondGeneration, .pro],
+        34: [.usbC, .pro],
+    ]
+    
     var deviceKitPencilSupport: Int {
         // this is a bad way of expressing pencil support.
-        var applePencilSupport = 0
-        if self.contains(.firstGeneration) {
-            applePencilSupport = 1
-        } else if self.contains(.secondGeneration) {
-            applePencilSupport = 2
+        if let num = Self.deviceKitMap.firstKey(for: self) {
+            return num
         }
-        return applePencilSupport
+        return 0
     }
     init(deviceKitPencilSupport: Int) {
-        var pencils: Set<ApplePencil> = []
-        switch deviceKitPencilSupport {
-        case 1:
-            pencils.insert(.firstGeneration)
-        case 2:
-            pencils.insert(.secondGeneration)
-        default:
-            break
+        guard let pencils = Self.deviceKitMap[deviceKitPencilSupport] else {
+            self.init() // empty
+            return
         }
         self = pencils
     }
@@ -295,22 +299,44 @@ struct DeviceKitDevice: DeviceBridge {
         
         // capabilities
         var capabilities = Capabilities()
-        if let screenRatio, screenRatio.count == 2 {
-            let angle = atan(screenRatio[0] / screenRatio[1]) // Returns angle in radians
-            let height = diagonal * sin(angle)
-            let width = diagonal * cos(angle)
+        if let screenRatio, screenRatio.count == 2, screenRatio[1] != 0 {
+            let screenRatioValue = screenRatio[0] / screenRatio[1]
+            let angle = atan(screenRatioValue) // Returns angle in radians
+            let height = ppi.doubleValue * diagonal * cos(angle) // was sin, cos, but that seemed to be flipped of what we want.  Also forgot to multiply by ppi.
+            let width = ppi.doubleValue * diagonal * sin(angle)
             if angle.isNaN || height.isNaN || width.isNaN {
                 // Don't add a screen
             } else {
-                capabilities.screen = Screen(diagonal: diagonal, resolution: (Int(width), Int(height)), ppi: ppi)
+                let width = Int(width)
+                let height = Int(height)
+                let screen = Screen(diagonal: diagonal, resolution: (width, height), ppi: ppi)
+                if width.doubleValue == screenRatio[0] && height.doubleValue == screenRatio[1] {
+                    capabilities.screen = matched.screen
+                } else {
+                    capabilities.screen = screen
+                }
             }
+            // TODO: Check the matched device's screen and use that if the ratio and ppi matches or is close enough just use that
         }
+        if let cameraDevice = matched as? HasCameras {
+            var cameras: Set<Camera> = []
+            if cameraDevice.cameras.deviceKitNum == self.cameras {
+                cameras = cameraDevice.cameras
+            } else {
+                cameras = .init(deviceKitNum: self.cameras)
+            }
+            capabilities.cameras = cameras
+        }
+
         if isPlusFormFactor {
             if description.contains("Plus") {
                 capabilities.insert(.plus)
             }
             if description.contains("Max") {
                 capabilities.insert(.max)
+            }
+            if description.contains("Air") {
+                capabilities.insert(.air)
             }
         }
         if isPadMiniFormFactor {
@@ -347,7 +373,7 @@ struct DeviceKitDevice: DeviceBridge {
         if has5gSupport {
             capabilities.cellular = .fiveG
         }
-        
+                
         return Device(
             idiom: .unspecified,
             officialName: officialName,
@@ -387,6 +413,11 @@ struct DeviceKitDevice: DeviceBridge {
         if officialName.contains("Apple TV") {
             officialName = officialName.replacingOccurrences(of: " (1st generation)", with: "")
         }
+        if idiom == .watch {
+            let watch = AppleWatch(knownDevice: device)
+            officialName += " \(watch.watchSize.mm)"
+        }
+
         caseName = caseName.replacingOccurrences(of: " ", with: "")
         caseName = caseName.replacingOccurrences(of: "Xs", with: "XS")
         caseName = caseName.replacingOccurrences(of: "mini", with: "Mini")
@@ -404,9 +435,19 @@ struct DeviceKitDevice: DeviceBridge {
         caseName = caseName.replacingOccurrences(of: "ndgeneration", with: "")
         caseName = caseName.replacingOccurrences(of: "rdgeneration", with: "")
         caseName = caseName.replacingOccurrences(of: "thgeneration", with: "")
+        caseName = caseName.replacingOccurrences(of: "iPadAir11InchM2", with: "iPadAir11M2")
+        caseName = caseName.replacingOccurrences(of: "iPadAir13InchM2", with: "iPadAir13M2")
+        caseName = caseName.replacingOccurrences(of: "iPadAir11InchM3", with: "iPadAir11M3")
+        caseName = caseName.replacingOccurrences(of: "iPadAir13InchM3", with: "iPadAir13M3")
+        caseName = caseName.replacingOccurrences(of: "iPadPro11InchM4", with: "iPadPro11M4")
+        caseName = caseName.replacingOccurrences(of: "iPadPro13InchM4", with: "iPadPro13M4")
+        caseName = caseName.replacingOccurrences(of: "appleTV4K3Wi-Fi+Ethernet", with: "appleTV4K3")
 
         officialName = officialName.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
         officialName = officialName.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
+        if officialName == "iPhone SE (1st generation)" {
+            officialName = "iPhone SE"
+        }
         
         var comments = "Device is a\(officialName[officialName.startIndex].isVowel() ? "n" : "") [\(officialName)](\(device.supportURL))"
         comments = comments.replacingOccurrences(of: " (9.7-inch)", with: " 9.7-inch")
@@ -429,13 +470,18 @@ struct DeviceKitDevice: DeviceBridge {
         safeOfficialName = safeOfficialName.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
 
         var imageURL = device.image ?? ""
+        // we typically want to ignore changes to images since the ones we have are more likely to be right.
+        if device.image != nil {
+            // we do want to include a difference if we don't have a device.image, but otherwise, ignore when calculating diffs.
+            imageURL = self.imageURL
+        }
         if caseName == "homePod" {
             imageURL = "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP773/homepod_space_gray_large_2x.jpg" // use different version
         }
 
         
         let screen = device.screen // use capabilities version, not local variable version
-        var diagonal = screen?.diagonal ?? -1
+        var diagonal = screen?.diagonal ?? 0
         if diagonal == 1.65 {
             diagonal = 1.6
         }
@@ -444,18 +490,31 @@ struct DeviceKitDevice: DeviceBridge {
             diagonal = -1
             ppi = -1
         }
-        var ratio = [Double]()
+        var ratio: [Double]?
         if let screenRatio = screen?.resolution.ratio {
             ratio = [screenRatio.width.doubleValue, screenRatio.height.doubleValue]
         }
         if idiom == .tv {
-            ratio = []
+            ratio = nil
         }
         if [8, 13, 14].contains(Int(device.identifiers.first?.identifierNumber ?? -1)) {
             if ratio == [3, 4] {
                 ratio = [512, 683]
             }
+            if ratio == [512.0, 683.0] {
+                ratio = [41.0, 59.0]
+            }
         }
+        // if ratio is close enough to what we have, don't worry about any differences
+        if let myW = self.screenRatio?[0], let myH = self.screenRatio?[1], myH != 0, let myRatio = self.screenRatio {
+            let myR = myW / myH
+            let deviceR = (ratio?[0] ?? 1) / (ratio?[1] ?? 1)
+            if abs(myR - deviceR) < 0.1 {
+                ratio = myRatio
+            }
+        }
+        
+        // ignore cameras
         
         let isXSeries = device.capabilities.biometrics == .faceID && idiom != .pad // faceID is proxy for "isXSeries"
         
@@ -469,7 +528,7 @@ struct DeviceKitDevice: DeviceBridge {
             description: officialName,
             safeDescription: safeOfficialName,
             ppi: ppi,
-            isPlusFormFactor: device.is(.plus) || device.is(.max),
+            isPlusFormFactor: device.is(.plus) || device.is(.max) || (device.idiom == .phone && device.is(.air)),
             isPadMiniFormFactor: device.is(.mini) && idiom == .pad, // homepod mini or iPhone mini does not count
             isPro: device.is(.pro),
             isXSeries: isXSeries,

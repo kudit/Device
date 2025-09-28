@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.10.1"
+    static let version: Version = "2.10.2"
 }
 import Compatibility
 
@@ -411,10 +411,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             case .pod:
                 return [
                     .headphoneJack,
-                    .lightning,
                     .battery,
-                    .screen(.i4),
-                    .cameras([.iSight, .faceTimeHD720p]),
                     ]
             case .phone, .pad:
                 return [.battery]
@@ -504,6 +501,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     
     // All initializers should add these:
     public let capabilities: Capabilities// = []
+    /// Device part numbers/models like "MGPC3xx/A" or "A2473"
     public let models: [String]// = []
     public let colors: [MaterialColor]// = [.silverLight]
     

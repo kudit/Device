@@ -51,7 +51,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
     // TODO: add HDR support?
     // TODO: figure out what a Fluid Display is??  Maybe it refers to Liquid Retina XDR display on iPad Pro 12.9-inch (5th and 6th generation). https://support.apple.com/en-us/102255
     // hardware features
-    // TODO: Touchbar?
+    // TODO: Touchbar?  Home Button?
     case ringerSwitch // mini 2, 3, iPad up to 10"? iPhone up to iPhone 15 Pro
     case actionButton // iPhone 15 Pro+, Apple Watch Ultra
     case cameraControl // iPhone 16+

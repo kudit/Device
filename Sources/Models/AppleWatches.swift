@@ -56,6 +56,9 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             case .mm49b: return .w49b
             }
         }
+        public var mm: String {
+            return self.caseName.replacingOccurrences(of: ["mm", "s", "b"], with: "") + "mm"
+        }
     }
     
     public init(
@@ -132,7 +135,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP735",
             launchOSVersion: "1",
             unsupportedOSVersion: "5",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/1st-gen-apple-watch-edition-gold.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/1st-gen-apple-watch-stainless.png",
             capabilities: [.force3DTouch],
             models: ["A1554"],
             colors: .watch0,
@@ -184,9 +187,9 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP746",
             launchOSVersion: "3",
             unsupportedOSVersion: "7",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/watch-series2-edition.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/watch-series2-stainless.png",
             capabilities: [.force3DTouch],
-            models: ["A1758", "A1758", "A1758", "A1758", "A1817"],
+            models: ["A1758", "A1817"],
             colors: .watch2,
             cpu: .s2,
             size: .mm42),
@@ -210,7 +213,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP766",
             launchOSVersion: "4",
             unsupportedOSVersion: "9",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/series3-apple-watch-cellular-gps-ceramic.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/series3-apple-watch-cellular-gps-stainless.png",
             capabilities: [.force3DTouch],
             models: ["A1859", "A1861"],
             colors: .watch3,
@@ -262,7 +265,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP808",
             launchOSVersion: "6",
             unsupportedOSVersion: "11",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/series5-apple-watch-titanium-edition.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/series5-apple-watch-cellular-gps-stainless.png",
             capabilities: [.force3DTouch, .compass, .fallDetection, .electrocardiogram, .alwaysOnDisplay],
             models: ["A2093", "A2095", "A2157"],
             colors: .watch5,
@@ -288,7 +291,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP826",
             launchOSVersion: "7",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series6-titanium-colors.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series6-stainless-gps-cellular-colors.png",
             capabilities: [.compass, .fallDetection, .electrocardiogram, .alwaysOnDisplay, .oxygenSensor],
             models: ["A2292", "A2294", "A2376"],
             colors: .watch6,
@@ -314,7 +317,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP827",
             launchOSVersion: "7",
             unsupportedOSVersion: "11",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series6-000-aluminum-gps-cellular-colors.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series6-000-aluminum-gps-colors.png",
             capabilities: [.compass, .fallDetection],
             models: ["A2352", "A2354", "A2356"],
             colors: .watchSE,
@@ -340,7 +343,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "SP860",
             launchOSVersion: "8",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/2021-apple-watch-series7-titanium-gps-cellular.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/2021-apple-watch-series7-stainless-gps-cellular.png",
             capabilities: [.compass, .fallDetection, .electrocardiogram, .alwaysOnDisplay, .oxygenSensor],
             models: ["A2474", "A2477", "A2478"],
             colors: .watch7,
@@ -373,7 +376,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s8,
             size: .mm45),
         AppleWatch(
-            officialName: "Apple Watch SE (2nd generation) 40mm",
+            officialName: "Apple Watch SE 2 40mm",
             identifiers: ["Watch6,10", "Watch6,12"],
             introduction: 2022.introductionYear,
             supportId: "SP877",
@@ -386,13 +389,13 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             cpu: .s8,
             size: .mm40),
         AppleWatch(
-            officialName: "Apple Watch SE (2nd generation) 44mm",
+            officialName: "Apple Watch SE 2 44mm",
             identifiers: ["Watch6,11", "Watch6,13"],
             introduction: 2022.introductionYear,
             supportId: "SP877",
             launchOSVersion: "9",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/fall-2022-watch-series8-se-gps-cellular.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/fall-2022-watch-series8-se-gps.png",
             capabilities: [.compass, .fallDetection, .crashDetection],
             models: ["A2723", "A2727", "A2724", "A2856"],
             colors: .watchSE2,
@@ -478,23 +481,23 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
 
         // September 2025
         AppleWatch(
-            officialName: "Apple Watch SE (3nd generation) 40mm",
+            officialName: "Apple Watch SE 3 40mm",
             identifiers: ["Watch7,13", "Watch7,15"],
             introduction: "2025-09-12",
-            supportId: "FIXME",
+            supportId: "125094",
             launchOSVersion: "26",
             unsupportedOSVersion: nil,
             image: "FIXME",
-            capabilities: [.compass, .fallDetection, .crashDetection],
+            capabilities: [.compass, .fallDetection, .crashDetection, .alwaysOnDisplay],
             models: ["A2722", "A2726"],
             colors: .watchSE3,
             cpu: .s10,
             size: .mm40),
         AppleWatch(
-            officialName: "Apple Watch SE (3nd generation) 44mm",
+            officialName: "Apple Watch SE 3 44mm",
             identifiers: ["Watch7,14", "Watch7,16"],
             introduction: "2025-09-12",
-            supportId: "FIXME",
+            supportId: "125094",
             launchOSVersion: "26",
             unsupportedOSVersion: nil,
             image: "FIXME",
@@ -522,12 +525,14 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: .unknown,
             launchOSVersion: "26",
             unsupportedOSVersion: nil,
-            image: "FIXME",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series-11-aluminum-gps.png",
             capabilities: [.compass, .fallDetection, .electrocardiogram, .alwaysOnDisplay, .oxygenSensor, .crashDetection],
-            models: ["FIXME"],
+            models: ["A3331", "A3450", "A3335", "A3452"],
             colors: .watch11,
             cpu: .s10,
             size: .mm42s),
+                
+        
         AppleWatch(
             officialName: "Apple Watch Series 11 46mm",
             identifiers: ["Watch7,18", "Watch7,20"],
@@ -535,12 +540,13 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             supportId: "FIXME",
             launchOSVersion: "26",
             unsupportedOSVersion: nil,
-            image: "FIXME",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-series-11-titanium-gps-cell.png",
             capabilities: [.compass, .fallDetection, .electrocardiogram, .alwaysOnDisplay, .oxygenSensor, .crashDetection],
+            models: ["A3333", "A3451", "A3337", "A3453"],
             colors: .watch11,
             cpu: .s10,
             size: .mm46),
-
+        
         // Get images and support links/IDs from: https://support.apple.com/en-us/108056
     ]
 }

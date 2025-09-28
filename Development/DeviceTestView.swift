@@ -109,7 +109,7 @@ struct CurrentDeviceDetailsView: View {
                 VStack(alignment: .leading) {
                     // for showing text details in a way that can be copied (not available on tvOS)
 #if os(tvOS) || os(watchOS)
-                    Text("\(currentDevice)").font(.caption)
+                    Text("\(currentDevice.description)").font(.caption)
 #else
                     TextEditor(text: .constant("\(currentDevice.description)"))
                         .font(.caption)

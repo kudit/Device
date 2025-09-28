@@ -27,9 +27,9 @@
 		B539FAB62DBEA10C0017BE25 /* MigrationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAB42DBEA1010017BE25 /* MigrationViews.swift */; };
 		B539FABE2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */; };
 		B539FABF2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */; };
+		B56925372E8714810045FFC6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B576090B2E7CE43F00216336 /* ThreeWayDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576090A2E7CE43700216336 /* ThreeWayDiffView.swift */; };
 		B576090C2E7CE43F00216336 /* ThreeWayDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576090A2E7CE43700216336 /* ThreeWayDiffView.swift */; };
-		B5861A972BABC531002F0732 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B58B62B52C23ECB40046E91C /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B58B62B42C23ECB40046E91C /* Device Library */; };
 		B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
 		B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */; };
@@ -317,7 +317,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1530;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					B5DD79B22BC94C8800457681 = {
 						CreatedOnToolsVersion = 15.3;
@@ -384,7 +384,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5861A972BABC531002F0732 /* Assets.xcassets in Resources */,
+				B56925372E8714810045FFC6 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,11 +522,12 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.10.1;
+				MARKETING_VERSION = 2.10.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -587,10 +588,11 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.10.1;
+				MARKETING_VERSION = 2.10.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -609,7 +611,9 @@
 				CODE_SIGN_ENTITLEMENTS = Resources/DeviceTest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "DeviceTest-Info.plist";
@@ -647,7 +651,9 @@
 				CODE_SIGN_ENTITLEMENTS = Resources/DeviceTest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "DeviceTest-Info.plist";
@@ -765,9 +771,9 @@
 		B5F0340E2BABA93700CA6396 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconWatch;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -776,7 +782,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.kudit.DeviceTest;
-				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -794,9 +800,9 @@
 		B5F0340F2BABA93700CA6396 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconWatch;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -805,7 +811,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.kudit.DeviceTest;
-				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
