@@ -4,6 +4,7 @@
 //
 //  Created by Ben Ku on 4/16/25.
 //
+// https://fuckingappledevices.com
 // For exporting/importing from the AppleDevice project:
 // https://github.com/superepicstudios/apple-devices/blob/main/swift/Sources/AppleDevices/Resources/data.json
 // https://raw.githubusercontent.com/superepicstudios/apple-devices/refs/heads/main/swift/Sources/AppleDevices/Resources/data.json

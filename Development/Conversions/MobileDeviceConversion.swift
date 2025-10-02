@@ -12,6 +12,7 @@ struct MobileDevice: DeviceBridge {
         ["officialName"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }
     // https://gist.github.com/adamawolf/3048717
+    // post issues: https://gist.github.com/adamawolf/3048717#gistcomment-5779044
     static let nameMapping = [
         "2nd Gen iPod": "iPod touch (2nd generation)",
         "3rd Gen iPod": "iPod touch (3rd generation)",

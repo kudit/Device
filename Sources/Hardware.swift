@@ -801,7 +801,7 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     // iPad Air 5
     case spaceGrayA5 = "#6b696e", starlightA5 = "#e5e0d8", pinkA5 = "#e8d2cf", purpleA5 = "#b9b8d1", blueA5 = "#88aebf"
     
-    // iPad Mini 5
+    // iPad mini 5
     case spaceGrayM5 = "#68696d", goldM5 = "#f6cdb9"
     static let iPadMini5 = [spaceGrayM5, silver6, goldM5]
     

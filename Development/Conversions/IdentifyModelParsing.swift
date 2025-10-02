@@ -165,7 +165,7 @@ actor PageParser: DeviceBridgeLoader {
         let content = try? await fetchURL(urlString: url)
         if content?.contains("Identify your Apple Watch") ?? false, let parts = content?.components(separatedBy: "<h2 ") {
             // Apple Watch pages
-            let parts = parts.dropFirst().dropFirst() // top header & find your part header
+            let parts = parts.dropFirst().dropFirst().dropLast().dropLast() // top header & find your part header and learn more footer and legal footer.
             parts.forEach { parseItem(source: $0) }
         } else if content?.contains("<h2 class=\"gb-header") ?? false, let parts = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), parts.count > 1 {
             // iPod Touch page is sectioned differently
@@ -174,6 +174,7 @@ actor PageParser: DeviceBridgeLoader {
             // MacBook page is sectioned differently
             parts.forEach { parseItem(source: $0) }
         } else if let parts = content?.components(separatedBy: "<h2 class=\"gb-header\">") {
+            let parts = parts.dropFirst() // top header
             parts.forEach { parseItem(source: $0) }
         }
         return items
@@ -193,22 +194,11 @@ actor PageParser: DeviceBridgeLoader {
         var watchCaseModels = [String: [String]]() // map case size to part numbers
         var watchIdentifiers = [String: [String]]() // map case size to set of identifiers
 
-        var string = source.replacingOccurrences(of: "‑", with: "-")
-        // make sure this isn't the header or footer section
-        // note: original iphone has "The model number" so M isn't capitalized.
-        guard string.contains("Model Identifier") || string.contains("odel number") || string.contains("Model:") else {
-            return // don't add any
-        }
-        // strip out headers that aren't stripped from above.
-        if string.contains("<!DOCTYPE html>") || string.contains("Find the model number") || string.contains("Find your Apple TV model number") {
-            return // don't add
-        }
-        // strip out additional header
-        if string.hasPrefix("Find the model number") {
-            string = string.extract(from: "<h2 id=\"ipadpro\" class=\"gb-header\">", to: nil) ?? string
-        }
+        var string = source.replacingOccurrences(of: "‑", with: "-") // replace non-breaking hyphen with normal hyphen.
+
         // Apple TV sections don't have the identifier, just the model number
         guard var officialName = string.extract(from: nil, to: "</") else {
+            debug("Parse could not find a name section in: \(source)", level: .WARNING)
             return // needs a title at least!
         }
         if officialName.contains("src="), let macbookTitle = officialName.extract(from: nil, to: "\"") {
@@ -220,13 +210,30 @@ actor PageParser: DeviceBridgeLoader {
         if officialName.contains("Apple Watch") {
             // pull off partial start tag
             guard let trimmed = officialName.extract(from: "class=\"gb-header\">", to: nil) else {
-                debug("Unable to get name for Apple Watch!")
+                debug("Unable to get name for Apple Watch!: \(officialName)", level: .WARNING)
                 return
             }
             officialName = trimmed.tagsStripped
+//            debug("Parsing \(officialName)")
             idiom = .watch
         }
         officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: " M4 Pro or M4 Max", with: "")
+
+        // make sure this isn't the header or footer section
+        // note: original iphone has "The model number" so M isn't capitalized.
+        guard string.contains("Model Identifier") || string.contains("odel number") || string.contains("Model:") else {
+            debug("No models so skipping", level: .WARNING)
+            return // don't add any
+        }
+        // strip out headers that aren't stripped from above.
+        if string.contains("<!DOCTYPE html>") || string.contains("Find the model number") || string.contains("Find your Apple TV model number") {
+            // bad Apple TV section
+            return // don't add
+        }
+        // strip out additional header
+        if string.hasPrefix("Find the model number") {
+            string = string.extract(from: "<h2 id=\"ipadpro\" class=\"gb-header\">", to: nil) ?? string
+        }
 
         // get introduction year
         if string.contains("Year introduced"), var yearIntroducedString = string.extract(from: "Year introduced: ", to: "</p>") {
@@ -353,12 +360,14 @@ actor PageParser: DeviceBridgeLoader {
         // Get SupportID
         if let sid = string.extract(from: "<a href=\"/en-us/", to: "\"") {
             supportId = sid
-        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/kb/", to: "\"") {
+        } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/kb/", to: "\"") {
             supportId = sid
         } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/", to: "\"") {
             // iPads don't have the /kb/ part.
             supportId = sid
         }
+        // fix since sp622 is lowercase for some reason
+        supportId = supportId.uppercased()
         
         // try to parse idiom
         if idiom == .unspecified {
@@ -500,10 +509,14 @@ actor PageParser: DeviceBridgeLoader {
             // Apple watch needs to handle things differently, so attach an identifier for each case size
             for (caseSize, models) in watchCaseModels {
                 for model in models.unique {
-                    if let device = Device.lookup(model: model, officialNameHint: "\(officialName) \(caseSize)").first {
+                    let hint = officialName.contains("Ultra") ? officialName : "\(officialName) \(caseSize)"
+                    if let device = Device.lookup(model: model, officialNameHint: hint).first {
                         var identifiers = watchIdentifiers[caseSize] ?? []
                         identifiers.append(contentsOf: device.identifiers)
                         watchIdentifiers[caseSize] = identifiers
+                    } else {
+                        debug("Unknown \(hint) model: \(model)", level: .WARNING)
+                        continue
                     }
                 }
             }
@@ -516,8 +529,10 @@ actor PageParser: DeviceBridgeLoader {
         // map to case name for generic handling of identifiers
         if idiom != .watch {
             watchIdentifiers[.unknown] = identifiers
+        } else {
+//            debug("Parsing \(officialName)")
+//            debug(watchIdentifiers)
         }
-//        debug(watchIdentifiers)
         for (caseName, identifiers) in watchIdentifiers {
             var image = image
             var officialName = officialName

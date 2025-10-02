@@ -25,6 +25,12 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.10.3 10/1/2025
+Updated Compatibility & Color.
+**App Store**
+Fixed missing images and support links for new Apple Watch models.
+Changed name of iPad mini from "iPad Mini".
+
 v2.10.2 9/27/2025
 Updated Compatibility.
 Fixed watchOS AppIcon warning by splitting into separate item.

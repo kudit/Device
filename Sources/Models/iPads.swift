@@ -145,7 +145,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            officialName: "iPad Mini",
+            officialName: "iPad mini",
             identifiers: ["iPad2,5", "iPad2,6", "iPad2,7"],
             introduction: 2012.introductionYear,
             supportId: "SP661",
@@ -190,7 +190,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i97x1536),
         iPad(
-            officialName: "iPad Mini 2",
+            officialName: "iPad mini 2",
             identifiers: ["iPad4,4", "iPad4,5", "iPad4,6"],
             introduction: 2013.introductionYear,
             supportId: "SP693",
@@ -205,7 +205,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i79x1536),
         iPad(
-            officialName: "iPad Mini 3",
+            officialName: "iPad mini 3",
             identifiers: ["iPad4,7", "iPad4,8", "iPad4,9"],
             introduction: 2014.introductionYear,
             supportId: "SP709",
@@ -220,7 +220,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .lte,
             screen: .i79x1536),
         iPad(
-            officialName: "iPad Mini 4",
+            officialName: "iPad mini 4",
             identifiers: ["iPad5,1", "iPad5,2"],
             introduction: 2015.introductionYear,
             supportId: "SP725",
@@ -393,7 +393,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i105,
             pencils: [.firstGeneration]),
         iPad(
-            officialName: "iPad Mini (5th generation)",
+            officialName: "iPad mini (5th generation)",
             identifiers: ["iPad11,1", "iPad11,2"],
             introduction: 2019.introductionYear,
             supportId: "SP788",
@@ -569,7 +569,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i129,
             pencils: [.secondGeneration, .usbC]),
         iPad(
-            officialName: "iPad Mini (6th generation)",
+            officialName: "iPad mini (6th generation)",
             identifiers: ["iPad14,1", "iPad14,2"],
             introduction: 2021.introductionYear,
             supportId: "SP850",
@@ -747,4 +747,6 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             screen: .i109,
             pencils: [.firstGeneration, .usbC]),
     ]
+    
+    // Lookup: https://support.apple.com/en-us/108043
 }
