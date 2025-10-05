@@ -25,10 +25,15 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-v2.10.5 10/2/205
+v2.10.6 10/4/2025
+Updated Compatibility & Color to improve WASM compatiblity.
+Removed Codable conformance from WASM and added backport implementation.
+Added Foundation checks on SwiftUI code to facilitate WASM testing.
+
+v2.10.5 10/2/2025
 Updated Compatibility & Color to improve WASM compatiblity.
 
-v2.10.4 10/2/205
+v2.10.4 10/2/2025
 Updated Compatibility & Color to improve WASM compatiblity.
 
 v2.10.3 10/1/2025

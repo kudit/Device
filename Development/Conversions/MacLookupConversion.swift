@@ -4,6 +4,7 @@
 //
 //  Created by Ben Ku on 9/12/25.
 //
+#if canImport(SwiftUI) && canImport(Foundation)
 
 // MARK: - Migration of JSON format used here: https://github.com/voyager-software/MacLookup/blob/master/Sources/MacLookup/Resources/all-macs.json
 struct MacLookup: DeviceBridge {
@@ -296,3 +297,4 @@ struct MacLookupLoader: DeviceBridgeLoader {
 //        return Mac.all.map { $0.asMacLookup() }.asJSON(outputFormatting: .prettyPrinted)
 //    }
 }
+#endif

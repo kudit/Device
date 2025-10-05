@@ -5,7 +5,7 @@
 //  Created by Ben Ku on 4/21/24.
 //
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 
 @available(iOS 14, macOS 12, tvOS 15, watchOS 8, *)

@@ -1,4 +1,8 @@
+#if canImport(Foundation)
 import Foundation
+#elseif canImport(WASILibc)
+import WASILibc
+#endif
 
 public struct Screen: Hashable, Sendable, Codable {
     public static let undefined = Screen(resolution: (-1,-1))
@@ -15,9 +19,11 @@ public struct Screen: Hashable, Sendable, Codable {
                 return Size(width: -1, height: -1)
             }
             let ratio = Double(width) / Double(height)
+            #if canImport(Foundation) || canImport(WASILibc)
             if 68...79 ~= Int(round(100 * ratio)) { // 75  // ~= is the official "pattern-matching" operator
                 return Size(width: 3, height: 4)
             }
+            #endif
             if Int(100 * ratio) == 56 {
                 return Size(width: 9, height: 16)
             }
@@ -31,6 +37,7 @@ public struct Screen: Hashable, Sendable, Codable {
                 return Size(width: 16, height: 10)
             }
             
+#if canImport(Foundation) || canImport(WASILibc)
             let min = min(width, height)
             let max = Int(floor(Double(min) / 2.0))
             guard max > 1 else {
@@ -42,6 +49,7 @@ public struct Screen: Hashable, Sendable, Codable {
                     return Size(width: width / divisor, height: height / divisor).ratio // recurse
                 }
             }
+#endif
             // nothing divides evenly.  we're reduced as much as we can be
             return self
         }

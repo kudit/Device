@@ -4,6 +4,7 @@
 //
 //  Created by Ben Ku on 9/18/25.
 //
+#if canImport(SwiftUI) && canImport(Foundation)
 
 import SwiftUI
 
@@ -379,3 +380,4 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
 """))
     }
 }
+#endif

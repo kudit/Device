@@ -7,7 +7,7 @@ import SwiftUI
 public protocol DeviceAttributeExpressible: Hashable, SymbolRepresentable, CaseNameConvertible {
     var symbolName: String { get }
     var label: String { get } // description doesn't work since it can cause infinite recursion
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     var color: Color { get }
 #endif

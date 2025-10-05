@@ -1,4 +1,4 @@
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 import Device
 import Compatibility

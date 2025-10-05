@@ -1178,7 +1178,7 @@ public final class MockDevice: CurrentDevice {
     
 }
 
-#if canImport(SwiftUI) && swift(>=5.9)
+#if canImport(SwiftUI) && canImport(Foundation) && swift(>=5.9)
 import SwiftUI
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Animated Test") {

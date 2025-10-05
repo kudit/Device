@@ -19,6 +19,7 @@
 // HomePod
 // iPad
 // iPhone
+#if canImport(SwiftUI) && canImport(Foundation)
 
 import Device
 
@@ -538,3 +539,4 @@ struct AppleDeviceLoader: DeviceBridgeLoader {
 
     }*/
 }
+#endif

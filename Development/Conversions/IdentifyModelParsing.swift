@@ -47,7 +47,7 @@ public extension Capabilities {
     }
 }
 
-struct ParsedItem: DeviceBridge {
+struct ParsedItem: DeviceBridge {    
     static var diffIgnoreKeys: [String] {
         ["source"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }

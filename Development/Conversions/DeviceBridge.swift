@@ -5,7 +5,7 @@
 //  Created by Ben Ku on 4/27/25.
 //
 
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+//@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 /// An object representing a native version of a conversion item for comparison.
 protocol DeviceBridge: Identifiable, Equatable, Sendable, Codable, PropertyIterable {
     /// filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since those may be different and aren't as easily constructed

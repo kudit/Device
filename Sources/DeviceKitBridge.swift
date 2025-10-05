@@ -4,6 +4,7 @@
  https://github.com/dennisweissmann/DeviceKit
  */
 
+#if canImport(Foundation)
 import Foundation
 import Compatibility
 
@@ -375,3 +376,4 @@ extension Device {
 #endif
     }
 }
+#endif

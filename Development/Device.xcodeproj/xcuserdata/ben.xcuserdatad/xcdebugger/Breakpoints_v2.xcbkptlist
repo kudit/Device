@@ -200,8 +200,8 @@
             filePath = "Conversions/AppleDeviceConversion.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
+            startingLineNumber = "112"
+            endingLineNumber = "112"
             landmarkName = "init(appleDeviceName:)"
             landmarkType = "7">
          </BreakpointContent>
