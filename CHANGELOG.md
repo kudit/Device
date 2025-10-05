@@ -25,10 +25,15 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.10.7 10/5/2025
+Additional fixes for WASM.
+`CaseNameConvertible` and `DateString` weren't enabled in WASM, so updated Compatibility to add stubs so this could compile, but note that anything that uses these will not truly be supported by Device in WASM unless we can create a backport in Compatibility that doesn't require Mirror or Date (since those are not available in WASM).
+
 v2.10.6 10/4/2025
 Updated Compatibility & Color to improve WASM compatiblity.
 Removed Codable conformance from WASM and added backport implementation.
 Added Foundation checks on SwiftUI code to facilitate WASM testing.
+** All Swift Package Index tests passed except WASM **
 
 v2.10.5 10/2/2025
 Updated Compatibility & Color to improve WASM compatiblity.

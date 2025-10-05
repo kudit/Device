@@ -9,6 +9,6 @@ public typealias Codable = Decodable & Encodable
 public protocol Decodable {}
 public protocol Encodable {}
 
-// TODO: Implement backport versions for WASM, but for now, just include stubs to silence compiler warnings.
+// TODO: Implement backport versions for WASM, but for now, just include stubs to silence compiler warnings and not have to conditionally remove conformances.
 
 #endif
