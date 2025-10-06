@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.10.9 10/6/2025
+Updated Compatibility and moved Codable backport conformance for WASM to Compatibility.
+
 v2.10.8 10/5/2025
 Updated Compatibility to fix issue with WASM version of `DateStringRepresentation`.
 
