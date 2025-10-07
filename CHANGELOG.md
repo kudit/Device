@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.10.12 10/6/2025
+Forgot to actually update Color.
+
 v2.10.11 10/6/2025
 Updated Color to improve WASM support.
 

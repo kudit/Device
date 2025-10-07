@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kudit/Color",
       "state" : {
-        "revision" : "79795ac379840b94c6437c375485f28a73015d2e",
-        "version" : "1.3.19"
+        "revision" : "2bbe8860f94017509731e98dbe8b99d5c317cbbd",
+        "version" : "1.3.20"
       }
     },
     {
