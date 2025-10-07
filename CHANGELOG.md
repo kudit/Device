@@ -25,6 +25,9 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.10.13 10/7/2025
+Updated Compatibility & Color.
+
 v2.10.12 10/6/2025
 Forgot to actually update Color.
 
