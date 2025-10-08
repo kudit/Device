@@ -27,6 +27,9 @@ Real Device Apple TV
 
 TODO: Go through libraries and check warnings and notes on each build as we may be able to fix more for tighter code.
 
+v2.10.15 10/7/2025
+Updated Compatibility.
+
 v2.10.14 10/7/2025
 Updated Color.
 
