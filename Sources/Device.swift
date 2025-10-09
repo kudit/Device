@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.10.15"
+    static let version: Version = "2.10.16"
 }
 import Compatibility
 
@@ -57,7 +57,11 @@ public extension Int {
 extension DateString {
     /// Use this only as a placeholder for a newly created Mac Device.  Replace with actual value when possible.
     public static var defaultBlank: DateString {
+#if canImport(Foundation) && !(os(WASM) || os(WASI)) // not available in WASM?
         return DateString(Date.nowBackport.mysqlDate)
+#else
+        return DateString("1970-01-01") // clearly wrong but shouldn't practically be needed anyways.
+#endif
     }
 }
 
@@ -631,7 +635,11 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     }
     /// Note: This `String` is not guaranteed to be stable across versions!  Use an identifier or model number for persistent lookups.  Or use the officialName (though this is also not guaranteed to be stable).  Identifier + CPU combination should be stable.
     public var id: String {
+#if canImport(Foundation) && !(os(WASM) || os(WASI)) // not available in WASM?
         return "\(identifiers)|\(introduction?.mysqlDate ?? "?")|\(models)|\(officialName)|\(cpu)"
+#else
+        return "\(identifiers)|\(introduction ?? "?")|\(models)|\(officialName)|\(cpu)"
+#endif
     }
 
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.

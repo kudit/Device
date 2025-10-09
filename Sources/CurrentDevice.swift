@@ -1039,6 +1039,8 @@ public final class MockDevice: CurrentDevice {
         }
     }
     var animationTimer: Timer?
+
+    @MainActor // fix warning in WASM 6.1
     deinit {
         if let timer {
             timer.invalidate()
