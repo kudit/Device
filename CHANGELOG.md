@@ -27,9 +27,13 @@ Real Device Apple TV
 
 TODO: Go through libraries and check warnings and notes on each build as we may be able to fix more for tighter code.
 
+v2.10.17 10/9/2025
+Fixed breaking issues with adding `@MainActor` to `deinit`.
+
 v2.10.16 10/8/2025
 Updated Compatibility.
 Fixed issue with using `Date` when not available.
+**BROKEN**
 
 v2.10.15 10/7/2025
 Updated Compatibility.

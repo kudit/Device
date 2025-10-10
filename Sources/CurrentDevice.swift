@@ -1040,7 +1040,9 @@ public final class MockDevice: CurrentDevice {
     }
     var animationTimer: Timer?
 
-    @MainActor // fix warning in WASM 6.1
+#if (os(WASM) || os(WASI)) && compiler(>=6.1)
+    @MainActor // fix warning in WASM 6.1 (just @MainActor breaks most versions) try nonisolated after @MainActor?
+#endif
     deinit {
         if let timer {
             timer.invalidate()

@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.10.16"
+let version = "2.10.17"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -97,6 +97,12 @@ products += [
 	),
 ]
 
+#if canImport(Foundation)
+let resources = [Resource.process("Resources")] // issue with Swift WASM 6.2
+#else
+let resources: [Resource] = []
+#endif
+
 targets += [
 	.executableTarget(
 		name: executableTargetName,
@@ -106,9 +112,7 @@ targets += [
 		path: "Development"
 //		,exclude: ["Device.xcodeproj/*"]
 		// Include test app resources.
-		,resources: [
-			.process("Resources")
-		]
+		,resources: resources
 //		,swiftSettings: [
 //			.enableUpcomingFeature("BareSlashRegexLiterals")
 //		]
