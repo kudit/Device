@@ -25,10 +25,16 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-TODO: Go through libraries and check warnings and notes on each build as we may be able to fix more for tighter code.
+v2.10.18 10/13/2025
+Updated README to include more feature parity with DeviceKit.
+Made the resource part of the package not a conditional directive (since it's compiled on a host system that likely includes Foundation) and instead uses SwiftPM 5.9's condition parameter to gate (had to bump the swift tools version to 5.9 from 5.8 which is why we're doing a minor version update).
+Extracted all build environment code to just use the code exposed by Compatibility rather than re-writing.  Can be done now without Foundation so technically should enable WASM support even though most of this isn't relevant since it's not a device (but we may want to include this module for Device lists/lookups).
+Increased legacy support back to first Swift versions.
+Updated Compatibility.
 
 v2.10.17 10/9/2025
 Fixed breaking issues with adding `@MainActor` to `deinit`.
+** All Swift Package Index tests passed except WASM **
 
 v2.10.16 10/8/2025
 Updated Compatibility.
@@ -413,6 +419,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
+- [ ] Backport to the oldest version of Swift?
 - [ ] add a way of searching by capability
 - [ ] Add code to device to detect whether screen recording or screenshot is in progress.  Add notification callback?  `addScreenRecordingModeChangeCallback { oldMode, newMode in }`
     https://developer.apple.com/documentation/swiftui/environmentvalues/isscenecaptured#

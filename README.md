@@ -14,13 +14,14 @@ This is actively maintained so if there is a feature request or change, we will 
 - Can develop and modify without Xcode using Swift Playgrounds on iPad!
 - Framework
     - Clearly labeled device identification
+    - Equatable, Codable, and Sendable structs
     - Device idiom detection
     - Environmental detections:
         - Simulator
         - Playground
         - Preview
         - Designed for iPad
-        - macCataylst
+        - macCatalyst
         - Swift Compile version
 - Debugging
     - Provides UI for quickly showing information about devices and batteries.

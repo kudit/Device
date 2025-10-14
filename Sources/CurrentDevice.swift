@@ -229,7 +229,7 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs
 extension CurrentDevice {
     /// Returns the version number of Swift being used to compile
     public var swiftVersion: String {
-        Application.swiftVersion
+        Build.swiftVersion
     }
     
     public var systemInfo: String {
@@ -276,53 +276,21 @@ Compatibility Framework Version: v\(Compatibility.version)
 
 // MARK: - Hardware calculations from the system used that can be actor-independent
 public extension Device {
-    // MARK: Environmental info
+    // MARK: Environmental info (pulled from Compatibility)
     /// Returns `true` if running on the simulator vs actual device.
-    static var isSimulator: Bool {
-#if targetEnvironment(simulator)
-        // your simulator code
-        return true
-#else
-        // your real device code
-        return false
-#endif
-    }
+    static let isSimulator = Build.isSimulator
     
-    // In macOS Playgrounds Preview: swift-playgrounds-dev-previews.swift-playgrounds-app.hdqfptjlmwifrrakcettacbhdkhn.501.KuditFramework
-    // In macOS Playgrounds Running: swift-playgrounds-dev-run.swift-playgrounds-app.hdqfptjlmwifrrakcettacbhdkhn.501.KuditFrameworksApp
-    // In iPad Playgrounds Preview: swift-playgrounds-dev-previews.swift-playgrounds-app.agxhnwfqkxciovauscbmuhqswxkm.501.KuditFramework
-    // In iPad Playgrounds Running: swift-playgrounds-dev-run.swift-playgrounds-app.agxhnwfqkxciovauscbmuhqswxkm.501.KuditFrameworksApp
-    // warning: {"message":"This code path does I/O on the main thread underneath that can lead to UI responsiveness issues. Consider ways to optimize this code path","antipattern trigger":"+[NSBundle allBundles]","message type":"suppressable","show in console":"0"}
     /// Returns `true` if running in Swift Playgrounds.
-    static var isPlayground: Bool {
-        //print("Testing inPlayground: Bundles: \(Bundle.allBundles.map { $0.bundleIdentifier }.description)")
-        if Bundle.allBundles.contains(where: { ($0.bundleIdentifier ?? "").contains("swift-playgrounds") }) {
-            //print("in playground")
-            return true
-        } else {
-            //print("not in playground")
-            return false
-        }
-    }
+    static let isPlayground = Build.isPlayground
     
     /// Returns `true` if running in an XCode or Swift Playgrounds #Preview macro.
-    static var isPreview: Bool {
-        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-    }
+    static let isPreview = Build.isPreview
     
     /// Returns `true` if NOT running in preview, playground, or simulator.
-    static var isRealDevice: Bool {
-        return !isPreview && !isPlayground && !isSimulator
-    }
+    static let isRealDevice = Build.isRealDevice
         
     /// Returns `true` if is macCatalyst app on macOS
-    static var isMacCatalyst: Bool {
-#if targetEnvironment(macCatalyst)
-        return true
-#else
-        return false
-#endif
-    }
+    static let isMacCatalyst = Build.isMacCatalyst
     
     // MARK: - Description Device Strings
     /// Gets the identifier from the system, such as "iPhone7,1".

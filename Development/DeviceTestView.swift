@@ -234,7 +234,7 @@ public struct DeviceTestView: View {
                     .font(.headline)
             })
 #if DEBUG // reordered because only first item is visible on iPhone 7.
-            if Application.isDebug { // This feature should only be for developers, not in the actual app.
+            if Build.isDebug { // This feature should only be for developers, not in the actual app.
                 Button("Migration") {
                     showMigrations = true
                 }
