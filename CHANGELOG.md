@@ -25,12 +25,15 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.10.19 10/14/2025
+Removed deinit from MockDevice since it is impossible to do actor isolated in WASM and not technically necessary.
+
 v2.10.18 10/13/2025
 Updated README to include more feature parity with DeviceKit.
 Made the resource part of the package not a conditional directive (since it's compiled on a host system that likely includes Foundation) and instead uses SwiftPM 5.9's condition parameter to gate (had to bump the swift tools version to 5.9 from 5.8 which is why we're doing a minor version update).
 Extracted all build environment code to just use the code exposed by Compatibility rather than re-writing.  Can be done now without Foundation so technically should enable WASM support even though most of this isn't relevant since it's not a device (but we may want to include this module for Device lists/lookups).
-Increased legacy support back to first Swift versions.
 Updated Compatibility.
+** All Swift Package Index tests passed except WASM **
 
 v2.10.17 10/9/2025
 Fixed breaking issues with adding `@MainActor` to `deinit`.
@@ -379,6 +382,7 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 - [ ] Add tests like in Compatiblity.
+- [ ] Increased legacy support back to first Swift versions.
 - [ ] Add in symbols into comparison diff views for capabilities rather than the string representations.
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
 - [ ] In definition, have a lookup for pre-defined screens like we do for colorsets so it shows the predefined set reather than the full definition.

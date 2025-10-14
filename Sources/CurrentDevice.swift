@@ -1008,19 +1008,20 @@ public final class MockDevice: CurrentDevice {
     }
     var animationTimer: Timer?
 
-#if (os(WASM) || os(WASI)) && compiler(>=6.1)
-    @MainActor // fix warning in WASM 6.1 (just @MainActor breaks most versions) try nonisolated after @MainActor?
-#endif
-    deinit {
-        if let timer {
-            timer.invalidate()
-        }
-        timer = nil
-        if let animationTimer {
-            animationTimer.invalidate()
-        }
-        animationTimer = nil
-    }
+    // Since this is a mock device, not used in practice and not technically needed, however, the scheduled repeating timer might fire after this and cause a crash.
+//#if (os(WASM) || os(WASI)) && compiler(>=6.1)
+//    @MainActor // fix warning in WASM 6.1 (just @MainActor breaks most versions) try nonisolated after @MainActor?
+//#endif
+//    deinit {
+//        if let timer {
+//            timer.invalidate()
+//        }
+//        timer = nil
+//        if let animationTimer {
+//            animationTimer.invalidate()
+//        }
+//        animationTimer = nil
+//    }
     
     @MainActor public func update() {
         updateCount += 1 // increase
