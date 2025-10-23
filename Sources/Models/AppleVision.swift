@@ -34,7 +34,7 @@ public struct AppleVision: IdiomType, HasCameras {
             launchOSVersion: launchOSVersion,
             unsupportedOSVersion: unsupportedOSVersion,
             image: image,
-            capabilities: Device.Idiom.vision.capabilities,
+            capabilities: Device.Idiom.vision.capabilities.union(capabilities),
             models: models,
             colors: [.silver],
             cpu: cpu
@@ -61,15 +61,26 @@ public struct AppleVision: IdiomType, HasCameras {
     public static let all = [ // Public for DeviceKit testing
 
         AppleVision(
-            officialName: "Apple Vision Pro",
+            officialName: "Apple Vision Pro (M5)",
+            identifiers: ["RealityDevice17,1"],
+            introduction: "2025-10-22",
+            supportId: "https://www.apple.com/apple-vision-pro/specs/",
+            launchOSVersion: "26.0.1",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/vision-pro/apple-vision-pro-m5.png",
+            models: ["A3416"],
+            cpu: .m5),
+
+        AppleVision(
+            officialName: "Apple Vision Pro (M2)",
             identifiers: ["RealityDevice14,1"],
-            introduction: 2024.introductionYear,
-            supportId: "SP911",
+            introduction: "2024-02-02",
+            supportId: "117810", //"SP911"
             launchOSVersion: "1.0.1",
             unsupportedOSVersion: nil,
-            image: "https://help.apple.com/assets/65E610E3F8593B4BE30B127E/65E610E47F977D429402E427/en_US/4609019342a9aa9c2560aaeb92e6c21a.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/vision-pro/apple-vision-pro.png",
             models: ["A2117"],
             cpu: .m2),
         
-    ]
+    ] // Models: https://support.apple.com/en-mk/125375
 }

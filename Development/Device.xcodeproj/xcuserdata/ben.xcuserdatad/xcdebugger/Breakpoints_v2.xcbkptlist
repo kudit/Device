@@ -138,40 +138,10 @@
             filePath = "Conversions/DeviceKitConversion.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "675"
-            endingLineNumber = "675"
+            startingLineNumber = "676"
+            endingLineNumber = "676"
             landmarkName = "devices()"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb6982e"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(3) suspend resume partial function for Device_Info.DeviceKitLoader.devices() async throws -&gt; Swift.Array&lt;Device_Info.DeviceKitDevice&gt;"
-                  moduleName = "Device Info.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Conversions/DeviceKitConversion.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "675"
-                  endingLineNumber = "675">
-               </Location>
-               <Location
-                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb6982e"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(3) suspend resume partial function for Device_Info.DeviceKitLoader.devices() async throws -&gt; Swift.Array&lt;Device_Info.DeviceKitDevice&gt;"
-                  moduleName = "Device Info.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Conversions/DeviceKitConversion.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "675"
-                  endingLineNumber = "675">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -260,23 +230,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "FB83711B-8AE8-4384-B6BE-ECB3D64C4047"
-            shouldBeEnabled = "No"
-            condition = "supportId == .unknownSupportId"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Conversions/IdentifyModelParsing.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "371"
-            endingLineNumber = "371"
-            landmarkName = "parseItem(source:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "BC952363-571E-486A-B806-EE23CBB3ACA8"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -284,8 +237,8 @@
             filePath = "Conversions/IdentifyModelParsing.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "213"
-            endingLineNumber = "213"
+            startingLineNumber = "225"
+            endingLineNumber = "225"
             landmarkName = "parseItem(source:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -301,8 +254,8 @@
             filePath = "Conversions/IdentifyModelParsing.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "534"
-            endingLineNumber = "534"
+            startingLineNumber = "545"
+            endingLineNumber = "545"
             landmarkName = "parseItem(source:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -317,8 +270,24 @@
             filePath = "Conversions/IdentifyModelParsing.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "519"
-            endingLineNumber = "519"
+            startingLineNumber = "530"
+            endingLineNumber = "530"
+            landmarkName = "parseItem(source:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "5D0A2A7A-DE16-4351-915D-25BA65245A4A"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Conversions/IdentifyModelParsing.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "472"
+            endingLineNumber = "472"
             landmarkName = "parseItem(source:)"
             landmarkType = "7">
          </BreakpointContent>

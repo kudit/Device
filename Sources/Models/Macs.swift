@@ -967,6 +967,21 @@ public struct Mac: IdiomType {
         
         // MARK: - MacBook Pros
         Mac(
+            officialName: "MacBook Pro (14-inch, M5)",
+            identifiers: ["Mac17,2"],
+            introduction: "2025-10-22",
+            supportId: "125405",
+            launchOSVersion: "26.0.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-colors.png",
+            capabilities: [.pro],
+            models: ["MDE04xx/A", "MDE14xx/A", "MDE34xx/A", "MDE44xx/A", "MDE54xx/A", "MDE64xx/A"],
+            colors: [.solidSilver, .macbookSpacegray],
+            cpu: .m5,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
+
+        Mac(
             officialName: "MacBook Pro (14-inch, 2024) M4",
             identifiers: ["Mac16,1"],
             introduction: "2024-10-30",

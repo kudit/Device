@@ -25,8 +25,17 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.11.0 10/22/2025
+Added .pro to default Apple Vision devices.
+Added M5 chip.
+Added specific date for original Apple Vision Pro introduction.
+**App Store**
+Added 2025 M5 iPads, MacBook Pro, and Apple Vision Pro.
+Framework updated to include compatibility with WASM.
+
 v2.10.19 10/14/2025
 Removed deinit from MockDevice since it is impossible to do actor isolated in WASM and not technically necessary.
+** All Swift Package Index tests passed! **
 
 v2.10.18 10/13/2025
 Updated README to include more feature parity with DeviceKit.

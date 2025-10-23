@@ -151,6 +151,7 @@ actor PageParser: DeviceBridgeLoader {
         "Mac Studios": "https://support.apple.com/en-us/102231",
         "Apple TVs": "https://support.apple.com/en-us/101605",
         "Apple Watches": "https://support.apple.com/en-us/108056",
+        "Apple Vision Pros": "https://support.apple.com/en-mk/125375",
     ]
 
     let url: String
@@ -163,20 +164,24 @@ actor PageParser: DeviceBridgeLoader {
 
     func devices() async -> [ParsedItem] {
         let content = try? await fetchURL(urlString: url)
-        if content?.contains("Identify your Apple Watch") ?? false, let parts = content?.components(separatedBy: "<h2 ") {
+        var parts = [String]()
+        if content?.contains("Identify your Apple Watch") ?? false, let p = content?.components(separatedBy: "<h2 ") {
             // Apple Watch pages
-            let parts = parts.dropFirst().dropFirst().dropLast().dropLast() // top header & find your part header and learn more footer and legal footer.
-            parts.forEach { parseItem(source: $0) }
-        } else if content?.contains("<h2 class=\"gb-header") ?? false, let parts = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), parts.count > 1 {
-            // iPod Touch page is sectioned differently
-            parts.forEach { parseItem(source: $0) }
-        } else if content?.contains("<h3 class=\"gb-header\">") ?? false, let parts = content?.components(separatedBy: "<img class=\"gb-image\" alt=\"") {
-            // MacBook page is sectioned differently
-            parts.forEach { parseItem(source: $0) }
-        } else if let parts = content?.components(separatedBy: "<h2 class=\"gb-header\">") {
-            let parts = parts.dropFirst() // top header
-            parts.forEach { parseItem(source: $0) }
+            parts = p.dropFirst().dropFirst().dropLast().dropLast() // top header & find your part header and learn more footer and legal footer.
+            // NOTE: Odd that dropLast cast works but dropFirst cast does not...
+        } else if content?.contains("<h2 class=\"gb-header") ?? false, let p = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), p.count > 1 {
+            // iPod Touch page is sectioned differently and doesn't need to strip parts?
+            parts = p
+        } else if content?.contains("<h3 class=\"gb-header\">") ?? false, let p = content?.components(separatedBy: "<img class=\"gb-image\" alt=\"") {
+            // MacBook page is sectioned differently and doesn't need to strip parts?
+            parts = p
+        } else if let p = content?.components(separatedBy: "<h2 class=\"gb-header\">") {
+            parts = .init(p.dropFirst()) // top header
+            if content?.contains("Identify your Apple Vision Pro") ?? false {
+                parts = .init(parts.dropFirst()) // drop additional header
+            }
         }
+        parts.forEach { parseItem(source: $0) }
         return items
     }
 
@@ -206,6 +211,13 @@ actor PageParser: DeviceBridgeLoader {
         }
         if officialName.contains("iPod") && !officialName.contains("iPod touch") {
             return // don't include iPods that aren't touches
+        }
+        if officialName.contains("Apple Vision") {
+            idiom = .vision
+        }
+        // apple tv (becuase this is the same code run for Apple Vision Pro)
+        if officialName.contains("Apple TV") {
+            idiom = .tv
         }
         if officialName.contains("Apple Watch") {
             // pull off partial start tag
@@ -288,13 +300,11 @@ actor PageParser: DeviceBridgeLoader {
             let modelNumbers = modelNumbers.split(separator: " ").filter { $0.count > 3 && $0.hasPrefix("A") }.map { String($0) }
             partNumbers = modelNumbers
         } else if var modelNumber = string.extract(from: "odel number", to: "</p>") {
-            // apple tv
-            if officialName.contains("Apple TV"), let model = modelNumber.extract(from: ": ", to: " ") {
+            if let model = modelNumber.extract(from: ": ", to: " ") {
                 modelNumber = model
-                idiom = .tv
                 partNumbers = [modelNumber]
             } else {
-                debug("Models that are not Apple TV")
+                debug("Unable to parse model number: \(modelNumber)", level: .WARNING)
             }
         } else if let extractedPartNumbers = string.extract(from: "Part Number", to: "</p>"), let extractedPartNumbers = extractedPartNumbers.extract(from: ">", to: nil)?.replacingOccurrences(of: "&nbsp;", with: " ") {
             // macs
@@ -360,6 +370,8 @@ actor PageParser: DeviceBridgeLoader {
         // Get SupportID
         if let sid = string.extract(from: "<a href=\"/en-us/", to: "\"") {
             supportId = sid
+        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/kb/", to: "\"") { // fix since the remote support comes first on Apple TV models so we want to pull the actual support article, not the siri remote support ID.
+            supportId = sid
         } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/kb/", to: "\"") {
             supportId = sid
         } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/", to: "\"") {
@@ -419,7 +431,7 @@ actor PageParser: DeviceBridgeLoader {
         // check for Mac form to add
         if idiom == .mac {
             let macForm: Mac.Form
-            let year = yearIntroduced ?? 0
+            let year = yearIntroduced ?? Date.nowBackport.year // default to current year since 0 causes wrong models to be picked.
             if officialName.contains(" Pro") && year > 2015
                 || officialName.contains(" Air") && year > 2017
                 || officialName.contains("iMac") && year > 2020
@@ -447,7 +459,7 @@ actor PageParser: DeviceBridgeLoader {
                     // models with USB-C-only charging:
                     macForm = .macBook
                     capabilities.formUnion([.cameras([.faceTimeHD720p]), .usbC])
-                } else {
+                } else { // default for new MacBook Pros
                     macForm = .macBookGen2
                 }
             } else if officialName.contains("Mac mini") {

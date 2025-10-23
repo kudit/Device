@@ -434,6 +434,7 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case m4 = "Apple M4"
     case m4pro = "Apple M4 Pro"
     case m4max = "Apple M4 Max"
+    case m5
     // NO M4 Ultra version
     // iPod/iPhone
     /// Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch (ARM 8900B and APL0098) (max iOS 4.2.1)/
