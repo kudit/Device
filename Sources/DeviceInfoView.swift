@@ -5,7 +5,7 @@
 //  Created by Ben Ku on 3/29/24.
 //
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 import Color
 
@@ -70,8 +70,7 @@ public func ColorsTextView(symbol: SymbolRepresentable, colors: [MaterialColor])
             //                        + Text(" ")
         } else {
             // Fallback on earlier versions
-            output = output + Text("\(symbol.symbolName.first ?? "x")")
-                .foregroundColor(Color(string: color.rawValue))
+            output = output + Text(verbatim: String(symbol.symbolName.first ?? "x"))
             + Text(" ")
         }
     }

@@ -1,4 +1,4 @@
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 import Device
 import Compatibility
@@ -109,7 +109,7 @@ struct CurrentDeviceDetailsView: View {
                 VStack(alignment: .leading) {
                     // for showing text details in a way that can be copied (not available on tvOS)
 #if os(tvOS) || os(watchOS)
-                    Text("\(currentDevice)").font(.caption)
+                    Text("\(currentDevice.description)").font(.caption)
 #else
                     TextEditor(text: .constant("\(currentDevice.description)"))
                         .font(.caption)
@@ -234,7 +234,7 @@ public struct DeviceTestView: View {
                     .font(.headline)
             })
 #if DEBUG // reordered because only first item is visible on iPhone 7.
-            if Application.isDebug { // This feature should only be for developers, not in the actual app.
+            if Build.isDebug { // This feature should only be for developers, not in the actual app.
                 Button("Migration") {
                     showMigrations = true
                 }

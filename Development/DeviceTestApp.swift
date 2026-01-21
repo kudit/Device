@@ -2,7 +2,7 @@
 @_exported import Device
 @_exported import Compatibility // TODO: Import KuditConnect??
 #endif
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 17, watchOS 8, *)
@@ -50,6 +50,13 @@ struct DeviceTestApp: App {
                 Text("UI Tests not available on older platforms.  However, framework code should still work.")
             }
         }
+    }
+}
+#else
+@main
+struct App {
+    static func main() {
+        debug("hello")
     }
 }
 #endif

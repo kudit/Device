@@ -16,16 +16,21 @@ public struct iPod: IdiomType, HasScreen {
     public init(
         officialName: String,
         identifiers: [String],
-        introduction: DateString,
+        introduction: DateString?,
         supportId: String,
         launchOSVersion: Version,
         unsupportedOSVersion: Version?,
         image: String?,
         capabilities: Capabilities = [],
+        cameras: Set<Camera>,
+        screen: Screen,
         models: [String] = [],
         colors: [MaterialColor],
         cpu: CPU
     ) {
+        var capabilities = capabilities
+        capabilities.screen = screen
+        capabilities.cameras = cameras
         device = Device(
             idiom: .pod,
             officialName: officialName,
@@ -42,7 +47,7 @@ public struct iPod: IdiomType, HasScreen {
         )
     }
     
-    init(identifier: String) {
+    public init(identifier: String) { // public for DeviceKit testing
         self.init(
             officialName: "Unknown iPod",
             identifiers: [identifier],
@@ -52,6 +57,8 @@ public struct iPod: IdiomType, HasScreen {
             unsupportedOSVersion: "0.0",
             image: nil,
             // capabilities
+            cameras: [],
+            screen: .i35o,
             // models
             colors: [.white],
             cpu: .unknown)
@@ -62,30 +69,34 @@ public struct iPod: IdiomType, HasScreen {
         return "ipodtouch"
     }
     
-    static let all = [
+    public static let all = [
     
         iPod(
 //            officialName: "iPod touch (1st generation)", // Apple tech specs page seems to have gone back to dropping 1st gen here.
             officialName: "iPod touch",
             identifiers: ["iPod1,1"],
-            introduction: 2007.introductionYear,
+            introduction: "2007-09-05",
             supportId: "112532",
-            launchOSVersion: "1.0",
+            launchOSVersion: "1.1",
             unsupportedOSVersion: "4",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-1st-gen.png",
-            capabilities: [.headphoneJack, .thirtyPin, .cameras([.twoMP])], // please check specs
+            capabilities: [.thirtyPin],
+            cameras: [],
+            screen: .i35o,
             models: ["A1213"],
             colors: [.silver],
             cpu: .s5L8900),
         iPod(
             officialName: "iPod touch (2nd generation)",
             identifiers: ["iPod2,1"],
-            introduction: 2008.introductionYear,
+            introduction: "2008-09-09",
             supportId: "112319",
-            launchOSVersion: "2.1",
+            launchOSVersion: "2.1.1",
             unsupportedOSVersion: "5",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-2nd-gen.png",
-            capabilities: [.headphoneJack, .thirtyPin, .cameras([.twoMP])], // please check specs
+            capabilities: [.thirtyPin],
+            cameras: [],
+            screen: .i35,
             models: ["A1288", "A1319"],
             colors: [.silver],
             cpu: .s5L8720),
@@ -97,7 +108,9 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: "3.1.1",
             unsupportedOSVersion: "6",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-3rd-gen.png",
-            capabilities: [.headphoneJack, .thirtyPin, .cameras([.threeMP])], // please check specs
+            capabilities: [.thirtyPin],
+            cameras: [],
+            screen: .i35,
             models: ["A1318"],
             colors: [.silver],
             cpu: .s5L8922),
@@ -109,7 +122,9 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: "4.1",
             unsupportedOSVersion: "7",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-4th-gen.png",
-            capabilities: [.headphoneJack, .thirtyPin, .cameras([.iSight, .faceTimeHD720p])], // please check specs
+            capabilities: [.thirtyPin],
+            cameras: [.iSight, .faceTimeHD720p],
+            screen: .i35,
             models: ["A1367"],
             colors: [.white, .black],
             cpu: .a4),
@@ -121,6 +136,9 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: "6",
             unsupportedOSVersion: "10",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-5th-gen-second-release.png",
+            capabilities: [.lightning],
+            cameras: [.iSight, .faceTimeHD720p],
+            screen: .i4,
             models: ["A1509", "A1421"],
             colors: .iPodTouch5thGen,
             cpu: .a5),
@@ -132,6 +150,9 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: "6",
             unsupportedOSVersion: "10",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-5th-gen.png",
+            capabilities: [.lightning],
+            cameras: [.iSight, .faceTimeHD720p],
+            screen: .i4,
             models: ["A1509"],
             colors: .iPodTouch5thGen,
             cpu: .a5),
@@ -143,6 +164,9 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: "8.4",
             unsupportedOSVersion: "13",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-6th-gen.png",
+            capabilities: [.lightning],
+            cameras: [.iSight, .faceTimeHD720p],
+            screen: .i4,
             models: ["A1574"],
             colors: .iPodTouch6thGen,
             cpu: .a8),
@@ -154,6 +178,9 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: "12.3.1",
             unsupportedOSVersion: "16",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipod/ipod-touch/ipod-touch-7th-gen.jpg",
+            capabilities: [.lightning],
+            cameras: [.iSight, .faceTimeHD720p],
+            screen: .i4,
             models: ["A2178"],
             colors: .iPodTouch7thGen,
             cpu: .a10),

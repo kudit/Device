@@ -5,7 +5,7 @@
 //  Created by Ben Ku on 4/16/24.
 //
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 import Compatibility
 

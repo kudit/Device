@@ -41,7 +41,7 @@ public struct HomePod: IdiomType {
             cpu: cpu)
     }
     
-    init(identifier: String) {
+    public init(identifier: String) { // Public for DeviceKit testing
         self.init(
             officialName: "Unknown HomePod",
             identifiers: [identifier],
@@ -62,14 +62,14 @@ public struct HomePod: IdiomType {
         return "homepod"
     }
 
-    static let all = [
+    public static let all = [ // Public for DeviceKit testing
         
         HomePod(
             officialName: "HomePod",
             identifiers: ["AudioAccessory1,1", "AudioAccessory1,2"], // TODO: What is AudioAccessory1,2?
             introduction: 2018.introductionYear,
             supportId: "SP773",
-            launchOSVersion: "1",
+            launchOSVersion: "11.0.2",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/homepod/2018-homepod-colors.png",
             models: ["A1639"],

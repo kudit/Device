@@ -7,7 +7,7 @@
 
 import Compatibility
 
-// TODO: Move this into a Definable package.  At least move this to a Definable.swift file.
+// TODO: Move this into a Definable package.
 // TODO: Use this to help with code generation more globally?  Add to KuditFrameworks/Compatibility?
 public protocol Definable {
     var definition: String { get }
@@ -64,9 +64,9 @@ public extension Double {
         "\(self.description)".replacingOccurrences(of: ".0", with: "")
     }
 }
-public extension LosslessStringConvertible {
+public extension LosslessStringConvertible { // inherits CustomStringConvertible already
     var definition: String {
-        return "\"\(self.description)\""
+        return "\"\(self.description.replacingOccurrences(of: "\"", with: "\\\""))\""
     }
 }
 extension Bool: Definable {}
@@ -86,9 +86,7 @@ extension DateString: Definable {
 extension DateTimeString: Definable {}
 extension Version: Definable {
     public var definition: String {
-        if minorVersion == 0 && patchVersion == 0 {
-            return "\(majorVersion)".definition // remove the .0
-        }
-        return self.description.definition
+        return self.compact.definition
     }
 }
+

@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.9.0"
+    static let version: Version = "2.11.0"
 }
 import Compatibility
 
@@ -57,7 +57,11 @@ public extension Int {
 extension DateString {
     /// Use this only as a placeholder for a newly created Mac Device.  Replace with actual value when possible.
     public static var defaultBlank: DateString {
+#if canImport(Foundation) && !(os(WASM) || os(WASI)) // not available in WASM?
         return DateString(Date.nowBackport.mysqlDate)
+#else
+        return DateString("1970-01-01") // clearly wrong but shouldn't practically be needed anyways.
+#endif
     }
 }
 
@@ -97,6 +101,7 @@ public extension DeviceType {
     var image: String? { device.image }
     
     var capabilities: Capabilities { device.capabilities }
+    /// Device part numbers/models like "MGPC3xx/A" or "A2473"
     var models: [String] { device.models }
     var colors: [MaterialColor] { device.colors }
     
@@ -146,7 +151,7 @@ public extension DeviceType {
 //    /// A textual representation of the device.
 //    var description: String { device.description }
     
-    internal var idiomatic: any IdiomType {
+    var idiomatic: any IdiomType {
         // convert to idiomatic device so we can reference the correct implementation of symbolName.
         guard let idiomatic = device.idiom.type.init(device: device) else {
             return device // use default if we can't convert for some reason
@@ -206,7 +211,7 @@ public protocol PublicDeviceIdiom {
 
 /// Type for generating and iterating over IdiomTypes for convenient initialization in Models file and for iterating over when searching for a model identifier.
 /// NOT PUBLIC since we shouldn't be initing off of identifiers outside of this module.  This is for internal device lookups.  If you need something like this external to this module, please let us know.
-protocol IdiomType: DeviceType, Sendable, PublicDeviceIdiom {
+public protocol IdiomType: DeviceType, Sendable, PublicDeviceIdiom {
     var device: Device { get } // Idioms can set, but external should not be directly setting this.
     init(identifier: String) // make sure to look for .base identifier for base settings vs a .new identifier for things that should be present for unknown new devices.  Set Needed for extension initializer.
     /// Idiomatic list of all of this type.
@@ -216,12 +221,12 @@ protocol IdiomType: DeviceType, Sendable, PublicDeviceIdiom {
     /// For doing actual initialization (needs to be done by the struct itself since device is not settable (which is what we want so this can be Sendable).
     init(knownDevice: Device)
 }
-extension IdiomType {
+public extension IdiomType {
     /// List of all the actual `Device` structs.
-    public static var allDevices: [Device] {
+    static var allDevices: [Device] {
         all.map { $0.device }
     }
-    init?(device: Device) {
+    init?(device: Device) { // only public for conversion testing for DeviceKit
         guard device.idiom.type == Self.self else {
             return nil
         }
@@ -235,9 +240,9 @@ extension IdiomType {
 //    }
 }
 
-public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable {
+public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable, Codable {
     /// Constants that indicate the interface type for the device or an object that has a trait environment, such as a view and view controller.
-    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable {
+    public enum Idiom: CaseIterable, Identifiable, DeviceAttributeExpressible, Sendable, Codable {
         /// An unspecified idiom.  Used for accessories that don't have a UI.
         case unspecified
         /// An interface designed for the Mac.
@@ -410,10 +415,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             case .pod:
                 return [
                     .headphoneJack,
-                    .lightning,
                     .battery,
-                    .screen(.i4),
-                    .cameras([.iSight, .faceTimeHD720p]),
                     ]
             case .phone, .pad:
                 return [.battery]
@@ -421,8 +423,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return [.headphoneJack, .screen(.tv)]
             case .watch:
                 return [.battery, .wirelessCharging, .nfc, .applePay, .roundedCorners]
-            case .vision:
-                return [.battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screen(.p720), .appleIntelligence]
+            case .vision: // All visions are pro for now.  When this is no longer the case, move this to each device.
+                return [.pro, .battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screen(.p720), .appleIntelligence]
             case .homePod:
                 return [.screen(.w38)]
             case .unspecified, .mac, .carPlay:
@@ -503,6 +505,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     
     // All initializers should add these:
     public let capabilities: Capabilities// = []
+    /// Device part numbers/models like "MGPC3xx/A" or "A2473"
     public let models: [String]// = []
     public let colors: [MaterialColor]// = [.silverLight]
     
@@ -632,7 +635,11 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     }
     /// Note: This `String` is not guaranteed to be stable across versions!  Use an identifier or model number for persistent lookups.  Or use the officialName (though this is also not guaranteed to be stable).  Identifier + CPU combination should be stable.
     public var id: String {
+#if canImport(Foundation) && !(os(WASM) || os(WASI)) // not available in WASM?
         return "\(identifiers)|\(introduction?.mysqlDate ?? "?")|\(models)|\(officialName)|\(cpu)"
+#else
+        return "\(identifiers)|\(introduction ?? "?")|\(models)|\(officialName)|\(cpu)"
+#endif
     }
 
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.

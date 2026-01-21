@@ -25,8 +25,117 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.11.0 10/22/2025
+Added .pro to default Apple Vision devices.
+Added M5 chip.
+Added specific date for original Apple Vision Pro introduction.
+**App Store**
+Added 2025 M5 iPads, MacBook Pro, and Apple Vision Pro.
+Framework updated to include compatibility with WASM.
+
+v2.10.19 10/14/2025
+Removed deinit from MockDevice since it is impossible to do actor isolated in WASM and not technically necessary.
+** All Swift Package Index tests passed! **
+
+v2.10.18 10/13/2025
+Updated README to include more feature parity with DeviceKit.
+Made the resource part of the package not a conditional directive (since it's compiled on a host system that likely includes Foundation) and instead uses SwiftPM 5.9's condition parameter to gate (had to bump the swift tools version to 5.9 from 5.8 which is why we're doing a minor version update).
+Extracted all build environment code to just use the code exposed by Compatibility rather than re-writing.  Can be done now without Foundation so technically should enable WASM support even though most of this isn't relevant since it's not a device (but we may want to include this module for Device lists/lookups).
+Updated Compatibility.
+** All Swift Package Index tests passed except WASM **
+
+v2.10.17 10/9/2025
+Fixed breaking issues with adding `@MainActor` to `deinit`.
+** All Swift Package Index tests passed except WASM **
+
+v2.10.16 10/8/2025
+Updated Compatibility.
+Fixed issue with using `Date` when not available.
+**BROKEN**
+
+v2.10.15 10/7/2025
+Updated Compatibility.
+
+v2.10.14 10/7/2025
+Updated Color.
+
+v2.10.13 10/7/2025
+Updated Compatibility & Color.
+
+v2.10.12 10/6/2025
+Forgot to actually update Color.
+
+v2.10.11 10/6/2025
+Updated Color to improve WASM support.
+
+v2.10.10 10/6/2025
+Updated Compatibility and Color to improve WASM support.
+
+v2.10.9 10/6/2025
+Updated Compatibility and moved Codable backport conformance for WASM to Compatibility.
+
+v2.10.8 10/5/2025
+Updated Compatibility to fix issue with WASM version of `DateStringRepresentation`.
+
+v2.10.7 10/5/2025
+Additional fixes for WASM.
+`CaseNameConvertible` and `DateString` weren't enabled in WASM, so updated Compatibility to add stubs so this could compile, but note that anything that uses these will not truly be supported by Device in WASM unless we can create a backport in Compatibility that doesn't require Mirror or Date (since those are not available in WASM).
+
+v2.10.6 10/4/2025
+Updated Compatibility & Color to improve WASM compatiblity.
+Removed Codable conformance from WASM and added backport implementation.
+Added Foundation checks on SwiftUI code to facilitate WASM testing.
+** All Swift Package Index tests passed except WASM **
+
+v2.10.5 10/2/2025
+Updated Compatibility & Color to improve WASM compatiblity.
+
+v2.10.4 10/2/2025
+Updated Compatibility & Color to improve WASM compatiblity.
+
+v2.10.3 10/1/2025
+Updated Compatibility & Color.
+**App Store**
+Fixed missing images and support links for new Apple Watch models.
+Changed name of iPad mini from "iPad Mini".
+
+v2.10.2 9/27/2025
+Updated Compatibility.
+Fixed watchOS AppIcon warning by splitting into separate item.
+Updated IdentifyModelParsing to match model numbers when split.
+Fixed issues with "SE (3nd generation)".
+Fixed iPod screen sizes, resolutions, and cameras.
+**App Store**
+Fixed launch version for 2025 iPhones.
+Fixed incorrect name for Apple Watch SE (3rd generation).
+Fixed missing always-on display for Apple Watch SE (3rd generation) 40mm.
+Fixed issue where several iPad models were erroneously listed as having a notch.
+Updated change in official naming convention of Apple Watch SE (3rd generation) to Apple Watch SE 3.
+Removed duplicate iPod2,1 entry causing it to sometimes be mislabeled as "Unknown“.
+Updated watch images to be more consistent (uses the stainless or titanium version for the larger version and aluminum for the smaller ones).
+
+v2.10.1 9/21/2025
+Updated App Store descritption.
+Fixed DeviceKitLoader extension accidentally being included in release.
+**App Store**
+Added new September 2025 devices.
+Added missing Compass feature to Apple Watch > Series 3.
+Added information for several devices that do not support xOS 26.
+Fixed missing Touch ID flag for several MacBook models.
+Fixed MacBook generation and MagSafe 1 availability on several MacBook models.
+Several additional minor data corrections.
+
+v2.10.0 9/21/2025
+Updated camera naming to specify the MP and zoom levels do better differentiate cameras.  Note that this renames several which may be a breaking change, but it's unlikely people are using those camera names so not quite worth a major version number update.
+Completely re-worked Conversions to allow for better code reuse and more flexible and streamlined checks using fetched project files rather than including files.
+Ensured all conversions pass (as of now)
+Added DeviceKit comparison.
+Made Device conform to Codable.
+Added PropertyIterable to DeviceBridge.
+Updated Compatibility.
+
 v2.9.0 8/13/2025
-Should have renumbered the last version since features were added.  Fixed issues with included Compatibility version.  Fixed CarPlay and Apple Intelligence legacy symbol file format.  (Legacy SF Symbols should be Symbol export (not Template) for Xcode version 12)
+Should have renumbered the last version since features were added.  Fixed issues with included Compatibility version.  Fixed CarPlay and Apple Intelligence legacy symbol file format.  (Legacy SF Symbols should be Symbol export (not Template) for Xcode version 12)  ** ALL SWIFTPACKAGEINDEX TESTS PASSED! ** 
 
 v2.8.10 8/11/2025
 Added macOS Tahoe and recompiled to correctly report iOS 26 vs iOS 19.
@@ -282,7 +391,10 @@ Known issues that need to be addressed.
 ## Roadmap:
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 - [ ] Add tests like in Compatiblity.
+- [ ] Increased legacy support back to first Swift versions.
+- [ ] Add in symbols into comparison diff views for capabilities rather than the string representations.
 - [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
+- [ ] In definition, have a lookup for pre-defined screens like we do for colorsets so it shows the predefined set reather than the full definition.
 - [ ] Add Apple Intelligence as a capability feature.
 - [ ] Create migration export that checks values against defaults primarily to check definitions are in the correct order and that named color sets are being used (test to see if color set is equal to named colorset and if so, replace with the named case rather than the listed colors).
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
@@ -320,6 +432,7 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 
 ## Proposals:
 This is where proposals can be discussed for potential movement to the roadmap.
+- [ ] Backport to the oldest version of Swift?
 - [ ] add a way of searching by capability
 - [ ] Add code to device to detect whether screen recording or screenshot is in progress.  Add notification callback?  `addScreenRecordingModeChangeCallback { oldMode, newMode in }`
     https://developer.apple.com/documentation/swiftui/environmentvalues/isscenecaptured#
@@ -358,13 +471,37 @@ Possibly because Bundle.module may not exist???  removed call to see if that fix
 
 
 #AppStore Copy
+##Title
+Device Information Tool
+
+##Subtitle (30)
+123456789012345678901234567890
+Detailed device information
+
 ##Promotional Text (170)
-Tool for looking up Apple device information in the open source Kudit Device framework.
+Download today to get full visibility into your Apple devices, know what’s under the hood, stay ahead of updates, and troubleshoot with confidence.
 
 ##Description (4,000)
-This is a tool for exposing the information in the open source Kudit Device framework.  Useful for looking up specific information or support articles on Apple Devices.  Can also be used to check on the device's thermal state, battery level, disable the idle timer, and check reported device orientation.
+A fast, accurate, and privacy-first utility that shows everything you want to know about your Apple devices.
 
-Feel free to contribute to this project at http://github.com/kudit/Device
+This tool has the most complete information available. By downloading, you are supporting a small independent open source developer who makes this information freely available to everyone and keeps it updatable by everyone.
+
+What you get:
+• Detailed hardware and software information including model, chip, storage, memory, introduction date, and minimum and maximum OS versions.
+• Battery information showing level and charge status.
+• Thermal indicator to recognize device temperature.
+• Orientation and display data showing how the system reports screen state.
+• Idle timer control to prevent the screen from dimming or locking when needed.
+• Device capabilities and sensors such as biometrics, LIDAR, ECG, Fall Detection, Oxygen Sensor, and more.
+• Direct support and reference links to Apple documentation based on your exact device.
+
+Why you’ll love it:
+• Privacy-first design with no data collection. All device information stays on your device.
+• Lightweight and fast with minimal battery or resource usage.
+• Continuously updated with new Apple devices, sensors, and operating system support.
+• Ideal for developers, IT support, and anyone who wants to know the exact capabilities of their Apple devices.
+
+This is a tool for exposing the information in the open source Kudit Device framework.  Feel free to contribute to this project at http://github.com/kudit/Device
 
 If you have any suggestions or feedback, please reach out to us at support+device@kudit.com!
 
@@ -372,7 +509,8 @@ https://www.kudit.com/terms
 
 
 ##Keywords (100)
-device,devicekit,framework,github,iphone,identifier,info,support,capabilities,screen,open source
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+device,devicekit,framework,github,iphone,identifier,info,ipad,mac,os,screen,capabilities,open,source
 
 
 #Monetization

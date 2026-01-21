@@ -40,7 +40,7 @@ public struct AppleTV: IdiomType {
             cpu: cpu)
     }
 
-    init(identifier: String) {
+    public init(identifier: String) { // Public for DeviceKit testing
         self.init(
             officialName: "Unknown  TV",
             identifiers: [identifier],
@@ -57,7 +57,7 @@ public struct AppleTV: IdiomType {
         return "appletv"
     }
 
-    static let all = [ // https://support.apple.com/en-us/101605
+    public static let all = [ // https://support.apple.com/en-us/101605  // Public for DeviceKit testing
         
         AppleTV(
             officialName: "Apple TV 4K (3rd generation) Wi-Fi + Ethernet",

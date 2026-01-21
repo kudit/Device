@@ -1,41 +1,8 @@
 import SwiftUI
 import Compatibility
 
-// Replace this with CustomStringConvertible?
-
-protocol StringRepresentable {
-    var str: String { get }
-}
-extension String: StringRepresentable {
-    var str: String { self }
-}
-extension [String]: StringRepresentable {
-    var str: String { self.joined(separator: ", ") }
-}
-extension Optional: StringRepresentable {
-    public var str: String {
-        if self == nil {
-            return "nil"
-        }
-        if let version = self as? Version? {
-            guard let version else {
-                // latest version should apply
-                let currentVersion = Array(Version.macOSs.keys).last!
-                return currentVersion.macOSName
-            }
-            let previous = version.previousMacOS()
-            return previous.macOSName
-        }
-        if let string = self as? String?, let string {
-            return string
-        }
-        if let strings = self as? [String]?, let strings {
-            return strings.str
-        }
-        return "Unknown"
-    }
-}
-
+// TODO: Have toggle for showing diff as the Device fields as lines (old version) and field diffs for bridge (new version)
+// TODO: Show left (native in Bridge form highlighting differences in blue), merged with color coding (blue, magenta, green, or black), diff which shows all bridge fields highlghting differences by indicating Device.swiftpm versions in Blue, Bridge versions in Magenta, merged versions in Green, or all equal in black, right (highlighting differences in magenta), and source
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Text {

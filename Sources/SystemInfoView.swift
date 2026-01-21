@@ -1,4 +1,4 @@
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)

@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.9.0"
+let version = "2.11.0"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -70,6 +70,14 @@ let appName = "\(packageLibraryName) Playground"
 let appName = "\(packageLibraryName) App"
 #endif
 
+#if canImport(Foundation)
+import Foundation
+let isWASI = ProcessInfo.processInfo.environment["SWIFT_TARGET_TRIPLE"]?.contains("wasm32") == true
+let resources: [Resource] = isWASI ? [] : [.process("Resources")]
+#else
+let resources: [Resource] = []
+#endif
+
 products += [
 	.iOSApplication(
 		name: appName, // needs to match package name to open properly in Swift Playgrounds <v4.5, but must be different to run in v4.6 and greater.
@@ -106,9 +114,7 @@ targets += [
 		path: "Development"
 //		,exclude: ["Device.xcodeproj/*"]
 		// Include test app resources.
-		,resources: [
-			.process("Resources")
-		]
+        ,resources: resources
 //		,swiftSettings: [
 //			.enableUpcomingFeature("BareSlashRegexLiterals")
 //		]

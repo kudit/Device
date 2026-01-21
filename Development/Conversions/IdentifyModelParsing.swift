@@ -26,20 +26,134 @@ public extension String {
     }
 }
 
-struct ParsedItem: DeviceBridge {
+public extension Capabilities {
+    /// Returns `true` iff the array contains all of the values.
+    func containsAll(_ capabilities: Capabilities) -> Bool {
+        if capabilities.macForm != self.macForm {
+            return false
+        }
+//        if capabilities.pencils != self.pencils { // may want to check but this breaks if this has pencils and capabilities has none.
+//            return false
+//        }
+        for capability in capabilities {
+            if !Capability.allCases.contains(capability) {
+                continue // skip non simple capabilities
+            }
+            if !self.contains(capability) {
+                return false
+            }
+        }
+        return true
+    }
+}
+
+struct ParsedItem: DeviceBridge {    
+    static var diffIgnoreKeys: [String] {
+        ["source"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
+    }
+
+    var officialName: String
+    var idiom = Device.Idiom.unspecified
+    var identifiers: [String] = []
+    var yearIntroduced: Int?
+    var supportId = String.unknownSupportId
+    var unsupportedOSVersion: Version? = nil
+    var image: String? = nil
+    var capabilities = Capabilities()
+    var partNumbers: [String] = []
+    var cpu = CPU.unknown
     var source: String
-    var device: Device
-    var matched: Device
     
-    var id: String { source }
+    // since multiple bridges may have the same source, unique ID
+    var id: String {
+        "\(officialName)\(source)"
+    }
     
-    static func generate() -> String {
-        "NOT IMPLEMENTED SINCE HTML"
+    var matched: Device {
+        Device.forcedLookup(identifier: identifiers.first, model: partNumbers.first, officialNameHint: officialName)
+    }
+
+    var merged: Device {
+        // create device for each identifier since we may want to split out
+        return Device(
+            idiom: idiom,
+            officialName: officialName,
+            identifiers: identifiers,
+            introduction: yearIntroduced?.introductionYear,
+            supportId: supportId,
+            launchOSVersion: .zero,
+            unsupportedOSVersion: unsupportedOSVersion,
+            image: image,
+            capabilities: capabilities,
+            models: partNumbers,
+            colors: .default,
+            cpu: cpu
+        ).merged(from: matched)
+    }
+    
+    func bridge(from device: Device) -> ParsedItem {
+        var officialName = device.officialName
+        if device.safeOfficialName.lowercased() == self.officialName.lowercased() || device.officialName.contains(self.officialName) { // last case is to capture Mac16,6, Mac16,7, and others that had to be split into two entries for different processors.
+            officialName = self.officialName
+        }
+        // zero out fields/data that aren't available in the parsed item so we match
+        var yearIntroduced = device.introduction?.date?.year
+        if self.yearIntroduced == nil {
+            yearIntroduced = nil // don't bother comparing if we don't have this data
+        }
+        var supportId = device.supportId
+        if self.supportId == .unknownSupportId {
+            supportId = .unknownSupportId 
+        }
+        var unsupportedOSVersion = device.unsupportedOSVersion
+        if self.unsupportedOSVersion == nil {
+            unsupportedOSVersion = nil
+        }
+        var capabilities = device.capabilities
+        if self.capabilities.isEmpty || capabilities.containsAll(self.capabilities) {
+            capabilities = self.capabilities
+        }
+        var models = device.models
+        if models.containsAll(self.partNumbers) || self.partNumbers.containsAll(models) && device.identifiers.containsAny(["Mac16,7"]) { // check for split items
+            models = self.partNumbers
+        }
+        var cpu = device.cpu
+        if self.cpu == .unknown {
+            cpu = .unknown
+        }
+        return ParsedItem(
+            officialName: officialName,
+            idiom: device.idiom,
+            identifiers: device.identifiers,
+            yearIntroduced: yearIntroduced,
+            supportId: supportId,
+            unsupportedOSVersion: unsupportedOSVersion,
+            image: device.image,
+            capabilities: capabilities,
+            partNumbers: models,
+            cpu: cpu,
+            source: source)
     }
 }
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 8, *)
-actor PageParserProcessor {
+actor PageParser: DeviceBridgeLoader {
+    static let identifyPages = [
+        "MacBook Pros": "https://support.apple.com/en-us/108052",
+        "iPods": "https://support.apple.com/en-us/103823",
+        "iPads": "https://support.apple.com/en-us/108043",
+        "iPhones": "https://support.apple.com/en-us/108044",
+        "MacBook Air": "https://support.apple.com/en-us/102869",
+        "MacBooks": "https://support.apple.com/en-us/103257",
+        "iMacs": "https://support.apple.com/en-us/108054",
+        "Mac Pros": "https://support.apple.com/en-us/102887",
+        "Mac minis": "https://support.apple.com/en-us/102852",
+        "Mac Studios": "https://support.apple.com/en-us/102231",
+        "Apple TVs": "https://support.apple.com/en-us/101605",
+        "Apple Watches": "https://support.apple.com/en-us/108056",
+        "Apple Vision Pros": "https://support.apple.com/en-mk/125375",
+    ]
+
     let url: String
     var content: String?
     var items: [ParsedItem] = []
@@ -47,51 +161,49 @@ actor PageParserProcessor {
     init(url: String) {
         self.url = url
     }
-    
-    func parse() async {
+
+    func devices() async -> [ParsedItem] {
         let content = try? await fetchURL(urlString: url)
-        if content?.contains("<h2 id=\"one\" class=\"gb-header\">") ?? false, let parts = content?.components(separatedBy: "<h3 class=\"gb-header\">") {
+        var parts = [String]()
+        if content?.contains("Identify your Apple Watch") ?? false, let p = content?.components(separatedBy: "<h2 ") {
             // Apple Watch pages
-            parts.forEach { parseItem(source: $0) }
-        } else if content?.contains("<h2 class=\"gb-header") ?? false, let parts = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), parts.count > 1 {
-            // iPod Touch page is sectioned differently
-            parts.forEach { parseItem(source: $0) }
-        } else if content?.contains("<h3 class=\"gb-header\">") ?? false, let parts = content?.components(separatedBy: "<img class=\"gb-image\" alt=\"") {
-            // MacBook page is sectioned differently
-            parts.forEach { parseItem(source: $0) }
-        } else if let parts = content?.components(separatedBy: "<h2 class=\"gb-header\">") {
-            parts.forEach { parseItem(source: $0) }
+            parts = p.dropFirst().dropFirst().dropLast().dropLast() // top header & find your part header and learn more footer and legal footer.
+            // NOTE: Odd that dropLast cast works but dropFirst cast does not...
+        } else if content?.contains("<h2 class=\"gb-header") ?? false, let p = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), p.count > 1 {
+            // iPod Touch page is sectioned differently and doesn't need to strip parts?
+            parts = p
+        } else if content?.contains("<h3 class=\"gb-header\">") ?? false, let p = content?.components(separatedBy: "<img class=\"gb-image\" alt=\"") {
+            // MacBook page is sectioned differently and doesn't need to strip parts?
+            parts = p
+        } else if let p = content?.components(separatedBy: "<h2 class=\"gb-header\">") {
+            parts = .init(p.dropFirst()) // top header
+            if content?.contains("Identify your Apple Vision Pro") ?? false {
+                parts = .init(parts.dropFirst()) // drop additional header
+            }
         }
+        parts.forEach { parseItem(source: $0) }
+        return items
     }
-    
-    // TODO: Find a way to have this parse an item and create a second item for merged entries (with different processors).  Perhaps have static func that returns an array of items?  Similarly consolidate Apple Watch models (if returns a similar parsed item, then we should be able to de-dup?  Or just count twice).
+
     func parseItem(source: String) {
         var idiom = Device.Idiom.unspecified
         var identifiers: [String] = []
-        var introduction: DateString? = nil
+        var yearIntroduced: Int? = nil
         var supportId = String.unknownSupportId
         var unsupportedOSVersion: Version? = nil
         var image: String? = nil
+        var image2: String? = nil
         var capabilities = Capabilities()
         var partNumbers: [String] = []
         var cpu = CPU.unknown
-                
-        var string = source.replacingOccurrences(of: "‑", with: "-")
-        // make sure this isn't the header or footer section
-        // note: original iphone has "The model number" so M isn't capitalized.
-        guard string.contains("Model Identifier") || string.contains("odel number") || string.contains("Model:") else {
-            return // don't add any
-        }
-        // strip out headers that aren't stripped from above.
-        if string.contains("<!DOCTYPE html>") || string.contains("Find the model number") || string.contains("Find your Apple TV model number") {
-            return // don't add
-        }
-        // strip out additional header
-        if string.hasPrefix("Find the model number") {
-            string = string.extract(from: "<h2 id=\"ipadpro\" class=\"gb-header\">", to: nil) ?? string
-        }
+        var watchCaseModels = [String: [String]]() // map case size to part numbers
+        var watchIdentifiers = [String: [String]]() // map case size to set of identifiers
+
+        var string = source.replacingOccurrences(of: "‑", with: "-") // replace non-breaking hyphen with normal hyphen.
+
         // Apple TV sections don't have the identifier, just the model number
         guard var officialName = string.extract(from: nil, to: "</") else {
+            debug("Parse could not find a name section in: \(source)", level: .WARNING)
             return // needs a title at least!
         }
         if officialName.contains("src="), let macbookTitle = officialName.extract(from: nil, to: "\"") {
@@ -100,22 +212,52 @@ actor PageParserProcessor {
         if officialName.contains("iPod") && !officialName.contains("iPod touch") {
             return // don't include iPods that aren't touches
         }
+        if officialName.contains("Apple Vision") {
+            idiom = .vision
+        }
+        // apple tv (becuase this is the same code run for Apple Vision Pro)
+        if officialName.contains("Apple TV") {
+            idiom = .tv
+        }
         if officialName.contains("Apple Watch") {
-            officialName = officialName.replacingOccurrences(of: ["Titanium", "Herm&egrave;s", " (GPS + Cellular)"], with: "")
+            // pull off partial start tag
+            guard let trimmed = officialName.extract(from: "class=\"gb-header\">", to: nil) else {
+                debug("Unable to get name for Apple Watch!: \(officialName)", level: .WARNING)
+                return
+            }
+            officialName = trimmed.tagsStripped
+//            debug("Parsing \(officialName)")
+            idiom = .watch
         }
         officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: " M4 Pro or M4 Max", with: "")
 
-        // get introduction date
+        // make sure this isn't the header or footer section
+        // note: original iphone has "The model number" so M isn't capitalized.
+        guard string.contains("Model Identifier") || string.contains("odel number") || string.contains("Model:") else {
+            debug("No models so skipping", level: .WARNING)
+            return // don't add any
+        }
+        // strip out headers that aren't stripped from above.
+        if string.contains("<!DOCTYPE html>") || string.contains("Find the model number") || string.contains("Find your Apple TV model number") {
+            // bad Apple TV section
+            return // don't add
+        }
+        // strip out additional header
+        if string.hasPrefix("Find the model number") {
+            string = string.extract(from: "<h2 id=\"ipadpro\" class=\"gb-header\">", to: nil) ?? string
+        }
+
+        // get introduction year
         if string.contains("Year introduced"), var yearIntroducedString = string.extract(from: "Year introduced: ", to: "</p>") {
             if yearIntroducedString.contains(" ") { // iPhone 3G and 4 have multple dates.
                 yearIntroducedString = yearIntroducedString.replacingOccurrences(of: ",", with: " ").extract(from: nil, to: " ") ?? yearIntroducedString
             }
-            introduction = DateString(yearIntroducedString.introductionYear)
+            yearIntroduced = Int(yearIntroducedString)
         } else {
             // try looking for year in officialName
             for year in 2000...Date.nowBackport.year {
                 if officialName.contains("\(year)") {
-                    introduction = year.introductionYear
+                    yearIntroduced = Int(year)
                 }
             }
         }
@@ -129,32 +271,74 @@ actor PageParserProcessor {
         }
 
         // get image URL
-        if let imageTag = string.extract(from: "<img class=\"gb-image\"", to: "/>"), let imageURL = imageTag.extract(from: "src=\"", to: "\"") {
+        let imageTag = string.extract(from: "<img class=\"gb-image\"", to: "/>") ?? string
+        if let imageURL = imageTag.extract(from: "src=\"", to: "\"") {
             image = imageURL
+        }
+        // for Apple Watch (get alternate image for larger size)
+        if idiom == .watch {
+            let imageParts = string.components(separatedBy: "<img").compactMap { $0.extract(from: "src=\"", to: "\"") }
+            for ip in imageParts {
+                if ip.containsAny(["stainless", "titanium"]) {
+                    image2 = ip
+                    break
+                }
+            }
+            if image2 == nil {
+                image2 = image
+            }
         }
         
         let isiPhone = string.contains("iPhone")
         if isiPhone {
             idiom = .phone
         }
+        let modelStartTag = "<ul class=\"list gb-list\"><li class=\"gb-list_item\"><p class=\"gb-paragraph\">"
         if string.contains("iPad") || string.contains("iPod") || isiPhone, var modelNumbers = string.extract(from: "odel number", to: isiPhone ? "</p>" : "</ul>") {
             // ipads (need to add the </p> tag since stripping tags may result in stuff between lines being removed.
             modelNumbers = modelNumbers.replacingOccurrences(of: ["</p>", "back cover", ".", ")", ":", "on", "and", "April", "August", "America", "Air", "Arab", "Armenia", "iPad", "Cellular", "Wi-Fi", ","], with: " ").tagsStripped.whitespaceCollapsed
             let modelNumbers = modelNumbers.split(separator: " ").filter { $0.count > 3 && $0.hasPrefix("A") }.map { String($0) }
             partNumbers = modelNumbers
         } else if var modelNumber = string.extract(from: "odel number", to: "</p>") {
-            // apple tv
-            if officialName.contains("Apple TV"), let model = modelNumber.extract(from: ": ", to: " ") {
+            if let model = modelNumber.extract(from: ": ", to: " ") {
                 modelNumber = model
-                idiom = .tv
                 partNumbers = [modelNumber]
             } else {
-                debug("Models that are not Apple TV")
+                debug("Unable to parse model number: \(modelNumber)", level: .WARNING)
             }
         } else if let extractedPartNumbers = string.extract(from: "Part Number", to: "</p>"), let extractedPartNumbers = extractedPartNumbers.extract(from: ">", to: nil)?.replacingOccurrences(of: "&nbsp;", with: " ") {
             // macs
             partNumbers = extractedPartNumbers.replacingOccurrences(of: "; ", with: ", ").components(separatedBy: ", ").map { $0.trimmed }
-        } else if let modelNumber = string.extract(from: "<ul class=\"list gb-list\"><li class=\"gb-list_item\"><p class=\"gb-paragraph\">", to: "</ul>") {
+        } else if idiom == .watch {
+            let watchModelParts = string.components(separatedBy: modelStartTag)
+            for watchModelPart in watchModelParts {
+                guard watchModelPart.contains("mm case") else {
+                    continue
+                }
+                if let modelNumbersSection = watchModelPart.extract(from: nil, to: "</ul>") {
+                    // get case models (need to return multiple parsed items)
+                    let modelParts = modelNumbersSection.components(separatedBy: "</li>")
+                    for modelPart in modelParts {
+                        let modelPart = modelPart.tagsStripped.whitespaceCollapsed.trimmed
+                        // determine case
+                        guard let caseSize = modelPart.extract(from: nil, to: " case ") else {
+                            continue
+                        }
+                        guard let modelsSection = modelPart.extract(from: "Model:", to: ")") else {
+                            continue
+                        }
+                        let models = modelsSection.components(separatedBy: ";")
+                        for model in models {
+                            guard let model = model.trimmed.components(separatedBy: " ").first else {
+                                continue
+                            }
+                            watchCaseModels[caseSize, default: []] += [model]
+                        }
+                    }
+                }
+            }
+
+        } else if let modelNumber = string.extract(from: modelStartTag, to: "</ul>") {
             // get case models (need to return 2 parsed items!) - just pull first case and up to user to copy to second?
             if let caseSize = modelNumber.extract(from: nil, to: " case"), let modelNumber = modelNumber.replacingOccurrences(of: ")", with: " ").extract(from: "Model: ", to: " ") {
                 var title = officialName.replacingOccurrences(of: ["(GPS)", "(GPS + Cellular)", "Aluminum", "Stainless Steel"], with: "").trimmed
@@ -186,12 +370,16 @@ actor PageParserProcessor {
         // Get SupportID
         if let sid = string.extract(from: "<a href=\"/en-us/", to: "\"") {
             supportId = sid
-        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/kb/", to: "\"") {
+        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/kb/", to: "\"") { // fix since the remote support comes first on Apple TV models so we want to pull the actual support article, not the siri remote support ID.
             supportId = sid
-        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/", to: "\"") {
+        } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/kb/", to: "\"") {
+            supportId = sid
+        } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/", to: "\"") {
             // iPads don't have the /kb/ part.
             supportId = sid
         }
+        // fix since sp622 is lowercase for some reason
+        supportId = supportId.uppercased()
         
         // try to parse idiom
         if idiom == .unspecified {
@@ -216,7 +404,13 @@ actor PageParserProcessor {
         if string.contains("Ethernet") {
             capabilities.insert(.ethernet)
         }
-        
+        if string.contains("Action button") {
+            capabilities.insert(.actionButton)
+        }
+        if string.contains("no SIM tray") && !string.contains("CDMA model has no SIM tray") {
+            capabilities.insert(.esim)
+        }
+
         // be sure not to hit on iPad with A17 Pro processor that isn't a pro device.
         if officialName.contains(" Pro") && !officialName.contains(" Pro)") {
             capabilities.insert(.pro)
@@ -233,11 +427,11 @@ actor PageParserProcessor {
         if officialName.contains(" Max") {
             capabilities.insert(.max)
         }
-
+        
         // check for Mac form to add
         if idiom == .mac {
             let macForm: Mac.Form
-            let year = introduction?.date?.year ?? 0
+            let year = yearIntroduced ?? Date.nowBackport.year // default to current year since 0 causes wrong models to be picked.
             if officialName.contains(" Pro") && year > 2015
                 || officialName.contains(" Air") && year > 2017
                 || officialName.contains("iMac") && year > 2020
@@ -265,7 +459,7 @@ actor PageParserProcessor {
                     // models with USB-C-only charging:
                     macForm = .macBook
                     capabilities.formUnion([.cameras([.faceTimeHD720p]), .usbC])
-                } else {
+                } else { // default for new MacBook Pros
                     macForm = .macBookGen2
                 }
             } else if officialName.contains("Mac mini") {
@@ -297,11 +491,11 @@ actor PageParserProcessor {
         for c in CPU.allCases.reversed() { // longer ones first
 //            debug("CHECKING \(c.rawValue)")
             if let parsedChip {
-                if parsedChip.deviceNormalizedName.contains(c.rawValue.deviceNormalizedName.replacingOccurrences(of: "apple ", with: "")) {
+                if parsedChip.deviceNormalized.contains(c.rawValue.deviceNormalized.replacingOccurrences(of: "apple ", with: "")) {
                     cpu = c
                     break // get first one
                 }
-            } else if officialName.deviceNormalizedName.contains(c.caseName) && !partNumbers.definition.deviceNormalizedName.contains(c.caseName) { // make sure this isn't part of a model code
+            } else if officialName.deviceNormalized.contains(c.caseName) && !partNumbers.definition.deviceNormalized.contains(c.caseName) { // make sure this isn't part of a model code
                 cpu = c
                 break // get first one
             }
@@ -319,6 +513,23 @@ actor PageParserProcessor {
             for partNumber in partNumbers {
                 if let matched = Device.lookup(model: partNumber, officialNameHint: officialName).first {
                     identifiers.append(contentsOf: matched.identifiers)
+                } else {
+                    identifiers.append("UnknownPartNumber:\(partNumber)")
+                }
+            }
+            
+            // Apple watch needs to handle things differently, so attach an identifier for each case size
+            for (caseSize, models) in watchCaseModels {
+                for model in models.unique {
+                    let hint = officialName.contains("Ultra") ? officialName : "\(officialName) \(caseSize)"
+                    if let device = Device.lookup(model: model, officialNameHint: hint).first {
+                        var identifiers = watchIdentifiers[caseSize] ?? []
+                        identifiers.append(contentsOf: device.identifiers)
+                        watchIdentifiers[caseSize] = identifiers
+                    } else {
+                        debug("Unknown \(hint) model: \(model)", level: .WARNING)
+                        continue
+                    }
                 }
             }
 
@@ -327,94 +538,70 @@ actor PageParserProcessor {
                 identifiers.append(contentsOf: matched.identifiers)
             }
         }
-        identifiers = identifiers.unique
-        for identifier in identifiers {
-            let matched = Device.lookup(identifier: identifier, officialNameHint: officialName).first ?? Device(identifier: identifier) // or create a blank device with identifier
-
-            // Apple Watches have issues with which image, so assume that the matched one is correct if available
-            if idiom == .watch {
-                image = matched.image
-            }
-
-            var ids = [identifier]
-            var mergeDuplicates = false
-            // grouping is normally fine, but Mac16,11 needs to be split due to different processors!
-            if !["Mac16,11", "Mac16,5", "Mac16,7", "Mac16,6", "Mac16,8", "Mac15,6", "Mac15,7"].contains(identifier) {
-                mergeDuplicates = true
-                // Mac15,6 needs to be separate but Mac15,8 & Mac15,10 should be grouped
-                if identifier == "Mac15,8" {
-                    identifiers = ["Mac15,8", "Mac15,10"]
-                } else if identifier == "Mac15,9" {
-                    identifiers = ["Mac15,9", "Mac15,11"]
-                }
-                ids = identifiers
-            }
-
-            
-            // create device for each identifier since we may want to split out
-            let device = Device(
-                idiom: idiom,
-                officialName: officialName,
-                identifiers: ids,
-                introduction: introduction,
-                supportId: supportId,
-                launchOSVersion: .zero,
-                unsupportedOSVersion: unsupportedOSVersion,
-                image: image,
-                capabilities: capabilities,
-                models: partNumbers,
-                colors: .default,
-                cpu: cpu
-            )
-            
-            let parsedItem = ParsedItem(source: source, device: device, matched: matched)
-            items.append(parsedItem)
-            if mergeDuplicates {
-                break // don't make duplicates
-            }
+        // map to case name for generic handling of identifiers
+        if idiom != .watch {
+            watchIdentifiers[.unknown] = identifiers
+        } else {
+//            debug("Parsing \(officialName)")
+//            debug(watchIdentifiers)
         }
-    }
-}
-
-
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 8, *)
-@MainActor
-class PageParser: ObservableObject {
-    static var identifyPages = [
-        "MacBook Pros": "https://support.apple.com/en-us/108052",
-        "iPods": "https://support.apple.com/en-us/103823",
-        "iPads": "https://support.apple.com/en-us/108043",
-        "iPhones": "https://support.apple.com/en-us/108044",
-        "MacBook Air": "https://support.apple.com/en-us/102869",
-        "MacBooks": "https://support.apple.com/en-us/103257",
-        "iMacs": "https://support.apple.com/en-us/108054",
-        "Mac Pros": "https://support.apple.com/en-us/102887",
-        "Mac minis": "https://support.apple.com/en-us/102852",
-        "Mac Studios": "https://support.apple.com/en-us/102231",
-        "Apple TVs": "https://support.apple.com/en-us/101605",
-        "Apple Watches": "https://support.apple.com/en-us/108056",
-    ]
-    
-    let url: String
-    @Published var parsing = false
-    @Published var content: String?
-    @Published var items: [ParsedItem] = []
-
-    init(url: String) {
-        parsing = true
-        self.url = url
-    }
-    
-    nonisolated
-    func parse() async {
-        let processor = PageParserProcessor(url: url)
-        await processor.parse()
-        let content = await processor.content
-        let items = await processor.items
-        main {
-            self.items = items
-            self.content = content
-            self.parsing = false
+        for (caseName, identifiers) in watchIdentifiers {
+            var image = image
+            var officialName = officialName
+            if idiom == .watch {
+                // just do for this scope so we can reset for each case name
+                if !officialName.contains("Ultra") { // Ultras don't include case size.
+                    officialName = "\(officialName) \(caseName)"
+                }
+                partNumbers = (watchCaseModels[caseName] ?? []).unique
+                // pick image (first one for smaller version, first non-aluminum for larger variant)
+                let cases = watchCaseModels.keys.sorted()
+                if caseName == cases.last {
+                    image = image2
+                }
+            }
+            var identifiers = identifiers.unique
+            for identifier in identifiers {
+//                let matched = Device.forcedLookup(identifier: identifier, officialNameHint: officialName) // or create a blank device with identifier
+//                
+//                // Apple Watches have issues with which image, so assume that the matched one is correct if available
+//                if idiom == .watch {
+//                    image = matched.image // TODO: Change to pick the aluminum variant if available
+//                }
+                
+                var ids = [identifier]
+                var mergeDuplicates = false
+                // grouping is normally fine, but Mac16,11 needs to be split due to different processors!
+                if !["Mac16,11", "Mac16,5", "Mac16,7", "Mac16,6", "Mac16,8", "Mac15,6", "Mac15,7"].contains(identifier) {
+                    mergeDuplicates = true
+                    // Mac15,6 needs to be separate but Mac15,8 & Mac15,10 should be grouped
+                    if identifier == "Mac15,8" {
+                        identifiers = ["Mac15,8", "Mac15,10"]
+                    } else if identifier == "Mac15,9" {
+                        identifiers = ["Mac15,9", "Mac15,11"]
+                    }
+                    ids = identifiers
+                }
+                
+                
+                // create bridge device for each identifier since we may want to split out
+                let parsedItem = ParsedItem(
+                    officialName: officialName,
+                    idiom: idiom,
+                    identifiers: ids,
+                    yearIntroduced: yearIntroduced,
+                    supportId: supportId,
+                    unsupportedOSVersion: unsupportedOSVersion,
+                    image: image,
+                    capabilities: capabilities,
+                    partNumbers: partNumbers,
+                    cpu: cpu,
+                    source: source)
+                items.append(parsedItem)
+                if mergeDuplicates {
+                    break // don't make duplicates
+                }
+            }
         }
     }
 }
