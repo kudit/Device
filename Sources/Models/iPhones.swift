@@ -862,6 +862,23 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cameras: [.fusionMain, .fusionUltraWide, .fusionTelephoto, .centerStage],
             cellular: .fiveG,
             screen: .i69),
+
+        iPhone(
+            officialName: "iPhone 17e",
+            identifiers: ["iPhone18,5"],
+            introduction: "2026-03-11",
+            supportId: "126470",
+            launchOSVersion: "26.3",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-17e/iphone-17e-colors.png",
+            capabilities: [.usbC, .wirelessCharging, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .notch, .actionButton, .barometer, .crashDetection, .applePay, .appleIntelligence],
+            models: ["A3575", "A3634", "A3635"],
+            colors: .iPhone17e,
+            cpu: .a19,
+            cameras: [.fusionMain, .trueDepth12MP],
+            cellular: .fiveG,
+            screen: .i61x1170),
+
         // Get images and support links/IDs from: https://support.apple.com/en-us/108044
     ]
 }

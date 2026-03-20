@@ -2,6 +2,8 @@
 //  IdentifyModelParsing.swift
 //  Device
 //
+//  For comparing with Apple Identify Your X pages.
+//
 //  Created by Ben Ku on 3/10/25.
 //
 
@@ -23,6 +25,12 @@ public extension String {
     /// Whitespace collapsed and then replacing occurrances of ` \n` with `\n` and then collapsed again.
     var superCollapseWhitespace: String {
         self.whitespaceCollapsed.replacingOccurrences(of: " \n", with: "\n").whitespaceCollapsed
+    }
+}
+
+public extension CPU {
+    var appleName: String {
+        return self.rawValue.replacingOccurrences(of: "Apple ", with: "")
     }
 }
 
@@ -154,16 +162,16 @@ actor PageParser: DeviceBridgeLoader {
         "Apple Vision Pros": "https://support.apple.com/en-mk/125375",
     ]
 
-    let url: String
+    let sourceURL: String
     var content: String?
     var items: [ParsedItem] = []
 
-    init(url: String) {
-        self.url = url
+    init(sourceURL: String) {
+        self.sourceURL = sourceURL
     }
 
     func devices() async -> [ParsedItem] {
-        let content = try? await fetchURL(urlString: url)
+        let content = try? await fetchURL(urlString: sourceURL)
         var parts = [String]()
         if content?.contains("Identify your Apple Watch") ?? false, let p = content?.components(separatedBy: "<h2 ") {
             // Apple Watch pages
@@ -202,7 +210,7 @@ actor PageParser: DeviceBridgeLoader {
         var string = source.replacingOccurrences(of: "‑", with: "-") // replace non-breaking hyphen with normal hyphen.
 
         // Apple TV sections don't have the identifier, just the model number
-        guard var officialName = string.extract(from: nil, to: "</") else {
+        guard var officialName = string.extract(from: nil, to: "</h") else { // iPad Air first item has an empty span for the anchor tag.  Name should be in a header anyways.
             debug("Parse could not find a name section in: \(source)", level: .WARNING)
             return // needs a title at least!
         }
@@ -229,8 +237,8 @@ actor PageParser: DeviceBridgeLoader {
 //            debug("Parsing \(officialName)")
             idiom = .watch
         }
-        officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: " M4 Pro or M4 Max", with: "")
-
+        officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: [" M4 Pro or M4 Max"," M5 Pro or M5 Max"], with: "").replacingOccurrences(of: "&nbsp;", with: " ")
+        
         // make sure this isn't the header or footer section
         // note: original iphone has "The model number" so M isn't capitalized.
         guard string.contains("Model Identifier") || string.contains("odel number") || string.contains("Model:") else {
@@ -368,9 +376,9 @@ actor PageParser: DeviceBridgeLoader {
         }
         
         // Get SupportID
-        if let sid = string.extract(from: "<a href=\"/en-us/", to: "\"") {
+        if idiom != .tv, let sid = string.extract(from: "<a href=\"/en-us/", to: "\"") {
             supportId = sid
-        } else if let sid = string.extract(from: "See the <a href=\"https://support.apple.com/kb/", to: "\"") { // fix since the remote support comes first on Apple TV models so we want to pull the actual support article, not the siri remote support ID.
+        } else if idiom == .tv, let sid = string.extract(from: "See the <a href=\"https://support.apple.com/", to: "\"") { // fix since the remote support comes first on Apple TV models so we want to pull the actual support article, not the siri remote support ID.
             supportId = sid
         } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/kb/", to: "\"") {
             supportId = sid
@@ -484,10 +492,11 @@ actor PageParser: DeviceBridgeLoader {
         } else if string.contains("This model has the"), let pc = string.extract(from: "This model has the", to: "chip")?.tagsStripped.trimmed, !pc.contains(" or ") {
             parsedChip = pc
         }
-        if let parsedChip {
+        if let parsedChip, !parsedChip.contains("M5") { // M5 models include the name inside the parentheses and should be added in the identifier breakout below
             // append to the product name
             officialName += " \(parsedChip)"
         }
+        
         for c in CPU.allCases.reversed() { // longer ones first
 //            debug("CHECKING \(c.rawValue)")
             if let parsedChip {
@@ -571,8 +580,16 @@ actor PageParser: DeviceBridgeLoader {
                 
                 var ids = [identifier]
                 var mergeDuplicates = false
+                var mcpu = cpu
+                let idCPUMap = [
+                    "Mac17,7": CPU.m5pro,
+                    "Mac17,9": .m5max,
+                    "Mac17,6": .m5pro,
+                    "Mac17,8": .m5max,
+                ]
+
                 // grouping is normally fine, but Mac16,11 needs to be split due to different processors!
-                if !["Mac16,11", "Mac16,5", "Mac16,7", "Mac16,6", "Mac16,8", "Mac15,6", "Mac15,7"].contains(identifier) {
+                if !["Mac16,11", "Mac16,5", "Mac16,7", "Mac16,6", "Mac16,8", "Mac15,6", "Mac15,7"].contains(identifier) && !idCPUMap.keys.contains(identifier) {
                     mergeDuplicates = true
                     // Mac15,6 needs to be separate but Mac15,8 & Mac15,10 should be grouped
                     if identifier == "Mac15,8" {
@@ -583,10 +600,20 @@ actor PageParser: DeviceBridgeLoader {
                     ids = identifiers
                 }
                 
+                var idName = officialName
+                if officialName.contains(",)") {
+                    // M5 models
+                    for (id, mapcpu) in idCPUMap {
+                        if ids.contains(id) {
+                            mcpu = mapcpu
+                            idName = idName.replacingOccurrences(of: ",)", with: ", \(mcpu.appleName))")
+                        }
+                    }
+                }
                 
                 // create bridge device for each identifier since we may want to split out
                 let parsedItem = ParsedItem(
-                    officialName: officialName,
+                    officialName: idName,
                     idiom: idiom,
                     identifiers: ids,
                     yearIntroduced: yearIntroduced,
@@ -595,7 +622,7 @@ actor PageParser: DeviceBridgeLoader {
                     image: image,
                     capabilities: capabilities,
                     partNumbers: partNumbers,
-                    cpu: cpu,
+                    cpu: mcpu,
                     source: source)
                 items.append(parsedItem)
                 if mergeDuplicates {

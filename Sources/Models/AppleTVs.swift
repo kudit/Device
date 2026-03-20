@@ -63,10 +63,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV 4K (3rd generation) Wi-Fi + Ethernet",
             identifiers: ["AppleTV14,1"],
             introduction: 2022.introductionYear,
-            supportId: "SP886",
+            supportId: "111839", // SP886
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/fall-2022-apple-tv-w-remote.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-3gen.png",
             capabilities: [.ethernet],
             models: ["A2843"],
             cpu: .a15),
@@ -74,20 +74,20 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV 4K (3rd generation) Wi-Fi",
             identifiers: ["AppleTV14,1"],
             introduction: 2022.introductionYear,
-            supportId: "SP886",
+            supportId: "111839", // SP886
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/fall-2022-apple-tv-w-remote.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-3gen.png",
             models: ["A2737"],
             cpu: .a15),
         AppleTV(
             officialName: "Apple TV 4K (2nd generation)",
             identifiers: ["AppleTV11,1"],
             introduction: 2021.introductionYear,
-            supportId: "SP845",
+            supportId: "111922", // SP845
             launchOSVersion: "14.5",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-2nd-gen.png",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-2gen.png",
             capabilities: [.ethernet],
             models: ["A2169"],
             cpu: .a12),
@@ -95,10 +95,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV 4K (1st generation)",
             identifiers: ["AppleTV6,2"],
             introduction: 2017.introductionYear,
-            supportId: "SP769",
+            supportId: "111929", // SP769
             launchOSVersion: "11",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-1gen.png",
             capabilities: [.ethernet],
             models: ["A1842"],
             cpu: .a10x),
@@ -106,10 +106,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV HD",
             identifiers: ["AppleTV5,3"],
             introduction: 2015.introductionYear,
-            supportId: "SP724",
+            supportId: "111928", // SP724
             launchOSVersion: "9",
             unsupportedOSVersion: nil,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4gen-hd.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4gen-hd.png",
             capabilities: [.ethernet, .usbC],
             models: ["A1625"],
             cpu: .a8),
@@ -118,10 +118,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV (3rd generation) rev A", // separate model due to quiet replacement: https://everymac.com/systems/apple/apple-tv/specs/apple-tv-3rd-generation-early-2013-specs.html
             identifiers: ["AppleTV3,2"],
             introduction: "2013-01-29",
-            supportId: "SP648",
+            supportId: "112429", // SP648
             launchOSVersion: "6.1",
             unsupportedOSVersion: "8",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-3gen.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-3gen.png",
             capabilities: [.ethernet], // .microUSB
             models: ["A1469"],
             cpu: .a5),
@@ -129,10 +129,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV (3rd generation)",
             identifiers: ["AppleTV3,1"],
             introduction: 2012.introductionYear,
-            supportId: "SP648",
+            supportId: "112429", // SP648
             launchOSVersion: "5.1",
             unsupportedOSVersion: "8",
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-3gen.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-3gen.png",
             capabilities: [.ethernet], // .microUSB
             models: ["A1427"],
             cpu: .a5),
@@ -140,10 +140,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV (2nd generation)",
             identifiers: ["AppleTV2,1"],
             introduction: 2010.introductionYear,
-            supportId: "SP598",
+            supportId: "112428", // SP598
             launchOSVersion: "4.1", // iOS variant
             unsupportedOSVersion: "7", // max 6.2.1
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-2gen.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-2gen.png",
             capabilities: [.ethernet],
             models: ["A1378"],
             cpu: .a4),
@@ -151,10 +151,10 @@ public struct AppleTV: IdiomType {
             officialName: "Apple TV (1st generation)",
             identifiers: ["AppleTV1,1"],
             introduction: 2007.introductionYear,
-            supportId: "SP19",
+            supportId: "112555", // SP19
             launchOSVersion: "10.4.7", // stripped down macOS
             unsupportedOSVersion: "10.5", // not updated
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-1gen.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-1gen.png",
             capabilities: [.ethernet],
             models: ["A1218"],
             cpu: .intel_pm1),

@@ -25,6 +25,30 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+TODO: Fix search misses "Mac15,14"
+TODO: CHAT Add Firewire and DisplayPort icons/properties (have ChatGPT design)
+TODO: CHAT Add Target Display Mode support.
+TODO: CHAT Add FastCharge support (since part of DeviceKit).
+      return [.iPhone8, .iPhone8Plus, .iPhoneX, .iPhoneXS, .iPhoneXSMax, .iPhoneXR, .iPhone11, .iPhone11Pro, .iPhone11ProMax, .iPhoneSE2, .iPhone12, .iPhone12Mini, .iPhone12Pro, .iPhone12ProMax, .iPhone13, .iPhone13Mini, .iPhone13Pro, .iPhone13ProMax, .iPhoneSE3, .iPhone14, .iPhone14Plus, .iPhone14Pro, .iPhone14ProMax, .iPhone15, .iPhone15Plus, .iPhone15Pro, .iPhone15ProMax, .iPad10, .iPadAir4, .iPadAir5, .iPadMini6, .iPadPro11Inch, .iPadPro12Inch3, .iPadPro11Inch2, .iPadPro12Inch4, .iPadPro11Inch3, .iPadPro12Inch5, .iPadPro11Inch4, .iPadPro12Inch6]
+
+
+v2.12.0 3/19/2026
+Updated ports on iMacs to account for ethernet and usbC missing on earlier models.
+Added new 2026 M5 devices.
+Skipped AirPods in AppleDevice conversions.
+Submitted multiple pull requests to AppleDevice to add Touch ID flag to Touch ID iPads and other changes.
+Apple Watch SE 3 had the wrong case sizes.
+Apple TV images switched to current PNG versions.
+Added roundedCorners as a capability to all Apple Watches starting with Series 4.
+Added link button to the source content in Migration tool to make it easier to reference.
+Added  to the official Apple migration tools for easier distinction.
+Added accounting for different naming format of M5 MacBook Pro models (in the parentheses rather than after).
+**App Store**
+Added 2026 iPads, MacBooks, and iPhone 17e.
+Fixed many missing feature flags like USB-C missing on some iMacs and fixed early Apple Watches from reporting roundedCorners when it didn't have them.
+Fixed wrong case size on Apple Wath SE 3.
+Updated Apple TV images to PNG versions.
+
 v2.11.0 10/22/2025
 Added .pro to default Apple Vision devices.
 Added M5 chip.

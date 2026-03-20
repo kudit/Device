@@ -23,6 +23,11 @@ protocol DeviceBridgeLoader: Sendable {
     associatedtype Bridge
     /// Get a list of the Bridge device type devices (likely from text that is parsed hence async)
     func devices() async throws -> [Bridge]
+    /// URL for use in links to allow viewing the source document easily.
+    var sourceURL: String { get }
+}
+extension DeviceBridgeLoader {
+    var source: URL { URL(string: sourceURL)! }
 }
 import SwiftUI
 enum MatchType {

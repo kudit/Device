@@ -779,6 +779,40 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i13,
             pencils: [.usbC, .pro]),
+
+        iPad(
+            officialName: "iPad Air 11-inch (M4)",
+            identifiers: ["iPad16,8", "iPad16,9"],
+            introduction: "2026-03-11",
+            supportId: "126471",
+            launchOSVersion: "26.3",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2026-ipad-air-11.png",
+            capabilities: [.air, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer, .appleIntelligence],
+            models: ["A3459", "A3460", "A3463"],
+            colors: .iPadAirM2,
+            cpu: .m4,
+            cameras: [.wide, .faceTimeHD1080p],
+            cellular: .fiveG,
+            screen: .i109,
+            pencils: [.usbC, .pro]),
+        iPad(
+            officialName: "iPad Air 13-inch (M4)",
+            identifiers: ["iPad16,10", "iPad16,11"],
+            introduction: "2026-03-11",
+            supportId: "126472",
+            launchOSVersion: "26.3",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2026-ipad-air-13.png",
+            capabilities: [.air, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer, .appleIntelligence],
+            models: ["A3461", "A3462", "A3464"],
+            colors: .iPadAirM2,
+            cpu: .m4,
+            cameras: [.wide, .faceTimeHD1080p],
+            cellular: .fiveG,
+            screen: .i109,
+            pencils: [.usbC, .pro]),
+
     ]
     
     // Lookup: https://support.apple.com/en-us/108043

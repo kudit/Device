@@ -275,8 +275,9 @@ extension [String] {
 
 
 struct MacLookupLoader: DeviceBridgeLoader {
+    let sourceURL = "https://raw.githubusercontent.com/voyager-software/MacLookup/refs/heads/master/Sources/MacLookup/Resources/all-macs.json"
     func devices() async throws -> [MacLookup] {
-        let jsonString = try await fetchURL(urlString: "https://raw.githubusercontent.com/voyager-software/MacLookup/refs/heads/master/Sources/MacLookup/Resources/all-macs.json")
+        let jsonString = try await fetchURL(urlString: sourceURL)
 
         var devices = try [MacLookup](fromJSON: jsonString)
         

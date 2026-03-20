@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.11.0"
+    static let version: Version = "2.12.0"
 }
 import Compatibility
 
@@ -422,7 +422,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             case .tv:
                 return [.headphoneJack, .screen(.tv)]
             case .watch:
-                return [.battery, .wirelessCharging, .nfc, .applePay, .roundedCorners]
+                return [.battery, .wirelessCharging, .nfc, .applePay]
             case .vision: // All visions are pro for now.  When this is no longer the case, move this to each device.
                 return [.pro, .battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screen(.p720), .appleIntelligence]
             case .homePod:

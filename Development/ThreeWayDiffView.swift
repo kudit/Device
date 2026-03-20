@@ -9,6 +9,7 @@
 import SwiftUI
 
 // MARK: - Diff view
+@available(iOS 15, *)
 struct ThreeWayDiffView<T: PropertyIterable>: View {
     enum Mode: String, CaseIterable {
         case left = "Left"
@@ -262,6 +263,7 @@ struct TestDevice: PropertyIterable {
     var versionJ: Version?
 }
 
+@available(iOS 15, *)
 struct ThreeWayDiffView_Previews: PreviewProvider {
     static var left = TestDevice(name: "iPod Classic", identifiers: ["iPod1,1"], version: 1, flags: ["wifi": false])
     static var right = TestDevice(name: "iPod Classic", identifiers: ["iPod1,2"], version: 2, flags: ["wifi": true])
@@ -276,6 +278,7 @@ struct ThreeWayDiffView_Previews: PreviewProvider {
     }
 }
 
+@available(iOS 15, *)
 struct DiffSwitcherView<T: DeviceBridge>: View {
     @State private var bridgeDiff = true
 
@@ -307,6 +310,7 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
     }
 }
 
+@available(iOS 15, *)
 #Preview {
     List {
         DiffSwitcherView(bridge: try! MacLookup(fromJSON: """

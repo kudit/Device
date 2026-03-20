@@ -27,7 +27,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
     case macForm(Mac.Form)
     case watchSize(AppleWatch.WatchSize)
     // connections
-    case headphoneJack, ethernet, thirtyPin, lightning, usbC, thunderbolt // TODO: Add .sdcReader for SDCard Reader, FireWire 800, HDMI, DisplayPort?, USB-A?
+    case headphoneJack, ethernet, thirtyPin, lightning, usbC, thunderbolt // TODO: Add .cardReader for SDCard Reader, .firewire for FireWire 800, .hdmi for HDMI, .displayPort for Thunderbolt 1 DisplayPort?, .usbA for USB-A?, .irReceiver, add Apple Pencil Hover feature??
     // power
     case battery
     case wirelessCharging // qi charging
@@ -44,7 +44,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
     case screen(Screen)
     case force3DTouch
     case roundedCorners
-    case notch // newer macs and original faceID phones.
+    case notch // newer macs and faceID phones without Dynamic Island.
     case dynamicIsland
     case alwaysOnDisplay
     // TODO: add ProMotion support
@@ -97,7 +97,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
         case .headphoneJack:
             return "headphones"
         case .ethernet:
-            return "network" // TODO: Add custom symbol
+            return "network" // TODO: CHAT Add custom symbol
         case .thirtyPin:
             return "cable.connector.30.pin"
         case .lightning:
@@ -121,7 +121,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
         case .dynamicIsland:
             return "dynamicisland"
         case .alwaysOnDisplay:
-            return "sun.max.fill" // TODO: Create custom icon sun in square?  Lines in square?  Clock badge?
+            return "sun.max.fill" // TODO: CHAT Create custom icon sun in square?  Lines in square?  Clock badge?
         case .battery:
             return "battery.100percent"
         case .ringerSwitch:
@@ -434,7 +434,9 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case m4 = "Apple M4"
     case m4pro = "Apple M4 Pro"
     case m4max = "Apple M4 Max"
-    case m5
+    case m5 = "Apple M5"
+    case m5pro = "Apple M5 Pro"
+    case m5max = "Apple M5 Max"
     // NO M4 Ultra version
     // iPod/iPhone
     /// Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch (ARM 8900B and APL0098) (max iOS 4.2.1)/
@@ -467,7 +469,7 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case a17pro
     case a18
     case a18pro
-    case a19
+    case a19 = "Apple A19"
     case a19pro
     //  TV
     case intel_pm1 = "Intel Pentium M (1GHz)"
@@ -682,6 +684,10 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     
     static let macbookAir2025 = [macbookairSkyblue, solidSilver, macbookairStarlight, macbookairMidnight]
     
+    // MacBook Neo
+    case blush = "#e8d0d0", citrus = "#dddc8c", indigo = "#596680"
+    static let macbookNeo = [solidSilver, blush, citrus, indigo]
+    
     // iPod Touch (5th generation)
     case iPodBlack = "#4d5663", iPodSilver = "#c9cbca", iPodPink = "#fb797e", iPodYellow = "#cace39", iPodBlue = "#26c4e5"
     static let iPodTouch5thGen = [iPodBlack, iPodSilver, iPodPink, iPodYellow, iPodBlue]
@@ -792,6 +798,9 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     // iPhone 17 Pro
     case cosmicOrange = "#F77E2D", deepBlue = "#32374a"
     static let iPhone17Pro = [cosmicOrange, deepBlue, white17]
+    
+    case softPink = "#fce7e6"
+    static let iPhone17e = [softPink, white16, black16]
 
     // iPad Air
     static let iPadAir = [spaceGray6, silver6]
@@ -813,11 +822,10 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     case pink10 = "#de6274", blue10 = "#6480a3", yellow10 = "#f0d95b"
     static let iPad10 = [solidSilver, pink10, blue10, yellow10]
     
-    // iPad Air 2024, iPad mini (A17 Pro)
+    // iPad Air M2 2024, iPad mini (A17 Pro), iPad Air M4 2026
     case starlightAir = "#e3dcd1", purpleAir = "#e3dee9", blueAir = "#d7e5e6"
-    static let iPadAirM2 = [spaceGrayA5, blueAir, purpleAir, starlightAir] // also iPadAirM3, original order: [spaceGrayA5, starlightAir, purpleAir, blueAir]
+    static let iPadAirM2 = [spaceGrayA5, blueAir, purpleAir, starlightAir] // also iPadAirM3 2025, original order: [spaceGrayA5, starlightAir, purpleAir, blueAir]
 
-    
     //  Watch Series 0
     case aluminumRoseGold = "#f6d9cd", aluminumSilver = "#e0e0e0", aluminumSpaceGray = "#727272", aluminumGold = "#f3e4d1", stainlessSpaceBlack = "#2e3a36", stainlessSilver = "#e6e6e7", yellowGold = "#dfc386", roseGold = "#e0b496"
     static let watch0 = [aluminumRoseGold, aluminumSilver, aluminumSpaceGray, aluminumGold, stainlessSpaceBlack, stainlessSilver, yellowGold, roseGold]
@@ -896,6 +904,7 @@ public extension [MaterialColor] {
     static let iMac2024 = MaterialColor.iMac2024
     static let legacySilverMacs = MaterialColor.legacySilverMacs
     static let macbookAir2025 = MaterialColor.macbookAir2025
+    static let macbookNeo = MaterialColor.macbookNeo
     static let iPodTouch5thGen = MaterialColor.iPodTouch5thGen
     static let iPodTouch6thGen = MaterialColor.iPodTouch6thGen
     static let iPodTouch7thGen = MaterialColor.iPodTouch7thGen
@@ -927,6 +936,7 @@ public extension [MaterialColor] {
     static let iPhone17 = MaterialColor.iPhone17
     static let iPhoneAir = MaterialColor.iPhoneAir
     static let iPhone17Pro = MaterialColor.iPhone17Pro
+    static let iPhone17e = MaterialColor.iPhone17e
     static let iPadAir = MaterialColor.iPadAir
     static let iPad10 = MaterialColor.iPad10
     static let iPadAirM2 = MaterialColor.iPadAirM2
@@ -951,13 +961,14 @@ public extension [MaterialColor] {
     static let homePod = MaterialColor.homePod
     static let homePodMini = MaterialColor.homePodMini
     
-    // TODO: Figure out how to use introspection or definition to get string
+    // TODO: CHAT Figure out how to use introspection or definition to get string
     static let colorSets = [
         iMac: "iMac",
         iMac2Ports: "iMac2Ports",
         iMac2024: "iMac2024",
         legacySilverMacs: "legacySilverMacs",
         macbookAir2025: "macbookAir2025",
+        macbookNeo: "macbookNeo",
         iPodTouch5thGen: "iPodTouch5thGen",
         iPodTouch6thGen: "iPodTouch6thGen",
         iPodTouch7thGen: "iPodTouch7thGen",
@@ -989,6 +1000,7 @@ public extension [MaterialColor] {
         iPhone17: "iPhone17",
         iPhoneAir: "iPhoneAir",
         iPhone17Pro: "iPhone17Pro",
+        iPhone17e: "iPhone17e",
         iPadAir: "iPadAir",
         iPad10: "iPad10",
         iPadAirM2: "iPadAirM2",

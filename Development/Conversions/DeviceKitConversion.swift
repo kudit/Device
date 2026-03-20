@@ -648,9 +648,10 @@ struct DeviceKitDevice: DeviceBridge {
 }
 
 struct DeviceKitLoader: DeviceBridgeLoader {
+    let sourceURL = "https://raw.githubusercontent.com/devicekit/DeviceKit/refs/heads/master/Source/Device.swift.gyb"
     func devices() async throws -> [DeviceKitDevice] {
         var devices = [DeviceKitDevice]()
-        let code = try await fetchURL(urlString: "https://raw.githubusercontent.com/devicekit/DeviceKit/refs/heads/master/Source/Device.swift.gyb")
+        let code = try await fetchURL(urlString:sourceURL)
         
         let parts = code.components(separatedBy: " = [")
         for part in parts {

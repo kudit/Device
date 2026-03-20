@@ -108,6 +108,8 @@ extension Device.Idiom {
             self = .homePod
         } else if appleDeviceName.contains("Apple Vision") {
             self = .vision
+        } else if appleDeviceName.contains("AirPods") {
+            self = .unspecified // ignore
         } else {
             self = .unspecified
         }
@@ -442,17 +444,19 @@ struct AppleDevice: DeviceBridge {
 
 struct AppleDeviceLoader: DeviceBridgeLoader {
     typealias Bridge = AppleDevice
+
+    let sourceURL = "https://raw.githubusercontent.com/superepicstudios/apple-devices/refs/heads/main/swift/Sources/AppleDevices/Resources/data.json"
     
     func devices() async throws -> [AppleDevice] {
         // import Apple Device data.json
-        let jsonString = try await fetchURL(urlString: "https://raw.githubusercontent.com/superepicstudios/apple-devices/refs/heads/main/swift/Sources/AppleDevices/Resources/data.json")
+        let jsonString = try await fetchURL(urlString: sourceURL)
 
         let devices = try [AppleDevice](fromJSON: jsonString)
         var returnDevices = [AppleDevice]()
         // split AppleTV3,1 and AppleTV3,2
         for device in devices {
             // ignore AirTags and AirPods
-            if ["AirTag", "AirPod"].contains(device.family) { continue }
+            if device.family.containsAny(["AirTag", "AirPod"]) { continue }
             if device.ids.contains("AppleTV3,1") {
                 // split
                 var splitDevice = device

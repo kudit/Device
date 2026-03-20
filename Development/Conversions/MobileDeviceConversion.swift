@@ -156,9 +156,10 @@ struct MobileDevice: DeviceBridge {
 }
 
 struct MobileDeviceLoader: DeviceBridgeLoader {
+    let sourceURL = "https://gist.githubusercontent.com/adamawolf/3048717/raw/Apple_mobile_device_types.txt"
     func devices() async throws -> [MobileDevice] {
         var devices = [MobileDevice]()
-        let lines = try await fetchURL(urlString: "https://gist.githubusercontent.com/adamawolf/3048717/raw/Apple_mobile_device_types.txt").lines
+        let lines = try await fetchURL(urlString: sourceURL).lines
         for line in lines {
             guard line.trimmed != "" else {
 //                print("skipping blank line")

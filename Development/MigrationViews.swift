@@ -66,9 +66,10 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                  if generating {
                      ProgressView("Generating...")
                  } else {
+                     Link("View Source", destination: loader.source)
                      Button("Copy Devices code") {
                          generateCopy {
-                             return await bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
+                             return bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
                          }
                      }
                  }
@@ -84,7 +85,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("Processing View") {
-    DeviceComparisons(loader: PageParser(url: PageParser.identifyPages["iPhones"]!))
+    DeviceComparisons(loader: PageParser(sourceURL: PageParser.identifyPages["iPhones"]!))
 }
 
 #if DEBUG
@@ -93,12 +94,12 @@ struct MigrationMenu: View {
     @State var temporaryText: String = "Calculating..."
     var body: some View {
         List {
-            NavigationLink("AppleDevice Comparison") {
+            NavigationLink("F* AppleDevice Comparison") {
                 DeviceComparisons(loader: AppleDeviceLoader())
             }
             ForEach(PageParser.identifyPages.sorted(by: >), id: \.key) { (label, page) in
-                NavigationLink(label) {
-                    DeviceComparisons(loader: PageParser(url: page))
+                NavigationLink(" \(label)") {
+                    DeviceComparisons(loader: PageParser(sourceURL: page))
                 }
             }
             NavigationLink("MobileDevice Hardware") {
