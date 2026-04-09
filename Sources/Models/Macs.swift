@@ -396,7 +396,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "12",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2014.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MF883xx/A", "MG022xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -409,7 +409,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "11",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2013.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["ME086xx/A", "ME088xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -422,7 +422,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "11",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2013.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["ME086xx/A", "ME087xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -435,7 +435,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "11",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2012.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MD095xx/A", "MD096xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -448,7 +448,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "11",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2012.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MD093xx/A", "MD094xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -461,7 +461,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.14",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2011.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .firewire, .usbA, .cardReader, .miniDisplayPort, .irReceiver, .superDrive
+            capabilities: [.ethernet, .fireWire, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort, .irReceiver, .superDrive
             models: ["MC813xx/A", "MC814xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -474,7 +474,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.14",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2011.jpg",
-            capabilities: [.ethernet, .thunderbolt], // .firewire, .usbA, .cardReader, .miniDisplayPort, .irReceiver
+            capabilities: [.ethernet, .fireWire, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort, .irReceiver
             models: ["MC309xx/A", "MC812xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -487,7 +487,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.14",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2010.jpg",
-            capabilities: [.ethernet], // .firewire, .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .fireWire, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MC510xx/A", "MC511xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -500,7 +500,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.14",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2010.jpg",
-            capabilities: [.ethernet], // .firewire, .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .fireWire], // .usbA, .cardReader, .miniDisplayPort
             models: ["MC508xx/A", "MC509xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -513,7 +513,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.14",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2009-late.jpg",
-            capabilities: [.ethernet], // .firewire, .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .fireWire, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MB952xx/A", "MB953xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -526,7 +526,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.14",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2009-late.jpg",
-            capabilities: [.ethernet], // .firewire, .usbA, .cardReader, .miniDisplayPort
+            capabilities: [.ethernet, .fireWire], // .usbA, .cardReader, .miniDisplayPort
             models: ["MB950xx/A", "MC413xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -539,7 +539,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.12",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-24-2009-early.jpg",
-            capabilities: [.ethernet], // .firewire, .usbA, .miniDisplayPort
+            capabilities: [.ethernet, .fireWire, .targetDisplayMode], // .usbA, .miniDisplayPort
             models: ["MB418xx/A", "MB419xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -552,7 +552,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.12",
             form: .iMac,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-20-2009-early.jpg",
-            capabilities: [.ethernet], // .firewire, .usbA, .miniDisplayPort
+            capabilities: [.ethernet, .fireWire], // .usbA, .miniDisplayPort
             models: ["MB417xx/A", "MC019xx/A"],
             colors: [.silverLight],
             cpu: .intel),
@@ -1021,7 +1021,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m5-pro-m5-max.png",
             capabilities: [.pro],
             models: ["MGE44xx/A", "MGE64xx/A", "MGE74xx/A", "MGE94xx/A", "MGEA4xx/A", "MGEC4xx/A", "MGED4xx/A", "MGEE4xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m5pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1035,7 +1035,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m5-pro-m5-max.png",
             capabilities: [.pro, .max],
             models: ["MGE44xx/A", "MGE64xx/A", "MGE74xx/A", "MGE94xx/A", "MGEA4xx/A", "MGEC4xx/A", "MGED4xx/A", "MGEE4xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m5max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
 
@@ -1050,7 +1050,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-pro-m5-max.png",
             capabilities: [.pro, .max],
             models: ["MGDN4xx/A", "MGDP4xx/A", "MGDQxx/A", "MGDR4xx/A", "MGDT4xx/A", "MGDU4xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m5max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1064,7 +1064,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-pro-m5-max.png",
             capabilities: [.pro],
             models: ["MGDN4xx/A", "MGDP4xx/A", "MGDQxx/A", "MGDR4xx/A", "MGDT4xx/A", "MGDU4xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m5pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
 
@@ -1079,7 +1079,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-colors.png",
             capabilities: [.pro],
             models: ["MDE04xx/A", "MDE14xx/A", "MDE34xx/A", "MDE44xx/A", "MDE54xx/A", "MDE64xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m5,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
 
@@ -1094,7 +1094,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-colors.png",
             capabilities: [.pro],
             models: ["MCX04xx/A", "MCX14xx/A", "MW2U3xx/A", "MW2V3xx/A", "MW2W3xx/A", "MW2X3xx/A", "MXCM3xx/A", "MXCN3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m4,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1108,7 +1108,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
             capabilities: [.pro],
             models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m4pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1122,7 +1122,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
             capabilities: [.pro],
             models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m4max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1136,7 +1136,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
             capabilities: [.pro],
             models: ["MX2T3xx/A", "MX2U3xx/A", "MX2W3xx/A", "MX2X3xx/A", "MX2Y3xx/A", "MX313xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m4max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1150,7 +1150,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
             capabilities: [.pro],
             models: ["MX2V3xx/A", "MX303xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m4pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1205,7 +1205,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m3pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1219,7 +1219,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m3max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1233,7 +1233,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m3pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1247,7 +1247,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro],
             models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: [.solidSilver, .macbookSpaceblack],
             cpu: .m3max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -2219,7 +2219,7 @@ public struct Mac: IdiomType {
             unsupportedOSVersion: "10.12",
             form: .macProGen1,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2009-2012.jpg",
-            capabilities: [], // FireWire 800, USB-A
+            capabilities: [.fireWire], // FireWire 800, USB-A
             models: ["MB871xx/A", "MB535xx/A"],
             colors: .legacySilverMacs,
             cpu: .intel),

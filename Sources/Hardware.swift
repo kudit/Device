@@ -27,10 +27,11 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
     case macForm(Mac.Form)
     case watchSize(AppleWatch.WatchSize)
     // connections
-    case headphoneJack, ethernet, thirtyPin, lightning, usbC, thunderbolt // TODO: Add .cardReader for SDCard Reader, .firewire for FireWire 800, .hdmi for HDMI, .displayPort for Thunderbolt 1 DisplayPort?, .usbA for USB-A?, .irReceiver, add Apple Pencil Hover feature??
+    case headphoneJack, ethernet, fireWire, miniDisplayPort, thirtyPin, lightning, usbC, thunderbolt // TODO: Add .cardReader for SDCard Reader, .hdmi for HDMI, .usbA for USB-A?, .irReceiver, add Apple Pencil Hover feature??
     // power
     case battery
     case wirelessCharging // qi charging
+    case fastCharge // fast charge support
     case magSafe // circular magnetically alligned qi charging (anything that has magSafe should also have wirelessCharging and a battery)
     // notebook magSafe connectors
     case magSafe1, magSafe2, magSafe3
@@ -59,20 +60,21 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
     // sensors
     case compass, lidar, barometer, fallDetection, electrocardiogram, oxygenSensor /* capability - this may be disabled in newer devices in the US */, crashDetection // iPhone 14+
     // software features
+    case targetDisplayMode
     case applePay // iPhone 6+
     case appleIntelligence
     // TODO: altimeter, sleepTracking, wristTemp(thermometer?temperatureSensing?), sleepApnea, depthGauge, waterTemperatureSensor, doubleTap, siren, wristFlick (The wrist flick gesture is available on Apple Watch Series 9 and later and Apple Watch Ultra 2. Not available on Apple Watch SE.)
     // .spatialPhotography, .satellite (watch ultra 3+)
     
     public static let modelAttributes = [Capability.pro, .air, .mini, .plus, .max]
-    public static let connections = [Capability.headphoneJack, .ethernet, .thirtyPin, .lightning, .usbC, .thunderbolt]
-    public static let power = [Capability.battery, .wirelessCharging, .magSafe, .magSafe1, .magSafe2, .magSafe3]
+    public static let connections = [Capability.headphoneJack, .ethernet, .fireWire, .miniDisplayPort, .thirtyPin, .lightning, .usbC, .thunderbolt]
+    public static let power = [Capability.battery, .wirelessCharging, .fastCharge, .magSafe, .magSafe1, .magSafe2, .magSafe3]
     public static let allBiometrics = [Capability.biometrics(.touchID), .biometrics(.faceID), .biometrics(.opticID)]
     public static let wirelessConnections = [Capability.esim, .dualesim, .nfc]
     public static let screenFeatures = [Capability.force3DTouch, .roundedCorners, .notch, .dynamicIsland, .alwaysOnDisplay]
     public static let hardware = [Capability.ringerSwitch, .actionButton, .cameraControl]
     public static let sensors = [Capability.compass, .lidar, .barometer, .fallDetection, .electrocardiogram, .oxygenSensor, .crashDetection]
-    public static let software = [Capability.applePay, .appleIntelligence]
+    public static let software = [Capability.targetDisplayMode, .applePay, .appleIntelligence]
 
     /// Lists all non-associated value cases
     /// New capabilities need to be listed here as well as the sorted extension and have a symbolName entry.
@@ -97,17 +99,23 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
         case .headphoneJack:
             return "headphones"
         case .ethernet:
-            return "network" // TODO: CHAT Add custom symbol
+            return "ethernet"
+        case .fireWire:
+            return "firewire"
+        case .miniDisplayPort:
+            return "minidisplayport"
         case .thirtyPin:
-            return "cable.connector.30.pin"
+            return "thirtyPin"
         case .lightning:
-            return "cable.connector.lightning"
+            return "bolt.fill" // "cable.connector.lightning"
         case .usbC:
-            return "cable.connector.usbc"
+            return "usbC" // "cable.connector.usbc"
         case .thunderbolt:
             return "thunderbolt"
         case .wirelessCharging:
             return "wirelesscharging"
+        case .fastCharge:
+            return "fast.bolt.battery"
         case .nfc:
             return "wave.3.right.circle"
         case .cellular(_):
@@ -121,7 +129,7 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
         case .dynamicIsland:
             return "dynamicisland"
         case .alwaysOnDisplay:
-            return "sun.max.fill" // TODO: CHAT Create custom icon sun in square?  Lines in square?  Clock badge?
+            return "alwaysondisplay"
         case .battery:
             return "battery.100percent"
         case .ringerSwitch:
@@ -134,7 +142,6 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
             return "magsafe"
         case .magSafe1:
             return "magsafe1"
-            //            return "ellipsis.rectangle.fill"
         case .magSafe2:
             return "magsafe2"
         case .magSafe3:
@@ -148,10 +155,9 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
         case .force3DTouch:
             return "hand.tap"
         case .compass:
-            return "location.north.circle" // use "location.north.line" for legacy support.  TODO: Backport so we can use "location.north.circle" (SF Symbols 3 required)
+            return "location.north.circle"
         case .lidar:
             return "lidar"
-            //            return "circle.hexagongrid.fill"
         case .barometer:
             return "barometer"
         case .fallDetection:
@@ -166,11 +172,14 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
             return biometrics.symbolName
         case .cameras(_):
             return "camera"
+        case .targetDisplayMode:
+            return "display"
         case .applePay:
             return "applepay"
-            //            return "creditcard"
         case .appleIntelligence:
-            return "apple.intelligence" // legacy can use "quote.bubble", requires SF Symbols 6 TODO: Create version for backport
+            return "apple.intelligence"
+        @unknown default:
+            return .defaultFallback
         }
     }
     
@@ -895,7 +904,78 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     case midnightHomeMini = "#222428"
     static let homePod = [whiteHome, midnightHome]
     static let homePodMini = [whiteHome, yellowHome, orangeHome, blueHome, spacegrayHome, midnightHomeMini]
+    
 }
+// Named mapping
+public extension MaterialColor {
+    /// Mostly used just for Mac color names.  Dark to light (usually).
+    static let namedColors = [
+        "Black": [.black],
+        "Blue": [MaterialColor.blueDark, .blueLight],
+        "Gold": [.macbookGold],
+        "Green": [.greenDark, .greenLight],
+        "Midnight": [.macbookairMidnight],
+        "Orange": [.orangeDark, .orangeLight],
+        "Pink": [.pinkDark, .pinkLight],
+        "Purple": [.purpleDark, .purpleLight],
+        "Rose Gold": [.macbookRoseGold],
+        "Silver": [.solidSilver, .silverLight],
+        "Sky Blue": [.macbookairSkyblue],
+        "Space Gray": [.macbookSpacegray, .macSpacegray],
+        "Space Black": [.macbookSpaceblack],
+        "Starlight": [.macbookairStarlight],
+        "White": [.white],
+        "Yellow": [.yellowDark, .yellowLight],
+    ]
+    /// Colors that have been used for the given string name.
+    static func allMatching(_ string: String) -> [MaterialColor] {
+        let normalized = string.lowercased().trimmed
+        for (key, value) in MaterialColor.namedColors {
+            let nkey = key.lowercased().trimmed
+            if nkey == normalized {
+                return value
+            }
+        }
+        return []
+    }
+    /// Attempt to identify the correct color from the name.  Context is provided to aid in determining variant when multiple exist.
+    init(named string: String, context: String) {
+        let mapped = MaterialColor.allMatching(string)
+        guard !mapped.isEmpty else {
+            debug("Unknown color string: \"\(string)\"", level: .ERROR)
+            self = .silverLight
+            return
+        }
+        if !context.contains("2024") && context.contains("iMac") {
+            // Choose light variant
+            self = mapped.last!
+        } else {
+            self = mapped.first!
+        }
+        //        if context.models.containsAny(["MacBook10,1", "MacBook9,1", "MacBook8,1", "Mac16,13", "Mac16,12", "Mac15,13", "Mac15,12", "Mac14,15"]) {
+        //            key += "2024" // for solidSilver
+        //        }
+        //        if key == "Space Black" {
+        //            key = "Space Gray"
+        //        }
+        //        if string == "Space Gray" {
+        //            if form.hasBattery {
+        //                return .macbookSpacegray
+        //            } else {
+        //                return .macSpacegray
+        //            }
+        //        }
+    }
+    var name: String {
+        for (key, value) in MaterialColor.namedColors {
+            if value.contains(self) {
+                return key
+            }
+        }
+        return "TO_MAP:.\(self.caseName)"
+    }
+}
+// Named colorsets
 public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]
     

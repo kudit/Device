@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.12.0"
+    static let version: Version = "2.12.1"
 }
 import Compatibility
 
@@ -34,9 +34,6 @@ public extension String {
         return self
             .replacingOccurrences(of: "ʀ", with: "R")
             .replacingOccurrences(of: "", with: "Apple")
-    }
-    var asSearchTerm: String {
-        self.safeDescription.replacingOccurrences(of: [",","(",")"], with: " ").whitespaceCollapsed.lowercased()
     }
     static let unknown = "Unknown"
     static let unknownSupportId = "UNKNOWN_PLEASE_HELP_REPLACE"
@@ -361,8 +358,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return "HomePod"
             case .vision:
                 return " Vision"
-                //            @unknown default:
-                //                return "UnknownDevice"
+            @unknown default:
+                return "UnknownDevice"
             }
         }
         

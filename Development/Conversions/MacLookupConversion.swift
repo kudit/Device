@@ -45,7 +45,7 @@ struct MacLookup: DeviceBridge {
         // convert colors to MaterialColors
         var materials = [MaterialColor]()
         for color in colors {
-            materials.append(MaterialColor.from(string: color, context: self))
+            materials.append(MaterialColor(named: color, context: self.name))
         }
         // if we match, go ahead and use the matched order
         let materialsNames = materials.map { $0.caseName }.sorted()
@@ -92,7 +92,7 @@ struct MacLookup: DeviceBridge {
         if let mac = device.idiomatic as? Mac {
             kindString = mac.form.kindString(context: device)
         }
-        var colors = device.colors.map { $0.macLookupColor(context: device) }
+        var colors = device.colors.map { $0.name }
         if colors.sorted() == self.colors.sorted() {
             colors = self.colors // if we match, go ahead and use Bridge order so comparison will match
         }
@@ -115,73 +115,6 @@ struct MacLookup: DeviceBridge {
     }
 }
 
-extension MaterialColor {
-    static let macLookupMap = [
-        MaterialColor.blueDark: "Blue2024",
-        .blueLight: "Blue",
-        .greenDark: "Green2024",
-        .greenLight: "Green",
-//        .macSpacegray: "Silver", // default
-        .macbookGold: "Gold",
-        .macbookRoseGold: "Rose Gold",
-        .macbookSpacegray: "Space Gray",
-        .macbookairSkyblue: "Sky Blue",
-        .macbookairStarlight: "Starlight",
-        .macbookairMidnight: "Midnight",
-        .orangeDark: "Orange2024",
-        .orangeLight: "Orange",
-        .pinkDark: "Pink2024",
-        .pinkLight: "Pink",
-        .purpleDark: "Purple2024",
-        .purpleLight: "Purple",
-        .silverLight: "SilverLight",
-        .solidSilver: "Silver",
-        .white: "White",
-        .yellowDark: "Yellow2024",
-        .yellowLight: "Yellow",
-    ]
-    static func from(string: String, context: MacLookup) -> MaterialColor {
-        var key = string
-        if context.name.contains("2024") && context.name.contains("iMac") && key != "Silver" {
-            key += "2024"
-        }
-        if !context.name.contains("2024") && context.name.contains("iMac") && key == "Silver" {
-            key = "SilverLight"
-        }
-//        if context.models.containsAny(["MacBook10,1", "MacBook9,1", "MacBook8,1", "Mac16,13", "Mac16,12", "Mac15,13", "Mac15,12", "Mac14,15"]) {
-//            key += "2024" // for solidSilver
-//        }
-        if key == "Space Black" {
-            key = "Space Gray"
-        }
-//        if string == "Space Gray" {
-//            if form.hasBattery {
-//                return .macbookSpacegray
-//            } else {
-//                return .macSpacegray
-//            }
-//        }
-        if let mapped = macLookupMap.firstKey(for: key) {
-            return mapped
-        }
-        debug("Unknown color string: \"\(string)\" (key: \(key))", level: .WARNING)
-        return .silverLight
-    }
-    func macLookupColor(context: Device) -> String {
-        var key = Self.macLookupMap[self]?
-            .replacingOccurrences(of: "2024", with: "") // strip out for Bridge version since it doesn't care
-        if 2023..<2025 ~= context.introduction?.date?.year ?? 0 && key == "Space Gray" && context.is(.pro) && [.m3pro,.m4,.m4pro].contains(context.cpu) {
-            key = "Space Black"
-        }
-        if key == "SilverLight" {
-            key = "Silver"
-        }
-        guard let key else {
-            return "TO_MAP:.\(self.caseName)"
-        }
-        return key
-    }
-}
 extension [String] {
     var distilled: [String] {
         var items = [String]()

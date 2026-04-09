@@ -25,12 +25,13 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
-TODO: Fix search misses "Mac15,14"
-TODO: CHAT Add Firewire and DisplayPort icons/properties (have ChatGPT design)
-TODO: CHAT Add Target Display Mode support.
-TODO: CHAT Add FastCharge support (since part of DeviceKit).
-      return [.iPhone8, .iPhone8Plus, .iPhoneX, .iPhoneXS, .iPhoneXSMax, .iPhoneXR, .iPhone11, .iPhone11Pro, .iPhone11ProMax, .iPhoneSE2, .iPhone12, .iPhone12Mini, .iPhone12Pro, .iPhone12ProMax, .iPhone13, .iPhone13Mini, .iPhone13Pro, .iPhone13ProMax, .iPhoneSE3, .iPhone14, .iPhone14Plus, .iPhone14Pro, .iPhone14ProMax, .iPhone15, .iPhone15Plus, .iPhone15Pro, .iPhone15ProMax, .iPad10, .iPadAir4, .iPadAir5, .iPadMini6, .iPadPro11Inch, .iPadPro12Inch3, .iPadPro11Inch2, .iPadPro12Inch4, .iPadPro11Inch3, .iPadPro12Inch5, .iPadPro11Inch4, .iPadPro12Inch6]
-
+v2.12.1 4/8/2026
+Fixed WASM compile error (hopefully).
+Fixed MacBook Pros in Space Black not Space Gray.
+Added color parsing to Apple Identify Model Parsing.
+Added FireWire, Mini Display Port, FastCharge, and Target Display Mode icons/properties/capabilities.
+Moved DeviceListView into the development folder since that doesn't really need to be in the core module.
+Fixed search so that identifiers are actually searchable (the comma was causing issues).
 
 v2.12.0 3/19/2026
 Updated ports on iMacs to account for ethernet and usbC missing on earlier models.

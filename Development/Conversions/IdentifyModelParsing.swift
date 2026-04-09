@@ -70,6 +70,7 @@ struct ParsedItem: DeviceBridge {
     var capabilities = Capabilities()
     var partNumbers: [String] = []
     var cpu = CPU.unknown
+    var colors: [MaterialColor] = []
     var source: String
     
     // since multiple bridges may have the same source, unique ID
@@ -94,7 +95,7 @@ struct ParsedItem: DeviceBridge {
             image: image,
             capabilities: capabilities,
             models: partNumbers,
-            colors: .default,
+            colors: colors,
             cpu: cpu
         ).merged(from: matched)
     }
@@ -129,6 +130,10 @@ struct ParsedItem: DeviceBridge {
         if self.cpu == .unknown {
             cpu = .unknown
         }
+        var colors = device.colors
+        if self.colors.isEmpty || self.colors.containsAll(colors) {
+            colors = self.colors
+        }
         return ParsedItem(
             officialName: officialName,
             idiom: device.idiom,
@@ -140,6 +145,7 @@ struct ParsedItem: DeviceBridge {
             capabilities: capabilities,
             partNumbers: models,
             cpu: cpu,
+            colors: colors,
             source: source)
     }
 }
@@ -203,6 +209,7 @@ actor PageParser: DeviceBridgeLoader {
         var image2: String? = nil
         var capabilities = Capabilities()
         var partNumbers: [String] = []
+        var colors: [MaterialColor] = []
         var cpu = CPU.unknown
         var watchCaseModels = [String: [String]]() // map case size to part numbers
         var watchIdentifiers = [String: [String]]() // map case size to set of identifiers
@@ -482,6 +489,15 @@ actor PageParser: DeviceBridgeLoader {
             }
             capabilities.insert(.macForm(macForm))
         }
+        
+        // Check for colors
+        if string.contains("Colors:"), let parsedColors = string.extract(from: "Colors:", to: "</p>")?.tagsStripped.components(separatedBy: ",") {
+            for c in parsedColors {
+                let parsedColor = MaterialColor(named: c, context: officialName)
+                colors.append(parsedColor)
+            }
+        }
+        colors.removeDuplicates()
 
         // TODO: Check for <chip> section.
         var parsedChip: String?
@@ -623,6 +639,7 @@ actor PageParser: DeviceBridgeLoader {
                     capabilities: capabilities,
                     partNumbers: partNumbers,
                     cpu: mcpu,
+                    colors: colors,
                     source: source)
                 items.append(parsedItem)
                 if mergeDuplicates {

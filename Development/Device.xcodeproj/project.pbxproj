@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B539FA8A2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */; };
+		B525EADD2F872EB100E10E7D /* DeviceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B525EADC2F872EAD00E10E7D /* DeviceListView.swift */; };
+		B525EADE2F872EB100E10E7D /* DeviceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B525EADC2F872EAD00E10E7D /* DeviceListView.swift */; };
+		B539FA8A2DBD83060017BE25 /* FAppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* FAppleDeviceConversion.swift */; };
 		B539FA8B2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */; };
 		B539FA8C2DBD83060017BE25 /* DeviceKitConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */; };
-		B539FA8E2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */; };
+		B539FA8E2DBD83060017BE25 /* FAppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* FAppleDeviceConversion.swift */; };
 		B539FA8F2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */; };
 		B539FA902DBD83060017BE25 /* DeviceKitConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */; };
 		B539FA9A2DBD836D0017BE25 /* Definable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA962DBD836D0017BE25 /* Definable.swift */; };
@@ -74,12 +76,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B525EADC2F872EAD00E10E7D /* DeviceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceListView.swift; sourceTree = "<group>"; };
 		B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestApp.swift; sourceTree = "<group>"; };
 		B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestView.swift; sourceTree = "<group>"; };
 		B52ED1D52BAB7F7400056A62 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
 		B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTests.swift; sourceTree = "<group>"; };
 		B52ED1D82BAB7F7400056A62 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleDeviceConversion.swift; sourceTree = "<group>"; };
+		B539FA832DBD83060017BE25 /* FAppleDeviceConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAppleDeviceConversion.swift; sourceTree = "<group>"; };
 		B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceKitConversion.swift; sourceTree = "<group>"; };
 		B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifyModelParsing.swift; sourceTree = "<group>"; };
 		B539FA932DBD832A0017BE25 /* DeviceTest-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "DeviceTest-Info.plist"; sourceTree = "<group>"; };
@@ -158,6 +161,7 @@
 				B52ED1CC2BAB7F7400056A62 /* Resources */,
 				B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */,
 				B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */,
+				B525EADC2F872EAD00E10E7D /* DeviceListView.swift */,
 				B539FAB42DBEA1010017BE25 /* MigrationViews.swift */,
 				B539FA932DBD832A0017BE25 /* DeviceTest-Info.plist */,
 				B539FA962DBD836D0017BE25 /* Definable.swift */,
@@ -184,7 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				B539FAAE2DBDF9550017BE25 /* DeviceBridge.swift */,
-				B539FA832DBD83060017BE25 /* AppleDeviceConversion.swift */,
+				B539FA832DBD83060017BE25 /* FAppleDeviceConversion.swift */,
 				B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */,
 				B58B7EAB2E74900900327E78 /* MacLookupConversion.swift */,
 				B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */,
@@ -399,7 +403,7 @@
 				B58B7EAC2E74900E00327E78 /* MacLookupConversion.swift in Sources */,
 				B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */,
 				B5CCE9CB2BC94D8D005CC2D2 /* DeviceTestApp.swift in Sources */,
-				B539FA8E2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */,
+				B539FA8E2DBD83060017BE25 /* FAppleDeviceConversion.swift in Sources */,
 				B539FA9A2DBD836D0017BE25 /* Definable.swift in Sources */,
 				B539FA9B2DBD836D0017BE25 /* DiffView.swift in Sources */,
 				B539FA8F2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */,
@@ -407,6 +411,7 @@
 				B539FAAF2DBDF9580017BE25 /* DeviceBridge.swift in Sources */,
 				B539FA902DBD83060017BE25 /* DeviceKitConversion.swift in Sources */,
 				B539FABF2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */,
+				B525EADD2F872EB100E10E7D /* DeviceListView.swift in Sources */,
 				B539FAA42DBD8A550017BE25 /* DeviceDefinable.swift in Sources */,
 				B539FAB52DBEA10C0017BE25 /* MigrationViews.swift in Sources */,
 			);
@@ -436,7 +441,7 @@
 				B58B7EAD2E74900E00327E78 /* MacLookupConversion.swift in Sources */,
 				B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */,
 				B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */,
-				B539FA8A2DBD83060017BE25 /* AppleDeviceConversion.swift in Sources */,
+				B539FA8A2DBD83060017BE25 /* FAppleDeviceConversion.swift in Sources */,
 				B539FA9D2DBD836D0017BE25 /* Definable.swift in Sources */,
 				B539FA9E2DBD836D0017BE25 /* DiffView.swift in Sources */,
 				B539FA8B2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */,
@@ -444,6 +449,7 @@
 				B539FAB02DBDF9580017BE25 /* DeviceBridge.swift in Sources */,
 				B539FA8C2DBD83060017BE25 /* DeviceKitConversion.swift in Sources */,
 				B539FABE2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */,
+				B525EADE2F872EB100E10E7D /* DeviceListView.swift in Sources */,
 				B539FAA32DBD8A550017BE25 /* DeviceDefinable.swift in Sources */,
 				B539FAB62DBEA10C0017BE25 /* MigrationViews.swift in Sources */,
 			);
@@ -522,7 +528,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.12.0;
+				MARKETING_VERSION = 2.12.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -588,7 +594,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.12.0;
+				MARKETING_VERSION = 2.12.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

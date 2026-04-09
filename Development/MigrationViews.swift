@@ -69,7 +69,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                      Link("View Source", destination: loader.source)
                      Button("Copy Devices code") {
                          generateCopy {
-                             return bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
+                             return await bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
                          }
                      }
                  }
