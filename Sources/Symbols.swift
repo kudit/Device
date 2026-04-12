@@ -67,9 +67,9 @@ public extension Image {
         self.init(symbolName: symbolRepresentable.symbolName)
     }
 }
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-extension String {
-    public static let defaultFallback = "questionmark.square.fill"
+
+public extension String {
+    static let defaultFallback = "questionmark.square.fill"
     /*
      Legacy versions for Symbol (iOS = catalyst = tvOS
      Device min: 15, 11, 14, 6 so create 1.0 or 2.0 versions for fallback.  Make note that watchOS 6 doesn’t support new symbols.
@@ -80,7 +80,8 @@ extension String {
      5.0 = iOS 17, macOS 14, watchOS 10, Xcode 15 * Anything before this, use legacy version.
      */
     /// helper for making sure symbolName: function always returns an actual image and never `nil`.
-    public func safeSymbolName(fallback: String = .defaultFallback) -> String {
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+    func safeSymbolName(fallback: String = .defaultFallback) -> String {
         if !.nativeSymbolCheck(self) {
             // check for asset
             if !.nativeLocalCheck(self) {

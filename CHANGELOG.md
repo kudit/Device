@@ -25,13 +25,19 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.12.2 4/12/2026
+New icon for USB-C was actually what Apple uses to denote Lightning port.
+Moved the availability check so that .defaultFallback is available on all platforms.
+
 v2.12.1 4/8/2026
 Fixed WASM compile error (hopefully).
-Fixed MacBook Pros in Space Black not Space Gray.
 Added color parsing to Apple Identify Model Parsing.
-Added FireWire, Mini Display Port, FastCharge, and Target Display Mode icons/properties/capabilities.
 Moved DeviceListView into the development folder since that doesn't really need to be in the core module.
-Fixed search so that identifiers are actually searchable (the comma was causing issues).
+Fixed search so that identifiers and capabilities are searchable (the comma was causing issues).
+**App Store**
+Fixed MacBook Pros in Space Black not Space Gray.
+Added FireWire, Mini Display Port, FastCharge, and Target Display Mode icons/properties/capabilities.
+Fixed search so that identifiers and capabilities are searchable.
 
 v2.12.0 3/19/2026
 Updated ports on iMacs to account for ethernet and usbC missing on earlier models.

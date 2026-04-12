@@ -107,9 +107,9 @@ public enum Capability: CaseIterable, DeviceAttributeExpressible, Sendable, Coda
         case .thirtyPin:
             return "thirtyPin"
         case .lightning:
-            return "bolt.fill" // "cable.connector.lightning"
+            return "lightning" // "bolt.fill" // "cable.connector.lightning"
         case .usbC:
-            return "usbC" // "cable.connector.usbc"
+            return "cable.connector.usbc"
         case .thunderbolt:
             return "thunderbolt"
         case .wirelessCharging:
