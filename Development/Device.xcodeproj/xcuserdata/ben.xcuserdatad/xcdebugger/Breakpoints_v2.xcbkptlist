@@ -126,36 +126,6 @@
             endingLineNumber = "89"
             landmarkName = "safeSymbolName(fallback:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "8F7BB909-3917-495C-ADD7-2766C8742C43 - 55b6e82d931e1e93"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Swift.String.safeSymbolName(fallback: Swift.String) -&gt; Swift.String"
-                  moduleName = "Device Info.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Symbols.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "91"
-                  endingLineNumber = "91">
-               </Location>
-               <Location
-                  uuid = "8F7BB909-3917-495C-ADD7-2766C8742C43 - 55b6e82d931e1e51"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Swift.String.safeSymbolName(fallback: Swift.String) -&gt; Swift.String"
-                  moduleName = "Device Info.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Symbols.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "89"
-                  endingLineNumber = "89">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

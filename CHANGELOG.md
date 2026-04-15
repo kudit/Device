@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.12.3 4/14/2026 Fixed unnecessary PAT reference in README.  Addressed issue #7 (macs compatible with Tahoe incorrectly listed as not compatible).  Updated Compatibility & Color.
+
 v2.12.2 4/12/2026
 New icon for USB-C was actually what Apple uses to denote Lightning port.
 Moved the availability check so that .defaultFallback is available on all platforms.

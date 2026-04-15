@@ -132,8 +132,6 @@ Install by adding this as a package dependency to your code.  This can be done i
 #### Swift 5+
 You can try these examples in a Swift Playground by adding package: `https://github.com/kudit/Device`
 
-If the repository is private, use the following link to import: `https://<your-PAT-string>@github.com/kudit/Device.git`
-
 Or you can manually enter the following in the Package.swift file:
 ```swift
 dependencies: [
