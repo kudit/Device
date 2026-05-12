@@ -36,6 +36,10 @@ import Compatibility
 
 extension CloudStatus: SymbolRepresentable {}
 
+public extension String {
+    static let defaultFallback = "questionmark.square.fill"
+}
+
 #if canImport(SwiftUI)
 import SwiftUI
 // for switching between asset images and systemImages
@@ -69,7 +73,6 @@ public extension Image {
 }
 
 public extension String {
-    static let defaultFallback = "questionmark.square.fill"
     /*
      Legacy versions for Symbol (iOS = catalyst = tvOS
      Device min: 15, 11, 14, 6 so create 1.0 or 2.0 versions for fallback.  Make note that watchOS 6 doesn’t support new symbols.

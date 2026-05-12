@@ -25,6 +25,8 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.12.4 5/11/2026 Moved `String.defaultFallback` out of SwiftUI-only code so capability symbol fallbacks compile on Linux, WASM, Android, and other non-SwiftUI platforms.
+
 v2.12.3 4/14/2026 Fixed unnecessary PAT reference in README.  Addressed issue #7 (macs compatible with Tahoe incorrectly listed as not compatible).  Updated Compatibility & Color.
 
 v2.12.2 4/12/2026
