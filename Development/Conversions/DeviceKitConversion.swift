@@ -449,7 +449,17 @@ struct DeviceKitDevice: DeviceBridge {
             officialName = "iPhone SE"
         }
         
-        var comments = "Device is a\(officialName[officialName.startIndex].isVowel() ? "n" : "") [\(officialName)](\(device.supportURL))"
+        var supportName = officialName
+        if device.idiom == .watch {
+            var parts = officialName.split(separator: " ")
+            parts.removeLast()
+            supportName = parts.joined(separator: " ")
+            if officialName.contains("Ultra") {
+                officialName = supportName
+            }
+        }
+        
+        var comments = "Device is a\(officialName[officialName.startIndex].isVowel() ? "n" : "") [\(supportName)](\(device.supportURL))"
         comments = comments.replacingOccurrences(of: " (9.7-inch)", with: " 9.7-inch")
         comments = comments.replacingOccurrences(of: " (10.5-inch)", with: " 10.5-inch")
         comments = comments.replacingOccurrences(of: " (11-inch)", with: " 11-inch")
@@ -468,7 +478,7 @@ struct DeviceKitDevice: DeviceBridge {
         comments = comments.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
         officialName = officialName.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
         safeOfficialName = safeOfficialName.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
-
+        
         var imageURL = device.image ?? ""
         // we typically want to ignore changes to images since the ones we have are more likely to be right.
         if device.image != nil {

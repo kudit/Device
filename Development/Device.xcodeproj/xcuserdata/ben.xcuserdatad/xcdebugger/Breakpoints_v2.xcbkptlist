@@ -138,13 +138,13 @@
             filePath = "Conversions/DeviceKitConversion.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "676"
-            endingLineNumber = "676"
+            startingLineNumber = "686"
+            endingLineNumber = "686"
             landmarkName = "devices()"
             landmarkType = "7">
             <Locations>
                <Location
-                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb6980f"
+                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb68692"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -154,11 +154,11 @@
                   urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Conversions/DeviceKitConversion.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "676"
-                  endingLineNumber = "676">
+                  startingLineNumber = "687"
+                  endingLineNumber = "687">
                </Location>
                <Location
-                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb6980f"
+                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb686b1"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -168,8 +168,22 @@
                   urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Conversions/DeviceKitConversion.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "676"
-                  endingLineNumber = "676">
+                  startingLineNumber = "686"
+                  endingLineNumber = "686">
+               </Location>
+               <Location
+                  uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758 - 1b900bc3fdb686b1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for Device_Info.DeviceKitLoader.devices() async throws -&gt; Swift.Array&lt;Device_Info.DeviceKitDevice&gt;"
+                  moduleName = "Device Info.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Conversions/DeviceKitConversion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "686"
+                  endingLineNumber = "686">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -217,8 +231,8 @@
             filePath = "Conversions/DeviceKitConversion.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "517"
-            endingLineNumber = "517"
+            startingLineNumber = "527"
+            endingLineNumber = "527"
             landmarkName = "bridge(from:)"
             landmarkType = "7">
          </BreakpointContent>

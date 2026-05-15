@@ -25,6 +25,10 @@ Real Device iPhone
 Real Device Apple Watch
 Real Device Apple TV
 
+v2.12.5 5/15/2026
+Removed case size from Apple Watch support links for DeviceKit migration.
+Removed roundedCorners from Apple Watch SE and Apple Watch SE 3 capabilities.
+
 v2.12.4 5/11/2026 Moved `String.defaultFallback` out of SwiftUI-only code so capability symbol fallbacks compile on Linux, WASM, Android, and other non-SwiftUI platforms.
 
 v2.12.3 4/14/2026 Fixed unnecessary PAT reference in README.  Addressed issue #7 (macs compatible with Tahoe incorrectly listed as not compatible).  Updated Compatibility & Color.
