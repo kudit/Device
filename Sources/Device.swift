@@ -19,7 +19,7 @@
 
 public extension Device {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.12.5"
+    static let version: Version = "2.13.0"
 }
 import Compatibility
 
@@ -28,8 +28,7 @@ import UIKit // for UIUserInterfaceIdiom
 #endif
 
 public extension String {
-    /// Device.iPhoneXR.description:     iPhone Xʀ
-    /// Device.iPhoneXR.safeDescription: iPhone XR
+    /// Replaces special characters with their ASCII equivalent (such as "iPhone Xʀ" => "iPhone XR" and "" => "Apple"
     var safeDescription: String {
         return self
             .replacingOccurrences(of: "ʀ", with: "R")
@@ -156,7 +155,6 @@ public extension DeviceType {
         return idiomatic
     }
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    @MainActor
     var symbolName: String {
         return idiomatic.symbolName
     }
@@ -260,6 +258,48 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         case homePod
         /// An interface designed for visionOS and Apple Vision Pro.
         case vision
+        
+        public var officialNames: [String] {
+            switch self {
+            case .mac:
+                return ["MacBook", "MacBook Neo", "MacBook Air", "MacBook Pro", "Mac Pro", "Mac Studio", "Mac Mini", "iMac"]
+            case .pod:
+                return ["iPod"]
+            case .phone:
+                return ["iPhone"]
+            case .pad:
+                return ["iPad"]
+            case .tv:
+                return ["Apple TV"]
+            case .carPlay:
+                return ["CarPlay"]
+            case .watch:
+                return ["Apple Watch"]
+            case .homePod:
+                return ["HomePod"]
+            case .vision:
+                return ["Apple Vision Pro"]
+            case .unspecified:
+                fallthrough
+            @unknown default:
+                return ["Unspecified"]
+            }
+        }
+        
+        /// Infers an idiom only from explicit product-family wording in a lookup hint.
+        /// Returning `nil` for an ambiguous hint preserves the full fuzzy search.
+        public init?(fromNameHint hint: String) {
+            let hint = hint.safeDescription.lowercased()
+            // Check the more specific portable families before Mac because names such
+            // as "MacBook" contain the broader "Mac" token.
+            for idiom in Self.allCases {
+                if hint.containsAny(idiom.officialNames.map { $0.safeDescription.lowercased() }) {
+                    self = idiom
+                    return
+                }
+            }
+            return nil
+        }
         
 #if canImport(UIKit) && !os(watchOS)
         public init(_ userInterfaceIdiom: UIUserInterfaceIdiom) {
@@ -414,12 +454,18 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                     .headphoneJack,
                     .battery,
                     ]
-            case .phone, .pad:
+            case .phone:
+                // Every iPhone generation includes GPS, so keeping this in the idiom default
+                // prevents individual phone definitions from drifting as new models are added.
+                return [.battery, .gps]
+            case .pad:
                 return [.battery]
             case .tv:
                 return [.headphoneJack, .screen(.tv)]
             case .watch:
-                return [.battery, .wirelessCharging, .nfc, .applePay]
+                // All Apple Watch model families are GPS-capable, including GPS-only and
+                // cellular variants, so this belongs at the idiom default level.
+                return [.battery, .wirelessCharging, .nfc, .applePay, .gps]
             case .vision: // All visions are pro for now.  When this is no longer the case, move this to each device.
                 return [.pro, .battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screen(.p720), .appleIntelligence]
             case .homePod:
@@ -599,6 +645,10 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     /// - returns: An list of `Device` structs.
     public static func lookup(identifier: String? = nil, model: String? = nil, supportId: String? = nil, officialNameHint: String? = nil) -> [Device] {
         var matchingDevices: [Device] = []
+        // Normalize the hint once for the entire lookup. The same prepared values
+        // are reused by fallback filtering and result ordering instead of being
+        // reconstructed for every candidate's `matchScore` invocation.
+        let matchHint = officialNameHint.map(MatchHint.init)
         if let identifier {
             matchingDevices = Device.all.filter { $0.device.identifiers.contains(identifier) }
         }
@@ -611,13 +661,32 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         // remove duplicates
         matchingDevices = matchingDevices.unique
         // iPads don't have models to lookup and have no identifier on page, so will be searching all to start.  At some point, remove this again so our iPads don't return everything.
-        if matchingDevices.isEmpty, let officialNameHint {
-            matchingDevices = Device.all.filter { $0.matchScore(officialNameHint) > 0.1 }
+        // Some support pages do not provide a usable model or identifier, so name
+        // matching remains the fallback. When the hint names an unmistakable Apple
+        // product family, limit that fallback to the corresponding idiom before
+        // doing normalized string work. This prevents an Apple Watch lookup from
+        // scoring every iPod, Mac, phone, and other unrelated device definition.
+        if matchingDevices.isEmpty, let matchHint {
+            let candidates: [Device]
+            if let hintedIdiom = Idiom(fromNameHint: matchHint.original) {
+                candidates = Device.all.filter { $0.idiom == hintedIdiom }
+            } else {
+                // Ambiguous names deliberately retain the broad historical search
+                // rather than risking a false negative from an inferred category.
+                candidates = Device.all
+            }
+            matchingDevices = candidates.filter { $0.matchScore(matchHint) > 0.1 }
         }
         guard matchingDevices.count > 1 else {
             return matchingDevices // no need to sort or anything if we already have exactly one or zero matches
         }
-        matchingDevices.sort { $0.matchScore(officialNameHint) > $1.matchScore(officialNameHint) }
+        // Sorting can invoke its comparator many times. Calculate each normalized
+        // match score once per candidate so repeated comparisons become dictionary
+        // lookups instead of repeating normalization and year-qualifier removal.
+        let scores = Dictionary(uniqueKeysWithValues: matchingDevices.map { device in
+            (device, device.matchScore(matchHint))
+        })
+        matchingDevices.sort { scores[$0, default: 0] > scores[$1, default: 0] }
 //            debug("MATCH RESULTS:\n\(matchingDevices.map { "\($0.matchScore(officialNameHint)): \($0.officialName)" }.joined(separator: "\n"))")
         return matchingDevices
     }
@@ -695,32 +764,97 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     public var safeDescription: String {
         return officialName.safeDescription
     }
+
+    /// Prepared forms of a known device name used by fuzzy matching. This value is
+    /// immutable so the process-wide cache is naturally safe for concurrent reads.
+    private struct MatchName {
+        let original: String
+        let normalized: String
+        let yearless: String
+
+        init(_ name: String) {
+            original = name
+            normalized = name.safeDescription.normalized
+            yearless = normalized.removingParentheticalYearQualifiers
+        }
+    }
+
+    /// Prepared forms of one caller-provided hint. A lookup creates this once and
+    /// passes it through every score calculation performed during that lookup.
+    private struct MatchHint {
+        let original: String
+        let normalized: String
+        let yearless: String
+
+        init(_ hint: String) {
+            original = hint
+            normalized = hint.safeDescription.normalized
+            yearless = normalized.removingParentheticalYearQualifiers
+        }
+    }
+
+    /// Known definitions never change after `Device.all` is initialized, so cache
+    /// their normalized and yearless names once for the lifetime of this process.
+    /// Dynamically constructed devices still receive an on-demand prepared value.
+    private static let matchNameCache: [Device: MatchName] = Dictionary(
+        uniqueKeysWithValues: Device.all.map { ($0, MatchName($0.officialName)) })
+
+    private var cachedMatchName: MatchName {
+        Device.matchNameCache[self] ?? MatchName(officialName)
+    }
     
     /// Returns a score indicating the quality of the match for identifying specific models.  1.0 is a perfect match.
     public func matchScore(_ officialNameHint: String?) -> Double {
         guard let officialNameHint else {
             return 0 // unable to match since no hint given.
         }
-        if self.officialName == officialNameHint {
+        return matchScore(MatchHint(officialNameHint))
+    }
+
+    /// Scores against already prepared hint and device-name components so lookup
+    /// runs do not repeat normalization or parenthetical-year removal.
+    private func matchScore(_ hint: MatchHint?) -> Double {
+        guard let hint else {
+            return 0
+        }
+        let officialName = cachedMatchName
+        if officialName.original == hint.original {
             return 1
         }
-        let officialName = self.officialName.normalized
-        let hint = officialNameHint.normalized
-        if officialName == hint {
+        if officialName.normalized == hint.normalized {
             return 0.9
         }
-        if officialName.contains(hint) {
+        if officialName.yearless == hint.yearless {
+            // Apple support pages sometimes add a launch year to otherwise stable
+            // product names (for example the 2026 M5 MacBook Air pages), while the
+            // local definitions may intentionally omit that year.  Treat those as a
+            // strong fuzzy match so color and support-page imports keep resolving.
+            return 0.85
+        }
+        if officialName.normalized.contains(hint.normalized) {
             // check processor appended
-            let stripped = officialName.replacingOccurrences(of: hint, with: "").whitespaceCollapsed.replacingCharacters(in: .whitespacesAndNewlines, with: "").trimmed.lowercased()
+            let stripped = officialName.normalized.replacingOccurrences(of: hint.normalized, with: "").whitespaceCollapsed.replacingCharacters(in: .whitespacesAndNewlines, with: "").trimmed.lowercased()
             if stripped == self.cpu.caseName {
                 return 0.7
             }
             return 0.5
         }
-        if officialNameHint.contains(officialName) {
+        if hint.original.contains(officialName.normalized) {
             return 0.3
         }
         return 0.1
+    }
+}
+
+private extension String {
+    /// Returns a matching key with year-only comma segments removed from parenthetical
+    /// product names, preserving chip and size details that distinguish devices.
+    var removingParentheticalYearQualifiers: String {
+        var normalizedName = self
+        for year in 2000...Date.nowBackport.year {
+            normalizedName = normalizedName.replacingOccurrences(of: ", \(year))", with: ")")
+        }
+        return normalizedName.whitespaceCollapsed.trimmed
     }
 }
 

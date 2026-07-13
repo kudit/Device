@@ -2,3 +2,4 @@ version: 1
 builder:
   configs:
   - scheme: Device Library
+    documentation_targets: [Device]

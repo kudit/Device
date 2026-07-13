@@ -84,7 +84,7 @@ struct TestAttributeListView<T: DeviceAttributeExpressible>: View {
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("TestAttributeListView") {
-    TestAttributeListView(device: Device.current, header: "Environments", attributes: Device.Environment.allCases, styleView: true)
+    TestAttributeListView(device: Device.current, header: "Environments", attributes: Build.Environment.allCases, styleView: true)
 }
 
 
@@ -135,7 +135,7 @@ struct CurrentDeviceDetailsView: View {
                     }
                 }
             }
-            TestAttributeListView(device: currentDevice, header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
+            TestAttributeListView(device: currentDevice, header: "Environments", attributes: Build.Environment.allCases, styleView: styleView, size: size)
             TestAttributeListView(device: currentDevice,header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
             TestAttributeListView(device: currentDevice,header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
@@ -181,17 +181,9 @@ public struct DeviceTestView: View {
                 Text("Battery")
             }
             Section("Environment (Swift \(Device.current.swiftVersion), Compatibility v\(Compatibility.version))") { 
-                NavigationLink {
-                    List {
-                        AttributeListView(device: Device.current, header: "Environments", attributes: Device.Environment.allCases)
-                    }
-                } label: {
-                    HStack {
-                        Spacer()
-                        EnvironmentsView()
-                        Spacer()
-                    }
-                }
+                // Display the sample app's process environment directly because mock
+                // devices no longer carry artificial simulator or preview state.
+                EnvironmentsView(Build.environments())
             }
             Section {
                 NavigationLink(destination: {
@@ -252,7 +244,8 @@ public struct DeviceTestView: View {
         }
         .onAppear { // async test
             Task.detached {
-                let isSimulator = await Device.current.isSimulator
+                // Simulator status is process metadata supplied by Compatibility.Build.
+                let isSimulator = Build.isSimulator
                 let version: Version = await Device.current.systemVersion
                 let info = await Device.current.systemInfo
                 // don't actually print but we want the let above for testing using Device.current from background tasks. - not saying "false" so we don't get compiler warning that this will never be executed.

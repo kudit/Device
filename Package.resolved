@@ -3,19 +3,19 @@
     {
       "identity" : "color",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kudit/Color",
+      "location" : "https://github.com/kudit/Color.git",
       "state" : {
-        "revision" : "5b840821391b44dafc88e36c73d510914e01ec47",
-        "version" : "1.4.0"
+        "revision" : "507fb05d39c930ab64a134bf70c46b0a93dde5b3",
+        "version" : "1.4.7"
       }
     },
     {
       "identity" : "compatibility",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kudit/Compatibility",
+      "location" : "https://github.com/kudit/Compatibility.git",
       "state" : {
-        "revision" : "33d3df7098083bb5de21d260ef9e9fd21b26cabf",
-        "version" : "1.12.0"
+        "revision" : "8742e18f0bbe175b71b951a328dc510a4cc13deb",
+        "version" : "1.15.2"
       }
     }
   ],

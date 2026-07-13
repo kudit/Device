@@ -177,12 +177,19 @@ actor PageParser: DeviceBridgeLoader {
     }
 
     func devices() async -> [ParsedItem] {
+        await devices(progress: nil)
+    }
+
+    func devices(progress: (@Sendable (_ completed: Int, _ total: Int, _ message: String) -> Void)?) async -> [ParsedItem] {
         let content = try? await fetchURL(urlString: sourceURL)
         var parts = [String]()
         if content?.contains("Identify your Apple Watch") ?? false, let p = content?.components(separatedBy: "<h2 ") {
-            // Apple Watch pages
-            parts = p.dropFirst().dropFirst().dropLast().dropLast() // top header & find your part header and learn more footer and legal footer.
-            // NOTE: Odd that dropLast cast works but dropFirst cast does not...
+            // Apple Watch sections are family h2 blocks containing several h3
+            // material/connectivity variants.  Parse those blocks directly so the
+            // material h3 text stays evidence for models, colors, and images rather
+            // than becoming part of the canonical product name.
+            parseWatchSections(p.dropFirst(), progress: progress)
+            return items
         } else if content?.contains("<h2 class=\"gb-header") ?? false, let p = content?.components(separatedBy: "<h2 class=\"gb-header alignment horizontal-align-left\">"), p.count > 1 {
             // iPod Touch page is sectioned differently and doesn't need to strip parts?
             parts = p
@@ -195,8 +202,349 @@ actor PageParser: DeviceBridgeLoader {
                 parts = .init(parts.dropFirst()) // drop additional header
             }
         }
-        parts.forEach { parseItem(source: $0) }
+        let total = parts.count
+        for (index, part) in parts.enumerated() {
+            parseItem(source: part)
+            // Report section-level progress after each parsed block so large Apple
+            // support pages can show a determinate progress bar instead of leaving
+            // the comparison view on an indefinite spinner.
+            progress?(index + 1, total, "Parsed \(index + 1) of \(total) sections")
+        }
         return items
+    }
+
+    private enum WatchConnectivity {
+        case legacy
+        case gps
+        case cellular
+    }
+
+    private struct WatchGroup {
+        /// The Apple-facing product name used as the stable grouping key.
+        var productName: String
+        /// The visible case size, such as `42mm`; Ultra models intentionally omit
+        /// this from the product name while still preserving it for model evidence.
+        var size: String
+        /// Whether this grouped product represents GPS-only, GPS + Cellular, or a
+        /// legacy watch where Apple did not split the page by connectivity.
+        var connectivity: WatchConnectivity
+        /// Apple model numbers listed for this product group and case size.
+        var models: [String] = []
+        /// Colors parsed from Apple's visible material/color list for this group.
+        var colors: [MaterialColor] = []
+        /// The aluminum image used by convention for GPS-only watch variants.
+        var aluminumImage: String?
+        /// The normal stainless/titanium image used by convention for cellular
+        /// variants, excluding rare Edition, Hermes, Nike, ceramic, and gold images.
+        var premiumImage: String?
+        /// The first marketing image Apple presents for the family. Ultra models
+        /// have only one product variant, so Apple's first image is authoritative.
+        var firstImage: String?
+    }
+
+    private func parseWatchSections(_ sections: ArraySlice<String>, progress: (@Sendable (_ completed: Int, _ total: Int, _ message: String) -> Void)?) {
+        let watchSections = sections.filter { section in
+            guard let familyName = section.extract(from: ">", to: "</h2>")?.tagsStripped.trimmed.whitespaceCollapsed else {
+                return false
+            }
+            return familyName.contains("Apple Watch")
+        }
+        let total = watchSections.count
+        for (index, section) in watchSections.enumerated() {
+            guard let familyName = section.extract(from: ">", to: "</h2>")?.tagsStripped.trimmed.whitespaceCollapsed,
+                  familyName.contains("Apple Watch") else {
+                continue
+            }
+            let groups = watchGroups(in: section, familyName: familyName)
+            for group in groups {
+                appendParsedWatchGroup(group, section: section)
+            }
+            progress?(index + 1, total, "Parsed \(index + 1) of \(total) Apple Watch sections")
+        }
+    }
+
+    private func watchGroups(in section: String, familyName: String) -> [WatchGroup] {
+        var groups = [String: WatchGroup]()
+        let variants = section.components(separatedBy: "<h3 ")
+        let variantSections = variants.count > 1 ? variants.dropFirst().map { "<h3 \($0)" } : ["<h2 \(section)"]
+        for variant in variantSections {
+            let variantName = variant.extract(from: ">", to: "</h3>")?.tagsStripped.trimmed.whitespaceCollapsed ?? familyName
+            let connectivity = watchConnectivity(from: variantName, familyName: familyName)
+            let image = variant.components(separatedBy: "<img").compactMap { $0.extract(from: "src=\"", to: "\"") }.first
+            let material = watchMaterialKind(from: variantName, variant: variant, image: image)
+            let colors = watchColors(from: variant, productName: familyName)
+            for caseModel in watchCaseModels(from: variant) {
+                let productName = watchProductName(familyName: familyName, connectivity: connectivity, size: caseModel.size)
+                var group = groups[productName] ?? WatchGroup(productName: productName, size: caseModel.size, connectivity: connectivity)
+                // Preserve source order before applying material preferences. This
+                // is used by Ultra models, whose single identifier needs no GPS or
+                // case-size image convention.
+                if group.firstImage == nil {
+                    group.firstImage = image
+                }
+                group.models += caseModel.models
+                group.models.removeDuplicates()
+
+                // GPS-only products are represented by aluminum watches.  Cellular
+                // products include aluminum colors too, but their comparison image
+                // should prefer the normal stainless/titanium marketing photo when
+                // Apple lists one in the same family section.
+                if connectivity == .gps {
+                    if material == .aluminum, image != nil {
+                        group.aluminumImage = image
+                    }
+                } else if connectivity == .cellular {
+                    if material == .aluminum, image != nil {
+                        group.aluminumImage = image
+                    } else if material == .premium, image != nil, group.premiumImage == nil {
+                        // For GPS + Cellular watches, use the first normal
+                        // non-aluminum, non-Nike/Hermes/Edition marketing image
+                        // Apple lists.  That is usually stainless steel and is
+                        // titanium for newer Series models.
+                        group.premiumImage = image
+                    }
+                } else {
+                    if material == .premium, image != nil, group.premiumImage == nil {
+                        group.premiumImage = image
+                    } else if material == .aluminum, image != nil {
+                        group.aluminumImage = image
+                    }
+                }
+                // Special marketing variants may share this identifier and
+                // therefore remain valid color evidence even though their
+                // images are not representative of the common GPS model.
+                // Edition and Hermes variants use the same cellular identifier,
+                // so include their finishes while still excluding their images.
+                // Legacy watches also consolidate material editions around the
+                // case-size device definition, so retain every listed finish.
+                group.colors += colors
+                group.colors.removeDuplicates()
+                groups[productName] = group
+            }
+        }
+        return groups.values.sorted { $0.productName < $1.productName }
+    }
+
+    private enum WatchMaterialKind {
+        case aluminum
+        case premium
+        case special
+        case unknown
+    }
+
+    private func watchConnectivity(from variantName: String, familyName: String) -> WatchConnectivity {
+        let variant = variantName.lowercased()
+        if variant.contains("gps + cellular") || familyName.contains("Ultra") {
+            return .cellular
+        }
+        if variant.contains("gps") {
+            return .gps
+        }
+        return .legacy
+    }
+
+    private func watchMaterialKind(from variantName: String, variant: String, image: String?) -> WatchMaterialKind {
+        let headingAndImage = "\(variantName) \(image ?? "")".lowercased()
+        let lower = "\(headingAndImage) \(variant)".lowercased()
+        if headingAndImage.containsAny(["herm", "nike", "edition", "ceramic"]) {
+            return .special
+        }
+        if headingAndImage.containsAny(["stainless", "titanium"]) {
+            return .premium
+        }
+        if lower.contains("aluminum") || lower.contains("sport") {
+            return .aluminum
+        }
+        return .unknown
+    }
+
+    private func watchProductName(familyName: String, connectivity: WatchConnectivity, size: String) -> String {
+        var baseName = familyName
+            .replacingOccurrences(of: "(GPS + Cellular)", with: "")
+            .replacingOccurrences(of: "(GPS)", with: "")
+            .whitespaceCollapsed
+            .trimmed
+        if baseName.contains("Ultra") {
+            // Ultra has one case size and one cellular-only identifier, so the
+            // connectivity parenthetical does not distinguish another product.
+            return baseName
+        }
+        switch connectivity {
+        case .gps:
+            baseName += " (GPS)"
+        case .cellular:
+            baseName += " (GPS + Cellular)"
+        case .legacy:
+            break
+        }
+        return "\(baseName) \(size)".whitespaceCollapsed.trimmed
+    }
+
+    private func watchCaseModels(from variant: String) -> [(size: String, models: [String])] {
+        var caseModels = [(size: String, models: [String])]()
+        let plainWatchSection = variant.tagsStripped.whitespaceCollapsed
+        let modelLineParts = plainWatchSection.components(separatedBy: " case (Model:")
+        for index in modelLineParts.indices.dropLast() {
+            guard let caseSize = watchCaseSize(beforeModelText: modelLineParts[index]),
+                  let modelSection = modelLineParts[index + 1].extract(from: nil, to: ")") else {
+                continue
+            }
+            let models = modelNumbers(from: modelSection)
+            if !models.isEmpty {
+                caseModels.append((caseSize, models.unique))
+            }
+        }
+        return caseModels
+    }
+
+    private func watchCaseSize(beforeModelText string: String) -> String? {
+        string
+            .replacingOccurrences(of: [")", "(", ",", ";"], with: " ")
+            .components(separatedBy: " ")
+            .map { $0.trimmed }
+            .last { token in
+                // The text immediately before `case (Model:)` is sometimes a
+                // region or model phrase such as `mainland)` or `A1858)`.  Search
+                // backward for the actual visible case size instead of trusting
+                // the final word in that chunk.
+                token.hasSuffix("mm") && token.dropLast(2).allSatisfy { $0.isNumber }
+            }
+    }
+
+    private func modelNumbers(from string: String) -> [String] {
+        string
+            .replacingOccurrences(of: [",", ";", "(", ")", " and "], with: " ")
+            .components(separatedBy: " ")
+            .map { $0.trimmed }
+            .filter { token in
+                guard token.count == 5, token.first == "A" else {
+                    return false
+                }
+                // Hardware model numbers use `A` plus four digits. Requiring the
+                // complete shape avoids both regional words such as "Asia" and
+                // chip names such as A17 in "iPad mini (A17 Pro)".
+                return token.dropFirst().allSatisfy { $0.isNumber }
+            }
+    }
+
+    private func watchColors(from variant: String, productName: String) -> [MaterialColor] {
+        var colors = [MaterialColor]()
+        let colorFragments = variant.components(separatedBy: "</li>")
+        for fragment in colorFragments {
+            let rawLine = fragment.tagsStripped.whitespaceCollapsed.trimmed
+            let line = rawLine.extract(from: nil, to: " with ") ?? rawLine
+            guard line.containsAny(["arat", "aluminum", "tainless", "titanium", "ceramic"]),
+                  !line.containsAny(["mm case", "Retina display"]) else {
+                continue
+            }
+            let lowercasedLine = line.lowercased()
+            let materialName: String?
+            if lowercasedLine.contains("aluminum") {
+                materialName = "Aluminum"
+            } else if lowercasedLine.contains("stainless") {
+                materialName = "Stainless"
+            } else if lowercasedLine.contains("titanium") {
+                materialName = "Titanium"
+            } else if lowercasedLine.contains("ceramic") {
+                materialName = "Ceramic"
+            } else if lowercasedLine.contains("18-karat") {
+                materialName = "18-Karat"
+            } else {
+                materialName = nil
+            }
+            let colorLine = line
+                .replacingOccurrences(of: [" and ", " or "], with: ", ")
+                .replacingOccurrences(of: ["18-Karat", "aluminum", "stainless steel", "stainless", "titanium", "ceramic"], with: "")
+            for colorName in colorLine.components(separatedBy: ",") {
+                let cleanedName = colorName.trimmed
+                guard !cleanedName.isEmpty else {
+                    continue
+                }
+                // Keep material in lookup keys only for names Apple reuses across
+                // materials. Unambiguous names such as Blue or Green continue to
+                // use the established generic color-name mappings.
+                let sharedMaterialColorNames = ["white", "gray", "silver", "gold", "rose gold", "yellow gold", "space black", "natural"]
+                let qualifiedName: String
+                if productName == "Apple Watch SE", materialName == "Aluminum", cleanedName.lowercased() == "gold" {
+                    // The original SE uses Apple's later brushed-gold aluminum,
+                    // not the paler aluminum gold used by first-generation watches.
+                    qualifiedName = "SE Aluminum Gold"
+                } else if productName.containsAny(["Series 8", "Series 9"]), materialName == "Stainless", cleanedName.lowercased() == "space black" {
+                    // Series 8 and 9 list true Space Black in their Hermes block,
+                    // while Graphite is already listed by the standard stainless
+                    // block. Select the distinct Hermès finish directly.
+                    qualifiedName = "Hermes Stainless Space Black"
+                } else {
+                    qualifiedName = materialName.flatMap { material in
+                    sharedMaterialColorNames.contains(cleanedName.lowercased())
+                        ? "\(material) \(cleanedName)"
+                        : nil
+                    } ?? cleanedName
+                }
+                colors.append(MaterialColor(named: qualifiedName, context: productName))
+            }
+            if lowercasedLine.contains("stainless steel") {
+                // Apple describes the natural stainless finish as just
+                // "stainless steel". Material-word removal otherwise leaves no
+                // color name, so explicitly retain it as Stainless Silver while
+                // separately parsed colors such as Space Black remain intact.
+                colors.append(MaterialColor(named: "Stainless Silver", context: productName))
+            }
+            if lowercasedLine.hasPrefix("titanium ") || lowercasedLine.hasPrefix("titanium or") {
+                // A bare Titanium finish has no adjective left after material-word
+                // removal, so retain the unqualified light titanium swatch.
+                colors.append(MaterialColor(named: "Titanium", context: productName))
+            }
+        }
+        colors.removeDuplicates()
+        return colors
+    }
+
+    private func appendParsedWatchGroup(_ group: WatchGroup, section: String) {
+        var modelsByIdentifier = [String: [String]]()
+        for model in group.models {
+            if let device = Device.lookup(model: model, officialNameHint: group.productName).first {
+                for identifier in device.identifiers {
+                    modelsByIdentifier[identifier, default: []].append(model)
+                }
+            } else {
+                debug("Unknown \(group.productName) model: \(model)", level: .WARNING)
+            }
+        }
+        for (identifier, models) in modelsByIdentifier.sorted(by: { $0.key < $1.key }) {
+            var capabilities = Capabilities()
+            if group.connectivity == .cellular {
+                capabilities.insert(.cellular(.lte))
+            }
+            let preferredImage: String?
+            if group.productName.contains("Ultra") {
+                // All Ultra entries are one-size cellular products; use the first
+                // image exactly as Apple orders it on the identify page.
+                preferredImage = group.firstImage
+            } else if group.connectivity == .legacy {
+                // First generation and Series 2 predate Apple's GPS/cellular page
+                // split. Keep the established convention: aluminum for the 38mm
+                // entry and ordinary stainless steel for the larger 42mm entry.
+                preferredImage = group.size == "38mm"
+                    ? (group.aluminumImage ?? group.premiumImage)
+                    : (group.premiumImage ?? group.aluminumImage)
+            } else {
+                preferredImage = group.connectivity == .cellular
+                    ? (group.premiumImage ?? group.aluminumImage)
+                    : (group.aluminumImage ?? group.premiumImage)
+            }
+            let parsedItem = ParsedItem(
+                officialName: group.productName,
+                idiom: .watch,
+                identifiers: [identifier],
+                supportId: .unknownSupportId,
+                image: preferredImage,
+                capabilities: capabilities,
+                partNumbers: models.unique,
+                colors: group.colors,
+                source: section)
+            items.append(parsedItem)
+        }
     }
 
     func parseItem(source: String) {
@@ -206,18 +554,20 @@ actor PageParser: DeviceBridgeLoader {
         var supportId = String.unknownSupportId
         var unsupportedOSVersion: Version? = nil
         var image: String? = nil
-        var image2: String? = nil
         var capabilities = Capabilities()
         var partNumbers: [String] = []
         var colors: [MaterialColor] = []
         var cpu = CPU.unknown
-        var watchCaseModels = [String: [String]]() // map case size to part numbers
-        var watchIdentifiers = [String: [String]]() // map case size to set of identifiers
+        var parsedIdentifiers = [String: [String]]()
 
         var string = source.replacingOccurrences(of: "‑", with: "-") // replace non-breaking hyphen with normal hyphen.
+        let watchOfficialName = string.contains("Apple Watch") ? (
+            string.extract(from: "class=\"gb-header\">", to: "</h2>")
+            ?? string.extract(from: "class=\"gb-header\">", to: "</h3>")
+        ) : nil
 
         // Apple TV sections don't have the identifier, just the model number
-        guard var officialName = string.extract(from: nil, to: "</h") else { // iPad Air first item has an empty span for the anchor tag.  Name should be in a header anyways.
+        guard var officialName = watchOfficialName ?? string.extract(from: nil, to: "</h") ?? string.extract(from: nil, to: "\" src=\"") else { // iPad Air first item has an empty span for the anchor tag.  Name should be in a header anyways.
             debug("Parse could not find a name section in: \(source)", level: .WARNING)
             return // needs a title at least!
         }
@@ -236,11 +586,18 @@ actor PageParser: DeviceBridgeLoader {
         }
         if officialName.contains("Apple Watch") {
             // pull off partial start tag
-            guard let trimmed = officialName.extract(from: "class=\"gb-header\">", to: nil) else {
-                debug("Unable to get name for Apple Watch!: \(officialName)", level: .WARNING)
-                return
+            if officialName.contains("class=\"gb-header\">") {
+                guard let trimmed = officialName.extract(from: "class=\"gb-header\">", to: nil) else {
+                    debug("Unable to get name for Apple Watch!: \(officialName)", level: .WARNING)
+                    return
+                }
+                officialName = trimmed
             }
-            officialName = trimmed.tagsStripped
+            // Apple now nests h3 variant blocks under a family h2; only the
+            // explicit watch header text is the product name.  Avoid deriving the
+            // name from the larger block because that pulls in duplicated h3 titles
+            // and explanatory body copy.
+            officialName = officialName.tagsStripped
 //            debug("Parsing \(officialName)")
             idiom = .watch
         }
@@ -249,7 +606,7 @@ actor PageParser: DeviceBridgeLoader {
         // make sure this isn't the header or footer section
         // note: original iphone has "The model number" so M isn't capitalized.
         guard string.contains("Model Identifier") || string.contains("odel number") || string.contains("Model:") else {
-            debug("No models so skipping", level: .WARNING)
+            debug("No models in this section so skipping", level: .DEBUG)
             return // don't add any
         }
         // strip out headers that aren't stripped from above.
@@ -290,20 +647,6 @@ actor PageParser: DeviceBridgeLoader {
         if let imageURL = imageTag.extract(from: "src=\"", to: "\"") {
             image = imageURL
         }
-        // for Apple Watch (get alternate image for larger size)
-        if idiom == .watch {
-            let imageParts = string.components(separatedBy: "<img").compactMap { $0.extract(from: "src=\"", to: "\"") }
-            for ip in imageParts {
-                if ip.containsAny(["stainless", "titanium"]) {
-                    image2 = ip
-                    break
-                }
-            }
-            if image2 == nil {
-                image2 = image
-            }
-        }
-        
         let isiPhone = string.contains("iPhone")
         if isiPhone {
             idiom = .phone
@@ -312,8 +655,7 @@ actor PageParser: DeviceBridgeLoader {
         if string.contains("iPad") || string.contains("iPod") || isiPhone, var modelNumbers = string.extract(from: "odel number", to: isiPhone ? "</p>" : "</ul>") {
             // ipads (need to add the </p> tag since stripping tags may result in stuff between lines being removed.
             modelNumbers = modelNumbers.replacingOccurrences(of: ["</p>", "back cover", ".", ")", ":", "on", "and", "April", "August", "America", "Air", "Arab", "Armenia", "iPad", "Cellular", "Wi-Fi", ","], with: " ").tagsStripped.whitespaceCollapsed
-            let modelNumbers = modelNumbers.split(separator: " ").filter { $0.count > 3 && $0.hasPrefix("A") }.map { String($0) }
-            partNumbers = modelNumbers
+            partNumbers = self.modelNumbers(from: modelNumbers)
         } else if var modelNumber = string.extract(from: "odel number", to: "</p>") {
             if let model = modelNumber.extract(from: ": ", to: " ") {
                 modelNumber = model
@@ -324,35 +666,6 @@ actor PageParser: DeviceBridgeLoader {
         } else if let extractedPartNumbers = string.extract(from: "Part Number", to: "</p>"), let extractedPartNumbers = extractedPartNumbers.extract(from: ">", to: nil)?.replacingOccurrences(of: "&nbsp;", with: " ") {
             // macs
             partNumbers = extractedPartNumbers.replacingOccurrences(of: "; ", with: ", ").components(separatedBy: ", ").map { $0.trimmed }
-        } else if idiom == .watch {
-            let watchModelParts = string.components(separatedBy: modelStartTag)
-            for watchModelPart in watchModelParts {
-                guard watchModelPart.contains("mm case") else {
-                    continue
-                }
-                if let modelNumbersSection = watchModelPart.extract(from: nil, to: "</ul>") {
-                    // get case models (need to return multiple parsed items)
-                    let modelParts = modelNumbersSection.components(separatedBy: "</li>")
-                    for modelPart in modelParts {
-                        let modelPart = modelPart.tagsStripped.whitespaceCollapsed.trimmed
-                        // determine case
-                        guard let caseSize = modelPart.extract(from: nil, to: " case ") else {
-                            continue
-                        }
-                        guard let modelsSection = modelPart.extract(from: "Model:", to: ")") else {
-                            continue
-                        }
-                        let models = modelsSection.components(separatedBy: ";")
-                        for model in models {
-                            guard let model = model.trimmed.components(separatedBy: " ").first else {
-                                continue
-                            }
-                            watchCaseModels[caseSize, default: []] += [model]
-                        }
-                    }
-                }
-            }
-
         } else if let modelNumber = string.extract(from: modelStartTag, to: "</ul>") {
             // get case models (need to return 2 parsed items!) - just pull first case and up to user to copy to second?
             if let caseSize = modelNumber.extract(from: nil, to: " case"), let modelNumber = modelNumber.replacingOccurrences(of: ")", with: " ").extract(from: "Model: ", to: " ") {
@@ -365,8 +678,7 @@ actor PageParser: DeviceBridgeLoader {
                 partNumbers = [modelNumber]
             }
         } else if let extractedPartNumbers = string.extract(from: "Model: ", to: ")") {
-            let modelNumbers = extractedPartNumbers.split(separator: " ").filter { $0.count > 3 && $0.hasPrefix("A") && !$0.hasPrefix("As") && !$0.hasPrefix("Am") }.map { String($0) }
-            partNumbers = modelNumbers
+            partNumbers = self.modelNumbers(from: extractedPartNumbers)
         }
         partNumbers.removeDuplicates()
 //        partNumbers.sort() // we actually want the order parsed as this may not be alphabetical.
@@ -388,6 +700,10 @@ actor PageParser: DeviceBridgeLoader {
         } else if idiom == .tv, let sid = string.extract(from: "See the <a href=\"https://support.apple.com/", to: "\"") { // fix since the remote support comes first on Apple TV models so we want to pull the actual support article, not the siri remote support ID.
             supportId = sid
         } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/kb/", to: "\"") {
+            supportId = sid
+        } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/en-us/", to: "\"") { // if it includes the en-us, ignore since we don't care about the localization since it should work regardless.
+            // Apple sometimes returns localized article paths (for example `en-us/108044`) when parsing
+            // modern numeric support pages, so remove the language prefix before matching local IDs.
             supportId = sid
         } else if let sid = string.extract(from: "<a href=\"https://support.apple.com/", to: "\"") {
             // iPads don't have the /kb/ part.
@@ -421,6 +737,11 @@ actor PageParser: DeviceBridgeLoader {
         }
         if string.contains("Action button") {
             capabilities.insert(.actionButton)
+        }
+        if idiom == .watch && officialName.contains("GPS + Cellular") {
+            // Apple Watch cellular support is encoded by separate model identifiers,
+            // so preserve that distinction when parsing support-page groups.
+            capabilities.insert(.cellular(.lte))
         }
         if string.contains("no SIM tray") && !string.contains("CDMA model has no SIM tray") {
             capabilities.insert(.esim)
@@ -491,9 +812,9 @@ actor PageParser: DeviceBridgeLoader {
         }
         
         // Check for colors
-        if string.contains("Colors:"), let parsedColors = string.extract(from: "Colors:", to: "</p>")?.tagsStripped.components(separatedBy: ",") {
+        if string.contains("Colors:"), let parsedColors = string.extract(from: "Colors:", to: "</p>")?.tagsStripped.replacingOccurrences(of: " and ", with: ",").components(separatedBy: ",") {
             for c in parsedColors {
-                let parsedColor = MaterialColor(named: c, context: officialName)
+                let parsedColor = MaterialColor(named: c.trimmed, context: officialName)
                 colors.append(parsedColor)
             }
         }
@@ -543,48 +864,14 @@ actor PageParser: DeviceBridgeLoader {
                 }
             }
             
-            // Apple watch needs to handle things differently, so attach an identifier for each case size
-            for (caseSize, models) in watchCaseModels {
-                for model in models.unique {
-                    let hint = officialName.contains("Ultra") ? officialName : "\(officialName) \(caseSize)"
-                    if let device = Device.lookup(model: model, officialNameHint: hint).first {
-                        var identifiers = watchIdentifiers[caseSize] ?? []
-                        identifiers.append(contentsOf: device.identifiers)
-                        watchIdentifiers[caseSize] = identifiers
-                    } else {
-                        debug("Unknown \(hint) model: \(model)", level: .WARNING)
-                        continue
-                    }
-                }
-            }
-
             // if we still don't have a matched device at this point, try looking up from the Support ID if available
             if supportId != .unknownSupportId, let matched = Device.lookup(supportId: supportId, officialNameHint: officialName).first {
                 identifiers.append(contentsOf: matched.identifiers)
             }
         }
         // map to case name for generic handling of identifiers
-        if idiom != .watch {
-            watchIdentifiers[.unknown] = identifiers
-        } else {
-//            debug("Parsing \(officialName)")
-//            debug(watchIdentifiers)
-        }
-        for (caseName, identifiers) in watchIdentifiers {
-            var image = image
-            var officialName = officialName
-            if idiom == .watch {
-                // just do for this scope so we can reset for each case name
-                if !officialName.contains("Ultra") { // Ultras don't include case size.
-                    officialName = "\(officialName) \(caseName)"
-                }
-                partNumbers = (watchCaseModels[caseName] ?? []).unique
-                // pick image (first one for smaller version, first non-aluminum for larger variant)
-                let cases = watchCaseModels.keys.sorted()
-                if caseName == cases.last {
-                    image = image2
-                }
-            }
+        parsedIdentifiers[.unknown] = identifiers
+        for (_, identifiers) in parsedIdentifiers {
             var identifiers = identifiers.unique
             for identifier in identifiers {
 //                let matched = Device.forcedLookup(identifier: identifier, officialNameHint: officialName) // or create a blank device with identifier

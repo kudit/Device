@@ -46,7 +46,7 @@ public enum BatteryChangeType: Sendable {
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
-public protocol Battery: ObservableObject, SymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
+public protocol Battery: ObservableObject, MainActorSymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
@@ -76,7 +76,7 @@ public extension Battery {
     }
     
     /// System Image used to render a symbol representing the current state/charge level
-    var symbolName: String {
+    var mainActorSymbolName: String {
         let percent = currentLevel
         var percentWord: String
         if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10,  *) {
@@ -454,6 +454,12 @@ public class DeviceBattery: Battery {
 #elseif canImport(UIKit) && !os(tvOS) // UIDevice support
 //        UIDevice.current.isBatteryMonitoringEnabled = true
 //        print(UIDevice.current.batteryLevel)
+        if Build.isDesignedForiPad && Device.current.idiom == .mac { // This may work on visionOS so don't necessarily shortcut
+            // The iOS compatibility runtime on macOS can expose a bogus 1% UIDevice
+            // battery level; returning -1 keeps direct DeviceBattery callers aligned
+            // with the framework convention for unavailable battery information.
+            return -1
+        }
         return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
         // but maybe that changes in the future.
 #else
@@ -467,6 +473,11 @@ public class DeviceBattery: Battery {
         monitoring = true
         defer {
             monitoring = currentMonitoring
+        }
+        if Build.isDesignedForiPad {
+            // Host Mac battery state is not available to iPad apps running on macOS, so
+            // avoid converting the compatibility layer's bad level into a real state.
+            return .unknown
         }
 //        print("state monitoring")
 #if os(watchOS)

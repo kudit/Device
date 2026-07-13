@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.12.5"
+let version = "2.13.0"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -130,6 +130,19 @@ targets += [
 
 #endif // for Swift Package compiling for https://swiftpackageindex.com/add-a-package
 
+// MARK: - Swift Package Manager tests
+// Swift Playgrounds app manifests do not support package test targets reliably, so
+// expose the deterministic regression suite only to ordinary SwiftPM and Xcode builds.
+#if !SwiftPlaygrounds && !canImport(PlaygroundSupport)
+targets += [
+	.testTarget(
+		name: "\(packageLibraryName)SwiftPMTests",
+		dependencies: [.init(stringLiteral: packageLibraryName)],
+		path: "Tests/DeviceSwiftPMTests"
+	),
+]
+#endif
+
 let package = Package(
 	name: packageLibraryName,
 	platforms: platforms,
@@ -137,7 +150,7 @@ let package = Package(
 	// include dependencies
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
-		.package(url: "https://github.com/kudit/Color", "1.1.4"..<"2.0.0"),
+        .package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
 	],
 	targets: targets
 )

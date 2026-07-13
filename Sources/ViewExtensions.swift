@@ -30,12 +30,12 @@ public extension Backport where Content: View {
     /// this view is generated and used as the preview image.
     ///
     /// To customize the default preview, apply a
-    /// ``View/contentShape(_:_:eoFill:)`` with a
-    /// ``ContentShapeKinds/dragPreview`` kind. For example, you can change the
+    /// SwiftUI `View.contentShape` modifier with a `ContentShapeKinds.dragPreview`
+    /// kind. For example, you can change the
     /// preview's corner radius or use a nested view as the preview.
     ///
     /// - Parameter payload: A closure that returns a single
-    /// instance or a value conforming to <doc://com.apple.documentation/documentation/coretransferable/transferable> that
+    /// instance or a value conforming to Core Transferable's `Transferable` protocol that
     /// represents the draggable data from this view.
     ///
     /// - Returns: A view that activates this view as the source of a drag and

@@ -90,14 +90,11 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
             Spacer()
             switch mode {
             case .left:
-                valueText(stringify(lVal))
-                    .foregroundColor(colorForLeft(left: lVal, merged: mVal, right: rVal) ?? .primary)
+                valueText(stringify(lVal), color: colorForLeft(left: lVal, merged: mVal, right: rVal) ?? .primary)
             case .right:
-                valueText(stringify(rVal))
-                    .foregroundColor(colorForRight(left: lVal, merged: mVal, right: rVal) ?? .primary)
+                valueText(stringify(rVal), color: colorForRight(left: lVal, merged: mVal, right: rVal) ?? .primary)
             case .merged:
-                valueText(stringify(mVal))
-                    .foregroundColor(colorForMerged(merged: mVal, left: lVal, right: rVal) ?? .primary)
+                valueText(stringify(mVal), color: colorForMerged(merged: mVal, left: lVal, right: rVal) ?? .primary)
             case .combined:
                 // compute model once, then render declaratively
                 let combined = computeCombinedResult(lVal: lVal, mVal: mVal, rVal: rVal)
@@ -108,10 +105,14 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
     }
 
     // small value styling
-    private func valueText(_ text: String) -> some View {
+    private func valueText(_ text: String, color: Color = .primary) -> some View {
         Text(text)
             .font(.subheadline)
+            .foregroundColor(color)
             .multilineTextAlignment(.trailing)
+            // Selection is applied directly to the label so rows keep their natural
+            // SwiftUI layout instead of wrapping each value in a separate selectable
+            // view surface.
             .backport.textSelection(.enabled)
     }
 
@@ -170,8 +171,8 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
         } else if combined.allEqual, combined.entries.count == 1 {
             Text(combined.entries[0].value)
                 .font(.subheadline)
-                .foregroundStyle(.primary)
                 .multilineTextAlignment(.trailing)
+                // Match the other value labels: selectable, but still a plain Text.
                 .backport.textSelection(.enabled)
         } else {
             VStack(alignment: .trailing, spacing: 6) {
@@ -187,8 +188,10 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
                         Spacer(minLength: 4)
                         Text(e.value)
                             .font(.subheadline)
-                            .multilineTextAlignment(.trailing)
                             .foregroundColor(e.color ?? .primary)
+                            .multilineTextAlignment(.trailing)
+                            // Keep variant values as Text labels while allowing copy
+                            // from the combined diff row.
                             .backport.textSelection(.enabled)
                     }
                 }
@@ -283,13 +286,33 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
     @State private var bridgeDiff = true
 
     var bridge: T
+    private enum DiffSource: String, CaseIterable {
+        case bridge = "Bridge"
+        case device = "Device"
+    }
+    private var diffSource: Binding<DiffSource> {
+        Binding(
+            get: {
+                bridgeDiff ? .bridge : .device
+            },
+            set: { newValue in
+                // Use a picker-backed binding so only the segmented control changes
+                // the wrapper view; text-selection gestures inside the diff content
+                // no longer bubble into a broad Button action.
+                bridgeDiff = newValue == .bridge
+            })
+    }
 
     var body: some View {
         VStack {
             HStack {
-                Button(bridgeDiff ? "Bridge" : "Device") {
-                    bridgeDiff.toggle()
+                Picker("Diff Source", selection: diffSource) {
+                    ForEach(DiffSource.allCases, id: \.self) { source in
+                        Text(source.rawValue)
+                            .tag(source)
+                    }
                 }
+                .pickerStyle(.segmentedBackport)
                 Button("Copy Device") {
                     Compatibility.copyToPasteboard(bridge.merged.definition + "\n\n")
                 }

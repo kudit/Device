@@ -11,27 +11,6 @@ import Foundation
 import Compatibility
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-public extension Device.Environment {
-    // TODO: Pull into extension
-    var color: Color {
-        switch self {
-        case .realDevice:
-            return .green
-        case .simulator:
-            return .blue
-        case .playground:
-            return .orange
-        case .preview:
-            return .pink
-        case .designedForiPad:
-            return .purple
-        case .macCatalyst:
-            return .purple
-        }
-    }
-}
-
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension ThermalState {
     var color: Color {
         switch self {
@@ -173,7 +152,9 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
 //                .accentColor(.green)
             Divider()
             if debug {
-                EnvironmentsView()
+                // Build environments belong to the running process, not to the displayed
+                // hardware model, so use Compatibility's canonical environment checks.
+                EnvironmentsView(Build.environments())
             }
             SystemInfoView(device: device)
             if device.screen != nil && device.idiom != .vision { // visionOS screen doesn't really make sense at least in the current device view.

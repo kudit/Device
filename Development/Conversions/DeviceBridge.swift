@@ -23,11 +23,19 @@ protocol DeviceBridgeLoader: Sendable {
     associatedtype Bridge
     /// Get a list of the Bridge device type devices (likely from text that is parsed hence async)
     func devices() async throws -> [Bridge]
+    /// Get bridge devices while optionally reporting deterministic progress for loaders
+    /// that can count their sections before parsing them.
+    func devices(progress: (@Sendable (_ completed: Int, _ total: Int, _ message: String) -> Void)?) async throws -> [Bridge]
     /// URL for use in links to allow viewing the source document easily.
     var sourceURL: String { get }
 }
 extension DeviceBridgeLoader {
     var source: URL { URL(string: sourceURL)! }
+    func devices(progress: (@Sendable (_ completed: Int, _ total: Int, _ message: String) -> Void)?) async throws -> [Bridge] {
+        // Most loaders fetch a single decoded payload and do not have meaningful
+        // section-level progress; keep their old behavior until they opt in.
+        try await devices()
+    }
 }
 import SwiftUI
 enum MatchType {
@@ -257,5 +265,4 @@ extension Device {
             cpu: cpu)
     }
 }
-
 

@@ -70,7 +70,7 @@ public func ColorsTextView(symbol: SymbolRepresentable, colors: [MaterialColor])
             //                        + Text(" ")
         } else {
             // Fallback on earlier versions
-            output = output + Text(verbatim: String(symbol.symbolName.first ?? "x"))
+            output = output + Text(verbatim: String(symbol.mainActorSymbolName.first ?? "x"))
             + Text(" ")
         }
     }

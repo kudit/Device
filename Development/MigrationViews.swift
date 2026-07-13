@@ -13,7 +13,9 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
     var loader: Loader
     @State var bridges: [Bridge] = []
     @State var generating: Bool = false
-    @State var message = "Loading devices…"
+    @State var message = "Comparing devices…"
+    @State var completedSections: Int?
+    @State var totalSections: Int?
     
     func generateCopy(generation: @escaping @Sendable () async -> String) {
         generating = true
@@ -28,26 +30,44 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
     
     var body: some View {
          if bridges.count == 0 {
-             ProgressView(message)
-                 .onAppear {
-                     Compatibility.background {
-                         do {
-                             let bridges = try await loader.devices()
+             Group {
+                 if let completedSections, let totalSections, totalSections > 0 {
+                     ProgressView(
+                        message,
+                        value: Double(completedSections),
+                        total: Double(totalSections)
+                     )
+                 } else {
+                     ProgressView(message)
+                 }
+             }
+             .onAppear {
+                 Compatibility.background {
+                     do {
+                         let bridges = try await loader.devices { completed, total, progressMessage in
                              main {
-                                 self.bridges = bridges
-                             }
-                         } catch {
-                             let message = error.localizedDescription
-                             main {
-                                 self.message = message
+                                 // Page parsers know how many sections they have, so show
+                                 // determinate progress while each item is parsed.
+                                 self.completedSections = completed
+                                 self.totalSections = total
+                                 self.message = progressMessage
                              }
                          }
+                         main {
+                             self.bridges = bridges
+                         }
+                     } catch {
+                         let message = error.localizedDescription
+                         main {
+                             self.message = message
+                         }
                      }
-                     //            // generate bridges in the background
-                     //            Compatibility.background {
-                     //                bridges = loader.devices()
-                     //            }
                  }
+                 //            // generate bridges in the background
+                 //            Compatibility.background {
+                 //                bridges = loader.devices()
+                 //            }
+             }
          } else {
              List {
                  ForEach(bridges) { bridge in
@@ -69,7 +89,11 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                      Link("View Source", destination: loader.source)
                      Button("Copy Devices code") {
                          generateCopy {
-                             return await bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
+                            #if SwiftPlaygrounds
+                            return bridges.sorted.map { $0.merged.definition }.joined(separator: "\n") // removed await due to Playgrounds warning
+                            #else
+                            return await bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
+                            #endif
                          }
                      }
                  }

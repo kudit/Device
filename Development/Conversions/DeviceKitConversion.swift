@@ -682,7 +682,10 @@ struct DeviceKitLoader: DeviceBridgeLoader {
                     // parse the mixed type array into Swift types
                     let fields = try [MixedTypeField](fromJSON: jsonString)
                     let device = DeviceKitDevice(fields: fields)
-                    devices.append(device)
+                    // DeviceKit sometimes combines identifiers that this library
+                    // models separately. Split only when every identifier resolves
+                    // and the resolved local definitions form distinct groups.
+                    devices.append(contentsOf: device.splitByLocalDefinitions())
                 } catch {
                     debug("Parse error: \(error).  JSON String:\n\(jsonString)", level: .WARNING)
                     continue
@@ -696,6 +699,37 @@ struct DeviceKitLoader: DeviceBridgeLoader {
 //    func generate() async -> String {
 //        return Device.allDevices.map { DeviceKitDevice($0).source }.joined(separator: "\n")
 //    }
+}
+
+private extension DeviceKitDevice {
+    /// Splits a combined DeviceKit row according to existing local definition
+    /// boundaries. Source identifier order is retained within and across groups.
+    func splitByLocalDefinitions() -> [DeviceKitDevice] {
+        guard identifiers.count > 1 else {
+            return [self]
+        }
+        var groups = [(device: Device, identifiers: [String])]()
+        for identifier in identifiers {
+            guard let local = Device.lookup(identifier: identifier, officialNameHint: description).first else {
+                // An incomplete local mapping is not enough evidence to alter the
+                // source grouping, so preserve the original DeviceKit record.
+                return [self]
+            }
+            if let index = groups.firstIndex(where: { $0.device == local }) {
+                groups[index].identifiers.append(identifier)
+            } else {
+                groups.append((local, [identifier]))
+            }
+        }
+        guard groups.count > 1 else {
+            return [self]
+        }
+        return groups.map { group in
+            var split = self
+            split.identifiers = group.identifiers
+            return split
+        }
+    }
 }
 
 

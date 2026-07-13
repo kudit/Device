@@ -96,19 +96,21 @@ public extension Device {
     
     /// Returns whether the current device is a SwiftUI preview canvas
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.isPreview")
+    @available(*, deprecated, renamed: "Build.isPreview")
     @MainActor
     var isCanvas: Bool? {
-        return Device.current.isPreview
+        // Preserve DeviceKit's deprecated API while using the canonical process check.
+        return Build.isPreview
     }
     
     /// Returns whether the device is any of the simulator
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.isSimulator")
+    @available(*, deprecated, renamed: "Build.isSimulator")
     @MainActor
     var isSimulator: Bool {
-        return Device.current.isSimulator
+        // Preserve DeviceKit's deprecated API while using the canonical process check.
+        return Build.isSimulator
     }
     
     /**
@@ -151,6 +153,41 @@ public extension Device {
     var ppi: Int? {
         return screen?.ppi
     }
+}
+
+// MARK: Listing helpers for Device Kit bridging
+public extension Device {
+    /// All iPods
+    @available(*, deprecated, renamed: "iPod.allDevices")
+    static var allPods: [Device] { iPod.allDevices }
+    
+    /// All iPhones
+    @available(*, deprecated, renamed: "iPhone.allDevices")
+    static var allPhones: [Device] { iPhone.allDevices }
+    
+    /// All iPads
+    @available(*, deprecated, renamed: "iPad.allDevices")
+    static var allPads: [Device] { iPad.allDevices }
+    
+    /// All TVs
+    @available(*, deprecated, renamed: "AppleTV.allDevices")
+    static var allTVs: [Device] { AppleTV.allDevices }
+    
+    /// All Watches
+    @available(*, deprecated, renamed: "AppleWatch.allDevices")
+    static var allWatches: [Device] { AppleWatch.allDevices }
+    
+    /// Returns whether the device is an iPod (real or simulator)
+    @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .idiom == .pod")
+    var isPod: Bool { idiom == .pod }
+    
+    /// Returns whether the device is an iPhone (real or simulator)
+    @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .idiom == .phone")
+    var isPhone: Bool { idiom == .phone }
+    
+    /// Returns whether the device is an iPad (real or simulator)
+    @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .idiom == .pad")
+    var isPad: Bool { idiom == .pad }
 }
 
 // MARK: Equatable

@@ -108,7 +108,7 @@ public struct AppleTV: IdiomType {
             introduction: 2015.introductionYear,
             supportId: "111928", // SP724
             launchOSVersion: "9",
-            unsupportedOSVersion: nil,
+            unsupportedOSVersion: "28",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4gen-hd.png",
             capabilities: [.ethernet, .usbC],
             models: ["A1625"],

@@ -43,9 +43,15 @@ struct MacLookup: DeviceBridge {
     var merged: Device {
         let form = Mac.Form.create(from: kind)
         // convert colors to MaterialColors
+        let matched = self.matched
+        let colorContext = matched.colors.isEmpty ? self.name : matched.officialName
         var materials = [MaterialColor]()
         for color in colors {
-            materials.append(MaterialColor(named: color, context: self.name))
+            // Prefer the local matched device name when available so generic Mac
+            // colors such as Silver and Space Black resolve against the correct Mac
+            // palette even when MacLookup includes an extra year or combined CPU
+            // wording in its product name.
+            materials.append(MaterialColor(named: color, context: colorContext))
         }
         // if we match, go ahead and use the matched order
         let materialsNames = materials.map { $0.caseName }.sorted()

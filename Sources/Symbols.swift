@@ -5,39 +5,24 @@
 //  Created by Ben Ku on 7/6/24.
 //
 
-public protocol SymbolRepresentable {
-    /// An SF Symbol name string.
-    @MainActor
-    var symbolName: String { get }
-}
-
-/** Symbol Versions:
- 
- There are now twelve different sets of symbols to consider:
- SF Symbols v1.0 available in iOS 13.0, watchOS 6.0 and macOS 11.0
- SF Symbols v1.1 available in iOS 13.1, watchOS 6.1 and macOS 11.0
- SF Symbols v2.0 available in iOS 14.0, watchOS 7.0 and macOS 11.0
- SF Symbols v2.1 available in iOS 14.2, watchOS 7.1 and macOS 11.0
- SF Symbols v2.2 available in iOS 14.5, watchOS 7.4 and macOS 11.3
- SF Symbols v3.0 available in iOS 15.0, watchOS 8.0 and macOS 12.0
- SF Symbols v3.1 available in iOS 15.1, watchOS 8.1 and macOS 12.0
- SF Symbols v3.2 available in iOS 15.2, watchOS 8.3 and macOS 12.1
- SF Symbols v3.3 available in iOS 15.4, watchOS 8.5 and macOS 12.3
- SF Symbols v4.0 available in iOS 16.0, watchOS 9.0 and macOS 13.0
- SF Symbols v4.1 available in iOS 16.1, watchOS 9.1 and macOS 13.0
- SF Symbols v4.2 available in iOS 16.4, watchOS 9.4 and macOS 13.3
- SF Symbols v5 available in iOS 17, watchOS 10 and macOS 14
- SF Symbols v6 available in iOS 18, watchOS 11 and macOS 15
-
- */
 
 
 import Compatibility
 
-extension CloudStatus: SymbolRepresentable {}
-
 public extension String {
-    static let defaultFallback = "questionmark.square.fill"
+    @available(*, deprecated, renamed: "defaultUnknownSymbol")
+    static let defaultFallback = defaultUnknownSymbol
+}
+
+/// This is a helper to allow main actor isolated code to attempt to conform to SymbolRepresentable and for main actor isolated code to use either those or regular SymbolRepresentable items as sources for their symbol names without forcing all SymbolRepresentable to run on the main thread.
+@MainActor
+public protocol MainActorSymbolRepresentable {
+    var mainActorSymbolName: String { get }
+}
+
+public extension SymbolRepresentable {
+    @MainActor
+    var mainActorSymbolName: String { self.symbolName }
 }
 
 #if canImport(SwiftUI)
@@ -66,9 +51,12 @@ public extension Image {
         // get module image asset if possible
         self.init(symbolName, bundle: Bundle.module)
     }
-    @MainActor
     init(_ symbolRepresentable: some SymbolRepresentable) {
         self.init(symbolName: symbolRepresentable.symbolName)
+    }
+    @MainActor
+    init(_ symbolRepresentable: some MainActorSymbolRepresentable) {
+        self.init(symbolName: symbolRepresentable.mainActorSymbolName)
     }
 }
 
@@ -84,11 +72,11 @@ public extension String {
      */
     /// helper for making sure symbolName: function always returns an actual image and never `nil`.
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-    func safeSymbolName(fallback: String = .defaultFallback) -> String {
+    func safeSymbolName(fallback: String = .defaultUnknownSymbol) -> String {
         if !.nativeSymbolCheck(self) {
             // check for asset
             if !.nativeLocalCheck(self) {
-                if fallback == .defaultFallback {
+                if fallback == .defaultUnknownSymbol {
                     return fallback
                 } else {
                     // go through the fallback symbol to make sure it's valid (only time that would be invalid would be if we missed including it in the legacy resources).

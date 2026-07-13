@@ -88,7 +88,7 @@ struct DiffView: View {
         }
         return output.joined(separator: Text("\n"))
     }
-    
+
     var body: some View {
         Picker("Show", selection: $viewMode) {
             ForEach(DiffMode.allCases, id: \.self) { mode in
@@ -97,25 +97,23 @@ struct DiffView: View {
             }
         }
         .pickerStyle(.segmentedBackport)
-        ScrollView {
-            Group {
-                switch viewMode {
-                case .left:
-                    Text(left ?? "EMPTY")
-                case .merged:
-                    merged(diff: false)
-                case .diff:
-                    merged(diff: true)
-                case .right:
-                    Text(right ?? "EMPTY")
-                case .source:
-                    Text(source)
-                }
+        Group {
+            switch viewMode {
+            case .left:
+                Text(left ?? "EMPTY")
+            case .merged:
+                merged(diff: false)
+            case .diff:
+                merged(diff: true)
+            case .right:
+                Text(right ?? "EMPTY")
+            case .source:
+                Text(source)
             }
-            //                    .lineLimit(nil) // TODO: Should we add this?
-            .backport.textSelection(.enabled)
         }
-        .backport.scrollDisabled() // so that we don't have issues but ScrollView is necessary for resizing when switching tabs.
+        // Apply text selection to the rendered Text labels/runs themselves. This
+        // preserves the original layout and colors while still allowing drag select.
+        .backport.textSelection(.enabled)
     }
 }
 
@@ -164,7 +162,11 @@ struct DiffRowView: View {
             Text(fieldName)
                 .font(.caption.bold())
             Text(leftValue)
+                // Keep these as plain labels; selection should not introduce the
+                // nested scrollable editing surfaces that made the diff hard to use.
+                .backport.textSelection(.enabled)
             Text(rightValue)
+                .backport.textSelection(.enabled)
         }
     }
 }

@@ -4,6 +4,8 @@ import Foundation
 import WASILibc
 #endif
 
+import Compatibility
+
 public struct Screen: Hashable, Sendable, Codable {
     public static let undefined = Screen(resolution: (-1,-1))
     public struct Size: Hashable, Sendable, Codable {

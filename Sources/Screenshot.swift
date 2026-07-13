@@ -88,14 +88,14 @@ public extension Application {
         }
         #elseif canImport(UIKit) && !os(watchOS)
         
-//        for scene in UIApplication.shared.connectedScenes {
-//            if let sceneDelegate = scene.delegate,
-//               let snap = sceneDelegate.window?.snapshotView(afterScreenUpdates: false) {
-//                view.addSubview(snap)
-//            }
-//        }
-        // fallback version (but may want to use as primary since scene version may not include menu bar)
-        for window in UIApplication.shared.windows { // NOTE: May not work in visionOS?
+         // UIKit applications can own more than one scene, particularly on iPadOS,
+        // Mac Catalyst, and visionOS. Walk every connected window scene so capture
+        // remains complete without using UIApplication.windows, which is deprecated
+        // because it cannot identify which scene owns a returned window.
+        let windows = UIApplication.shared.connectedScenes // supported in iOS 13+ so all SwiftUI supported.
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+        for window in windows {
             if let image = window.renderImage() {
                 images.append(Image(uiImage: image))
             }
