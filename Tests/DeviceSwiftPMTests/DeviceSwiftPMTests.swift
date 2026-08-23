@@ -1,46 +1,27 @@
 // MARK: - Swift Package Manager regression tests
-// These deterministic XCTest cases stay outside the Swift Playgrounds app target so
+// These deterministic tests stay outside the Swift Playgrounds app target so
 // Swift Package Index can detect real tests without tying results to the host device.
 
+#if compiler(>=5.9) && canImport(Device) && canImport(Testing)
+import CompatibilityTesting
 import Device
-import XCTest
+import Testing
 
-final class DeviceSwiftPMTests: XCTestCase {
-    /// Verifies identifier lookup returns stable public model information.
-    func testKnownIdentifierLookup() {
-        let device = Device(identifier: "iPhone16,1")
-
-        XCTAssertEqual(device.idiom, .phone)
-        XCTAssertTrue(device.identifiers.contains("iPhone16,1"))
-        XCTAssertFalse(device.officialName.isEmpty)
-    }
-
-    /// Verifies unknown identifiers remain usable instead of failing lookup.
-    func testUnknownIdentifierFallback() {
-        let identifier = "FutureDevice99,1"
-        let device = Device(identifier: identifier)
-
-        XCTAssertTrue(device.identifiers.contains(identifier))
-        XCTAssertEqual(device.idiom, .unspecified)
-    }
-
-    /// Verifies capability queries distinguish established hardware generations.
-    func testCapabilityQueries() {
-        let fiveGPhone = Device(identifier: "iPhone13,2")
-        let earlierPhone = Device(identifier: "iPhone12,1")
-
-        XCTAssertEqual(fiveGPhone.cellular, .fiveG)
-        XCTAssertNotEqual(earlierPhone.cellular, .fiveG)
-        XCTAssertTrue(fiveGPhone.has(.gps))
-    }
-
-    /// Verifies fuzzy lookup limits an explicit Apple Watch name to watch models.
-    func testLookupFiltersByProductFamily() {
-        let matches = Device.lookup(
-            officialNameHint: "Apple Watch Series 10 (GPS + Cellular) 42mm"
-        )
-
-        XCTAssertFalse(matches.isEmpty)
-        XCTAssertTrue(matches.allSatisfy { $0.idiom == .watch })
+/// Presents Device's reusable Compatibility tests as individually named Swift Testing arguments.
+@Suite("Device Tests")
+struct DeviceSwiftPMTests {
+    /// Runs the same ordered reusable tests used by Compatibility's in-app test UI.
+    @Test(
+        "Reusable Device test",
+        .serialized,
+        arguments: await MainActor.run {
+            ModuleTestEntry.entries(for: DeviceKit.self, tests: DeviceKit.tests)
+        }
+    )
+    @MainActor
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+    func reusableDeviceTest(_ entry: ModuleTestEntry) async throws {
+        try await entry.execute()
     }
 }
+#endif

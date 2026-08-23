@@ -25,6 +25,7 @@ var targets = [
 		name: packageLibraryName,
 		dependencies: [
 			.product(name: "Color Library", package: "color"), // apparently needs to be lowercase.  Also note this is "Color Library" not "Color"
+            .product(name: "Compatibility Library", package: "compatibility"),
 		],
 		path: "Sources"
 		// If resources need to be included in the module, include here
@@ -137,7 +138,10 @@ targets += [
 targets += [
 	.testTarget(
 		name: "\(packageLibraryName)SwiftPMTests",
-		dependencies: [.init(stringLiteral: packageLibraryName)],
+		dependencies: [
+            .init(stringLiteral: packageLibraryName),
+            .product(name: "Compatibility Testing Library", package: "compatibility"),
+        ],
 		path: "Tests/DeviceSwiftPMTests"
 	),
 ]
@@ -151,6 +155,7 @@ let package = Package(
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
+        .package(url: "https://github.com/kudit/Compatibility.git", from: "1.19.0"),
 	],
 	targets: targets
 )
