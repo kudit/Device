@@ -150,7 +150,7 @@ let package = Package(
 	// include dependencies
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
+        .package(url: "https://github.com/kudit/Color.git", from: "1.5.2"),
 	],
 	targets: targets
 )
