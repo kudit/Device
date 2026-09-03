@@ -161,6 +161,59 @@ struct DeviceKitDevice: DeviceBridge {
         ["imageURL"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }
 
+    /// Normalizes DeviceKit presentation details before comparison with Device's canonical values.
+    func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool {
+        if key == "caseName" { return normalizedCaseName(left) == normalizedCaseName(right) }
+        if key == "description" || key == "safeDescription" {
+            return normalizedDeviceKitName(left) == normalizedDeviceKitName(right)
+        }
+        if key == "screenRatio", matched.idiom == .pad {
+            // DeviceKit supplies raw or rotated pixel ratios while Device exposes canonical tablet ratios.
+            return true
+        }
+        if key == "comment", let left = left as? String, let right = right as? String {
+            return normalizedSupportComment(left) == normalizedSupportComment(right)
+        }
+        return areEqual(left, right)
+    }
+
+    /// Applies the case-name spellings used by DeviceKit's generated source.
+    private func normalizedCaseName(_ value: Any?) -> String {
+        guard let value = value as? String else { return String(describing: value) }
+        return value
+            .replacingOccurrences(of: "iPadAir11Inch", with: "iPadAir11")
+            .replacingOccurrences(of: "iPadAir13Inch", with: "iPadAir13")
+            .replacingOccurrences(of: "iPadPro11Inch", with: "iPadPro11")
+            .replacingOccurrences(of: "iPadPro13Inch", with: "iPadPro13")
+    }
+
+    /// Treats GPS suffixes and parenthetical inch labels as naming presentation differences.
+    private func normalizedDeviceKitName(_ value: Any?) -> String {
+        guard let value = value as? String else { return String(describing: value) }
+        return value
+            .replacingOccurrences(of: " (GPS + Cellular)", with: "")
+            .replacingOccurrences(of: " (GPS)", with: "")
+            .replacingOccurrences(of: " (11-inch)", with: " 11-inch")
+            .replacingOccurrences(of: " (13-inch)", with: " 13-inch")
+            .replacingOccurrences(of: "  ", with: " ")
+            .trimmed
+    }
+
+    /// Removes locale prefixes and equates the SP aliases that redirect to current numeric articles.
+    private func normalizedSupportComment(_ value: String) -> String {
+        var result = value.replacingOccurrences(of: "/en-us/", with: "/")
+        // Device adds GPS qualifiers to Watch names while DeviceKit's source omits them.
+        result = result.replacingOccurrences(of: " (GPS + Cellular)", with: "")
+        result = result.replacingOccurrences(of: " (GPS)", with: "")
+        result = result.replacingOccurrences(of: " (GPS", with: "")
+        let aliases = [
+            "/kb/SP901": "/111831", "/kb/SP902": "/111830",
+            "/kb/SP903": "/111829", "/kb/SP904": "/111828"
+        ]
+        for (alias, numeric) in aliases { result = result.replacingOccurrences(of: alias, with: numeric) }
+        return result
+    }
+
     var caseName: String
     var comment: String
     var imageURL: String
@@ -275,11 +328,8 @@ struct DeviceKitDevice: DeviceBridge {
                 let mm = caseName[pos..<caseName.endIndex]
                 officialName = officialName.replacingOccurrences(of: mm, with: "")
             }
-            let end = officialName.firstIndex(of: ")") ?? officialName.endIndex
-            officialName = String(officialName[officialName.startIndex..<end])
-            if officialName.contains("generation") {
-                officialName += ")"
-            }
+            // Preserve the complete GPS/GPS + Cellular qualifier; truncating at the first
+            // parenthesis produced malformed names such as "Apple Watch Series 3 (GPS".
         }
         if officialName.contains("Apple TV") {
             officialName = officialName.replacingOccurrences(of: " (1st generation)", with: "")
@@ -404,11 +454,7 @@ struct DeviceKitDevice: DeviceBridge {
             }
             caseName = caseName.replacingOccurrences(of: "Apple Watch", with: "apple Watch")
             caseName = caseName.replacingOccurrences(of: "(1st generation)", with: "Series0")
-            let end = officialName.firstIndex(of: ")") ?? officialName.endIndex
-            officialName = String(officialName[officialName.startIndex..<end])
-            if officialName.contains("generation") {
-                officialName += ")"
-            }
+            // Keep the full GPS qualifier so generated comments remain valid Markdown and names.
         }
         if officialName.contains("Apple TV") {
             officialName = officialName.replacingOccurrences(of: " (1st generation)", with: "")

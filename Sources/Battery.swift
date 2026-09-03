@@ -140,6 +140,28 @@ public extension Battery {
     }
 #endif
     
+    /// Provides a textual representation of the battery state in field form.
+    /// Examples:
+    /// ```
+    /// Battery level: 90%, device is plugged in.
+    /// Battery level: 100 % (Full), device is plugged in.
+    /// Battery level: \(batteryLevel)%, device is unplugged.
+    /// ```
+    var info: Field? {
+        let lowPowerMode = lowPowerMode ? " (low power mode)" : ""
+        let level = currentLevel
+        let batteryLevelString = "\(level)%"
+        let deviceIsString = "\(lowPowerMode), device is "
+        var description: String
+        switch currentState {
+        case .charging: description = "\(batteryLevelString)\(deviceIsString)charging."
+        case .full: description = "\(batteryLevelString) (Full)\(deviceIsString)plugged in."
+        case .unplugged: description = "\(batteryLevelString)\(deviceIsString)unplugged."
+        default: return nil
+        }
+        return Field("Battery level", description)
+    }
+    
     /// Provides a textual representation of the battery state.
     /// Examples:
     /// ```
@@ -148,15 +170,10 @@ public extension Battery {
     /// Battery level: \(batteryLevel)%, device is unplugged.
     /// ```
     var description: String {
-        let lowPowerMode = lowPowerMode ? " (low power mode)" : ""
-        let level = currentLevel
-        let batteryLevelString = "Battery level: \(level)%"
-        let deviceIsString = "\(lowPowerMode), device is "
-        switch currentState {
-        case .charging: return "\(batteryLevelString)\(deviceIsString)charging."
-        case .full: return "\(batteryLevelString) (Full)\(deviceIsString)plugged in."
-        case .unplugged: return "\(batteryLevelString)\(deviceIsString)unplugged."
-        default: return "Battery is unknown/unsupported."
+        if let info {
+            return info.description
+        } else {
+            return "Battery is unknown/unsupported."
         }
     }
 }

@@ -31,68 +31,36 @@
             endingLineNumber = "48"
             landmarkName = "screen"
             landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Diffable.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "39"
-            endingLineNumber = "39"
-            landmarkName = "~=(lhs:rhs:)"
-            landmarkType = "9">
             <Locations>
                <Location
-                  uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C - 33ffaed66b18c3c8"
+                  uuid = "40E9358F-823F-4C4B-B322-7673D98486A1 - 3d57ed0bcd38ec65"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "Device_Info.~= infix(Swift.Optional&lt;Swift.Set&lt;Device.Capability&gt;&gt;, Swift.Optional&lt;Swift.Set&lt;Device.Capability&gt;&gt;) -&gt; Swift.Bool"
-                  moduleName = "Device Info.debug.dylib"
+                  symbolName = "Device.ScreenInfoView.screen.getter : Device.Screen"
+                  moduleName = "DeviceTests"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Diffable.swift"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/ScreenInfoView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "39"
-                  endingLineNumber = "39">
+                  startingLineNumber = "48"
+                  endingLineNumber = "48">
                </Location>
                <Location
-                  uuid = "83DF02F4-1C5E-4545-9482-B6E241F3D76C - 33ffaed66b18c3c8"
+                  uuid = "40E9358F-823F-4C4B-B322-7673D98486A1 - 74ab95811308ea81"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "Device_Info.~= infix(Swift.Optional&lt;Swift.Set&lt;Device.Capability&gt;&gt;, Swift.Optional&lt;Swift.Set&lt;Device.Capability&gt;&gt;) -&gt; Swift.Bool"
+                  symbolName = "Device.ScreenInfoView.screen.getter : Device.Screen"
                   moduleName = "Device Info.debug.dylib"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Development/Diffable.swift"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/ScreenInfoView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "39"
-                  endingLineNumber = "39">
+                  startingLineNumber = "48"
+                  endingLineNumber = "48">
                </Location>
             </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "A5BBFF4B-5ECB-4317-8BA7-B184157A707B"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Diffable.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "30"
-            endingLineNumber = "30"
-            landmarkName = "~=(lhs:rhs:)"
-            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -109,89 +77,36 @@
             endingLineNumber = "80"
             landmarkName = "safeSymbolName(fallback:)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "7DDCAFB2-32BA-4440-83C6-5E62B5569758"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Conversions/DeviceKitConversion.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "691"
-            endingLineNumber = "691"
-            landmarkName = "devices()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "F588E855-3FFC-4B56-AC13-B53A5E24E9A5"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Conversions/AppleDeviceConversion.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "114"
-            endingLineNumber = "114"
-            landmarkName = "init(appleDeviceName:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "6D7D2B88-3A33-4074-A00B-B76041C398B5"
-            shouldBeEnabled = "No"
-            condition = "officialName.contains(&quot;iPhone 4s&quot;)"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Conversions/DeviceKitConversion.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "527"
-            endingLineNumber = "527"
-            landmarkName = "bridge(from:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "93472869-F1B8-410E-AE05-6248085994EE"
-            shouldBeEnabled = "Yes"
-            condition = "height == 1"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Conversions/DeviceKitConversion.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "306"
-            endingLineNumber = "306"
-            landmarkName = "merged"
-            landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "FB7621D5-7F84-469C-912B-B9F06A0CD545"
-            shouldBeEnabled = "No"
-            condition = "officialName.contains(&quot;iPhone 4s&quot;)"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Conversions/DeviceBridge.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "224"
-            endingLineNumber = "224"
-            landmarkName = "merged(from:)"
-            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "8F7BB909-3917-495C-ADD7-2766C8742C43 - 1c4a90a74d2e07e2"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Swift.String.safeSymbolName(fallback: Swift.String) -&gt; Swift.String"
+                  moduleName = "DeviceTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Symbols.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "80"
+                  endingLineNumber = "80">
+               </Location>
+               <Location
+                  uuid = "8F7BB909-3917-495C-ADD7-2766C8742C43 - 55b6e82d931e0106"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Swift.String.safeSymbolName(fallback: Swift.String) -&gt; Swift.String"
+                  moduleName = "Device Info.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Symbols.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "80"
+                  endingLineNumber = "80">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -204,8 +119,8 @@
             filePath = "../Sources/Battery.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "461"
-            endingLineNumber = "461"
+            startingLineNumber = "478"
+            endingLineNumber = "478"
             landmarkName = "currentLevel"
             landmarkType = "24">
          </BreakpointContent>
@@ -224,6 +139,36 @@
             endingLineNumber = "1027"
             landmarkName = "init(named:context:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "EDDB4093-30B1-45F3-AF69-3A2D4DB9B8EC - fb0e1fcf14f30e7f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Device.MaterialColor.init(named: Swift.String, context: Swift.String) -&gt; Device.MaterialColor"
+                  moduleName = "DeviceTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Hardware.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1027"
+                  endingLineNumber = "1027">
+               </Location>
+               <Location
+                  uuid = "EDDB4093-30B1-45F3-AF69-3A2D4DB9B8EC - b2f26745cac3089b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Device.MaterialColor.init(named: Swift.String, context: Swift.String) -&gt; Device.MaterialColor"
+                  moduleName = "Device Info.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/ben/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Hardware.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "1027"
+                  endingLineNumber = "1027">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

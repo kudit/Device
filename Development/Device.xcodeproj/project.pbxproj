@@ -29,6 +29,7 @@
 		B539FAB62DBEA10C0017BE25 /* MigrationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FAB42DBEA1010017BE25 /* MigrationViews.swift */; };
 		B539FABE2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */; };
 		B539FABF2DC13D650017BE25 /* MobileDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FABD2DC13D570017BE25 /* MobileDeviceConversion.swift */; };
+		B565653730155F0600B6E0DF /* Device Library in Frameworks */ = {isa = PBXBuildFile; productRef = B565653630155F0600B6E0DF /* Device Library */; };
 		B56925372E8714810045FFC6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B576090B2E7CE43F00216336 /* ThreeWayDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576090A2E7CE43700216336 /* ThreeWayDiffView.swift */; };
 		B576090C2E7CE43F00216336 /* ThreeWayDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576090A2E7CE43700216336 /* ThreeWayDiffView.swift */; };
@@ -42,17 +43,11 @@
 		B5CCE9CC2BC94D93005CC2D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B58985FA2BAB99C3002B8E05 /* Assets.xcassets */; };
 		B5CCE9D02BC94DB6005CC2D2 /* DeviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CCE9CE2BC94DB6005CC2D2 /* DeviceUITests.swift */; };
 		B5CCE9D12BC94DBD005CC2D2 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */; };
+		B5E0C0012F00000100000001 /* Compatibility Testing Library in Frameworks */ = {isa = PBXBuildFile; productRef = B5E0C0022F00000100000001 /* Compatibility Testing Library */; };
 		B5F034122BABB4AC00CA6396 /* DeviceTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		B5DD79C42BC94C8A00457681 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B5C1B6152BAB7997001D5CFA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = B5DD79B22BC94C8800457681;
-			remoteInfo = DeviceTest;
-		};
 		B5DD79CE2BC94C8A00457681 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B5C1B6152BAB7997001D5CFA /* Project object */;
@@ -124,6 +119,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B565653730155F0600B6E0DF /* Device Library in Frameworks */,
+				B5E0C0012F00000100000001 /* Compatibility Testing Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,7 +178,7 @@
 				B52ED1D62BAB7F7400056A62 /* DeviceTests.swift */,
 			);
 			name = Tests;
-			path = ../Tests;
+			path = DeviceTests;
 			sourceTree = "<group>";
 		};
 		B539FA882DBD83060017BE25 /* Conversions */ = {
@@ -267,9 +264,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				B5DD79C52BC94C8A00457681 /* PBXTargetDependency */,
 			);
 			name = DeviceTests;
+			packageProductDependencies = (
+				B5E0C0022F00000100000001 /* Compatibility Testing Library */,
+			);
 			productName = DeviceTestTests;
 			productReference = B5DD79C32BC94C8A00457681 /* DeviceTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -328,7 +327,6 @@
 					};
 					B5DD79C22BC94C8A00457681 = {
 						CreatedOnToolsVersion = 15.3;
-						TestTargetID = B5DD79B22BC94C8800457681;
 					};
 					B5DD79CC2BC94C8A00457681 = {
 						CreatedOnToolsVersion = 15.3;
@@ -458,11 +456,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		B5DD79C52BC94C8A00457681 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = B5DD79B22BC94C8800457681 /* Device Info */;
-			targetProxy = B5DD79C42BC94C8A00457681 /* PBXContainerItemProxy */;
-		};
 		B5DD79CF2BC94C8A00457681 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B5DD79B22BC94C8800457681 /* Device Info */;
@@ -528,7 +521,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.13.0;
+				MARKETING_VERSION = 2.13.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -594,7 +587,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.13.0;
+				MARKETING_VERSION = 2.13.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -690,11 +683,9 @@
 			name = Release;
 		};
 		B5DD79D92BC94C8A00457681 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
+		isa = XCBuildConfiguration;
+		buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
@@ -706,16 +697,13 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeviceTest.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DeviceTest";
 			};
 			name = Debug;
 		};
 		B5DD79DA2BC94C8A00457681 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
@@ -727,7 +715,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeviceTest.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DeviceTest";
 			};
 			name = Release;
 		};
@@ -749,7 +736,8 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = DeviceTest;
+				TEST_TARGET_NAME = "Device Info";
+				UITargetAppPath = "$(BUILT_PRODUCTS_DIR)/Device Info.app";
 			};
 			name = Debug;
 		};
@@ -770,7 +758,8 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = DeviceTest;
+				TEST_TARGET_NAME = "Device Info";
+				UITargetAppPath = "$(BUILT_PRODUCTS_DIR)/Device Info.app";
 			};
 			name = Release;
 		};
@@ -883,6 +872,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B5E0C0022F00000100000001 /* Compatibility Testing Library */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "Compatibility Testing Library";
+		};
+		B565653630155F0600B6E0DF /* Device Library */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "Device Library";
+		};
 		B58B62B42C23ECB40046E91C /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";

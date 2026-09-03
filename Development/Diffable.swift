@@ -74,7 +74,9 @@ func ~= (device: Device, parsedDevice: Device) -> Bool {
     guard device.unsupportedOSVersion ~= parsedDevice.unsupportedOSVersion else { return false }
     guard device.image ~= parsedDevice.image else { return false }
     guard device.capabilities ~= parsedDevice.capabilities else { return false }
-    guard device.models ~= parsedDevice.models else { return false }
+    // Apple and third-party catalogs do not promise the same model-number order;
+    // compare the sets of values while preserving each source's display order elsewhere.
+    guard device.models.sorted() ~= parsedDevice.models.sorted() else { return false }
     guard device.colors ~= parsedDevice.colors else { return false }
     guard device.cpu ~= parsedDevice.cpu else { return false }
     // if the value matches, we're good to go

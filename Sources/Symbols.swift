@@ -9,7 +9,7 @@
 
 import Compatibility
 
-public extension String {
+public extension SFSymbol {
     @available(*, deprecated, renamed: "defaultUnknownSymbol")
     static let defaultFallback = defaultUnknownSymbol
 }
@@ -31,7 +31,7 @@ import SwiftUI
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Image {
     /// Create image with a symbol name using system SF symbol or fall back to the symbol asset embedded in Device library.
-    init(symbolName: String) {
+    init(symbolName: SFSymbol) {
         var symbolName = symbolName
         let legacySymbolName = "\(symbolName).legacy"
         // use the new symbol name for the Xcode 15 symbol assets (should include colors and proper layering)
@@ -96,7 +96,7 @@ import AppKit
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension Bool {
-    static func nativeSymbolCheck(_ symbolName: String) -> Bool {
+    static func nativeSymbolCheck(_ symbolName: SFSymbol) -> Bool {
 #if canImport(UIKit)
         return UIImage(systemName: symbolName) != nil
 #elseif canImport(AppKit)

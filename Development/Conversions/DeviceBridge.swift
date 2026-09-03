@@ -18,6 +18,8 @@ protocol DeviceBridge: Identifiable, Equatable, Sendable, Codable, PropertyItera
     var merged: Device { get }
     /// create a bridged version of a Device (will use to create diff views from matched and merged)
     func bridge(from device: Device) -> Self
+    /// Compares a field after applying source-specific normalization rules.
+    func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool
 }
 protocol DeviceBridgeLoader: Sendable {
     associatedtype Bridge
@@ -67,6 +69,10 @@ extension DeviceBridge {
     static var diffIgnoreKeys: [String] {
         [] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }
+    /// Uses exact reflected values unless a bridge provides a narrower comparison.
+    func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool {
+        areEqual(left, right)
+    }
     var matchType: MatchType {
         var overallMatchType: MatchType = .identical
         for diff in diffs {
@@ -88,13 +94,13 @@ extension DeviceBridge {
             let left = matched[keyPath: path]
             let right = self[keyPath: path]
             let merged = merged[keyPath: path]
-            if !areEqual(left, merged) {
+            if !bridgeValuesEqual(key, left, merged) {
                 if Self.diffIgnoreKeys.contains(key) {
                     matchType = .compatible
                 } else {
                     matchType = .mismatched
                 }
-            } else if !areEqual(left, right) {
+            } else if !bridgeValuesEqual(key, left, right) {
                 // left and merged are equal so will return as identical, but if left and right aren't equal, consider this a compatible match not identical
                 matchType = .compatible
             }
@@ -115,6 +121,53 @@ extension DeviceBridge {
     var mergedBridge: Self {
         self.bridge(from: merged)
     }
+
+    /// Produces a compact, copyable report containing only meaningful bridge differences.
+    ///
+    /// The report keeps the matched Device value, source value, and merged result together so a
+    /// pasted report is enough to decide whether the correction belongs in Device or upstream.
+    var deltaReport: String {
+        let left = matchedBridge.allProperties
+        let right = allProperties
+        let combined = mergedBridge.allProperties
+        var lines = [String("Device bridge delta report")]
+        lines.append("Identifier: \(String(describing: id))")
+
+        for key in allKeyPaths.keys where key != "source" {
+            if Self.diffIgnoreKeys.contains(key) {
+                continue // Source-specific metadata is intentionally excluded from actionable reports.
+            }
+            let leftValue = left[key]
+            let rightValue = right[key]
+            let combinedValue = combined[key]
+            guard !bridgeValuesEqual(key, leftValue, rightValue) || !bridgeValuesEqual(key, leftValue, combinedValue) else {
+                continue // Identical fields add noise and make upstream reports harder to review.
+            }
+            let status: String
+            if bridgeValuesEqual(key, leftValue, combinedValue) {
+                status = "source-only"
+            } else if bridgeValuesEqual(key, rightValue, combinedValue) {
+                status = "merged"
+            } else {
+                status = "conflict"
+            }
+            lines.append("\n[\(status)] \(key)")
+            lines.append("  Device: \(bridgeValueDescription(leftValue))")
+            lines.append("  Source: \(bridgeValueDescription(rightValue))")
+            lines.append("  Merged: \(bridgeValueDescription(combinedValue))")
+        }
+        return lines.joined(separator: "\n")
+    }
+}
+
+/// Formats common bridge field values without requiring JSON encoding or exposing implementation details.
+private func bridgeValueDescription(_ value: Any?) -> String {
+    guard let value else { return "—" }
+    if let string = value as? String { return "\"\(string)\"" }
+    if let strings = value as? [String] {
+        return "[\(strings.map { "\"\($0)\"" }.joined(separator: ", "))]"
+    }
+    return String(describing: value)
 }
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
@@ -265,4 +318,3 @@ extension Device {
             cpu: cpu)
     }
 }
-

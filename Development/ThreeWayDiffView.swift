@@ -314,7 +314,7 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
                 }
                 .pickerStyle(.segmentedBackport)
                 Button("Copy Device") {
-                    Compatibility.copyToPasteboard(bridge.merged.definition + "\n\n")
+                    Pasteboard.system.copy(bridge.merged.definition + "\n\n")
                 }
             }
             if bridgeDiff {

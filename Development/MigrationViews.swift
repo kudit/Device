@@ -22,7 +22,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
         Compatibility.background {
             let text = await generation()
             main {
-                Compatibility.copyToPasteboard(text)
+                Pasteboard.system.copy(text)
                 generating = false
             }
         }
@@ -93,6 +93,16 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                             return bridges.sorted.map { $0.merged.definition }.joined(separator: "\n") // removed await due to Playgrounds warning
                             #else
                             return await bridges.sorted.map { $0.merged.definition }.joined(separator: "\n")
+                            #endif
+                        }
+                     }
+                     Button("Export Deltas") {
+                         // Export only actionable differences so the report can be pasted into an issue or review.
+                         generateCopy {
+                            #if SwiftPlaygrounds
+                            return bridges.sorted.filter { $0.matchType != .identical }.map { $0.deltaReport }.joined(separator: "\n\n")
+                            #else
+                            return await bridges.sorted.filter { $0.matchType != .identical }.map { $0.deltaReport }.joined(separator: "\n\n")
                             #endif
                          }
                      }

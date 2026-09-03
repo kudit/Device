@@ -10,7 +10,8 @@ import SwiftUI
 struct DeviceTestApp: App {
     init() {
         Device.current.disableIdleTimerWhenPluggedIn()
-        Application.track()
+        // Register the highest-level package module so Compatibility includes Device and its dependencies.
+        Application.track(Device.self)
         //Application.appleID = "6736626499"
                 
         // use this to figure out which items are causing hash conflicts.

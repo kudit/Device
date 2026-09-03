@@ -33,6 +33,12 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         capabilities.cameras = cameras
         capabilities.cellular = cellular
         capabilities.screen = screen
+        // Apple added the magnetometer/digital compass in the iPhone 3GS; applying
+        // this generation boundary centrally keeps every later iPhone definition
+        // consistent without repeating the capability in each model.
+        if identifiers.contains(where: { $0 != "iPhone1,1" && $0 != "iPhone1,2" }) {
+            capabilities.insert(.compass)
+        }
         device = Device(
             idiom: .phone,
             officialName: officialName,

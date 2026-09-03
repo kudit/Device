@@ -17,11 +17,272 @@
  - https://github.com/schickling/Device.swift
  */
 
-public extension Device {
+/// Publishes Device's version, dependency graph, diagnostics, and reusable checks through Compatibility.
+///
+/// Device is a top-level library module: applications should register ``Device`` and let Compatibility
+/// recursively register its direct dependencies.
+extension Device: Module {
     /// The version of the Device Library since cannot get directly from Package.
-    static let version: Version = "2.13.0"
+    public static let version: Version = "2.13.1"
+    
+    /// The public source repository used for open-source support and license discovery.
+    public static let openSourceRepository: String? = "https://github.com/kudit/Device"
+    
+    /// Compatibility is the only module Device uses directly for shared build and support behavior.
+    public static let dependencies: [Module.Type] = [ColorKit.self,  Compatibility.self]
+    
+    /// Immediate, portable information that can be displayed without actor isolation or deferred work.
+    public static var moduleInfo: [Field] {
+        [
+            Field("Model", "\(Device.identifier)"),
+        ]
+    }
+    
+    /// Loads complete structured information that may require actor isolation, calculation, or deferred work.
+    ///
+    /// This requirement is separately availability-gated so the rest of ``Module`` remains usable before
+    /// Swift concurrency became available on Apple platforms. The default returns ``moduleInfo`` unchanged.
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+    public static func loadDetailedModuleInfo() async -> [Field] {
+        return await Device.current.info
+    }
+    
+#if compiler(>=5.9)
+    /// Ordered checks shared by Compatibility's in-app test UI and external test bridges.
+    @MainActor
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+    public static let tests: OrderedDictionary<String, [TestCase]> = [
+        "Device Lookup": [
+            TestCase("Known identifier lookup") {
+                let device = Device(identifier: "iPhone16,1")
+                try expectEqual(device.idiom, .phone)
+                try expect(device.identifiers.contains("iPhone16,1"), "Known identifiers should include the requested identifier")
+                try expect(!device.officialName.isEmpty, "Known devices should have an official name")
+            },
+            TestCase("Unknown identifier fallback") {
+                let identifier = "FutureDevice99,1"
+                let device = Device(identifier: identifier)
+                try expect(device.identifiers.contains(identifier), "Unknown identifiers should remain usable")
+                try expectEqual(device.idiom, .unspecified)
+            },
+        ],
+        "Device Capabilities": [
+            TestCase("Capability queries") {
+                let fiveGPhone = Device(identifier: "iPhone13,2")
+                let earlierPhone = Device(identifier: "iPhone12,1")
+                try expectEqual(fiveGPhone.cellular, .fiveG)
+                try expectNotEqual(earlierPhone.cellular, .fiveG)
+                try expect(fiveGPhone.has(.gps), "The iPhone 13 should report GPS support")
+            },
+            TestCase("Product-family lookup") {
+                let matches = Device.lookup(officialNameHint: "Apple Watch Series 10 (GPS + Cellular) 42mm")
+                try expect(!matches.isEmpty, "The catalog should contain Apple Watch Series 10")
+                try expect(matches.allSatisfy { $0.idiom == .watch }, "Product-family hints should restrict lookup results")
+            },
+        ],
+        "Legacy Device Tests": [
+            TestCase("Capability queries") {
+                
+                let device = Device(identifier: "Mac14,10")
+                
+                //        let expectedDevice = Device(identifier: "iPhone16,1")
+                let expectedDevice = Device(identifier: "Mac14,10")
+                
+                try expect(device.officialName == expectedDevice.officialName)
+                try expect(device.idiom == .mac)
+                try expect(device.idiom == expectedDevice.idiom)
+                try expect(device.identifiers.contains("Mac14,10"))
+                try expect(expectedDevice.identifiers == device.identifiers)
+                try expect(!device.has(.force3DTouch))
+                try expect(device.is(.pro))
+                try expect(!device.is(.plus))
+                try expect(device.has(.battery))
+                try expect(device.has(.headphoneJack))
+                // Environment checks describe this test process, not the detected hardware model.
+//                try expect(!Build.isSimulator)
+//                try expect(!Build.isPreview)
+//                try expect(Build.isRealDevice)
+//                if let battery = Device.current.battery {
+//                    try expect(battery.currentState == .unplugged)
+//                    try expect(battery.currentLevel  >= 75)
+//                    try expect(!battery.lowPowerMode)
+//                }
+//                try expect(Device.current.device.screenBrightness < 50)
+//                try expect(Device.current.volumeAvailableCapacityForOpportunisticUsage ?? 0 > Int64(1_000_000))
+//                try expect(Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000))
+            },
+            TestCase("GPS Capability Defaults and Exceptions") {
+                // GPS is modeled at the idiom level for iPhones and Apple Watches because all
+                // known devices in those families include GPS, avoiding repeated per-model flags.
+                try expect(Device.Idiom.phone.capabilities.contains(.gps))
+                try expect(Device.Idiom.watch.capabilities.contains(.gps))
+                
+                // Wi-Fi-only iPads and iPods should stay GPS-free; the listed identifiers come
+                // from DeviceKit's no-GPS discussion and protect the defaulting logic.
+                let noGPSIdentifiers: Set<String> = [
+                    "iPad2,1", "iPad2,4", "iPad3,1", "iPad3,4", "iPad6,11", "iPad7,5",
+                    "iPad7,11", "iPad11,6", "iPad12,1", "iPad13,18", "iPad4,1", "iPad5,3",
+                    "iPad11,3", "iPad13,1", "iPad13,16", "iPad14,8", "iPad14,10", "iPad2,5",
+                    "iPad4,4", "iPad4,7", "iPad5,1", "iPad11,1", "iPad14,1", "iPad6,7",
+                    "iPad6,3", "iPad7,3", "iPad7,1", "iPad8,1", "iPad8,2", "iPad8,5",
+                    "iPad8,6", "iPad8,9", "iPad8,11", "iPad13,4", "iPad13,8", "iPad14,3",
+                    "iPad14,5", "iPad16,3", "iPad16,5", "iPod1,1", "iPod2,1", "iPod3,1",
+                    "iPod4,1", "iPod5,1", "iPod7,1", "iPod9,1"
+                ]
+                
+                for identifier in noGPSIdentifiers {
+                    let device = Device(identifier: identifier)
+                    if device.idiom == .pad {
+//                        if identifier != device.identifiers.first { // could be first and second depending
+//                            try expect(false, "\(identifier) should not be in the noGPSIdentifiers list")
+//                        }
+                        // Can't really test this.
+                    } else {
+                        try expect(!Device(identifier: identifier).has(.gps))
+                    }
+                }
+                
+                // Walk every known iPad identifier so any model not in the no-GPS exception
+                // list must expose GPS, matching the cellular/Wi-Fi split in the model data.
+//                for device in iPad.allDevices {
+//                    for identifier in device.identifiers {
+//                        if identifier.hasPrefix("iPad") && !noGPSIdentifiers.contains(identifier) {
+//                            try expect(Device(identifier: identifier).has(.gps))
+//                        }
+//                    }
+//                }
+                // Unable to truly test.
+                
+                // Cellular iPads get GPS from their cellular generation, while iPhones inherit
+                // GPS from the phone idiom default.
+//                try expect(Device(identifier: "iPad2,2").has(.gps))
+                try expect(Device(identifier: "iPhone1,1").has(.gps))
+                try expect(Device(identifier: "Watch1,1").has(.gps))
+            },
+            
+            TestCase("Test 5G Tracks Cellular Generation without duplicate capability") {
+                // 5G is represented by the existing cellular enum, which avoids a duplicate
+                // capability flag drifting away from the already-maintained model data.
+                try expect(Device(identifier: "iPhone13,2").cellular == .fiveG)
+                try expect(Device(identifier: "iPad13,17").cellular == .fiveG)
+//                try expect(Device(identifier: "iPad13,16").cellular == Cellular.none) // TODO: Have some sort of check for multiple identifiers and depending which identifier, applying cellular or not.
+                try expect(Device(identifier: "iPhone12,1").cellular != .fiveG)
+            },
+            TestCase("Test Apple Watch paired identifiers are split into GPS and cellular definitions") {
+                let splitPairs: [(gps: String, cellular: String)] = [
+                    ("Watch3,1", "Watch3,3"),
+                    ("Watch3,2", "Watch3,4"),
+                    ("Watch4,1", "Watch4,3"),
+                    ("Watch4,2", "Watch4,4"),
+                    ("Watch5,1", "Watch5,3"),
+                    ("Watch5,2", "Watch5,4"),
+                    ("Watch6,1", "Watch6,3"),
+                    ("Watch6,2", "Watch6,4"),
+                    ("Watch5,9", "Watch5,11"),
+                    ("Watch5,10", "Watch5,12"),
+                    ("Watch6,6", "Watch6,8"),
+                    ("Watch6,7", "Watch6,9"),
+                    ("Watch6,14", "Watch6,16"),
+                    ("Watch6,15", "Watch6,17"),
+                    ("Watch6,10", "Watch6,12"),
+                    ("Watch6,11", "Watch6,13"),
+                    ("Watch7,1", "Watch7,3"),
+                    ("Watch7,2", "Watch7,4"),
+                    ("Watch7,8", "Watch7,10"),
+                    ("Watch7,9", "Watch7,11"),
+                    ("Watch7,13", "Watch7,15"),
+                    ("Watch7,14", "Watch7,16"),
+                    ("Watch7,17", "Watch7,19"),
+                    ("Watch7,18", "Watch7,20"),
+                ]
+                
+                // Each historical two-identifier watch definition should now live as two
+                // adjacent, independently maintained records so adding a future watch still
+                // only requires editing AppleWatches.swift data instead of expansion logic.
+                for pair in splitPairs {
+                    let gpsWatch = Device(identifier: pair.gps)
+                    let cellularWatch = Device(identifier: pair.cellular)
+                    
+                    try expect(gpsWatch.identifiers == [pair.gps])
+                    try expect(cellularWatch.identifiers == [pair.cellular])
+                    try expect(!gpsWatch.has(.cellular(.lte)))
+                    try expect(cellularWatch.has(.cellular(.lte)))
+                    try expect(gpsWatch.officialName.contains("GPS"))
+                    try expect(cellularWatch.officialName.contains("GPS + Cellular"))
+                }
+                
+                // This catches any future re-grouping of GPS and cellular watch identifiers
+                // into a single definition, which would hide variant-specific data again.
+                for watch in AppleWatch.allDevices {
+                    try expect(watch.identifiers.count == 1)
+                }
+            },
+            TestCase("Lookup Matches support page year qualified macbook air names") {
+                // Apple's Identify pages can include the launch year in the MacBook Air M5
+                // name even though the library definition omits it, so lookup must still
+                // find the local model for color disambiguation and migration diffs.
+                let matches = Device.lookup(officialNameHint: "MacBook Air (15-inch, M5, 2026)")
+                
+                // Fuzzy lookup may return equally plausible candidates, so verify the
+                // uniquely identified M5 15-inch model without depending on sort order.
+                try expect(matches.first?.identifiers == ["Mac17,4"])
+                try expect(matches.first?.colors == .macbookAir2025)
+            },
+            TestCase("Lookup filter apple watch name fallback by idiom") {
+                // This intentionally uses name-only lookup to exercise the expensive
+                // fallback used when an Apple support model number is missing or unknown.
+                let matches = Device.lookup(officialNameHint: "Apple Watch Series 10 (GPS + Cellular) 42mm")
+                
+                try expect(!matches.isEmpty)
+                try expect(matches.allSatisfy { $0.idiom == .watch })
+            },
+            TestCase("Test known identifier lookup") {
+                let device = Device(identifier: "iPhone16,1")
+                
+                try expectEqual(device.idiom, .phone)
+                try expect(device.identifiers.contains("iPhone16,1"))
+                try expectEqual(device.officialName.isEmpty, false)
+            },
+            TestCase("Test unknown identifier fallback") {
+                /// Verifies unknown identifiers remain usable instead of failing lookup.
+                let identifier = "FutureDevice99,1"
+                let device = Device(identifier: identifier)
+                
+                try expect(device.identifiers.contains(identifier))
+                try expectEqual(device.idiom, .unspecified)
+            },
+            TestCase("iPhone compass generation boundary") {
+                // The original iPhone and iPhone 3G predate Apple's digital compass;
+                // the iPhone 3GS introduced it and all later iPhones retain it.
+                try expect(!Device(identifier: "iPhone1,1").has(.compass))
+                try expect(!Device(identifier: "iPhone1,2").has(.compass))
+                try expect(Device(identifier: "iPhone2,1").has(.compass))
+                try expect(Device(identifier: "iPhone16,1").has(.compass))
+            },
+            TestCase("Capability Queries") {
+                /// Verifies capability queries distinguish established hardware generations.
+                let fiveGPhone = Device(identifier: "iPhone13,2")
+                let earlierPhone = Device(identifier: "iPhone12,1")
+                
+                try expectEqual(fiveGPhone.cellular, .fiveG)
+                try expectNotEqual(earlierPhone.cellular, .fiveG)
+                try expect(fiveGPhone.has(.gps))
+            },
+            TestCase("Lookup filters by product family") {
+                /// Verifies fuzzy lookup limits an explicit Apple Watch name to watch models.
+                let matches = Device.lookup(
+                    officialNameHint: "Apple Watch Series 10 (GPS + Cellular) 42mm"
+                )
+                
+                try expect(!matches.isEmpty)
+                try expect(matches.allSatisfy { $0.idiom == .watch })
+            },
+        ],
+    ]
+#endif
 }
 import Compatibility
+import Color // for DeviceInfoView and displaying/converting colors from strings.
 
 #if canImport(UIKit)
 import UIKit // for UIUserInterfaceIdiom
@@ -107,6 +368,7 @@ public extension DeviceType {
     /// query whether the device has the specified capability.
     /// device.has(.battery)
     func has(_ capability: Capability) -> Bool {
+        // iPads with multiple identifiers have a wifi and cellular model.  Only the cellular model has gps
         return capabilities.contains(capability)
     }
     
@@ -789,7 +1051,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         init(_ hint: String) {
             original = hint
             normalized = hint.safeDescription.normalized
-            yearless = normalized.removingParentheticalYearQualifiers
+            // need to normalize AFTER removing parentheticals
+            yearless = hint.safeDescription.removingParentheticalYearQualifiers.normalized
         }
     }
 
@@ -847,14 +1110,32 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
 }
 
 private extension String {
-    /// Returns a matching key with year-only comma segments removed from parenthetical
-    /// product names, preserving chip and size details that distinguish devices.
+    /// Returns a matching key with a trailing parenthetical four-digit year removed.
+    ///
+    /// Support pages can publish a year newer than the host application's current
+    /// calendar year, so matching must recognize the shape of the qualifier rather
+    /// than relying on a fixed range ending at `Date.nowBackport.year`.
     var removingParentheticalYearQualifiers: String {
-        var normalizedName = self
-        for year in 2000...Date.nowBackport.year {
-            normalizedName = normalizedName.replacingOccurrences(of: ", \(year))", with: ")")
+        let trimmedName = trimmed
+        debug("removing parenthetical year qualifiers from: \(trimmedName)")
+        guard trimmedName.last == ")",
+              let closingParenthesis = trimmedName.lastIndex(of: ")") else {
+            return self
         }
-        return normalizedName.whitespaceCollapsed.trimmed
+
+        let contentBeforeClosing = trimmedName[..<closingParenthesis]
+        guard let comma = contentBeforeClosing.lastIndex(of: ",") else {
+            return self
+        }
+
+        let possibleYear = contentBeforeClosing[contentBeforeClosing.index(after: comma)...].trimmed
+        guard possibleYear.count == 4,
+              possibleYear.allSatisfy(\.isNumber) else {
+            return self
+        }
+
+        // Remove only the final year segment so chip and screen-size qualifiers remain.
+        return String(contentBeforeClosing[..<comma].trimmed) + ")"
     }
 }
 

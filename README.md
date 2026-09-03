@@ -11,9 +11,9 @@ This is actively maintained so if there is a feature request or change, we will 
 
 ## Documentation
 
-Swift Package Index builds and hosts Device's DocC catalog and API reference from the `Device` library target. The catalog includes guides for identifying hardware, inspecting the current device, and separating build environments from hardware models. The package's [Swift Package Index page](https://swiftpackageindex.com/kudit/Device) provides the hosted documentation link after the next indexed build.
+Swift Package Index builds and hosts Device's API reference from the `Device` library target. Public API comments provide the discoverable symbol documentation; the README contains the conceptual usage guides for identifying hardware, inspecting the current device, and separating build environments from hardware models. The package's [Swift Package Index page](https://swiftpackageindex.com/kudit/Device) provides the hosted documentation link after the next indexed build.
 
-When using Xcode, choose **Product → Build Documentation** to browse the same symbol documentation locally. Keeping documentation attached to the public declarations means it remains available in Quick Help without adding generated files that Swift Playgrounds must load.
+When using Xcode, choose **Product → Build Documentation** to browse the symbol documentation locally. Keeping documentation attached to the public declarations keeps it available in Quick Help and avoids a separate DocC catalog that Swift Playgrounds would need to load.
 
 ## Testing
 
@@ -23,7 +23,7 @@ Run the deterministic package regression suite from the repository root:
 swift test
 ```
 
-The `DeviceSwiftPMTests` target validates public model lookup and capability behavior without assuming which Mac, simulator, or other hardware runs the tests. It is excluded from Swift Playgrounds manifests because Playgrounds loads the sample iOS application product rather than package test targets. Hardware-specific and UI tests remain available to the development Xcode project.
+The `DeviceTests` target wraps the reusable `Compatibility.TestCase` sections exposed by `Device.tests` and its registered dependencies. It is excluded from Swift Playgrounds manifests because Playgrounds loads the sample iOS application product rather than package test targets. Hardware-specific and UI tests remain available to the development Xcode project.
 
 
 ## Features

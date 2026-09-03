@@ -215,8 +215,9 @@ extension CurrentDevice {
         return info
     }
 
-    /// Description (includes current identifier since device might have multiple).
-    public var description: String {
+    /// Structured `Field` info about the current device for use in debugging reports or display.
+    @MainActor
+    public var info: [Field] {
         let environments = Build.environments()
         let environmentDescription = Build.Environment.deviceCases.map {
             if $0 != .realDevice && environments.contains($0) {
@@ -225,25 +226,30 @@ extension CurrentDevice {
                 return "" //  NOT(.\($0.caseName))
             }
         }.joined()
-        var description = """
-Device: \(officialName)
-Name: "\(name)"
-Model: \(identifier) running \(systemInfo)\(environmentDescription)
-Thermal State: \(String(describing: thermalState))
 
-"""
-        if let battery {
-            description += battery.description + "\n"
+        var fields = [
+            Field("Device", officialName),
+            Field("Name", "\"\(name)\""),
+            Field("Model", "\(identifier) running \(systemInfo)\(environmentDescription)"),
+            Field("Thermal State", String(describing: thermalState)),
+        ]
+        if let battery, let batteryInfo = battery.info {
+            fields += [batteryInfo]
         }
-        description += """
-Volume Total Capacity: \(volumeTotalCapacity?.byteString(.file) ?? "n/a")
-Volume Available Capacity for Important Resources: \(volumeAvailableCapacityForImportantUsage?.byteString(.file) ?? "n/a")
-Volume Available Capacity for Opportunistic Resources: \(volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a")
-Volume Available Capacity: \(volumeAvailableCapacity?.byteString(.file) ?? "n/a")
-Device Framework Version: v\(Device.version)
-Compatibility Framework Version: v\(Compatibility.version)
-"""
-        return description
+        // volume info
+        fields += [
+            Field("Volume Total Capacity", volumeTotalCapacity?.byteString(.file) ?? "n/a"),
+            Field("Volume Available Capacity for Important Resources", volumeAvailableCapacityForImportantUsage?.byteString(.file) ?? "n/a"),
+            Field("Volume Available Capacity for Opportunistic Resources", volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a"),
+            Field("Volume Available Capacity", volumeAvailableCapacity?.byteString(.file) ?? "n/a"),
+        ]
+        return fields
+    }
+    
+    /// Description (includes current identifier since device might have multiple).
+    @MainActor
+    public var description: String {
+        return info.description
     }
 }
 
@@ -604,6 +610,7 @@ public final class ActualHardwareDevice: CurrentDevice {
     private typealias SystemInfo = (String, Version)
     private var calculatedSystemInfoCache: SystemInfo?
     /// internal function for getting system information
+    @MainActor
     private var calculatedSystemInfo: SystemInfo {
         if let calculatedSystemInfoCache {
             return calculatedSystemInfoCache
@@ -676,12 +683,14 @@ public final class ActualHardwareDevice: CurrentDevice {
     }
     
     /// The name of the operating system running on the device represented by the receiver (e.g. "iOS" or "tvOS").
+    @MainActor
     public var systemName: String {
         let (systemName, _) = calculatedSystemInfo
         return systemName
     }
     
     /// The current version of the operating system (e.g. 8.4 or 9.2).  If macCatalyst, will return macCatalyst version.  If Designed for iPad, will report iPadOS version but systemName should report (Designed for iPad)
+    @MainActor
     public var systemVersion: Version {
         let (_, systemVersion) = calculatedSystemInfo
         return systemVersion

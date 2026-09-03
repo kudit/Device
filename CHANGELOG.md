@@ -1,5 +1,19 @@
 # ChangeLog
 
+TODO: Updated AppStore metadata.
+
+## v2.13.1 2026-09-02
+Fixed missing `.compass` capability from most iPhones.
+** App Store above **
+Updated App Store metadata.
+Adopted Compatibility Module metadata and ordered reusable test sections.
+Moved package documentation responsibilities to inline public API comments and the README; removed the separate DocC catalog.
+Registered Device from the sample application's highest-level module.
+Raised the direct Compatibility dependency to v1.16.0 for Module APIs.
+Added additional bridge parsing to better handle DeviceKit issues.
+Added an Export Deltas feature to make it easier to submit errors to AI tools.
+Tightened and standardized tests.
+
 ## v2.13.0 2026-06-29
 Added GPS capabilities with defaults driven by idiom and cellular generation.
 Split Apple Watch models into the GPS and GPS + Cellular variants.
@@ -593,13 +607,16 @@ Possibly because Bundle.module may not exist???  removed call to see if that fix
 
 
 
+
+
 #App Store Copy
+
 ##Title
 Device Information Tool
 
 ##Subtitle (30)
 123456789012345678901234567890
-Detailed device information
+Hardware Specs & System Info
 
 ##Promotional Text (170)
 Download today to get full visibility into your Apple devices, know what’s under the hood, stay ahead of updates, and troubleshoot with confidence.
@@ -633,7 +650,7 @@ https://www.kudit.com/terms
 
 ##Keywords (100)
 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-device,devicekit,framework,github,iphone,identifier,info,ipad,mac,os,screen,capabilities,open,source
+monitor,stats,battery,sensor,chip,storage,display,thermal,model,devicekit,identifier,info,os,version
 
 
 ## Pricing Analysis

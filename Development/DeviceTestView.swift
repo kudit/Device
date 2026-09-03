@@ -159,6 +159,10 @@ public struct DeviceTestView: View {
 
     @State var showMigrations = false
     @State var showAnimatedExample = false
+#if DEBUG
+    // DEBUG-only navigation state keeps the reusable Compatibility test catalog out of release builds.
+    @State private var showAllTests = false
+#endif
     
     @ViewBuilder
     var testView: some View {
@@ -227,6 +231,15 @@ public struct DeviceTestView: View {
             })
 #if DEBUG // reordered because only first item is visible on iPhone 7.
             if Build.isDebug { // This feature should only be for developers, not in the actual app.
+                if #available(iOS 15, macOS 12, tvOS 17, watchOS 8, *) {
+                    // Expose the same registered module graph used by SwiftPM/Xcode tests for interactive debugging.
+                    Button("All Tests") {
+                        showAllTests = true
+                    }
+                    .backport.navigationDestination(isPresented: $showAllTests) {
+                        AllTestsListView()
+                    }
+                }
                 Button("Migration") {
                     showMigrations = true
                 }

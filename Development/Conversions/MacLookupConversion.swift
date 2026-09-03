@@ -12,6 +12,14 @@ struct MacLookup: DeviceBridge {
         ["notes"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }
 
+    /// MacLookup does not promise part-number ordering, so compare the same values independently of order.
+    func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool {
+        if key == "parts" || key == "models", let left = left as? [String], let right = right as? [String] {
+            return left.sorted() == right.sorted()
+        }
+        return areEqual(left, right)
+    }
+
     var models: [String] // identifiers
     var kind: String // form
     var colors: [String] // Convert to MaterialColors

@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.13.0"
+let version = "2.13.1"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -25,6 +25,7 @@ var targets = [
 		name: packageLibraryName,
 		dependencies: [
 			.product(name: "Color Library", package: "color"), // apparently needs to be lowercase.  Also note this is "Color Library" not "Color"
+			.product(name: "Compatibility Library", package: "compatibility"), // Device uses Compatibility's Build and Module APIs directly.
 		],
 		path: "Sources"
 		// If resources need to be included in the module, include here
@@ -112,7 +113,9 @@ targets += [
 			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal but we're not using a string literal
 		],
 		path: "Development"
-//		,exclude: ["Device.xcodeproj/*"]
+		// Exclude package tests from the app target so Xcode and Swift Playgrounds
+		// never try to compile the same source as both app code and test code.
+		,exclude: ["DeviceTests"]
 		// Include test app resources.
         ,resources: resources
 //		,swiftSettings: [
@@ -136,9 +139,16 @@ targets += [
 #if !SwiftPlaygrounds && !canImport(PlaygroundSupport)
 targets += [
 	.testTarget(
-		name: "\(packageLibraryName)SwiftPMTests",
-		dependencies: [.init(stringLiteral: packageLibraryName)],
-		path: "Tests/DeviceSwiftPMTests"
+		name: "\(packageLibraryName)Tests",
+		dependencies: [
+			.init(stringLiteral: packageLibraryName), // Use the shared name while preserving the manifest pattern required by Playgrounds.
+			.product(name: "Compatibility Testing Library", package: "compatibility"), // Reuse Compatibility's public test adapter.
+		],
+		path: "Development/DeviceTests",
+		exclude: [
+			"DeviceUITests.swift",
+			"DeviceTest.xctestplan", // Xcode's UI-test plan is not SwiftPM source.
+		]
 	),
 ]
 #endif
@@ -150,7 +160,8 @@ let package = Package(
 	// include dependencies
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
+		.package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
+		.package(url: "https://github.com/kudit/Compatibility.git", from: "1.19.9"),
 	],
 	targets: targets
 )

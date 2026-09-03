@@ -33,11 +33,12 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         var capabilities = capabilities
         capabilities.cameras = cameras
         capabilities.cellular = cellular
-        // Only cellular iPads include GPS; Wi-Fi-only identifiers are intentionally left
-        // without this capability to match Apple's model split.
-        if cellular != .none {
-            capabilities.insert(.gps)
-        }
+//        // Only cellular iPads include GPS; Wi-Fi-only identifiers are intentionally left
+//        // without this capability to match Apple's model split.
+        // HOWEVER we do not distinguish between the cellular and non-cellular models so we can't actually guarantee this.
+//        if cellular != .none {
+//            capabilities.insert(.gps)
+//        }
         capabilities.screen = screen
         capabilities.pencils = pencils
         device = Device(
