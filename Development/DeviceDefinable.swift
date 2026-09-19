@@ -87,8 +87,8 @@ extension Capability: Definable {
             return ".watchSize(\(watchSize.definition))"
         case .cellular(let cellular):
             return ".cellular(\(cellular.definition))"
-        case .screen(let screen):
-            return ".screen(\(screen.definition))"
+        case .screens(let screens):
+            return ".screens(\(screens.definition))"
         case .pencils(let pencils):
             return ".pencils(\(pencils.sorted.definition))"
         case .biometrics(let biometrics):
@@ -98,7 +98,7 @@ extension Capability: Definable {
         default:
             return "." + caseName
             // why can't we remove duplicate code by doing the following?
-            //            return (self as Definable).definition
+            //      return (self as Definable).definition
         }
     }
 }
@@ -108,7 +108,7 @@ extension Capability: Definable {
 extension Device: Definable {}
 public extension Device {
     var definition: String {
-        let indentSpace = "            "
+        let indentSpace = "   "
         let idiomish = ""
         // TODO: Fix this based on our needs.  Commented out for now due to internal protection level.  Find a public way to expose what we need rather than using internal types.  Perhaps have an extension that loops through and pulls description or whatever we need.
         /*
@@ -129,12 +129,12 @@ public extension Device {
             // remove default form capabilities like battery
             capabilities.subtract(form.capabilities)
         }
-        //        capabilities.subtract(control.capabilities) // do after so .macMini form isn't removed which is the default
+        //    capabilities.subtract(control.capabilities) // do after so .macMini form isn't removed which is the default
         // strip out default capabilities
-        //        // add in ringer switch to all non-iPhone 15 pro devices
-        //        if idiom == .phone, let identifier = identifiers.first, !identifier.contains("iPhone16") {
-        //            capabilities.insert(.ringerSwitch)
-        //        } DONE!
+        //    // add in ringer switch to all non-iPhone 15 pro devices
+        //    if idiom == .phone, let identifier = identifiers.first, !identifier.contains("iPhone16") {
+        //      capabilities.insert(.ringerSwitch)
+        //    } DONE!
         
         // remove .macForm from capabilities
         capabilities.macForm = nil // remove so not appears in capabilities list
@@ -144,10 +144,10 @@ public extension Device {
         }
         
         var colors = "colors: \(colors.definition),\n\(indentSpace)"
-//        if self.colors.count == 0 || self.colors == .default || idiom == .vision { // don't do this if we want to always have colors.  Remove once we've gone through and added all colors.
-//            colors = ""
-//        }
-        //        debug("\(colors)") // for figuring out duplicate key crash
+//    if self.colors.count == 0 || self.colors == .default || idiom == .vision { // don't do this if we want to always have colors.  Remove once we've gone through and added all colors.
+//      colors = ""
+//    }
+        //    debug("\(colors)") // for figuring out duplicate key crash
         if let key = [MaterialColor].colorSets[self.colors] {
             colors = "colors: .\(key),\n\(indentSpace)"
         }

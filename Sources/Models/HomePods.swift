@@ -67,7 +67,7 @@ public struct HomePod: IdiomType {
         HomePod(
             officialName: "HomePod",
             identifiers: ["AudioAccessory1,1", "AudioAccessory1,2"], // TODO: What is AudioAccessory1,2?
-            introduction: 2018.introductionYear,
+            introduction: "2018-02-09",
             supportId: "SP773",
             launchOSVersion: "11.0.2",
             unsupportedOSVersion: nil,
@@ -78,7 +78,7 @@ public struct HomePod: IdiomType {
         HomePod(
             officialName: "HomePod mini",
             identifiers: ["AudioAccessory5,1"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-12-11",
             supportId: "SP834",
             launchOSVersion: "14.2", // audioOS
             unsupportedOSVersion: nil,
@@ -90,7 +90,7 @@ public struct HomePod: IdiomType {
         HomePod(
             officialName: "HomePod (2nd generation)",
             identifiers: ["AudioAccessory6,1"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-02-03",
             supportId: "SP888",
             launchOSVersion: "16", // audioOS
             unsupportedOSVersion: nil,

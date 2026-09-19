@@ -16,13 +16,24 @@ protocol DeviceBridge: Identifiable, Equatable, Sendable, Codable, PropertyItera
     var matched: Device { get }
     /// A Device with updated fields based on this Bridge's values filling the matched device's values only when bridge values are missing.  Should be primarily the bridge's values though in case there is no device match or there is a conflict.
     var merged: Device { get }
+    /// Source-format representation used by Bridge comparison tabs.
+    /// Concrete bridges can override this with a repository-specific code generator.
+    var definition: String { get }
     /// create a bridged version of a Device (will use to create diff views from matched and merged)
     func bridge(from device: Device) -> Self
     /// Compares a field after applying source-specific normalization rules.
     func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool
+    /// Hardware identifiers explicitly represented by this source row, before any local merge.
+    var comparisonIdentifiers: [String] { get }
+    /// Explicit source CPU alternatives, when the format provides them.
+    var comparisonCPUs: [CPU] { get }
+    /// Projects a validated grouped row onto one local definition for comparison, leaving the source row intact.
+    func comparison(for member: Device, in group: [Device]) -> Self
 }
 protocol DeviceBridgeLoader: Sendable {
-    associatedtype Bridge
+    /// Every loader produces one concrete bridge record type, which keeps the
+    /// generic comparison view type-safe when it accesses bridge properties.
+    associatedtype Bridge: DeviceBridge
     /// Get a list of the Bridge device type devices (likely from text that is parsed hence async)
     func devices() async throws -> [Bridge]
     /// Get bridge devices while optionally reporting deterministic progress for loaders
@@ -30,6 +41,8 @@ protocol DeviceBridgeLoader: Sendable {
     func devices(progress: (@Sendable (_ completed: Int, _ total: Int, _ message: String) -> Void)?) async throws -> [Bridge]
     /// URL for use in links to allow viewing the source document easily.
     var sourceURL: String { get }
+    /// Name for use in navigation and titles
+    var name: String { get }
 }
 extension DeviceBridgeLoader {
     var source: URL { URL(string: sourceURL)! }
@@ -65,6 +78,35 @@ struct BridgeFieldDiff {
 }
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension DeviceBridge {
+    var definition: String { source }
+    // Sources without an identifier collection remain ordinary single-record comparisons.
+    var comparisonIdentifiers: [String] { [] }
+    var comparisonCPUs: [CPU] { [] }
+    func comparison(for member: Device, in group: [Device]) -> Self { self }
+
+    /// Distinct local definitions explicitly covered by a valid source group.
+    /// A shared real support ID is evidence of a family relationship, not permission
+    /// to combine processors or silently accept unknown identifiers and other errors.
+    var groupedDevices: [Device] {
+        let group = Device.sourceGroup(identifiers: comparisonIdentifiers)
+        let sourceCPUs = Set(comparisonCPUs.filter { $0 != .unknown })
+        // A matching support page must not hide a source claiming a different processor family.
+        guard sourceCPUs.isSubset(of: Set(group.map { $0.cpu })) else { return [] }
+        return group
+    }
+
+    /// Source-specific views of each member; each still carries exactly one local CPU/identifier relationship.
+    var groupedComparisons: [Self] {
+        let group = groupedDevices
+        return group.map { comparison(for: $0, in: group) }
+    }
+
+    /// All output definitions. Copy/export callers must use this instead of losing all but the first group member.
+    var mergedDevices: [Device] {
+        let members = groupedComparisons
+        return members.isEmpty ? [merged] : members.map { $0.merged }
+    }
+
     // default implementation
     static var diffIgnoreKeys: [String] {
         [] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
@@ -74,6 +116,14 @@ extension DeviceBridge {
         areEqual(left, right)
     }
     var matchType: MatchType {
+        let members = groupedComparisons
+        if !members.isEmpty {
+            // Grouping is acknowledged as compatible, while a real field error in
+            // any projected member still makes the complete source row a mismatch.
+            // A validated support-ID grouping is an exact match when no projected
+            // member differs; the grouping itself is not a warning.
+            return members.contains { $0.matchType == .mismatched } ? .mismatched : .identical
+        }
         var overallMatchType: MatchType = .identical
         for diff in diffs {
             if diff == .mismatched {
@@ -111,7 +161,7 @@ extension DeviceBridge {
     var id: String { source }
     
     var deviceCode: String {
-        merged.definition
+        mergedDevices.map { $0.definition }.joined(separator: "\n")
     }
     
     var matchedBridge: Self {
@@ -127,47 +177,95 @@ extension DeviceBridge {
     /// The report keeps the matched Device value, source value, and merged result together so a
     /// pasted report is enough to decide whether the correction belongs in Device or upstream.
     var deltaReport: String {
+        let members = groupedComparisons
+        if !members.isEmpty {
+            // Keep a valid grouping out of proposed source corrections; only actual
+            // member differences are emitted below the explanatory group heading.
+            let heading = "Grouped source: \(members.count) separate Device definitions share support ID \(groupedDevices[0].supportId)."
+            return ([heading] + members.filter { $0.matchType == .mismatched }.map { $0.deltaReport }).joined(separator: "\n\n")
+        }
         let left = matchedBridge.allProperties
         let right = allProperties
         let combined = mergedBridge.allProperties
-        var lines = [String("Device bridge delta report")]
-        lines.append("Identifier: \(String(describing: id))")
+        var lines = [String]()
+        let label = matched.officialName.isEmpty ? String(describing: id) : matched.officialName
+        let identifiers = comparisonIdentifiers.isEmpty ? matched.identifiers : comparisonIdentifiers
+        lines.append("\(label) [\(identifiers.joined(separator: ", "))]")
 
         for key in allKeyPaths.keys where key != "source" {
             if Self.diffIgnoreKeys.contains(key) {
                 continue // Source-specific metadata is intentionally excluded from actionable reports.
             }
-            let leftValue = left[key]
-            let rightValue = right[key]
+            guard let leftValue = left[key], let rightValue = right[key] else {
+                continue
+            }
+            let leftValueDefinable = definitionText(leftValue)
+            let rightValueDefinable = definitionText(rightValue)
             let combinedValue = combined[key]
-            guard !bridgeValuesEqual(key, leftValue, rightValue) || !bridgeValuesEqual(key, leftValue, combinedValue) else {
+            let combinedDefinition = definitionText(combinedValue)
+            guard leftValueDefinable != rightValueDefinable || leftValueDefinable != combinedDefinition else {
                 continue // Identical fields add noise and make upstream reports harder to review.
             }
-            let status: String
-            if bridgeValuesEqual(key, leftValue, combinedValue) {
-                status = "source-only"
-            } else if bridgeValuesEqual(key, rightValue, combinedValue) {
-                status = "merged"
-            } else {
-                status = "conflict"
-            }
-            lines.append("\n[\(status)] \(key)")
-            lines.append("  Device: \(bridgeValueDescription(leftValue))")
-            lines.append("  Source: \(bridgeValueDescription(rightValue))")
-            lines.append("  Merged: \(bridgeValueDescription(combinedValue))")
+            lines.append("\(key) should be \(leftValueDefinable) not \(rightValueDefinable)")
         }
         return lines.joined(separator: "\n")
     }
+
+    /// Formats actionable mismatches as an issue or pull-request comment for the source project.
+    /// Known grouped matches remain explanatory and are never proposed as corrections.
+    var generateComment: String {
+        deltaReport
+    }
+
+    /// Unwraps Optional values before generating definitions so equal values do
+    /// not produce noisy `Optional(...)` text or false deltas.
+    private func definitionText(_ value: Any?) -> String {
+        guard let value else { return "nil" }
+        let mirror = Mirror(reflecting: value)
+        if mirror.displayStyle == .optional {
+            return mirror.children.first.map { definitionText($0.value) } ?? "nil"
+        }
+        if let definable = value as? Definable { return definable.definition }
+        return String(describing: value)
+    }
 }
 
-/// Formats common bridge field values without requiring JSON encoding or exposing implementation details.
-private func bridgeValueDescription(_ value: Any?) -> String {
-    guard let value else { return "—" }
-    if let string = value as? String { return "\"\(string)\"" }
-    if let strings = value as? [String] {
-        return "[\(strings.map { "\"\($0)\"" }.joined(separator: ", "))]"
+/// Partitions values already known to belong to siblings, while retaining unfamiliar source values as discrepancies.
+func sourceGroupValues<Value: Hashable>(_ source: [Value], member: [Value], group: [[Value]]) -> [Value] {
+    let known = Set(group.flatMap { $0 })
+    let local = Set(member)
+    return source.filter { local.contains($0) || !known.contains($0) }
+}
+
+extension CPU {
+    /// Finds explicit CPU names without mistaking the M5 prefix of M5 Pro for a second processor.
+    static func sourceChoices(in text: String) -> [CPU] {
+        var remainder = text.lowercased()
+        var choices = [CPU]()
+        let candidates = allCases.filter { $0 != .unknown }.sorted { $0.rawValue.count > $1.rawValue.count }
+        for cpu in candidates {
+            let name = cpu.rawValue.replacingOccurrences(of: "Apple ", with: "").lowercased()
+            let pattern = #"(?<![a-z0-9])"# + NSRegularExpression.escapedPattern(for: name) + #"(?![a-z0-9])"#
+            if remainder.range(of: pattern, options: .regularExpression) != nil {
+                choices.append(cpu)
+                remainder = remainder.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
+            }
+        }
+        return choices
     }
-    return String(describing: value)
+}
+
+/// Narrows an explicit CPU alternative list only when all alternatives belong to the validated group.
+/// Other name differences remain available to the source's normal comparison rules.
+func sourceGroupName(_ name: String, member: Device, group: [Device]) -> String {
+    let choices = CPU.sourceChoices(in: name)
+    guard choices.count > 1, choices.contains(member.cpu), Set(choices).isSubset(of: Set(group.map { $0.cpu })) else { return name }
+    let alternatives = choices.map {
+        NSRegularExpression.escapedPattern(for: $0.rawValue.replacingOccurrences(of: "Apple ", with: ""))
+    }.joined(separator: "|")
+    let token = "(?:\(alternatives))"
+    let pattern = "(?i)\(token)(?:\\s*(?:or|and|/|&|\\+)\\s*\(token))+"
+    return name.replacingOccurrences(of: pattern, with: member.cpu.rawValue.replacingOccurrences(of: "Apple ", with: ""), options: .regularExpression)
 }
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
@@ -196,6 +294,22 @@ extension String {
 }
 
 extension Device {
+    /// Resolves a source's explicit identifier union conservatively using shared support metadata.
+    /// Unknown support IDs, unknown identifiers, and ambiguous individual identifiers never validate a group.
+    static func sourceGroup(identifiers: [String]) -> [Device] {
+        guard Set(identifiers).count > 1 else { return [] }
+        var members = [Device]()
+        for identifier in identifiers {
+            let matches = Device.all.filter { $0.identifiers.contains(identifier) }
+            guard matches.count == 1, let match = matches.first else { return [] }
+            if !members.contains(match) { members.append(match) }
+        }
+        guard members.count > 1, let first = members.first,
+              !first.supportId.isEmpty, first.supportId != .unknownSupportId,
+              members.allSatisfy({ $0.supportId == first.supportId && $0.idiom == first.idiom }) else { return [] }
+        return members
+    }
+
     public static func forcedLookup(identifier: String? = nil, model: String? = nil, supportId: String? = nil, officialNameHint: String? = nil) -> Device {
         if let device = Device.lookup(identifier: identifier, model: model, supportId: supportId, officialNameHint: officialNameHint).first {
             return device
@@ -288,9 +402,11 @@ extension Device {
             capabilities.formUnion(self.capabilities)
         }
         var models = base.models
-        // normally we'd flag if different, but since some Apple items are grouped (like Mac16,7), only use the new set if there is no overlap.
+        // Source grouping is projected before this merge, so known sibling parts
+        // are already separated. An unfamiliar part remains actionable even when
+        // other source parts overlap; overlap alone must not hide new information.
         // Apple Watch models may differ and we definitely want the local version in that case to merge.
-        if self.models.count > 0 && (Set(self.models).isDisjoint(with: Set(models)) || idiom == .watch) {
+        if self.models.count > 0 && (self.models != models || idiom == .watch) {
             models = self.models
         }
         var colors = base.colors

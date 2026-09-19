@@ -21,8 +21,18 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
     let left: T
     let merged: T
     let right: T
+    var fixedMode: Mode?
+    private let equality: (String, Any?, Any?) -> Bool
 
     @State private var mode: Mode = .combined
+
+    init(left: T, merged: T, right: T, fixedMode: Mode? = nil, equality: @escaping (String, Any?, Any?) -> Bool = { _, l, r in areEqual(l, r) }) {
+        self.left = left
+        self.merged = merged
+        self.right = right
+        self.fixedMode = fixedMode
+        self.equality = equality
+    }
 
     // Custom colors
     private let leftColor = Color.blue
@@ -30,7 +40,8 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
     private let mergedDiffColor = Color.green
 
     var body: some View {
-        Section(header: header) {
+        VStack(alignment: .leading, spacing: 8) {
+            if fixedMode == nil { header }
             ForEach(allKeys, id: \.self) { key in
                 if key != "source" {
                     row(for: key)
@@ -45,12 +56,14 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
             Text("Fields")
                 .font(.headline)
                 .foregroundStyle(.primary)
-            Picker("", selection: $mode) {
-                ForEach(Mode.allCases, id: \.self) {
-                    Text($0.rawValue).tag($0)
+            if fixedMode == nil {
+                Picker("", selection: $mode) {
+                    ForEach(Mode.allCases, id: \.self) {
+                        Text($0.rawValue).tag($0)
+                    }
                 }
+                .pickerStyle(.segmentedBackport)
             }
-            .pickerStyle(.segmentedBackport)
         }
         .padding(.vertical, 8)
     }
@@ -88,7 +101,7 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
                     .foregroundStyle(.tertiary)
             }
             Spacer()
-            switch mode {
+            switch fixedMode ?? mode {
             case .left:
                 valueText(stringify(lVal), color: colorForLeft(left: lVal, merged: mVal, right: rVal) ?? .primary)
             case .right:
@@ -143,7 +156,7 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
             // skip nil values entirely in combined view
             guard let val = val else { return }
             // dedupe by logical equality where possible (prefer areEqual), otherwise by string
-            if entries.contains(where: { areEqual($0.raw, val) }) { return }
+            if entries.contains(where: { equality("", $0.raw, val) }) { return }
             let s = stringify(val)
             entries.append(CombinedEntry(label: source, value: s, color: color, raw: val))
         }
@@ -152,7 +165,7 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
         appendUnique(source: "M", val: mVal, color: mergedClr)
         appendUnique(source: "R", val: rVal, color: rightClr)
 
-        let allEqual = areEqual(lVal, mVal) && areEqual(mVal, rVal)
+        let allEqual = equality("", lVal, mVal) && equality("", mVal, rVal)
         // If logically all equal but dedup produced more (unlikely), reduce to a single canonical entry
         if allEqual, let first = entries.first {
             return CombinedResult(entries: [first], allEqual: true)
@@ -202,41 +215,53 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
 
     // MARK: coloring rules
     private func colorForLeft(left: Any?, merged: Any?, right: Any?) -> Color? {
-        if !areEqual(left, merged) || !areEqual(left, right) {
+        if !equality("", left, merged) || !equality("", left, right) {
             return leftColor
         }
         return nil
     }
 
     private func colorForRight(left: Any?, merged: Any?, right: Any?) -> Color? {
-        if !areEqual(right, merged) || !areEqual(left, right) {
+        if !equality("", right, merged) || !equality("", left, right) {
             return rightColor
         }
         return nil
     }
 
     private func colorForMerged(merged: Any?, left: Any?, right: Any?) -> Color? {
-        if areEqual(merged, left) && !areEqual(merged, right) { return leftColor }
-        if areEqual(merged, right) && !areEqual(merged, left) { return rightColor }
-        if areEqual(merged, left) && areEqual(merged, right) { return nil }
+        if equality("", merged, left) && !equality("", merged, right) { return leftColor }
+        if equality("", merged, right) && !equality("", merged, left) { return rightColor }
+        if equality("", merged, left) && equality("", merged, right) { return nil }
         return mergedDiffColor
     }
 
     // MARK: helpers
     private func stringify(_ value: Any?) -> String {
-        guard let v = value else { return "—" }
-        if let s = v as? String { return "\"\(s)\"" }
-        if let arr = v as? [String] { return "[\(arr.map { "\"\($0)\"" }.joined(separator: ", "))]" }
-        if let arr = v as? [Any] {
-            let mapped = arr.map { item -> String in
-                if let s = item as? String { return "\"\(s)\"" }
-                if let n = item as? CustomStringConvertible { return n.description }
-                return String(describing: item)
-            }
-            return "[\(mapped.joined(separator: ", "))]"
-        }
-        if let d = v as? CustomStringConvertible { return d.description }
-        return String(describing: v)
+        guard let value else { return "—" }
+        // PropertyIterable exposes optional bridge fields as Optional values;
+        // unwrap them before formatting so AppleDB fields use their JSON-like
+        // literal instead of `Optional(MixedTypeField.string(...))`.
+//    let v: Any
+//    let mirror = Mirror(reflecting: value)
+//    if mirror.displayStyle == .optional {
+//      guard let child = mirror.children.first else { return "—" }
+//      v = child.value
+//    } else {
+//      v = value
+//    }
+        if let definable = value as? Definable { return definable.definition }
+//    if let s = v as? String { return "\"\(s)\"" }
+//    if let arr = v as? [String] { return "[\(arr.map { "\"\($0)\"" }.joined(separator: ", "))]" }
+//    if let arr = v as? [Any] {
+//      let mapped = arr.map { item -> String in
+//        if let s = item as? String { return "\"\(s)\"" }
+//        if let n = item as? CustomStringConvertible { return n.description }
+//        return String(describing: item)
+//      }
+//      return "[\(mapped.joined(separator: ", "))]"
+//    }
+        if let d = value as? CustomStringConvertible { return d.description }
+        return String(describing: value)
     }
 
     private func typeDescription(of l: Any?, _ m: Any?, _ r: Any?) -> String {
@@ -277,60 +302,74 @@ struct ThreeWayDiffView_Previews: PreviewProvider {
                 ThreeWayDiffView(left: left, merged: merged, right: right)
                     .navigationTitle("Three-way Diff")
             }.navigationWrapper()
-//            .listStyle(.insetGrouped)
+//      .listStyle(.insetGrouped)
     }
 }
 
 @available(iOS 15, *)
 struct DiffSwitcherView<T: DeviceBridge>: View {
-    @State private var bridgeDiff = true
+    @State private var context: DiffContext = .bridge
+    @State private var bridgeMode: BridgeMode = .combined
+    @State private var deviceMode: DeviceMode = .merged
 
     var bridge: T
-    private enum DiffSource: String, CaseIterable {
-        case bridge = "Bridge"
-        case device = "Device"
-    }
-    private var diffSource: Binding<DiffSource> {
-        Binding(
-            get: {
-                bridgeDiff ? .bridge : .device
-            },
-            set: { newValue in
-                // Use a picker-backed binding so only the segmented control changes
-                // the wrapper view; text-selection gestures inside the diff content
-                // no longer bubble into a broad Button action.
-                bridgeDiff = newValue == .bridge
-            })
-    }
+    private enum DiffContext: String, CaseIterable { case bridge = "Bridge", device = "Device" }
+    private enum BridgeMode: String, CaseIterable { case combined = "Combined", left = "Left", merged = "Merged", right = "Right", source = "Source" }
+    private enum DeviceMode: String, CaseIterable { case left = "Left", merged = "Merged", right = "Right" }
 
     var body: some View {
         VStack {
             HStack {
-                Picker("Diff Source", selection: diffSource) {
-                    ForEach(DiffSource.allCases, id: \.self) { source in
-                        Text(source.rawValue)
-                            .tag(source)
-                    }
+                Picker("Context", selection: $context) {
+                    ForEach(DiffContext.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmentedBackport)
-                Button("Copy Device") {
-                    Pasteboard.system.copy(bridge.merged.definition + "\n\n")
+                if context == .bridge {
+                    Picker("Bridge view", selection: $bridgeMode) { ForEach(BridgeMode.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+                        .pickerStyle(.segmentedBackport)
+                } else {
+                    Picker("Device view", selection: $deviceMode) { ForEach(DeviceMode.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+                        .pickerStyle(.segmentedBackport)
+                    Link("Support", destination: bridge.matched.supportURL)
+                        .font(.caption)
                 }
             }
-            if bridgeDiff {
-                ThreeWayDiffView(
-                    left: bridge.matchedBridge,
-                    merged: bridge.mergedBridge,
-                    right: bridge)
-            } else {
-                DiffView(
-                    left: bridge.matched.definition,
-                    merged: bridge.merged.definition,
-                    right: bridge.merged.definition,
-                    source: bridge.source.superCollapseWhitespace)
+            // A source row has exactly one context controller. Grouped local
+            // members are handled by DeviceBridge merge/export logic and are not
+            // rendered as duplicate context sections here.
+            let member = bridge
+            Group {
+                if context == .bridge && bridgeMode == .combined {
+                    ThreeWayDiffView(left: member.matchedBridge, merged: member.mergedBridge, right: member, fixedMode: .combined, equality: { key, left, right in
+                        member.bridgeValuesEqual(key, left, right)
+                    })
+                } else if context == .bridge {
+                    let left = member.matchedBridge.definition
+                    let merged = member.mergedBridge.definition
+                    let right = bridgeMode == .source ? member.source.superCollapseWhitespace : member.definition
+                    DiffView(
+                        left: left,
+                        merged: merged,
+                        right: right,
+                        source: member.source.superCollapseWhitespace,
+                        fixedMode: bridgeMode == .left ? .left : bridgeMode == .merged ? .merged : bridgeMode == .right ? .right : .source)
+                } else {
+                    let left = member.matched.definition
+                    let merged = member.merged.definition
+                    // Device context uses the synthesized Device definition as the
+                    // projected source value; the merged value remains the proposal.
+                    let right = member.merged.definition
+                    DiffView(
+                        left: left,
+                        merged: merged,
+                        right: right,
+                        source: right,
+                        fixedMode: deviceMode == .left ? .left : deviceMode == .merged ? .merged : .right)
+                }
             }
         }
     }
+
 }
 
 @available(iOS 15, *)

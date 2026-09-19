@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		B525EADD2F872EB100E10E7D /* DeviceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B525EADC2F872EAD00E10E7D /* DeviceListView.swift */; };
 		B525EADE2F872EB100E10E7D /* DeviceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B525EADC2F872EAD00E10E7D /* DeviceListView.swift */; };
+		B52787363059F816007C7057 /* AppleDBConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52787353059F816007C7057 /* AppleDBConversion.swift */; };
+		B52787373059F816007C7057 /* AppleDBConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52787353059F816007C7057 /* AppleDBConversion.swift */; };
 		B539FA8A2DBD83060017BE25 /* FAppleDeviceConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA832DBD83060017BE25 /* FAppleDeviceConversion.swift */; };
 		B539FA8B2DBD83060017BE25 /* IdentifyModelParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA872DBD83060017BE25 /* IdentifyModelParsing.swift */; };
 		B539FA8C2DBD83060017BE25 /* DeviceKitConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */; };
@@ -72,6 +74,7 @@
 
 /* Begin PBXFileReference section */
 		B525EADC2F872EAD00E10E7D /* DeviceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceListView.swift; sourceTree = "<group>"; };
+		B52787353059F816007C7057 /* AppleDBConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleDBConversion.swift; sourceTree = "<group>"; };
 		B52ED1D02BAB7F7400056A62 /* DeviceTestApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestApp.swift; sourceTree = "<group>"; };
 		B52ED1D12BAB7F7400056A62 /* DeviceTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTestView.swift; sourceTree = "<group>"; };
 		B52ED1D52BAB7F7400056A62 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
@@ -184,6 +187,7 @@
 		B539FA882DBD83060017BE25 /* Conversions */ = {
 			isa = PBXGroup;
 			children = (
+				B52787353059F816007C7057 /* AppleDBConversion.swift */,
 				B539FAAE2DBDF9550017BE25 /* DeviceBridge.swift */,
 				B539FA832DBD83060017BE25 /* FAppleDeviceConversion.swift */,
 				B539FA852DBD83060017BE25 /* DeviceKitConversion.swift */,
@@ -397,6 +401,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B52787363059F816007C7057 /* AppleDBConversion.swift in Sources */,
 				B539FAAA2DBDDDD60017BE25 /* Diffable.swift in Sources */,
 				B58B7EAC2E74900E00327E78 /* MacLookupConversion.swift in Sources */,
 				B58B62B62C23ECEF0046E91C /* DeviceTestView.swift in Sources */,
@@ -435,6 +440,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B52787373059F816007C7057 /* AppleDBConversion.swift in Sources */,
 				B539FAA92DBDDDD60017BE25 /* Diffable.swift in Sources */,
 				B58B7EAD2E74900E00327E78 /* MacLookupConversion.swift in Sources */,
 				B58B62B72C23ECF00046E91C /* DeviceTestView.swift in Sources */,
@@ -521,7 +527,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.13.1;
+				MARKETING_VERSION = 2.14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -587,7 +593,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 2.13.1;
+				MARKETING_VERSION = 2.14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -683,8 +689,8 @@
 			name = Release;
 		};
 		B5DD79D92BC94C8A00457681 /* Debug */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -872,10 +878,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B5E0C0022F00000100000001 /* Compatibility Testing Library */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = "Compatibility Testing Library";
-		};
 		B565653630155F0600B6E0DF /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
@@ -887,6 +889,10 @@
 		B5B1A2292C23EF14002C848D /* Device Library */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Device Library";
+		};
+		B5E0C0022F00000100000001 /* Compatibility Testing Library */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "Compatibility Testing Library";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

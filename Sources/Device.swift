@@ -23,7 +23,7 @@
 /// recursively register its direct dependencies.
 extension Device: Module {
     /// The version of the Device Library since cannot get directly from Package.
-    public static let version: Version = "2.13.1"
+    public static let version: Version = "2.14.0"
     
     /// The public source repository used for open-source support and license discovery.
     public static let openSourceRepository: String? = "https://github.com/kudit/Device"
@@ -80,12 +80,55 @@ extension Device: Module {
                 try expect(matches.allSatisfy { $0.idiom == .watch }, "Product-family hints should restrict lookup results")
             },
         ],
+        "Screens": [
+            TestCase("Single and non-addressable screen collections") {
+                let phone = Device(identifier: "iPhone13,2")
+                try expectEqual(phone.screens, phone.screen.map { [$0] } ?? [])
+                for identifier in ["AudioAccessory5,1", "AppleTV6,2", "RealityDevice17,1"] {
+                    try expect(Device(identifier: identifier).screens.isEmpty, "No fixed addressable app screens for \(identifier)")
+                }
+            },
+            TestCase("Multiple panels preserve the single-screen API and Codable metadata") {
+                let front = Screen(resolution: (1398,2034), ppi: 460)
+                let inner = Screen(resolution: (1878,2670), ppi: 430)
+                var capabilities = Capabilities()
+                capabilities.screens = [front, inner]
+                try expectEqual(capabilities.screen, front)
+                try expectEqual(capabilities.screens, [front, inner])
+                // Updating the primary screen must not discard secondary metadata.
+                capabilities.screen = .i63
+                try expectEqual(capabilities.screens, [.i63, inner])
+                #if canImport(Foundation)
+                let decoded = try JSONDecoder().decode(Capabilities.self, from: JSONEncoder().encode(capabilities))
+                try expectEqual(decoded.screens, capabilities.screens)
+                #endif
+                capabilities.screens = []
+                try expect(capabilities.screen == nil && capabilities.screens.isEmpty)
+            },
+            TestCase("Duo draft exposes front and inner panels") {
+                // The draft currently shares an identifier with another model;
+                // select by exact name without changing the maintainer's placeholder.
+                let duo = Device.all.first { $0.officialName == "iPhone Duo" }
+                try expectEqual(duo?.screens.count, 2)
+                try expectEqual(duo?.screen, duo?.screens.first)
+            },
+            TestCase("Host identifier validation excludes compatibility and board values") {
+                #if os(macOS) || os(iOS)
+                try expect(Device.isMacModelIdentifier("Mac14,10"))
+                try expect(Device.isMacModelIdentifier("Mac99,999"))
+                try expect(Device.isMacModelIdentifier("MacBookPro18,1"))
+                for invalid in ["iPad8,6", "arm64", "J414AP", "", "Mac14,10 extra"] {
+                    try expect(!Device.isMacModelIdentifier(invalid), "Reject non-product identifier \(invalid)")
+                }
+                #endif
+            },
+        ],
         "Legacy Device Tests": [
             TestCase("Capability queries") {
                 
                 let device = Device(identifier: "Mac14,10")
                 
-                //        let expectedDevice = Device(identifier: "iPhone16,1")
+                //    let expectedDevice = Device(identifier: "iPhone16,1")
                 let expectedDevice = Device(identifier: "Mac14,10")
                 
                 try expect(device.officialName == expectedDevice.officialName)
@@ -99,17 +142,17 @@ extension Device: Module {
                 try expect(device.has(.battery))
                 try expect(device.has(.headphoneJack))
                 // Environment checks describe this test process, not the detected hardware model.
-//                try expect(!Build.isSimulator)
-//                try expect(!Build.isPreview)
-//                try expect(Build.isRealDevice)
-//                if let battery = Device.current.battery {
-//                    try expect(battery.currentState == .unplugged)
-//                    try expect(battery.currentLevel  >= 75)
-//                    try expect(!battery.lowPowerMode)
-//                }
-//                try expect(Device.current.device.screenBrightness < 50)
-//                try expect(Device.current.volumeAvailableCapacityForOpportunisticUsage ?? 0 > Int64(1_000_000))
-//                try expect(Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000))
+//        try expect(!Build.isSimulator)
+//        try expect(!Build.isPreview)
+//        try expect(Build.isRealDevice)
+//        if let battery = Device.current.battery {
+//          try expect(battery.currentState == .unplugged)
+//          try expect(battery.currentLevel  >= 75)
+//          try expect(!battery.lowPowerMode)
+//        }
+//        try expect(Device.current.device.screenBrightness < 50)
+//        try expect(Device.current.volumeAvailableCapacityForOpportunisticUsage ?? 0 > Int64(1_000_000))
+//        try expect(Device.current.volumeAvailableCapacityForImportantUsage ?? 0 > Int64(1_000))
             },
             TestCase("GPS Capability Defaults and Exceptions") {
                 // GPS is modeled at the idiom level for iPhones and Apple Watches because all
@@ -133,9 +176,9 @@ extension Device: Module {
                 for identifier in noGPSIdentifiers {
                     let device = Device(identifier: identifier)
                     if device.idiom == .pad {
-//                        if identifier != device.identifiers.first { // could be first and second depending
-//                            try expect(false, "\(identifier) should not be in the noGPSIdentifiers list")
-//                        }
+//              if identifier != device.identifiers.first { // could be first and second depending
+//              try expect(false, "\(identifier) should not be in the noGPSIdentifiers list")
+//              }
                         // Can't really test this.
                     } else {
                         try expect(!Device(identifier: identifier).has(.gps))
@@ -144,18 +187,18 @@ extension Device: Module {
                 
                 // Walk every known iPad identifier so any model not in the no-GPS exception
                 // list must expose GPS, matching the cellular/Wi-Fi split in the model data.
-//                for device in iPad.allDevices {
-//                    for identifier in device.identifiers {
-//                        if identifier.hasPrefix("iPad") && !noGPSIdentifiers.contains(identifier) {
-//                            try expect(Device(identifier: identifier).has(.gps))
-//                        }
-//                    }
-//                }
+//        for device in iPad.allDevices {
+//          for identifier in device.identifiers {
+//              if identifier.hasPrefix("iPad") && !noGPSIdentifiers.contains(identifier) {
+//              try expect(Device(identifier: identifier).has(.gps))
+//              }
+//          }
+//        }
                 // Unable to truly test.
                 
                 // Cellular iPads get GPS from their cellular generation, while iPhones inherit
                 // GPS from the phone idiom default.
-//                try expect(Device(identifier: "iPad2,2").has(.gps))
+//        try expect(Device(identifier: "iPad2,2").has(.gps))
                 try expect(Device(identifier: "iPhone1,1").has(.gps))
                 try expect(Device(identifier: "Watch1,1").has(.gps))
             },
@@ -165,7 +208,7 @@ extension Device: Module {
                 // capability flag drifting away from the already-maintained model data.
                 try expect(Device(identifier: "iPhone13,2").cellular == .fiveG)
                 try expect(Device(identifier: "iPad13,17").cellular == .fiveG)
-//                try expect(Device(identifier: "iPad13,16").cellular == Cellular.none) // TODO: Have some sort of check for multiple identifiers and depending which identifier, applying cellular or not.
+//        try expect(Device(identifier: "iPad13,16").cellular == Cellular.none) // TODO: Have some sort of check for multiple identifiers and depending which identifier, applying cellular or not.
                 try expect(Device(identifier: "iPhone12,1").cellular != .fiveG)
             },
             TestCase("Test Apple Watch paired identifiers are split into GPS and cellular definitions") {
@@ -206,7 +249,8 @@ extension Device: Module {
                     try expect(gpsWatch.identifiers == [pair.gps])
                     try expect(cellularWatch.identifiers == [pair.cellular])
                     try expect(!gpsWatch.has(.cellular(.lte)))
-                    try expect(cellularWatch.has(.cellular(.lte)))
+                    // Older cellular watches use LTE; current catalog entries use 5G.
+                    try expect(cellularWatch.has(.cellular(.lte)) || cellularWatch.has(.cellular(.fiveG)))
                     try expect(gpsWatch.officialName.contains("GPS"))
                     try expect(cellularWatch.officialName.contains("GPS + Cellular"))
                 }
@@ -331,7 +375,7 @@ public extension DeviceType {
     var officialName: String { device.officialName }
     var identifiers: [String] { device.identifiers }
     var introduction: DateString? { device.introduction }
-//    var year: Int? { device.introduction?.date?.year }
+//  var year: Int? { device.introduction?.date?.year }
     var supportId: String { device.supportId }
     var supportURL: URL {
         if supportId.isNumeric { // https://support.apple.com/en-us/111344
@@ -349,7 +393,7 @@ public extension DeviceType {
         }
         // try https://duckduckgo.com/?q=!ducky+%22Technical+Specifications%22+site%3Asupport.apple.com+%22MacBook+(Retina%2C+12-inch%2C+Early+2015)%22&
         // https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=MacBook+(Retina%2C+12-inch%2C+Early+2015)
-//        return URL(string: "https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=\(searchTerm.urlEncoded)")!
+//    return URL(string: "https://support.apple.com/kb/index?page=search&src=support_docs_serp&locale=en_US&doctype=DOCUMENTATIONS&q=\(searchTerm.urlEncoded)")!
         return URL(string: "https://duckduckgo.com/?q=!ducky+%22Technical+Specifications%22+site%3Asupport.apple.com+%22\(searchTerm.urlEncoded)%22&")!
         //URL(string: "https://support.apple.com/en-us/docs")!
     }
@@ -382,7 +426,24 @@ public extension DeviceType {
     // Info
     var biometrics: Biometrics? { device.capabilities.biometrics }
     var cellular: Cellular? { device.capabilities.cellular }
+    /// The primary display, preserving the original single-screen API.
+    /// Multi-display devices use their front panel when an active panel cannot be determined.
+    /// This is catalog metadata, not a runtime window or connected-monitor query.
     var screen: Screen? { device.capabilities.screen }
+
+    /// Fixed, addressable displays in primary/front-first order.
+    ///
+    /// Single-screen devices return one item. Devices without a fixed addressable
+    /// screen return an empty array, including HomePod, Apple TV and visionOS hardware.
+    /// Vision Pro's physical panel specification remains available through `screen`
+    /// for compatibility, but those panels are not independently addressable app screens.
+    /// A count greater than one denotes multiple panels, not necessarily a foldable device.
+    var screens: [Screen] {
+        guard ![Device.Idiom.homePod, .tv, .vision, .carPlay].contains(idiom) else { return [] }
+        // Undefined placeholders are not actual displays. Keep them available to
+        // legacy `screen` callers while excluding them from the new collection API.
+        return device.capabilities.screens.filter { $0.resolution.width > 0 && $0.resolution.height > 0 }
+    }
 
     // The only functions that should stay not deprecated would be ones that don't make sense with a has/is function
     // synthesized convenience functions (should be deprecated)
@@ -394,7 +455,7 @@ public extension DeviceType {
     var supportsWirelessCharging: Bool { device.has(.wirelessCharging) }
     @available(*, deprecated, message: "use .has(.force3DTouch) instead")
     var hasForce3dTouchSupport: Bool { device.has(.force3DTouch) }
-//    var cameras: Int { device.cameras }
+//  var cameras: Int { device.cameras }
     /// Returns whether or not the device has a LiDAR sensor.
     @available(*, deprecated, message: "use .has(.lidar) instead")
     var hasLidarSensor: Bool { device.has(.lidar) }
@@ -406,8 +467,8 @@ public extension DeviceType {
         self.has(.esim) || self.has(.dualesim)
     }
     
-//    /// A textual representation of the device.
-//    var description: String { device.description }
+//  /// A textual representation of the device.
+//  var description: String { device.description }
     
     var idiomatic: any IdiomType {
         // convert to idiomatic device so we can reference the correct implementation of symbolName.
@@ -423,7 +484,7 @@ public extension DeviceType {
         
     /// A safe version of `officialName`.
     /// Example:
-    /// Device.iPhoneXR.officialName:     iPhone Xʀ
+    /// Device.iPhoneXR.officialName:   iPhone Xʀ
     /// Device.iPhoneXR.safeOfficialName: iPhone XR
     var safeOfficialName: String { device.safeOfficialName }
     
@@ -434,7 +495,7 @@ public extension DeviceType {
         } else {
             info += "+"
         }
-        return info                   
+        return info       
     }
 }
 extension String {
@@ -487,14 +548,14 @@ public extension IdiomType {
         guard device.idiom.type == Self.self else {
             return nil
         }
-//        self.init(identifier: .base) // what is this for?  So we set defaults?  Assume everything is set
+//    self.init(identifier: .base) // what is this for?  So we set defaults?  Assume everything is set
         // replace the device created above
         self.init(knownDevice: device)
     }
     // must be included in implementations since we can't assign this in an init
-//    public init(knownDevice: Device) {
-//        self.device = knownDevice
-//    }
+//  public init(knownDevice: Device) {
+//    self.device = knownDevice
+//  }
 }
 
 public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable, Codable {
@@ -595,7 +656,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10, *) {
                     return .vision
                 }
-//            default:
+//      default:
             // following cases are not supported by UIUserInterfaceIdiom:
             case .unspecified:
                 break
@@ -631,8 +692,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return "CarPlay" // just guessing since doesn't exist
             case .vision:
                 return "RealityDevice"
-//            @unknown default:
-//                return "UnknownDevice"
+//      @unknown default:
+//        return "UnknownDevice"
             }
         }
         public var id: String { identifier }
@@ -704,7 +765,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return "carplay"
             }
             let prototypical = self.type.init(identifier: .base) // create a dummy version but don't include prefix or it will recursively loop (not sure why).
-//            print(String(describing: prototypical))
+//      print(String(describing: prototypical))
             return prototypical.symbolName
         }
 
@@ -723,15 +784,15 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             case .pad:
                 return [.battery]
             case .tv:
-                return [.headphoneJack, .screen(.tv)]
+                return [.headphoneJack, .screens([.tv])]
             case .watch:
                 // All Apple Watch model families are GPS-capable, including GPS-only and
                 // cellular variants, so this belongs at the idiom default level.
                 return [.battery, .wirelessCharging, .nfc, .applePay, .gps]
             case .vision: // All visions are pro for now.  When this is no longer the case, move this to each device.
-                return [.pro, .battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screen(.p720), .appleIntelligence]
+                return [.pro, .battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screens([.p720]), .appleIntelligence]
             case .homePod:
-                return [.screen(.w38)]
+                return [.screens([.w38])]
             case .unspecified, .mac, .carPlay:
                 fallthrough
             default:
@@ -949,7 +1010,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             (device, device.matchScore(matchHint))
         })
         matchingDevices.sort { scores[$0, default: 0] > scores[$1, default: 0] }
-//            debug("MATCH RESULTS:\n\(matchingDevices.map { "\($0.matchScore(officialNameHint)): \($0.officialName)" }.joined(separator: "\n"))")
+//      debug("MATCH RESULTS:\n\(matchingDevices.map { "\($0.matchScore(officialNameHint)): \($0.officialName)" }.joined(separator: "\n"))")
         return matchingDevices
     }
 
@@ -1016,7 +1077,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     
     /// A safe version of `officialName`.
     /// Example:
-    /// Device.iPhoneXR.officialName:     iPhone Xʀ
+    /// Device.iPhoneXR.officialName:   iPhone Xʀ
     /// Device.iPhoneXR.safeOfficialName: iPhone XR
     public var safeOfficialName: String {
         return officialName.safeDescription

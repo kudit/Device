@@ -65,8 +65,8 @@ public extension Label where Title == Text, Icon == Image {
     /// localized string.
     ///
     /// - Parameters:
-    ///    - titleKey: A title generated from a string. // TODO: LocalizeStringKey instead?
-    ///    - symbolName: The name of the symbol resource to lookup (either system or custom included asset).
+    /// - titleKey: A title generated from a string. // TODO: LocalizeStringKey instead?
+    /// - symbolName: The name of the symbol resource to lookup (either system or custom included asset).
     init(
         _ titleKey: String,
         symbolName: String
@@ -84,12 +84,12 @@ public extension Label where Title == Text, Icon == Image {
 }
 
 //public struct StackedLabelStyle: LabelStyle {
-//    public func makeBody(configuration: Configuration) -> some View {
-//        VStack {
-//            configuration.icon.font(.title2)
-//            configuration.title.font(.caption2)
-//        }
+//  public func makeBody(configuration: Configuration) -> some View {
+//    VStack {
+//      configuration.icon.font(.title2)
+//      configuration.title.font(.caption2)
 //    }
+//  }
 //}
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
@@ -149,7 +149,7 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
                     .backport.foregroundStyle(Color.accentColor)
                 Text("\(device.officialName)")
             }.font(.headline)
-//                .accentColor(.green)
+//        .accentColor(.green)
             Divider()
             if debug {
                 // Build environments belong to the running process, not to the displayed
@@ -164,6 +164,10 @@ public struct CurrentDeviceInfoView<SomeCurrentDevice: CurrentDevice>: View {
                 StorageInfoView(device: device)
             }
         }
+        // NavigationLink selection supplies a contrasting foreground through
+        // the environment; explicitly anchor this summary text to the primary
+        // color so the selected current-device row remains readable.
+        .foregroundStyle(.primary)
     }
 }
 

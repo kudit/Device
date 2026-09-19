@@ -136,8 +136,8 @@ extension Device.Idiom {
             return "HomePod"
         case .vision:
             return "Apple Vision Pro"
-            //            @unknown default:
-            //                return "UnknownDevice"
+            //      @unknown default:
+            //        return "UnknownDevice"
         }
     }
 }
@@ -155,27 +155,34 @@ enum AppleDeviceTrait: String, Codable, RawRepresentable {
     case opticID = "id.optic"
     case touchID = "id.touch"
     case appleIntelligence = "intelligence"
+    // Upstream now publishes these traits; retaining both prevents one new value
+    // from failing decoding of the entire comparison catalog.
+    case magSafe = "magsafe"
+    case foldableDisplay = "display.foldable"
     // For AirPods
     case audioANC = "audio.anc" // active noise cancellation?
     case audioSpatial = "audio.spatial"
-    static let unmappedTraits: [AppleDeviceTrait] = [.fluidDisplay, .proMotion]
+    // Device does not yet model a folding display, so preserve that source trait
+    // for round trips without inventing a corresponding hardware capability.
+    static let unmappedTraits: [AppleDeviceTrait] = [.fluidDisplay, .proMotion, .foldableDisplay]
 }
 
 extension Capability {
     static let appleDeviceTraits: [AppleDeviceTrait: Capability] = [
         .actionButton: .actionButton,
         .cameraControl: .cameraControl,
-//        .homeButton: .biometrics(.touchID), // not all button.home has touchID
+//    .homeButton: .biometrics(.touchID), // not all button.home has touchID
         // this can be determined if we have touchID or no biometrics so we don't actually need to set anything
         .alwaysOnDisplay: .alwaysOnDisplay,
         .dynamicIsland: .dynamicIsland,
-//        .fluidDisplay: ?,
+//    .fluidDisplay: ?,
         .displayNotch: .notch,
-//        .proMotion: .proMotion,
+//    .proMotion: .proMotion,
         .faceID: .biometrics(.faceID),
         .opticID: .biometrics(.opticID),
         .touchID: .biometrics(.touchID),
         .appleIntelligence: .appleIntelligence,
+        .magSafe: .magSafe, // Compare the newly published trait with Device's existing capability.
     ]
         
     init?(appleDeviceTrait: AppleDeviceTrait) {
@@ -218,6 +225,18 @@ extension Version {
 }
 
 struct AppleDevice: DeviceBridge {
+    var comparisonIdentifiers: [String] { ids }
+    var comparisonCPUs: [CPU] { [chip.cpu] }
+
+    /// Partition only known sibling identifiers/model numbers; retain unexpected source values for review.
+    func comparison(for member: Device, in group: [Device]) -> Self {
+        var scoped = self
+        scoped.ids = ids.filter { member.identifiers.contains($0) }
+        scoped.a_numbers = sourceGroupValues(a_numbers, member: member.models, group: group.map { $0.models })
+        scoped.name = sourceGroupName(name, member: member, group: group)
+        if let gen_name { scoped.gen_name = sourceGroupName(gen_name, member: member, group: group) }
+        return scoped
+    }
     static var diffIgnoreKeys: [String] {
         ["name", "family"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }
@@ -233,22 +252,24 @@ struct AppleDevice: DeviceBridge {
     var a_numbers: [String]
     var ids: [String]
     
-//    static let nameMapping = [ // AppleDevice name : Device officialName
-//        "iPad mini (7th Gen)": "iPad mini (A17 Pro)",
-//        "iPad Pro (11-inch) (5th Gen)": "iPad Pro 11-inch (M4)",
-//        "iPad Air (11-inch) (2nd Gen)": "iPad Air 11-inch (M3)",
-//        "iPad Air (13-inch) (2nd Gen)": "iPad Air 13-inch (M3)",
-//        "iPad (11th Gen)": "iPad (A16)",
-//        "(3rd Gen)": "(3rd generation)",
-//        "(4th Gen)": "(4th generation)",
-//        "Ultra (2nd Gen)" : "Ultra 2",
-//    ]
+//  static let nameMapping = [ // AppleDevice name : Device officialName
+//    "iPad mini (7th Gen)": "iPad mini (A17 Pro)",
+//    "iPad Pro (11-inch) (5th Gen)": "iPad Pro 11-inch (M4)",
+//    "iPad Air (11-inch) (2nd Gen)": "iPad Air 11-inch (M3)",
+//    "iPad Air (13-inch) (2nd Gen)": "iPad Air 13-inch (M3)",
+//    "iPad (11th Gen)": "iPad (A16)",
+//    "(3rd Gen)": "(3rd generation)",
+//    "(4th Gen)": "(4th generation)",
+//    "Ultra (2nd Gen)" : "Ultra 2",
+//  ]
 
     var matched: Device {
         Device.forcedLookup(identifier: ids.first, officialNameHint: gen_name)
     }
         
     var merged: Device {
+        // Avoid manufacturing a single combined device for a grouped source record.
+        if let member = groupedComparisons.first { return member.merged }
         var capabilities = matched.capabilities
         for trait in traits {
             if let capability = Capability(appleDeviceTrait: trait) {
@@ -293,9 +314,9 @@ struct AppleDevice: DeviceBridge {
         traits.append(contentsOf: device.capabilities.compactMap { $0.appleDeviceTrait })
         // It's all over the place for iPads.
         if device.biometrics == .touchID { // TODO: Restrict to iPads before a certain year?
-//            if !self.traits.contains(.touchID) { // Hack to remove touchID flag if the parsed device doesn't have it
-//                traits.remove(.touchID)
-//            }
+//      if !self.traits.contains(.touchID) { // Hack to remove touchID flag if the parsed device doesn't have it
+//        traits.remove(.touchID)
+//      }
             if self.traits.contains(.homeButton) { // only include homeButton if the parsed device has a homeButton since we're not tracking it in this framework.
                 traits.append(.homeButton)
             }
@@ -303,7 +324,7 @@ struct AppleDevice: DeviceBridge {
 /*
         // "fix"es because Apple Device list has some bad data
         if traits.contains(.displayNotch) && device.idiom == .pad {
-//            traits.remove(.displayNotch) // Figure out which devices are showing notch on iPad??
+//      traits.remove(.displayNotch) // Figure out which devices are showing notch on iPad??
         }
         // "fix" because Apple Device list is missing action button
         if device.identifiers.contains("Watch7,12") {
@@ -314,9 +335,9 @@ struct AppleDevice: DeviceBridge {
             traits = self.traits // make sure this is the same order since it isn't a set.
         }
 
-//        for (mdName, myName) in Self.nameMapping {
-//            officialName = officialName.replacingOccurrences(of: mdName, with: myName)
-//        }
+//    for (mdName, myName) in Self.nameMapping {
+//      officialName = officialName.replacingOccurrences(of: mdName, with: myName)
+//    }
 
         var name = device.idiom.appleDeviceName
         if self.name.contains(name) {
@@ -329,15 +350,15 @@ struct AppleDevice: DeviceBridge {
             gen_name = self.gen_name
         }
         
-//        // "fix" Apple Vision Pro naming inconsistency NOTE: family will likely never be bad, so just assume it's my value and ignore.
-//        var family = device.idiom.identifier
-//        if self.family == "Apple_Vision" {
-//            family = self.family
-//        } else if self.family == "Apple_TV" {
-//            family = self.family
-//        } else if self.family == "Apple_Watch" {
-//            family = self.family
-//        }
+//    // "fix" Apple Vision Pro naming inconsistency NOTE: family will likely never be bad, so just assume it's my value and ignore.
+//    var family = device.idiom.identifier
+//    if self.family == "Apple_Vision" {
+//      family = self.family
+//    } else if self.family == "Apple_TV" {
+//      family = self.family
+//    } else if self.family == "Apple_Watch" {
+//      family = self.family
+//    }
         
         var software = software
         // update fields with device values if available
@@ -355,13 +376,13 @@ struct AppleDevice: DeviceBridge {
             software = self.software // "fix" to ignore completely since this software was never updated or the AppleDevice data is bad (due to split?)
             year = self.year
         }
-//        [AppleDeviceSoftwareItem(
-//            device_version: AppleDeviceVersion(
-//                min: device.launchOSVersion,
-//                max: device.unsupportedOSVersion.maxSupportedVersion(hint: software.device_version?.max)),
-//            id: device.idiom.osName.lowercased(),
-//            name: device.idiom.osName,
-//            version: AppleDeviceVersion(min: "1.0", max: "26.0"))],
+//    [AppleDeviceSoftwareItem(
+//      device_version: AppleDeviceVersion(
+//        min: device.launchOSVersion,
+//        max: device.unsupportedOSVersion.maxSupportedVersion(hint: software.device_version?.max)),
+//      id: device.idiom.osName.lowercased(),
+//      name: device.idiom.osName,
+//      version: AppleDeviceVersion(min: "1.0", max: "26.0"))],
         
         // make sure we ignore if this already exists (Device version may have more)
         var a_numbers = a_numbers
@@ -391,61 +412,63 @@ struct AppleDevice: DeviceBridge {
     var source: String {
         self.prettyJSON
     }
-    //    {
-    //        "name" : "iPod touch",
-    //        "gen_name" : "iPod touch (2nd Gen)",
-    //        "year" : 2008,
-    //        "family" : "iPod",
-    //        "chip" : {
-    //            "id" : "apl0278",
-    //            "name" : "APL0278"
-    //        },
-    //        "software" : [
-    //            {
-    //                "device_version" : {
-    //                    "min" : "2.1.1",
-    //                    "max" : "3.2.2"
-    //                },
-    //                "id" : "iphoneos",
-    //                "name" : "iPhone OS",
-    //                "version" : {
-    //                    "min" : "1.0",
-    //                    "max" : "3.2.2"
-    //                }
-    //            },
-    //            {
-    //                "device_version" : {
-    //                    "min" : "4.0",
-    //                    "max" : "4.2.1"
-    //                },
-    //                "id" : "ios",
-    //                "name" : "iOS",
-    //                "version" : {
-    //                    "min" : "4.0",
-    //                    "max" : "18.4.1"
-    //                }
-    //            }
-    //        ],
-    //        "traits" : [
-    //            "button.home"
-    //        ],
-    //        "internal_names" : [
-    //            "N72AP"
-    //        ],
-    //        "a_numbers" : [
-    //            "A1288",
-    //            "A1319"
-    //        ],
-    //        "ids" : [
-    //            "iPod2,1"
-    //        ]
+    //  {
+    //    "name" : "iPod touch",
+    //    "gen_name" : "iPod touch (2nd Gen)",
+    //    "year" : 2008,
+    //    "family" : "iPod",
+    //    "chip" : {
+    //      "id" : "apl0278",
+    //      "name" : "APL0278"
     //    },
+    //    "software" : [
+    //      {
+    //        "device_version" : {
+    //          "min" : "2.1.1",
+    //          "max" : "3.2.2"
+    //        },
+    //        "id" : "iphoneos",
+    //        "name" : "iPhone OS",
+    //        "version" : {
+    //          "min" : "1.0",
+    //          "max" : "3.2.2"
+    //        }
+    //      },
+    //      {
+    //        "device_version" : {
+    //          "min" : "4.0",
+    //          "max" : "4.2.1"
+    //        },
+    //        "id" : "ios",
+    //        "name" : "iOS",
+    //        "version" : {
+    //          "min" : "4.0",
+    //          "max" : "18.4.1"
+    //        }
+    //      }
+    //    ],
+    //    "traits" : [
+    //      "button.home"
+    //    ],
+    //    "internal_names" : [
+    //      "N72AP"
+    //    ],
+    //    "a_numbers" : [
+    //      "A1288",
+    //      "A1319"
+    //    ],
+    //    "ids" : [
+    //      "iPod2,1"
+    //    ]
+    //  },
 }
 
 struct AppleDeviceLoader: DeviceBridgeLoader {
     typealias Bridge = AppleDevice
 
     let sourceURL = "https://raw.githubusercontent.com/superepicstudios/apple-devices/refs/heads/main/swift/Sources/AppleDevices/Resources/data.json"
+
+    let name = "F* AppleDevice" // fuckingappledevices.com
     
     func devices() async throws -> [AppleDevice] {
         // import Apple Device data.json
@@ -453,18 +476,11 @@ struct AppleDeviceLoader: DeviceBridgeLoader {
 
         let devices = try [AppleDevice](fromJSON: jsonString)
         var returnDevices = [AppleDevice]()
-        // split AppleTV3,1 and AppleTV3,2
+        // Shared-support groups (including AppleTV3,1 and AppleTV3,2) remain intact.
         for device in devices {
             // ignore AirTags and AirPods
             if device.family.containsAny(["AirTag", "AirPod"]) { continue }
-            if device.ids.contains("AppleTV3,1") {
-                // split
-                var splitDevice = device
-                for id in device.ids {
-                    splitDevice.ids = [id]
-                    returnDevices.append(splitDevice)
-                }
-            } else if device.ids.contains("AppleTV14,1") {
+            if device.ids.contains("AppleTV14,1") {
                 // split AppleTV14,1 (for wifi and wifi + Ethernet versions)
                 var splitDevice = device
                 splitDevice.gen_name = "Apple TV 4K (3rd generation) Wi-Fi + Ethernet"
@@ -480,7 +496,7 @@ struct AppleDeviceLoader: DeviceBridgeLoader {
     
     // MARK: - for generation
 
-/*    // For generating a new file based on our data in case we want to submit a pull request?
+/*  // For generating a new file based on our data in case we want to submit a pull request?
     func generate() -> String {
         let adDevices = iPod.allDevices
             + AppleVision.allDevices
@@ -491,55 +507,55 @@ struct AppleDeviceLoader: DeviceBridgeLoader {
             + iPhone.allDevices
         let mapped = adDevices.map { $0.asAppleDevice() }
         return mapped.asJSON(outputFormatting: .prettyPrinted).replacingOccurrences(of: "  ", with: "\t")
-        //    {
-        //        "name" : "iPod touch",
-        //        "gen_name" : "iPod touch (2nd Gen)",
-        //        "year" : 2008,
-        //        "family" : "iPod",
-        //        "chip" : {
-        //            "id" : "apl0278",
-        //            "name" : "APL0278"
-        //        },
-        //        "software" : [
-        //            {
-        //                "device_version" : {
-        //                    "min" : "2.1.1",
-        //                    "max" : "3.2.2"
-        //                },
-        //                "id" : "iphoneos",
-        //                "name" : "iPhone OS",
-        //                "version" : {
-        //                    "min" : "1.0",
-        //                    "max" : "3.2.2"
-        //                }
-        //            },
-        //            {
-        //                "device_version" : {
-        //                    "min" : "4.0",
-        //                    "max" : "4.2.1"
-        //                },
-        //                "id" : "ios",
-        //                "name" : "iOS",
-        //                "version" : {
-        //                    "min" : "4.0",
-        //                    "max" : "18.4.1"
-        //                }
-        //            }
-        //        ],
-        //        "traits" : [
-        //            "button.home"
-        //        ],
-        //        "internal_names" : [
-        //            "N72AP"
-        //        ],
-        //        "a_numbers" : [
-        //            "A1288",
-        //            "A1319"
-        //        ],
-        //        "ids" : [
-        //            "iPod2,1"
-        //        ]
+        //  {
+        //    "name" : "iPod touch",
+        //    "gen_name" : "iPod touch (2nd Gen)",
+        //    "year" : 2008,
+        //    "family" : "iPod",
+        //    "chip" : {
+        //      "id" : "apl0278",
+        //      "name" : "APL0278"
         //    },
+        //    "software" : [
+        //      {
+        //        "device_version" : {
+        //          "min" : "2.1.1",
+        //          "max" : "3.2.2"
+        //        },
+        //        "id" : "iphoneos",
+        //        "name" : "iPhone OS",
+        //        "version" : {
+        //          "min" : "1.0",
+        //          "max" : "3.2.2"
+        //        }
+        //      },
+        //      {
+        //        "device_version" : {
+        //          "min" : "4.0",
+        //          "max" : "4.2.1"
+        //        },
+        //        "id" : "ios",
+        //        "name" : "iOS",
+        //        "version" : {
+        //          "min" : "4.0",
+        //          "max" : "18.4.1"
+        //        }
+        //      }
+        //    ],
+        //    "traits" : [
+        //      "button.home"
+        //    ],
+        //    "internal_names" : [
+        //      "N72AP"
+        //    ],
+        //    "a_numbers" : [
+        //      "A1288",
+        //      "A1319"
+        //    ],
+        //    "ids" : [
+        //      "iPod2,1"
+        //    ]
+        //  },
 
     }*/
 }

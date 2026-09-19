@@ -12,7 +12,7 @@ import Compatibility
  Previous implementation for testing for simulator was to lookup in cases.  New version actually tests the bundle to see if we're running in a simulator.
  */
 
-public extension Device {    
+public extension Device {   
     /// Returns diagonal screen length in inches
     var diagonal: Double {
         guard let screen = self.screen else {
@@ -244,8 +244,8 @@ public extension Device {
             case .charging: self = .charging(batteryLevel)
             case .full: self = .full
             case .unplugged: self = .unplugged(batteryLevel)
-                //            @unknown default:
-                //                self = .unknown // To cover any future additions for which DeviceKit might not have updated yet.
+                //      @unknown default:
+                //        self = .unknown // To cover any future additions for which DeviceKit might not have updated yet.
             }
         }
         
@@ -293,33 +293,33 @@ public extension Device {
 //#if os(iOS) || os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
 //@available(iOS 8.0, watchOS 4.0, *)
 //extension BatteryState: Comparable {
-//    /// Tells if two battery states are equal.
-//    ///
-//    /// - parameter lhs: A battery state.
-//    /// - parameter rhs: Another battery state.
-//    ///
-//    /// - returns: `true` iff they are equal, otherwise `false`
-//    public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
-//        return lhs.description == rhs.description
-//    }
+//  /// Tells if two battery states are equal.
+//  ///
+//  /// - parameter lhs: A battery state.
+//  /// - parameter rhs: Another battery state.
+//  ///
+//  /// - returns: `true` iff they are equal, otherwise `false`
+//  public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
+//    return lhs.description == rhs.description
+//  }
 //
-//    /// Compares two battery states.
-//    ///
-//    /// - parameter lhs: A battery state.
-//    /// - parameter rhs: Another battery state.
-//    ///
-//    /// - returns: `true` if rhs is `.Full`, `false` when lhs is `.Full` otherwise their battery level is compared.
-//    public static func < (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
-//        switch (lhs, rhs) {
-//        case (.full, _): return false // return false (even if both are `.Full` -> they are equal)
-//        case (_, .full): return true // lhs is *not* `.Full`, rhs is
-//        case let (.charging(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
-//        case let (.charging(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
-//        case let (.unplugged(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
-//        case let (.unplugged(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
-//        default: return false // compiler won't compile without it, though it cannot happen
-//        }
+//  /// Compares two battery states.
+//  ///
+//  /// - parameter lhs: A battery state.
+//  /// - parameter rhs: Another battery state.
+//  ///
+//  /// - returns: `true` if rhs is `.Full`, `false` when lhs is `.Full` otherwise their battery level is compared.
+//  public static func < (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
+//    switch (lhs, rhs) {
+//    case (.full, _): return false // return false (even if both are `.Full` -> they are equal)
+//    case (_, .full): return true // lhs is *not* `.Full`, rhs is
+//    case let (.charging(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
+//    case let (.charging(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
+//    case let (.unplugged(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
+//    case let (.unplugged(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
+//    default: return false // compiler won't compile without it, though it cannot happen
 //    }
+//  }
 //}
 //#endif
 

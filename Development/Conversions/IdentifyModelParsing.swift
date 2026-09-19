@@ -40,9 +40,9 @@ public extension Capabilities {
         if capabilities.macForm != self.macForm {
             return false
         }
-//        if capabilities.pencils != self.pencils { // may want to check but this breaks if this has pencils and capabilities has none.
-//            return false
-//        }
+//    if capabilities.pencils != self.pencils { // may want to check but this breaks if this has pencils and capabilities has none.
+//      return false
+//    }
         for capability in capabilities {
             if !Capability.allCases.contains(capability) {
                 continue // skip non simple capabilities
@@ -55,7 +55,25 @@ public extension Capabilities {
     }
 }
 
-struct ParsedItem: DeviceBridge {    
+struct ParsedItem: DeviceBridge {   
+    var comparisonIdentifiers: [String] { identifiers }
+    var comparisonCPUs: [CPU] { CPU.sourceChoices(in: officialName) + (cpu == .unknown ? [] : [cpu]) }
+
+    /// Apply the same shared-support grouping policy as JSON and DeviceKit sources.
+    func comparison(for member: Device, in group: [Device]) -> Self {
+        var scoped = self
+        scoped.identifiers = identifiers.filter { member.identifiers.contains($0) }
+        scoped.partNumbers = sourceGroupValues(partNumbers, member: member.models, group: group.map { $0.models })
+        scoped.colors = sourceGroupValues(colors, member: member.colors, group: group.map { $0.colors })
+        scoped.capabilities = Set(sourceGroupValues(Array(capabilities), member: Array(member.capabilities), group: group.map { Array($0.capabilities) }))
+        scoped.officialName = sourceGroupName(officialName, member: member, group: group)
+        if scoped.officialName != officialName {
+            // The source explicitly named the CPU alternatives and the common
+            // resolver validated them; narrow the parsed CPU to this member too.
+            scoped.cpu = member.cpu
+        }
+        return scoped
+    }
     static var diffIgnoreKeys: [String] {
         ["source"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
     }
@@ -83,6 +101,8 @@ struct ParsedItem: DeviceBridge {
     }
 
     var merged: Device {
+        // A source family yields multiple independent definitions through mergedDevices.
+        if let member = groupedComparisons.first { return member.merged }
         // create device for each identifier since we may want to split out
         return Device(
             idiom: idiom,
@@ -169,11 +189,13 @@ actor PageParser: DeviceBridgeLoader {
     ]
 
     let sourceURL: String
+    let name: String
     var content: String?
     var items: [ParsedItem] = []
 
     init(sourceURL: String) {
         self.sourceURL = sourceURL
+        self.name = " " + Self.identifyPages.first(where: { $0.value == sourceURL })!.key
     }
 
     func devices() async -> [ParsedItem] {
@@ -598,10 +620,11 @@ actor PageParser: DeviceBridgeLoader {
             // name from the larger block because that pulls in duplicated h3 titles
             // and explanatory body copy.
             officialName = officialName.tagsStripped
-//            debug("Parsing \(officialName)")
+//      debug("Parsing \(officialName)")
             idiom = .watch
         }
-        officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: [" M4 Pro or M4 Max"," M5 Pro or M5 Max"], with: "").replacingOccurrences(of: "&nbsp;", with: " ")
+        // Keep explicit CPU alternatives so the shared grouping code can validate and scope them.
+        officialName = officialName.tagsStripped.trimmed.whitespaceCollapsed.replacingOccurrences(of: "&nbsp;", with: " ")
         
         // make sure this isn't the header or footer section
         // note: original iphone has "The model number" so M isn't capitalized.
@@ -638,8 +661,8 @@ actor PageParser: DeviceBridgeLoader {
             // could be multiple!  Pull first one
             // TODO: Possibly branch for multiple devices ParsedItems here?  If there is a pattern, set a flag to not merge?
             identifiers = identifierTag.replacingOccurrences(of: ", ", with: ";").replacingOccurrences(of: [":"," "], with: "").tagsStripped.components(separatedBy: ";").map { $0.trimmed }
-//            let device = Device(identifier: self.identifiers!.first!, officialNameHint: self.title)
-//            self.device = device
+//      let device = Device(identifier: self.identifiers!.first!, officialNameHint: self.title)
+//      self.device = device
         }
 
         // get image URL
@@ -681,7 +704,7 @@ actor PageParser: DeviceBridgeLoader {
             partNumbers = self.modelNumbers(from: extractedPartNumbers)
         }
         partNumbers.removeDuplicates()
-//        partNumbers.sort() // we actually want the order parsed as this may not be alphabetical.
+//    partNumbers.sort() // we actually want the order parsed as this may not be alphabetical.
         
         if let newestCompatibleOS = string.extract(from: "Newest compatible operating system", to: "</p>") {
             if let newestCompatibleOS = newestCompatibleOS.extract(from: ">", to: nil)?.trimmed {
@@ -834,23 +857,15 @@ actor PageParser: DeviceBridgeLoader {
             officialName += " \(parsedChip)"
         }
         
-        for c in CPU.allCases.reversed() { // longer ones first
-//            debug("CHECKING \(c.rawValue)")
-            if let parsedChip {
-                if parsedChip.deviceNormalized.contains(c.rawValue.deviceNormalized.replacingOccurrences(of: "apple ", with: "")) {
-                    cpu = c
-                    break // get first one
-                }
-            } else if officialName.deviceNormalized.contains(c.caseName) && !partNumbers.definition.deviceNormalized.contains(c.caseName) { // make sure this isn't part of a model code
-                cpu = c
-                break // get first one
-            }
-        }
+        // A source can name several processors. Keep that ambiguity until the
+        // common shared-support projection selects a specific local member.
+        let cpuChoices = CPU.sourceChoices(in: parsedChip ?? officialName)
+        cpu = cpuChoices.count == 1 ? cpuChoices[0] : .unknown
 
         // TODO: Determine when this is actually useful
-//        if let matched, matched.safeOfficialName.normalizedCollapsedWhitespace.trimming(matched.cpu.caseName) == officialName.normalizedCollapsedWhitespace {
-//            officialName = matched.officialName // ignore parsed name and use the matching device name for normalization
-//        }
+//    if let matched, matched.safeOfficialName.normalizedCollapsedWhitespace.trimming(matched.cpu.caseName) == officialName.normalizedCollapsedWhitespace {
+//      officialName = matched.officialName // ignore parsed name and use the matching device name for normalization
+//    }
         
         if identifiers.count == 0 {
             // attempt to look up identifier in other ways
@@ -872,67 +887,22 @@ actor PageParser: DeviceBridgeLoader {
         // map to case name for generic handling of identifiers
         parsedIdentifiers[.unknown] = identifiers
         for (_, identifiers) in parsedIdentifiers {
-            var identifiers = identifiers.unique
-            for identifier in identifiers {
-//                let matched = Device.forcedLookup(identifier: identifier, officialNameHint: officialName) // or create a blank device with identifier
-//                
-//                // Apple Watches have issues with which image, so assume that the matched one is correct if available
-//                if idiom == .watch {
-//                    image = matched.image // TODO: Change to pick the aluminum variant if available
-//                }
-                
-                var ids = [identifier]
-                var mergeDuplicates = false
-                var mcpu = cpu
-                let idCPUMap = [
-                    "Mac17,7": CPU.m5pro,
-                    "Mac17,9": .m5max,
-                    "Mac17,6": .m5pro,
-                    "Mac17,8": .m5max,
-                ]
-
-                // grouping is normally fine, but Mac16,11 needs to be split due to different processors!
-                if !["Mac16,11", "Mac16,5", "Mac16,7", "Mac16,6", "Mac16,8", "Mac15,6", "Mac15,7"].contains(identifier) && !idCPUMap.keys.contains(identifier) {
-                    mergeDuplicates = true
-                    // Mac15,6 needs to be separate but Mac15,8 & Mac15,10 should be grouped
-                    if identifier == "Mac15,8" {
-                        identifiers = ["Mac15,8", "Mac15,10"]
-                    } else if identifier == "Mac15,9" {
-                        identifiers = ["Mac15,9", "Mac15,11"]
-                    }
-                    ids = identifiers
-                }
-                
-                var idName = officialName
-                if officialName.contains(",)") {
-                    // M5 models
-                    for (id, mapcpu) in idCPUMap {
-                        if ids.contains(id) {
-                            mcpu = mapcpu
-                            idName = idName.replacingOccurrences(of: ",)", with: ", \(mcpu.appleName))")
-                        }
-                    }
-                }
-                
-                // create bridge device for each identifier since we may want to split out
-                let parsedItem = ParsedItem(
-                    officialName: idName,
-                    idiom: idiom,
-                    identifiers: ids,
-                    yearIntroduced: yearIntroduced,
-                    supportId: supportId,
-                    unsupportedOSVersion: unsupportedOSVersion,
-                    image: image,
-                    capabilities: capabilities,
-                    partNumbers: partNumbers,
-                    cpu: mcpu,
-                    colors: colors,
-                    source: source)
-                items.append(parsedItem)
-                if mergeDuplicates {
-                    break // don't make duplicates
-                }
-            }
+            // Preserve the source grouping. Shared-support comparison resolves local
+            // members without maintaining per-generation identifier/CPU exception maps here.
+            let parsedItem = ParsedItem(
+                officialName: officialName,
+                idiom: idiom,
+                identifiers: identifiers.unique,
+                yearIntroduced: yearIntroduced,
+                supportId: supportId,
+                unsupportedOSVersion: unsupportedOSVersion,
+                image: image,
+                capabilities: capabilities,
+                partNumbers: partNumbers,
+                cpu: cpu,
+                colors: colors,
+                source: source)
+            items.append(parsedItem)
         }
     }
 }

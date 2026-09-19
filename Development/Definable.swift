@@ -7,6 +7,20 @@
 
 import Compatibility
 
+/// Emits the JSON-compatible literal for Compatibility's mixed scalar/array
+/// value so bridge views can use the same definition path as Device values.
+extension MixedTypeField: Definable {
+    public var definition: String {
+        if let stringValue { return stringValue.definition }
+        if let intValue { return intValue.definition }
+        if let doubleValue { return doubleValue.definition }
+        if let boolValue { return boolValue.definition }
+		if let arrayValue { return arrayValue.compactMap { $0?.definition }.definition }
+		if let dictionaryValue { return dictionaryValue.asDictionary().definition }
+        return "nil"
+    }
+}
+
 // TODO: Move this into a Definable package.
 // TODO: Use this to help with code generation more globally?  Add to KuditFrameworks/Compatibility?
 public protocol Definable {
@@ -89,4 +103,3 @@ extension Version: Definable {
         return self.compact.definition
     }
 }
-

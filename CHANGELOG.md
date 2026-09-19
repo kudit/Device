@@ -1,6 +1,36 @@
 # ChangeLog
 
-TODO: Updated AppStore metadata.
+## v2.14.0 2026-09-15
+Added September Apple devices: iPhone 18 Pro (Max), iPhone Duo, Apple Watch Series 12, and Apple Watch Ultra 4.
+Added screen collections, Duo display constants, Audio Intelligence capability, and fixed modern Watch 5G coverage.
+Fixed DeviceInfo and ScreenInfo views being unreadable when the row is in selected state.
+Added more specific introduction dates based on AppleDB.dev data.
+** App Store above **
+Updated Compatibility.
+Replaced 4 spaces with tabs for indendation.
+Read the Mac hardware identifier for Designed for iPad using validated sysctl product queries.
+Added simpler comment generation for submitting issues to other projects.
+Fixed the All Tests UI assertion to follow Device's current module version.
+Fixed Swift 6 actor-isolation warnings in migration comment generation by snapshotting cached candidates before background formatting.
+Updated migration bridge comparisons, AppleDB support, grouped-device handling, generated definitions, and source issue comments.
+Added a Support link to the migration diff views to easily get to authoritative stats.
+Added AppleDB as an additional migration source.
+Made red migration rows collapsible and removed redundant match classification and merged-projection sorting from comment generation.
+Added migration status filters to the top of migration views.
+Enhanced the DeviceKit and MobileDevice Hardware checks for new formats.
+Corrected screen-card light/dark contrast.
+Cached matched devices and row classifications before rendering so disclosure interaction no longer repeats lookup work for every row.
+Added JSON-literal definitions for MixedTypeField values and preserved distinct AppleDB released values in combined bridge output.
+Moved MixedTypeField definition generation into the shared Definable layer and simplified diff rendering to prefer Definable values.
+Made green comparison rows expandable, made the entire information row toggle expansion, and placed View Source beside the section title.
+Recognized valid shared-support source groupings across importers while preserving separate device identifiers and CPUs in comparisons and exports.
+Added a backward-compatible screens collection and secondary-panel metadata without introducing a foldable capability.
+Added shared screen/identifier checks and deterministic development-importer regression tests.
+Replaced the display capability split with a single ordered `screens` collection, added Duo panel constants, Audio Intelligence, hosted-iPad unknown-ID fallback, modern Watch 5G test handling, and issue-comment generation.
+Added AppleDB as a secondary DeviceBridge source, restored Bridge/Device comparison contexts, simplified delta comments, cached filter classifications, and added legacy MacBook support links.
+Refined MobileDevice grouped iPad naming for the legacy 12.9-inch Pro and M3 Air records, and normalized DeviceKit M5 and Apple Watch SE case-name projections.
+Added the missing DeviceBridge source-format `definition` requirement used by Bridge code views.
+Removed nested diff pickers and made the outer Bridge/Device controller own all comparison modes; generated definitions now drive diff and merged code views.
 
 ## v2.13.1 2026-09-02
 Fixed missing `.compass` capability from most iPhones.
@@ -619,6 +649,7 @@ Device Information Tool
 Hardware Specs & System Info
 
 ##Promotional Text (170)
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 Download today to get full visibility into your Apple devices, know what’s under the hood, stay ahead of updates, and troubleshoot with confidence.
 
 ##Description (4,000)

@@ -20,7 +20,7 @@ public func CapabilitiesTextView(capabilities: Capabilities) -> Text {
     var output = Text("")
     for capability in capabilities.sorted {
         // don't show screen icon since not really helpful
-        if case .screen = capability {}
+        if case .screens = capability {}
         // don't show mac form either since redundant
         else if case .macForm = capability {}
         // and cellular doesn't really make sense either unless we want to indicate the type
@@ -67,7 +67,7 @@ public func ColorsTextView(symbol: SymbolRepresentable, colors: [MaterialColor])
             output = output
             + Text(Image(symbol))
                 .foregroundColor(Color(string: color.rawValue))
-            //                        + Text(" ")
+            //              + Text(" ")
         } else {
             // Fallback on earlier versions
             output = output + Text(verbatim: String(symbol.mainActorSymbolName.first ?? "x"))
@@ -92,84 +92,94 @@ public struct DeviceInfoView: View {
     }
     
     public var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(device.officialName)
-                    .font(.headline)
-                HStack {
-                    VStack(alignment: .leading, spacing: 5) {
-                        ColorsTextView(symbol: device.idiomatic, colors: device.colors)
-                            .shadow(color: .gray, radius: 0.5)
-                        CapabilitiesTextView(capabilities: device.capabilities)
-                            .font(.caption)   
-                    }
-                    Spacer(minLength: 0)
-                    // Don't squish - need to wrap colors above if necessary.  Accompished by creating ColorsTextView creator.
-                    VStack(alignment: .trailing) {
-                        Text("\(device.supportedOSInfo)").font(.caption).foregroundStyle(.gray)
-                        HStack {
-                            Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())
-                            if #available(iOS 14.0, *) {
-                                Text(Image(symbolName: "cpu"))
-                            } else {
-                                // Fallback on earlier versions
-                                Text("cpu")
-                            }
-                            if let year = device.introduction?.date?.year {
-                                Text(String(year))
-                                    .font(.footnote.smallCaps())
-                                    .padding(.init(top: 0, leading: 4, bottom: 1, trailing: 3))
-                                    .foregroundStyle(.background)
-                                    .background(.gray)
-                                    .clipShape(RoundedRectangle(cornerRadius: 5))
+        // Keep the complete device summary in one root container.  SwiftUI's
+        // result builder otherwise exposes each conditional below as a sibling
+        // row when this view is used as a List/DisclosureGroup label, which
+        // produced the three empty rows visible beneath every collapsed device.
+        VStack(spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(device.officialName)
+                        .font(.headline)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 5) {
+                            ColorsTextView(symbol: device.idiomatic, colors: device.colors)
+                                .shadow(color: .gray, radius: 0.5)
+                            CapabilitiesTextView(capabilities: device.capabilities)
+                                .font(.caption)
+                        }
+                        Spacer(minLength: 0)
+                        // Don't squish - need to wrap colors above if necessary.  Accompished by creating ColorsTextView creator.
+                        VStack(alignment: .trailing) {
+                            Text("\(device.supportedOSInfo)").font(.caption).foregroundStyle(.gray)
+                            HStack {
+                                Text("\(device.cpu.caseName) ").font(.footnote.smallCaps())
+                                if #available(iOS 14.0, *) {
+                                    Text(Image(symbolName: "cpu"))
+                                } else {
+                                    // Fallback on earlier versions
+                                    Text("cpu")
+                                }
+                                if let year = device.introduction?.date?.year {
+                                    Text(String(year))
+                                        .font(.footnote.smallCaps())
+                                        .padding(.init(top: 0, leading: 4, bottom: 1, trailing: 3))
+                                        .foregroundStyle(.background)
+                                        .background(.gray)
+                                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                                }
                             }
                         }
                     }
                 }
-            }
-            Spacer()
-            if let image = device.image {
-                if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
-                    AsyncImage(url: URL(string: image)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    } placeholder: {
-                        ProgressView()
+                Spacer()
+                if let image = device.image {
+                    if #available(iOS 15.0, macOS 12, macCatalyst 15, tvOS 15, watchOS 8, *) {
+                        AsyncImage(url: URL(string: image)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 60, height: 60, alignment: .trailing)
+                    } else {
+                        // Fallback on earlier versions
+                        // Don't show the image on devices less than iOS 15
                     }
-                    .frame(width: 60, height: 60, alignment: .trailing)
-                } else {
-                    // Fallback on earlier versions
-                    // Don't show the image on devices less than iOS 15
                 }
             }
-        }
-        // TODO: Figure out how to speed this up.
-        if includeScreen {
-            HStack {
-                Spacer()
-                Link(device.identifiers.joined(separator: ", "), destination: device.supportURL)
-                //                    Text(device.identifiers.joined(separator: ", "))
-                    .font(.caption)
-                    .backport.textSelection(.enabled)
-                Spacer()
-            }
-            if device.models.count > 0 {
+            // TODO: Figure out how to speed this up.
+            if includeScreen {
                 HStack {
                     Spacer()
-                    Text(device.models.joined(separator: ", "))
+                    Link(device.identifiers.joined(separator: ", "), destination: device.supportURL)
+                    //          Text(device.identifiers.joined(separator: ", "))
                         .font(.caption)
                         .backport.textSelection(.enabled)
                     Spacer()
                 }
+                if device.models.count > 0 {
+                    HStack {
+                        Spacer()
+                        Text(device.models.joined(separator: ", "))
+                            .font(.caption)
+                            .backport.textSelection(.enabled)
+                        Spacer()
+                    }
+                }
             }
-        }
-        if device.screen != nil && includeScreen {
-            ScreenInfoView(device: device)
-        }
+            if device.screen != nil && includeScreen {
+                ScreenInfoView(device: device)
+            }
         if includeAttributes {
             AttributeListView(device: device, header: "Capabilities", attributes: Capability.allCases)
         }
+        }
+        // The demo's List selection can provide a white foreground inherited
+        // from the selected row; keep the device summary readable while still
+        // allowing explicitly colored capability and icon views to override it.
+        .foregroundStyle(.primary)
     }
 }
 

@@ -17,8 +17,10 @@ final class DeviceUITests: XCTestCase {
         XCTAssertTrue(allTestsButtonIsVisible, "The DEBUG All Tests button should be visible.")
         allTestsButton.tap()
         // The heading proves the registered Device module catalog rendered successfully.
+        // Match the module heading's stable name/version shape instead of pinning
+        // the current version, which would make this UI test stale at the next release.
         let deviceHeading = app.descendants(matching: .any).matching(
-            NSPredicate(format: "label CONTAINS[c] %@ AND label CONTAINS[c] %@", "Device", "2.13")
+            NSPredicate(format: "label BEGINSWITH[c] %@", "Device v")
         ).firstMatch
         let deviceHeadingIsVisible = await waitForElement(deviceHeading, timeout: 10)
         XCTAssertTrue(deviceHeadingIsVisible, "The All Tests screen should display Device's module heading.")

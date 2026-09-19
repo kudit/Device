@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.13.1"
+let version = "2.14.0"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -137,6 +137,12 @@ targets += [
 // Swift Playgrounds app manifests do not support package test targets reliably, so
 // expose the deterministic regression suite only to ordinary SwiftPM and Xcode builds.
 #if !SwiftPlaygrounds && !canImport(PlaygroundSupport)
+// Migration bridges belong to the development app, not the public Device module.
+// Compile their real sources into the same test target on Apple hosts so parser
+// and grouping regressions run without launching the app or duplicating production code.
+let deviceTestPath = "Development/DeviceTests"
+let deviceTestExcludes = ["DeviceUITests.swift", "DeviceTest.xctestplan", "DeviceMigrationTests.swift"]
+let deviceTestSources: [String]? = nil
 targets += [
 	.testTarget(
 		name: "\(packageLibraryName)Tests",
@@ -144,11 +150,9 @@ targets += [
 			.init(stringLiteral: packageLibraryName), // Use the shared name while preserving the manifest pattern required by Playgrounds.
 			.product(name: "Compatibility Testing Library", package: "compatibility"), // Reuse Compatibility's public test adapter.
 		],
-		path: "Development/DeviceTests",
-		exclude: [
-			"DeviceUITests.swift",
-			"DeviceTest.xctestplan", // Xcode's UI-test plan is not SwiftPM source.
-		]
+		path: deviceTestPath,
+		exclude: deviceTestExcludes,
+		sources: deviceTestSources
 	),
 ]
 #endif

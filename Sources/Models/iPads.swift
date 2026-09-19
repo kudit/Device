@@ -33,12 +33,12 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         var capabilities = capabilities
         capabilities.cameras = cameras
         capabilities.cellular = cellular
-//        // Only cellular iPads include GPS; Wi-Fi-only identifiers are intentionally left
-//        // without this capability to match Apple's model split.
+//    // Only cellular iPads include GPS; Wi-Fi-only identifiers are intentionally left
+//    // without this capability to match Apple's model split.
         // HOWEVER we do not distinguish between the cellular and non-cellular models so we can't actually guarantee this.
-//        if cellular != .none {
-//            capabilities.insert(.gps)
-//        }
+//    if cellular != .none {
+//      capabilities.insert(.gps)
+//    }
         capabilities.screen = screen
         capabilities.pencils = pencils
         device = Device(
@@ -108,7 +108,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad",
             identifiers: ["iPad1,1", "iPad1,2"], // 1,2 is 3g model
-            introduction: 2010.introductionYear,
+            introduction: "2010-04-03",
             supportId: "SP580",
             launchOSVersion: "3.2",
             unsupportedOSVersion: "6",
@@ -168,7 +168,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (4th generation)",
             identifiers: ["iPad3,4", "iPad3,5", "iPad3,6"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-11-02",
             supportId: "SP662",
             launchOSVersion: "6",
             unsupportedOSVersion: "11",
@@ -465,7 +465,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (8th generation)",
             identifiers: ["iPad11,6", "iPad11,7"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-09-18",
             supportId: "SP822",
             launchOSVersion: "14",
             unsupportedOSVersion: nil,
@@ -816,7 +816,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cpu: .m4,
             cameras: [.wide, .faceTimeHD1080p],
             cellular: .fiveG,
-            screen: .i109,
+            screen: .i129,
             pencils: [.usbC, .pro]),
 
     ]

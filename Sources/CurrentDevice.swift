@@ -278,6 +278,8 @@ public extension Device {
     
     // MARK: - Description Device Strings
     /// Gets the identifier from the system, such as "iPhone7,1".
+    /// In Designed for iPad on Mac, reads the host product identifier because
+    /// `uname`/`hw.machine` deliberately report the compatibility device `iPad8,6`.
     static var identifier: String {
 #if os(macOS)
         let defaultPort: mach_port_t
@@ -297,20 +299,23 @@ public extension Device {
         IOObjectRelease(service)
         return modelIdentifier ?? "UnknownIdentifier"
 #elseif targetEnvironment(macCatalyst)
-        var size = 0
-        sysctlbyname("hw.model", nil, &size, nil, 0)
-        
-        var modelIdentifier: [CChar] = Array(repeating: 0, count: size)
-        sysctlbyname("hw.model", &modelIdentifier, &size, nil, 0)
-        
-        return String(cString: modelIdentifier)
+        // Share the checked query with hosted iOS apps; failed sysctl calls must
+        // not produce an empty buffer passed to String(cString:).
+        return hostMacIdentifier ?? "UnknownIdentifier"
 #else
-        //        print(ProcessInfo().environment)
+        //    print(ProcessInfo().environment)
 #if canImport(Combine)
         // TODO: Should this be ProcessInfo.processInfo since initializer is internal?
         if let identifier = ProcessInfo().environment["SIMULATOR_MODEL_IDENTIFIER"] {
             // machine value is likely just arm64 so return the simulator identifier
             return identifier
+        }
+#endif
+#if os(iOS)
+        if #available(iOS 14, *), ProcessInfo.processInfo.isiOSAppOnMac {
+            // iOS-on-Mac exposes an iPad compatibility board identifier. Do not report that
+            // as physical Mac hardware unless the host query returned a validated Mac ID.
+            return hostMacIdentifier ?? "UnknownIdentifier"
         }
 #endif
 #if !os(Android)
@@ -328,6 +333,34 @@ public extension Device {
 #endif // os(Android)
 #endif
     }
+
+#if os(macOS) || os(iOS)
+    /// Retrieves a Mac product identifier without interpreting an iOS compatibility identifier as hardware.
+    ///
+    /// Apple's XNU HW_MACHINE branch substitutes iPad8,6 for iOS-on-Mac, while
+    /// HW_MODEL and HW_PRODUCT return the product name. Both queries are read-only
+    /// and fallible; future identifiers are accepted without requiring a catalog update.
+    /// See https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/kern_mib.c.
+    internal static var hostMacIdentifier: String? {
+        for key in ["hw.model", "hw.product"] {
+            var size = 0
+            guard sysctlbyname(key, nil, &size, nil, 0) == 0, size > 1, size <= 1024 else { continue }
+            var bytes = [UInt8](repeating: 0, count: size)
+            guard sysctlbyname(key, &bytes, &size, nil, 0) == 0, size > 1, size <= bytes.count else { continue }
+            // Decode only returned bytes through the first terminator. Validate the
+            // result so architecture/board strings and iPad fallbacks are not mistaken for Macs.
+            let value = String(bytes: bytes.prefix(size).prefix { $0 != 0 }, encoding: .utf8)
+            if let value, isMacModelIdentifier(value) { return value }
+        }
+        return nil
+    }
+
+    /// Recognizes product identifiers, including future Mac models, without hardware probing.
+    internal static func isMacModelIdentifier(_ value: String) -> Bool {
+        value.range(of: #"^(?:Mac[A-Za-z]*|iMac|Xserve|PowerMac|PowerBook)[0-9]+,[0-9]+$"#,
+                    options: .regularExpression) != nil
+    }
+#endif
     
     /// The name identifying the device (e.g. "Dennis' iPhone").
     /// As of iOS 16, this will return a generic String like "iPhone", unless your app has additional entitlements.
@@ -415,21 +448,21 @@ public extension Device {
             }
             return b
             //#elseif canImport(IOKit)
-            //            // Does not seem to work!
-            //            var brightness: Float = 1.0
-            //            var service: io_object_t = 1
-            //            var iterator: io_iterator_t = 0
-            //            let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
+            //      // Does not seem to work!
+            //      var brightness: Float = 1.0
+            //      var service: io_object_t = 1
+            //      var iterator: io_iterator_t = 0
+            //      let result: kern_return_t = IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IODisplayConnect"), &iterator)
             //
-            //            if result == kIOReturnSuccess {
+            //      if result == kIOReturnSuccess {
             //
-            //                while service != 0 {
-            //                    service = IOIteratorNext(iterator)
-            //                    IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
-            //                    IOObjectRelease(service)
-            //                }
-            //            }
-            //            return Double(brightness)
+            //        while service != 0 {
+            //          service = IOIteratorNext(iterator)
+            //          IODisplayGetFloatParameter(service, 0, kIODisplayBrightnessKey as CFString, &brightness)
+            //          IOObjectRelease(service)
+            //        }
+            //      }
+            //      return Double(brightness)
 #else
             return nil
 #endif
@@ -567,7 +600,7 @@ public final class ActualHardwareDevice: CurrentDevice {
         }
         Self.timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
             self.objectWillChange.send()
-            //            print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
+            //      print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
         }
     }
     
@@ -624,24 +657,24 @@ public final class ActualHardwareDevice: CurrentDevice {
 #if os(watchOS)
         let systemName = WKInterfaceDevice.current().systemName
         let systemVersion = Version(WKInterfaceDevice.current().systemVersion)
-//        print("watchOS Name: \(systemName)")
-//        print("watchOS Version: \(systemVersion)")
+//    print("watchOS Name: \(systemName)")
+//    print("watchOS Version: \(systemVersion)")
         return (systemName, systemVersion)
 #else
         let operatingSystemVersionString = ProcessInfo.processInfo.operatingSystemVersionString
-//        print("ProcessInfo.operatingSystemVersionString: \(operatingSystemVersionString)")
+//    print("ProcessInfo.operatingSystemVersionString: \(operatingSystemVersionString)")
         let operatingSystemStringVersion = Version(operatingSystemVersionString.replacingOccurrences(of: "Version ", with: "").replacingOccurrences(of: " (Build ", with: "."))
-//        print("Operating system string version: \(operatingSystemStringVersion)")
+//    print("Operating system string version: \(operatingSystemStringVersion)")
         let macName = operatingSystemStringVersion.macOSName
-//        print("Mac Name: \(macName)")
+//    print("Mac Name: \(macName)")
 #if canImport(UIKit) // this generates better results than the ProcessInfo.operatingSystemVersionString
         var systemName = UIDevice.current.systemName
-//        print("UIDevice.current.systemName: \(systemName)")
+//    print("UIDevice.current.systemName: \(systemName)")
         let systemVersion = Version(UIDevice.current.systemVersion)
-//        print("UIDevice.current.systemVersion: \(systemVersion)")
+//    print("UIDevice.current.systemVersion: \(systemVersion)")
         if idiom == .pad, systemName == "iOS" {
             systemName = "iPadOS"
-//            print("System Version changed to: \(systemName)")
+//      print("System Version changed to: \(systemName)")
         }
         // check for hosted environment
         var hostedMac = false
@@ -671,7 +704,7 @@ public final class ActualHardwareDevice: CurrentDevice {
         return (macName, operatingSystemStringVersion)
 #else
         let operatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
-//        print("ProcessInfo.operatingSystemVersion: \(operatingSystemVersion)")
+//    print("ProcessInfo.operatingSystemVersion: \(operatingSystemVersion)")
         return (operatingSystemVersionString, operatingSystemVersion)
 #endif // macOS
 #endif // UIKit
@@ -848,7 +881,7 @@ public final class ActualHardwareDevice: CurrentDevice {
     /// The volume’s available capacity in bytes for storing nonessential resources.
     public var volumeAvailableCapacityForOpportunisticUsage: Int64? {
         Device.volumeAvailableCapacityForOpportunisticUsage
-    }    
+    }   
 }
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
@@ -919,7 +952,7 @@ public final class MockDevice: CurrentDevice {
                 supportId: "n/a",
                 launchOSVersion: "2",
                 unsupportedOSVersion: nil,
-                capabilities: [.screen(.undefined)],
+                capabilities: [.screens([.undefined])],
                 colors: [.blue],
                 cpu: .unknown)
         }
@@ -943,7 +976,7 @@ public final class MockDevice: CurrentDevice {
         self.volumeAvailableCapacityForOpportunisticUsage = volumeAvailableCapacityForOpportunisticUsage
         self.cycleAnimation = cycleAnimation
         
-        //        print("Created mock with identifier: \(self.identifier)")
+        //    print("Created mock with identifier: \(self.identifier)")
         
         guard cycleAnimation > 0 else {
             return // no need to create timer if no cycle animation
@@ -959,18 +992,18 @@ public final class MockDevice: CurrentDevice {
 
     // Since this is a mock device, not used in practice and not technically needed, however, the scheduled repeating timer might fire after this and cause a crash.
 //#if (os(WASM) || os(WASI)) && compiler(>=6.1)
-//    @MainActor // fix warning in WASM 6.1 (just @MainActor breaks most versions) try nonisolated after @MainActor?
+//  @MainActor // fix warning in WASM 6.1 (just @MainActor breaks most versions) try nonisolated after @MainActor?
 //#endif
-//    deinit {
-//        if let timer {
-//            timer.invalidate()
-//        }
-//        timer = nil
-//        if let animationTimer {
-//            animationTimer.invalidate()
-//        }
-//        animationTimer = nil
+//  deinit {
+//    if let timer {
+//      timer.invalidate()
 //    }
+//    timer = nil
+//    if let animationTimer {
+//      animationTimer.invalidate()
+//    }
+//    animationTimer = nil
+//  }
     
     @MainActor public func update() {
         updateCount += 1 // increase
@@ -987,7 +1020,7 @@ public final class MockDevice: CurrentDevice {
             // This should never happen!
             fatalError("Brightness unable to be set!")
             // This really should never happen.  But if it does, go ahead and invalidate the timer.
-            //            timer.invalidate()
+            //      timer.invalidate()
         }
         if brightnessIncreasing {
             brightness += 0.01
@@ -1003,7 +1036,7 @@ public final class MockDevice: CurrentDevice {
             }
         }
         self.brightness = brightness
-        //        print("Update \(updateCount), brightness: \(brightness)")
+        //    print("Update \(updateCount), brightness: \(brightness)")
         // zoomed (every 3 ticks)
         if updateCount % 7 == 0 {
             isZoomed = !isZoomed

@@ -63,11 +63,11 @@ public extension Application {
     func screenshots() -> [Image] {
         var images = [Image]()
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-//        for window in NSApplication.shared.windows {
-//            if let image = window.renderImage() {
-//                images.append(Image(nsImage: image))
-//            }
-//        }
+//    for window in NSApplication.shared.windows {
+//      if let image = window.renderImage() {
+//        images.append(Image(nsImage: image))
+//      }
+//    }
         var displayCount: UInt32 = 0;
         var result = CGGetActiveDisplayList(0, nil, &displayCount)
         guard result == CGError.success else {

@@ -27,12 +27,15 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         cpu: CPU,
         cameras: Set<Camera>, // force setting here
         cellular: Cellular, // force setting here
-        screen: Screen // force setting here
+        screen: Screen? = nil,
+        screens: [Screen]? = nil // force setting here; `screen` remains a source-compatible alias
     ) {
         var capabilities = capabilities
         capabilities.cameras = cameras
         capabilities.cellular = cellular
-        capabilities.screen = screen
+        // Explicit `screens` wins; otherwise retain a grouped definition's display list
+        // before falling back to the source-compatible single-screen parameter.
+        capabilities.screens = screens ?? (capabilities.screens.isEmpty ? screen.map { [$0] } ?? [] : capabilities.screens)
         // Apple added the magnetometer/digital compass in the iPhone 3GS; applying
         // this generation boundary centrally keeps every later iPhone definition
         // consistent without repeating the capability in each model.
@@ -596,15 +599,15 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i67x1284),
         iPhone(
-            officialName: "iPhone SE (3rd generation)",
+            officialName: "iPhone SE (3rd generation)", // wireless charging but NOT magSafe.
             identifiers: ["iPhone14,6"],
             introduction: 2022.introductionYear,
             supportId: "SP867",
             launchOSVersion: "15.4",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-se-3rd-gen-colors.png",
-            capabilities: [.lightning, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.touchID), .esim, .dualesim, .nfc, .ringerSwitch, .barometer, .applePay],
-            models: ["A2595", "A2782", "A2784", "A2785", "A2783"],
+            capabilities: [.lightning, .wirelessCharging, .fastCharge, .biometrics(.touchID), .esim, .dualesim, .nfc, .ringerSwitch, .barometer, .applePay],
+            models: ["A2595", "A2782", "A2783", "A2784", "A2785"],
             colors: .iPhoneSE3,
             cpu: .a15,
             cameras: [.main12MP, .faceTimeHD1080p],
@@ -884,6 +887,54 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             cameras: [.fusionMain, .trueDepth12MP],
             cellular: .fiveG,
             screen: .i61x1170),
+
+        iPhone(
+            officialName: "iPhone 18 Pro",
+            identifiers: ["iPhone19,2"],
+            introduction: "2026-09-18",
+			supportId: "148590",
+            launchOSVersion: "27",
+            unsupportedOSVersion: nil,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-18-pro-colors.png",
+            capabilities: [.pro, .usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence],
+			models: ["A3472", "A3713", "A3715", "A3714"],
+            colors: .iPhone18Pro,
+            cpu: .a20pro,
+            cameras: [.fusionMain, .fusionUltraWide, .fusionTelephoto, .centerStage],
+            cellular: .fiveG,
+            screen: .i63),
+        iPhone(
+            officialName: "iPhone 18 Pro Max",
+            identifiers: ["iPhone19,3", "iPhone19,7"], // iPhone19,7 is the International version
+            introduction: "2026-09-18",
+			supportId: "148591",
+            launchOSVersion: "27",
+            unsupportedOSVersion: nil,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-18-pro-max-colors.png",
+            capabilities: [.pro, .max, .usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence],
+			models: ["A3473", "A3716", "A3718", "A3717"],
+            colors: .iPhone18Pro,
+            cpu: .a20pro,
+            cameras: [.fusionMain, .fusionUltraWide, .fusionTelephoto, .centerStage],
+            cellular: .fiveG,
+            screen: .i69),
+        iPhone(
+            officialName: "iPhone Duo",
+            identifiers: ["iPhone19,4"],
+            introduction: "2026-10-23",
+            supportId: .unknownSupportId,
+            launchOSVersion: "27",
+            unsupportedOSVersion: nil,
+            image: "http://www.apple.com/v/iphone/compare/am/images/overview/compare_iphone_duo_night_sky__l4khpo7rqpeu_large_2x.jpg",
+            // Preserve the draft panel dimensions recorded below. The inner panel
+            // is additional metadata; no foldable capability or active-panel claim is required.
+            capabilities: [.usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.touchID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .cameraControl, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence, .pencils([.usbC])],
+            models: ["A3447"],
+            colors: .iPhoneDuo,
+            cpu: .a20pro,
+            cameras: [.fusionMain, .fusionUltraWide, .centerStage],
+            cellular: .fiveG,
+            screens: [.id54, .id76]),
 
         // Get images and support links/IDs from: https://support.apple.com/en-us/108044
     ]

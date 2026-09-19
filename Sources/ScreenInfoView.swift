@@ -22,17 +22,17 @@ extension Double {
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct ScreenBrightnessView<SomeCurrentDevice: CurrentDevice>: View {
     @ObservedObject var currentDevice: SomeCurrentDevice
-//    init(currentDevice: SomeCurrentDevice) {
-//        self.currentDevice = currentDevice
-//    }
+//  init(currentDevice: SomeCurrentDevice) {
+//    self.currentDevice = currentDevice
+//  }
     var body: some View {
         if let brightness = currentDevice.brightness {
             HStack(spacing: 2) {
                 Image(symbolName: brightness < 0.5 ? "sun.min" : "sun.max")
                 Text("\(Int(brightness * 100))%")
             }
-//        } else {
-//            EmptyView()
+//    } else {
+//      EmptyView()
         }
     }
 }
@@ -48,7 +48,7 @@ public struct ScreenInfoView: View {
             return .undefined // should never happen
         }
         return screen
-    }    
+    }   
     @MainActor
     var statusFeatures: some View {
         HStack(spacing: 2) {
@@ -126,7 +126,19 @@ public struct ScreenInfoView: View {
 #if os(visionOS)
         .foregroundStyle(.black) // can do background but doesn't provide enough contrast.
 #else
-        .foregroundStyle(.background)
+        // NavigationLink selection can inject a white foreground into the
+        // current-device card. Its card background is the system background,
+        // so explicitly use the primary text color for readable labels.
+        // Screen cards intentionally keep their own contrasting text and do
+        // not participate in NavigationLink selection coloring.
+        // This card deliberately uses the opposite contrast of the outer
+        // selection surface: the light-mode card is dark, while dark-mode
+        // presentation uses a light card.
+        // Difference blending keeps the card readable when a light-mode
+        // NavigationLink selection changes its surrounding background from
+        // dark to white, while preserving the inverse contrast in dark mode.
+        .foregroundStyle(.white)
+        .blendMode(.difference)
 #endif
         .background {
             RoundedRectangle(cornerRadius: .devicePanelRadius)

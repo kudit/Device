@@ -15,7 +15,7 @@ public struct Mac: IdiomType {
         case macProGen2 = "macpro.gen2"
         /// silver handle circles
         case macProGen3 = "macpro.gen3"
-//        case macProGen3Server = "macpro.gen3.server" // MacPro Rack configuration
+//    case macProGen3Server = "macpro.gen3.server" // MacPro Rack configuration
         case macBook = "macbook"
         /// magSafe 2
         case macBookGen1 = "macbook.gen1"
@@ -99,9 +99,9 @@ public struct Mac: IdiomType {
             .macForm(form) // will this be problematic with zeroing out defaults or base model?  No because adding the new form should replace old?
         ])
         if let screen {
-            capabilities.formUnion([.screen(screen)])
+            capabilities.formUnion([.screens([screen])])
         } else if form.hasScreen {
-            capabilities.formUnion([.screen(.undefined)])
+            capabilities.formUnion([.screens([.undefined])])
         }
         device = Device(
             idiom: .mac,
@@ -123,7 +123,8 @@ public struct Mac: IdiomType {
             officialName: "Unknown Mac",
             identifiers: [identifier],
             introduction: .defaultBlank,
-            supportId: .unknownSupportId,
+            // Apple’s current support catalog exposes this legacy model through its manuals page.
+            supportId: "https://support.apple.com/en-us/docs/mac/132121",
             launchOSVersion: .zero,
             unsupportedOSVersion: nil,
             form: .macMini, // no default battery
@@ -1831,7 +1832,8 @@ public struct Mac: IdiomType {
             officialName: "MacBook Pro (15-inch, Late 2008)",
             identifiers: ["MacBookPro5,1"],
             introduction: 2008.introductionYear,
-            supportId: .unknownSupportId,
+            // Apple’s current support catalog exposes this legacy model through its manuals page.
+            supportId: "https://support.apple.com/en-us/docs/mac/132121",
             launchOSVersion: "10.5.5",
             unsupportedOSVersion: "10.12",
             form: .macBook,
@@ -1844,7 +1846,8 @@ public struct Mac: IdiomType {
             officialName: "MacBook Pro (17-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
             introduction: 2008.introductionYear,
-            supportId: .unknownSupportId,
+            // Apple groups the early-2008 15-inch specifications with the same legacy family page.
+            supportId: "https://support.apple.com/en-us/docs/mac/131884",
             launchOSVersion: "10.5.2",
             unsupportedOSVersion: "10.12",
             form: .macBook,
@@ -1857,7 +1860,8 @@ public struct Mac: IdiomType {
             officialName: "MacBook Pro (15-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
             introduction: 2008.introductionYear,
-            supportId: .unknownSupportId,
+            // Apple groups the early-2008 specifications on this legacy manuals page.
+            supportId: "https://support.apple.com/en-us/docs/mac/131884",
             launchOSVersion: "10.5.2",
             unsupportedOSVersion: "10.12",
             form: .macBook,

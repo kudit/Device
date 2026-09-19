@@ -61,11 +61,11 @@ public struct Screen: Hashable, Sendable, Codable {
     public var resolution: Size // width, height in pixels
     public var ppi: Int?
     
-//    public static func == (lhs: Screen, rhs: Screen) -> Bool {
-//        lhs.diagonal == rhs.diagonal
-//        && lhs.resolution == rhs.resolution
-//        && lhs.ppi == rhs.ppi
-//    }
+//  public static func == (lhs: Screen, rhs: Screen) -> Bool {
+//    lhs.diagonal == rhs.diagonal
+//    && lhs.resolution == rhs.resolution
+//    && lhs.ppi == rhs.ppi
+//  }
     
     public init(
         diagonal: Double? = nil,
@@ -92,6 +92,10 @@ public struct Screen: Hashable, Sendable, Codable {
     public static let i47 = Screen(diagonal: 4.7, resolution: (750,1334), ppi: 326)
     // iPhone 12 mini
     public static let i54 = Screen(diagonal: 5.4, resolution: (1080,2340), ppi: 476)
+    /// Front panel used by the iPhone Duo.
+    public static let id54 = Screen(diagonal: 5.4, resolution: (1398,2034), ppi: 460) // Outer display: 1398-by-2034-pixel resolution at 460 ppi
+    /// Inner panel used by the iPhone Duo.
+    public static let id76 = Screen(diagonal: 7.6, resolution: (1878,2670), ppi: 430) // Inner display: 1878-by-2670-pixel resolution at 430 ppi
     // iPhone 6 Plus
     public static let i55 = Screen(diagonal: 5.5, resolution: (1080,1920), ppi: 401)
     // iPhone X
