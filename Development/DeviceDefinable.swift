@@ -25,6 +25,40 @@ extension MaterialColor: Definable {}
 extension AppleWatch.WatchSize: Definable {}
 extension AppleWatch.WatchSize.BandSize: Definable {}
 extension Mac.Form: Definable {}
+
+/// Emits shorthand Swift case names for Device capabilities, including
+/// associated values used by Apple-page bridge definitions.
+extension Capability: Definable {
+	public var definition: String {
+//		func shorthand(_ value: String) -> String {
+//			value.replacingOccurrences(of: "Device.", with: "")
+//				.replacingOccurrences(of: "Capability.", with: "")
+//				.replacingOccurrences(of: "Mac.", with: "")
+//				.replacingOccurrences(of: "Form.", with: "")
+//		}
+		switch self {
+//		case .macForm(let form): return ".macForm(\(shorthand(form.definition)))"
+		case .macForm(let form): return ".macForm(\(form.definition))"
+		case .watchSize(let size): return ".watchSize(\(size.definition))"
+		case .cellular(let cellular): return ".cellular(\(cellular.definition))"
+		case .screens(let screens): return ".screens(\(screens.definition))"
+		case .pencils(let pencils): return ".pencils(\(pencils.sorted.definition))"
+		case .biometrics(let biometrics): return ".biometrics(\(biometrics.definition))"
+		case .cameras(let cameras): return ".cameras(\(cameras.sorted.definition))"
+//		default: return shorthand("." + caseName)
+		default: return "." + caseName
+		}
+	}
+}
+/// Make the concrete capability collection conform directly so the bridge
+/// renderer selects this formatter instead of String(describing:).
+extension Set: Definable where Element == Capability {
+	public var definition: String {
+		"[\(self.sorted.map(\.definition).joined(separator: ", "))]"
+	}
+}
+//extension Capabilities: Definable {}
+
 // for DeviceAttributeExpressible
 extension Device.Idiom: Definable {}
 
@@ -77,32 +111,6 @@ extension Screen: Definable {
         return "Screen(diagonal: \(diagonal.definition), resolution: (\(resolution.width),\(resolution.height)), ppi: \(ppi.definition))"
     }
 }
-
-extension Capability: Definable {
-    public var definition: String {
-        switch self {
-        case .macForm(let macForm):
-            return ".macForm(\(macForm.definition))"
-        case .watchSize(let watchSize):
-            return ".watchSize(\(watchSize.definition))"
-        case .cellular(let cellular):
-            return ".cellular(\(cellular.definition))"
-        case .screens(let screens):
-            return ".screens(\(screens.definition))"
-        case .pencils(let pencils):
-            return ".pencils(\(pencils.sorted.definition))"
-        case .biometrics(let biometrics):
-            return ".biometrics(\(biometrics.definition))"
-        case .cameras(let cameras):
-            return ".cameras(\(cameras.sorted.definition))"
-        default:
-            return "." + caseName
-            // why can't we remove duplicate code by doing the following?
-            //      return (self as Definable).definition
-        }
-    }
-}
-
 
 // MARK: Device string definitions
 extension Device: Definable {}
@@ -182,12 +190,17 @@ public extension Device {
             capabilities.watchSize = nil // remove so not appears in capabilities list
             watchSize = ",\n\(indentSpace)size: \(size.definition)"
         }
-        var overrides = "capabilities: \(capabilities.sorted.definition),\n\(indentSpace)"
+        // Use the explicit capability formatter so generated Apple-page
+        // definitions use `.usbC` shorthand instead of module-qualified names.
+        // Strip module qualification defensively because bridges may be built
+        // against a target where the generic Definable overload is unavailable.
+        let capabilityText = capabilities.definition
+        var overrides = "capabilities: \(capabilityText),\n\(indentSpace)"
         if capabilities.count == 0 { // don't do this if we want to always have capabilities
             overrides = ""
         }
         // TODO: Formerly String(describing: idiom.type) but that is internal.  Have a way of exposing type name?  Perhaps have a idiom.typeName extension??
-        return """
+        let generated = """
                 \(idiom.constructor)(
                     \(idiomish)officialName: \(officialName.definition),
                     identifiers: \(identifiers.definition),
@@ -198,6 +211,15 @@ public extension Device {
                     \(macForm)image: \(image.definition),
                     \(overrides)\(models)\(colors)cpu: \(cpu.definition)\(cameras)\(cellular)\(screen)\(pencils)\(watchSize)),
         """
+        // Keep the emitted source stable even when a cross-module reflection
+        // path falls back to String(describing:) for an associated capability.
+        // This is a formatting concern only; it does not alter comparison data.
+        return generated
+            .replacingOccurrences(of: "Device.Capability.", with: ".")
+            .replacingOccurrences(of: "Device.Mac.Form.", with: ".")
+            .replacingOccurrences(of: "Device.Mac.", with: "")
+            .replacingOccurrences(of: "Capability.", with: "")
+            .replacingOccurrences(of: "Form.", with: "")
     }
 }
 

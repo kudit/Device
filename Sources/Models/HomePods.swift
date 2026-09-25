@@ -77,14 +77,15 @@ public struct HomePod: IdiomType {
             cpu: .a8),
         HomePod(
             officialName: "HomePod mini",
-            identifiers: ["AudioAccessory5,1"],
-            introduction: "2020-12-11",
+            // AppleDB also publishes the single-unit alias for this hardware.
+            identifiers: ["AudioAccessory5,1", "AudioAccessorySingle5,1"],
+            introduction: "2020-11-16",
             supportId: "SP834",
             launchOSVersion: "14.2", // audioOS
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111914_homepod-mini-colours.png",
             capabilities: [.mini],
-            models: ["A2374"],
+            models: ["A2374", "A2531"], // second is China Mainland version.
             colors: .homePodMini,
             cpu: .s5),
         HomePod(
@@ -95,7 +96,7 @@ public struct HomePod: IdiomType {
             launchOSVersion: "16", // audioOS
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111843_homepod-2gen.png",
-            models: ["A2825"],
+            models: ["A2825", "A2878"],
             colors: .homePod,
             cpu: .s7),
         

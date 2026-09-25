@@ -9,6 +9,15 @@
 import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+private struct BridgeComparisonSnapshot<B: DeviceBridge>: Sendable {
+    let bridge: B
+    let matchedDevice: Device
+    let matchedBridge: B
+    let mergedBridge: B
+    let matchType: MatchType
+}
+
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View where Loader.Bridge == Bridge {
     private enum Filter: String { case green, yellow, red }
     var loader: Loader
@@ -19,20 +28,19 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
     @State var totalSections: Int?
     @State private var filter: Filter?
     @State private var expanded: Set<String> = []
-    @State private var cachedMatchTypes: [String: MatchType] = [:]
-    @State private var cachedMatchedDevices: [String: Device] = [:]
+    @State private var cachedComparisons: [String: BridgeComparisonSnapshot<Bridge>] = [:]
 
     private var counts: (green: Int, yellow: Int, red: Int) {
-        (bridges.filter { cachedMatchTypes[String(describing: $0.id)] == .identical }.count,
-         bridges.filter { cachedMatchTypes[String(describing: $0.id)] == .compatible }.count,
-         bridges.filter { cachedMatchTypes[String(describing: $0.id)] == .mismatched }.count)
+        (bridges.filter { cachedComparisons[String(describing: $0.id)]?.matchType == .identical }.count,
+         bridges.filter { cachedComparisons[String(describing: $0.id)]?.matchType == .compatible }.count,
+         bridges.filter { cachedComparisons[String(describing: $0.id)]?.matchType == .mismatched }.count)
     }
     private var visibleBridges: [Bridge] {
         // Preserve every source record. Duplicate records are source data that
         // should be reported and investigated, not silently discarded by the UI.
         guard let filter else { return bridges }
         return bridges.filter {
-            switch filter { case .green: cachedMatchTypes[String(describing: $0.id)] == .identical; case .yellow: cachedMatchTypes[String(describing: $0.id)] == .compatible; case .red: cachedMatchTypes[String(describing: $0.id)] == .mismatched }
+            switch filter { case .green: cachedComparisons[String(describing: $0.id)]?.matchType == .identical; case .yellow: cachedComparisons[String(describing: $0.id)]?.matchType == .compatible; case .red: cachedComparisons[String(describing: $0.id)]?.matchType == .mismatched }
         }
     }
     private var sectionTitle: String {
@@ -80,13 +88,30 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                          // receives immutable cached classifications once.
                          Compatibility.background {
                              debug("Migration: classifying \(bridges.count) bridge records for \(loader.name)")
-                             let classifications = Dictionary(bridges.map { (String(describing: $0.id), $0.matchType) }, uniquingKeysWith: { first, _ in first })
-                             let matchedDevices = Dictionary(bridges.map { (String(describing: $0.id), $0.matched) }, uniquingKeysWith: { first, _ in first })
-                             debug("Migration: classified \(classifications.count) bridge records for \(loader.name)")
+                             // Build one immutable comparison snapshot per source
+                             // row. The view never needs to rediscover devices or
+                             // recreate bridge projections during disclosure.
+                             let snapshots = Dictionary(bridges.enumerated().map { index, bridge in
+                                 main {
+                                     self.completedSections = index + 1
+                                     self.totalSections = bridges.count
+                                     self.message = "Matching \(index + 1) of \(bridges.count) devices…"
+                                 }
+                                 let matchedDevice = bridge.matched
+                                 let matchedBridge = bridge.bridge(from: matchedDevice)
+                                 let mergedBridge = bridge.bridge(from: bridge.merged)
+                                 let snapshot = BridgeComparisonSnapshot(
+                                     bridge: bridge,
+                                     matchedDevice: matchedDevice,
+                                     matchedBridge: matchedBridge,
+                                     mergedBridge: mergedBridge,
+                                     matchType: bridge.matchType)
+                                 return (String(describing: bridge.id), snapshot)
+                             }, uniquingKeysWith: { first, _ in first })
+                             debug("Migration: classified \(snapshots.count) bridge records for \(loader.name)")
                              main {
                                  self.bridges = bridges
-                                 self.cachedMatchTypes = classifications
-                                 self.cachedMatchedDevices = matchedDevices
+                                 self.cachedComparisons = snapshots
                              }
                          }
                      } catch {
@@ -108,8 +133,9 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                      // Disclosure redraws reevaluate its label and content. Read
                      // the classification computed during loading instead of
                      // performing Device lookup and bridge projection again.
-                     let matchType = cachedMatchTypes[String(describing: bridge.id)] ?? .mismatched
-                     let matchedDevice = cachedMatchedDevices[String(describing: bridge.id)] ?? bridge.matched
+                     let snapshot = cachedComparisons[String(describing: bridge.id)]
+                     let matchType = snapshot?.matchType ?? .mismatched
+                     let matchedDevice = snapshot?.matchedDevice ?? bridge.matched
                     // Every row's open state comes only from the user's toggle;
                     // red severity controls color/visibility, never expansion.
                     DisclosureGroup(isExpanded: Binding(get: { expanded.contains(rowID) }, set: { isExpanded in
@@ -125,7 +151,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
 //               .background(bridge.device.definition == bridge.matched.definition ? .green : (bridge.merged.definition == bridge.matched.definition ? .yellow : .red))
                          // Green matches still expose their generated comparison;
                          // only the initial disclosure state differs.
-                         DiffSwitcherView(bridge: bridge)
+                         DiffSwitcherView(bridge: bridge, matchedBridge: snapshot?.matchedBridge, mergedBridge: snapshot?.mergedBridge)
                          Divider()
                          }
                      } label: {
@@ -163,7 +189,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                          // Take the small cached-state snapshot while on the main actor;
                          // report formatting then runs in the background using only Sendable bridges.
                          let commentCandidates = bridges.filter {
-                             cachedMatchTypes[String(describing: $0.id)] != .identical
+                             cachedComparisons[String(describing: $0.id)]?.matchType != .identical
                          }
                          generateCopy {
                             // Classification is cached; this closure never reaches back

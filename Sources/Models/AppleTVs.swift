@@ -62,7 +62,7 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV 4K (3rd generation) Wi-Fi + Ethernet",
             identifiers: ["AppleTV14,1"],
-            introduction: 2022.introductionYear,
+			introduction: "2022-11-04",
             supportId: "111839", // SP886
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
@@ -73,7 +73,7 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV 4K (3rd generation) Wi-Fi",
             identifiers: ["AppleTV14,1"],
-            introduction: 2022.introductionYear,
+			introduction: "2022-11-04",
             supportId: "111839", // SP886
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
@@ -83,7 +83,7 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV 4K (2nd generation)",
             identifiers: ["AppleTV11,1"],
-            introduction: 2021.introductionYear,
+			introduction: "2021-05-21",
             supportId: "111922", // SP845
             launchOSVersion: "14.5",
             unsupportedOSVersion: nil,
@@ -139,7 +139,7 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV (2nd generation)",
             identifiers: ["AppleTV2,1"],
-            introduction: 2010.introductionYear,
+			introduction: "2010-09-28",
             supportId: "112428", // SP598
             launchOSVersion: "4.1", // iOS variant
             unsupportedOSVersion: "7", // max 6.2.1
@@ -150,7 +150,7 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV (1st generation)",
             identifiers: ["AppleTV1,1"],
-            introduction: 2007.introductionYear,
+            introduction: "2007-03-21",
             supportId: "112555", // SP19
             launchOSVersion: "10.4.7", // stripped down macOS
             unsupportedOSVersion: "10.5", // not updated

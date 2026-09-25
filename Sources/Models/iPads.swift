@@ -123,7 +123,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad 2",
             identifiers: ["iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-03-11",
             supportId: "SP622", // Apple has as sp622
             launchOSVersion: "4.3",
             unsupportedOSVersion: "10",
@@ -138,7 +138,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (3rd generation)",
             identifiers: ["iPad3,1", "iPad3,2", "iPad3,3"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-03-16",
             supportId: "SP647",
             launchOSVersion: "5.1",
             unsupportedOSVersion: "10",
@@ -153,7 +153,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad mini",
             identifiers: ["iPad2,5", "iPad2,6", "iPad2,7"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-03-16",
             supportId: "SP661",
             launchOSVersion: "6",
             unsupportedOSVersion: "10",
@@ -258,7 +258,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (5th generation)",
             identifiers: ["iPad6,11", "iPad6,12"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-03-24",
             supportId: "SP751",
             launchOSVersion: "10.3",
             unsupportedOSVersion: "17",
@@ -337,7 +337,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (6th generation)",
             identifiers: ["iPad7,5", "iPad7,6"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-03-30",
             supportId: "SP774",
             launchOSVersion: "11.4",
             unsupportedOSVersion: "18",
@@ -353,7 +353,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad Pro 11-inch",
             identifiers: ["iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-03-30",
             supportId: "SP784",
             launchOSVersion: "12.1",
             unsupportedOSVersion: nil,
@@ -369,7 +369,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad Pro 12.9-inch (3rd generation)",
             identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-03-30",
             supportId: "SP785",
             launchOSVersion: "12.1",
             unsupportedOSVersion: nil,
@@ -407,7 +407,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-mini-5gen.png",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID), .esim],
-            models: ["A2133", "A2124", "A2125", "A2126"],
+            models: ["A2124", "A2125", "A2126", "A2133"],
             colors: .iPadMini5,
             cpu: .a12,
             cameras: [.iSight, .faceTimeHD1080p],
@@ -417,13 +417,13 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (7th generation)",
             identifiers: ["iPad7,11", "iPad7,12"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-09-25",
             supportId: "SP807",
             launchOSVersion: "13.1",
             unsupportedOSVersion: "26",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-7th-gen.png",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
-            models: ["A2197", "A2200", "A2198"],
+            models: ["A2197", "A2198", "A2199", "A2200"],
             colors: .iPadMini5,
             cpu: .a10,
             cameras: [.iSight],
@@ -481,7 +481,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (9th generation)",
             identifiers: ["iPad12,1", "iPad12,2"],
-            introduction: 2021.introductionYear,
+			introduction: "2021-09-24",
             supportId: "SP849",
             launchOSVersion: "15",
             unsupportedOSVersion: nil,
@@ -529,7 +529,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (10th generation)",
             identifiers: ["iPad13,18", "iPad13,19"],
-            introduction: 2022.introductionYear,
+            introduction: "2022-10-26",
             supportId: "SP884",
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
@@ -739,7 +739,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (A16)",
             identifiers: ["iPad15,7", "iPad15,8"],
-            introduction: 2025.introductionYear,
+            introduction: "2025-03-12",
             supportId: "122240",
             launchOSVersion: "18.2.1",
             unsupportedOSVersion: nil,

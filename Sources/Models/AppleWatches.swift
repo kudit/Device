@@ -865,7 +865,7 @@ public struct AppleWatch: IdiomType, HasScreen, HasCellular {
             officialName: "Apple Watch Ultra 4 (GPS + Cellular)",
             identifiers: ["Watch8,1"],
             introduction: "2026-09-18",
-            supportId: .unknownSupportId,
+			supportId: "148758",
             launchOSVersion: "27",
             unsupportedOSVersion: nil,
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-watch/apple-watch-ultra-4.png",

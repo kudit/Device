@@ -783,7 +783,9 @@ actor PageParser: DeviceBridgeLoader {
         if officialName.contains(" Plus") {
             capabilities.insert(.plus)
         }
-        if officialName.contains(" Max") {
+        // On Apple support pages, Max is a device form-factor qualifier except
+        // when it is embedded in a Mac processor name such as M5 Max.
+        if officialName.contains(" Max") && idiom != .mac {
             capabilities.insert(.max)
         }
         

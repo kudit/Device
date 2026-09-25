@@ -71,7 +71,7 @@ public struct Mac: IdiomType {
             }
         }
     }
-    
+
     public let device: Device
     public init(knownDevice: Device) {
         self.device = knownDevice
@@ -117,7 +117,7 @@ public struct Mac: IdiomType {
             colors: colors,
             cpu: cpu)
     }
-    
+
     public init(identifier: String) { // Public for DeviceKit testing
         self.init(
             officialName: "Unknown Mac",
@@ -138,12 +138,12 @@ public struct Mac: IdiomType {
             cpu: .unknown
         )
     }
-    
+
     /// Mac form enum (unwrapped from capabilities)
     public var form: Form {
         return capabilities.macForm ?? .macStudio // should never be nil but here just in case.
     }
-    
+
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
     public var symbolName: String {
         return self.form.rawValue
@@ -1007,7 +1007,7 @@ public struct Mac: IdiomType {
             models: ["MC505xx/A", "MC233xx/A", "MC234xx/A"],
             colors: .legacySilverMacs,
             cpu: .intel),
-        
+
         // MARK: - MacBook Pros
 
         // lookup details here: https://support.apple.com/en-us/108052
@@ -1871,7 +1871,35 @@ public struct Mac: IdiomType {
             colors: .legacySilverMacs,
             cpu: .intel),
 
+
         // MARK: - Mac Studios
+		Mac(
+			officialName: "Mac Studio (M5 Max)",
+			identifiers: ["Mac17,14"],
+			introduction: "2026-09-23",
+			supportId: "128107",
+			launchOSVersion: "0",
+			unsupportedOSVersion: nil,
+			form: .macStudio,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-m5-max.png",
+			capabilities: [],
+			models: ["MHL64xx/A"],
+			colors: [.silverLight],
+			cpu: .m5max),
+		Mac(
+			officialName: "Mac Studio (M5 Ultra)",
+			identifiers: ["Mac17,15"],
+			introduction: "2026-09-23",
+			supportId: "128107",
+			launchOSVersion: "0",
+			unsupportedOSVersion: nil,
+			form: .macStudio,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-m5-ultra.png",
+			capabilities: [],
+			models: ["MHL74xx/A"],
+			colors: [.silverLight],
+			cpu: .m5ultra),
+
         Mac(
             officialName: "Mac Studio (2022) M1 Max", // have to be different from next item or will crash
             identifiers: ["Mac13,1"],
@@ -1951,8 +1979,36 @@ public struct Mac: IdiomType {
             colors: [.silverLight],
             cpu: .m3ultra),
 
+
         // MARK: - Mac minis
-        Mac(
+		Mac(
+			officialName: "Mac mini (M6)",
+			identifiers: ["Mac18,5"],
+			introduction: "2026-09-23",
+			supportId: "128108",
+			launchOSVersion: "0",
+			unsupportedOSVersion: nil,
+			form: .macMini,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-m6.png",
+			capabilities: [.usbC, .thunderbolt],
+			models: ["MHQK4xx/A", "MHQL4xx/A", "MHQM4xx/A", "MHQV4xx/A"],
+			colors: [.silverLight],
+			cpu: .m6),
+		Mac(
+			officialName: "Mac mini (M5 Pro)",
+			identifiers: ["Mac17,16"],
+			introduction: "2026-09-23",
+			supportId: "128108",
+			launchOSVersion: "0",
+			unsupportedOSVersion: nil,
+			form: .macMini,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-m5-pro.png",
+			capabilities: [.usbC, .thunderbolt, .biometrics(.touchID)],
+			models: ["MHQN4xx/A", "MHQU4xx/A"],
+			colors: [.silverLight],
+			cpu: .m5pro),
+
+		Mac(
             officialName: "Mac mini (2024) M4 Pro", // have to be different from next item or will crash
             identifiers: ["Mac16,11"], // "Mac16,15"
             introduction: 2024.introductionYear,
@@ -2108,7 +2164,7 @@ public struct Mac: IdiomType {
             models: ["MB464xx/A", "MB463xx/A"],
             colors: .legacySilverMacs,
             cpu: .intel),
-        
+
         // MARK: - Mac Pros
         Mac(
             officialName: "Mac Pro (2023)",

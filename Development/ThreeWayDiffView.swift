@@ -7,6 +7,43 @@
 #if canImport(SwiftUI) && canImport(Foundation)
 
 import SwiftUI
+import Color
+
+/// A display-only color projection used by bridge comparisons. It intentionally
+/// keeps presentation sorting and swatches out of the Device model itself.
+struct ColorComparison: Identifiable, Equatable, Hashable {
+    let id: String
+    let name: String
+    let hex: String // includes #
+}
+
+protocol ColorComparable {
+	var comparisonColor: ColorComparison { get }
+}
+
+extension MaterialColor: ColorComparable {
+	var comparisonColor: ColorComparison {
+		ColorComparison(id: caseName, name: name, hex: rawValue)
+	}
+}
+
+private struct ColorComparisonList: View {
+    let colors: [ColorComparison]
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(colors) { color in
+                HStack(spacing: 2) {
+					Circle().fill(Color(string: color.hex, defaultColor: .gray), strokeBorder: .foreground, lineWidth: 0.5).frame(width: 10, height: 10)
+                    Text(color.name)
+						.backport.textSelection(.enabled)
+						.font(.subheadline)
+				}
+				.help(color.hex)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+    }
+}
 
 // MARK: - Diff view
 @available(iOS 15, *)
@@ -23,15 +60,17 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
     let right: T
     var fixedMode: Mode?
     private let equality: (String, Any?, Any?) -> Bool
+    private let compatibility: (String, Any?, Any?, Any?) -> Bool
 
     @State private var mode: Mode = .combined
 
-    init(left: T, merged: T, right: T, fixedMode: Mode? = nil, equality: @escaping (String, Any?, Any?) -> Bool = { _, l, r in areEqual(l, r) }) {
+    init(left: T, merged: T, right: T, fixedMode: Mode? = nil, equality: @escaping (String, Any?, Any?) -> Bool = { _, l, r in areEqual(l, r) }, compatibility: @escaping (String, Any?, Any?, Any?) -> Bool = { _, _, _, _ in false }) {
         self.left = left
         self.merged = merged
         self.right = right
         self.fixedMode = fixedMode
         self.equality = equality
+        self.compatibility = compatibility
     }
 
     // Custom colors
@@ -98,20 +137,22 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
                     .foregroundStyle(.secondary)
                 Text(typeDescription(of: lVal, mVal, rVal))
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    // Show comparison status on the type label so value
+                    // colors continue to identify Device and bridge sides.
+                    .foregroundStyle(typeColor(for: key, left: lVal, merged: mVal, right: rVal))
             }
             Spacer()
             switch fixedMode ?? mode {
             case .left:
-                valueText(stringify(lVal), color: colorForLeft(left: lVal, merged: mVal, right: rVal) ?? .primary)
+                valueText(stringify(lVal), color: colorForLeft(key: key, left: lVal, merged: mVal, right: rVal) ?? .primary)
             case .right:
-                valueText(stringify(rVal), color: colorForRight(left: lVal, merged: mVal, right: rVal) ?? .primary)
+                valueText(stringify(rVal), color: colorForRight(key: key, left: lVal, merged: mVal, right: rVal) ?? .primary)
             case .merged:
-                valueText(stringify(mVal), color: colorForMerged(merged: mVal, left: lVal, right: rVal) ?? .primary)
+                valueText(stringify(mVal), color: colorForMerged(key: key, merged: mVal, left: lVal, right: rVal) ?? .primary)
             case .combined:
                 // compute model once, then render declaratively
-                let combined = computeCombinedResult(lVal: lVal, mVal: mVal, rVal: rVal)
-                combinedView(combined)
+                let combined = computeCombinedResult(key: key, lVal: lVal, mVal: mVal, rVal: rVal)
+                combinedView(combined, key: key)
             }
         }
         .padding(.vertical, 8)
@@ -144,13 +185,13 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
     }
 
     // MARK: — compute-only (no SwiftUI) logic for combined view
-    private func computeCombinedResult(lVal: Any?, mVal: Any?, rVal: Any?) -> CombinedResult {
+    private func computeCombinedResult(key: String, lVal: Any?, mVal: Any?, rVal: Any?) -> CombinedResult {
         var entries: [CombinedEntry] = []
 
         // colors according to rules
-        let leftClr = colorForLeft(left: lVal, merged: mVal, right: rVal)
-        let mergedClr = colorForMerged(merged: mVal, left: lVal, right: rVal)
-        let rightClr = colorForRight(left: lVal, merged: mVal, right: rVal)
+        let leftClr = colorForLeft(key: key, left: lVal, merged: mVal, right: rVal)
+        let mergedClr = colorForMerged(key: key, merged: mVal, left: lVal, right: rVal)
+        let rightClr = colorForRight(key: key, left: lVal, merged: mVal, right: rVal)
 
         func appendUnique(source: String, val: Any?, color: Color?) {
             // skip nil values entirely in combined view
@@ -175,22 +216,38 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
 
     // MARK: — view-only rendering for combined result (declarative)
     @ViewBuilder
-    private func combinedView(_ combined: CombinedResult) -> some View {
+    private func combinedView(_ combined: CombinedResult, key: String) -> some View {
         if combined.entries.isEmpty {
             // nothing present
             Text("—")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         } else if combined.allEqual, combined.entries.count == 1 {
-            Text(combined.entries[0].value)
-                .font(.subheadline)
-                .multilineTextAlignment(.trailing)
-                // Match the other value labels: selectable, but still a plain Text.
-                .backport.textSelection(.enabled)
+				if let colors = colorComparisons(combined.entries[0].raw) {
+				ColorComparisonList(colors: colors)
+			} else {
+				Text(combined.entries[0].value)
+					.font(.subheadline)
+					.multilineTextAlignment(.trailing)
+					// Match the other value labels: selectable, but still a plain Text.
+					.backport.textSelection(.enabled)
+            }
         } else {
             VStack(alignment: .trailing, spacing: 6) {
                 ForEach(combined.entries) { e in
                     HStack(spacing: 8) {
+							if let colors = colorComparisons(e.raw) {
+							ColorComparisonList(colors: colors)
+                        } else { Text(e.value)
+                            .font(.subheadline)
+                            .foregroundColor(e.color ?? .primary)
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            // Keep variant values as Text labels while allowing copy
+                            // from the combined diff row.
+                            .backport.textSelection(.enabled)
+                        }
+                        Spacer(minLength: 4)
                         Text(e.label)
                             .font(.caption2)
                             .bold()
@@ -198,41 +255,50 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
                             .padding(.horizontal, 6)
                             .background(RoundedRectangle(cornerRadius: 4).strokeBorder(.secondary, lineWidth: 0.5))
                             .foregroundColor(.secondary)
-                        Spacer(minLength: 4)
-                        Text(e.value)
-                            .font(.subheadline)
-                            .foregroundColor(e.color ?? .primary)
-                            .multilineTextAlignment(.trailing)
-                            // Keep variant values as Text labels while allowing copy
-                            // from the combined diff row.
-                            .backport.textSelection(.enabled)
                     }
                 }
             }
-            .frame(maxWidth: 300)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 
+	private func colorComparisons(_ value: Any?) -> [ColorComparison]? {
+		guard let value else { return nil }
+		if let colors = value as? [ColorComparable] {
+			return colors.map{ $0.comparisonColor }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        }
+        return nil
+    }
+
     // MARK: coloring rules
-    private func colorForLeft(left: Any?, merged: Any?, right: Any?) -> Color? {
+    private func colorForLeft(key: String, left: Any?, merged: Any?, right: Any?) -> Color? {
         if !equality("", left, merged) || !equality("", left, right) {
             return leftColor
         }
         return nil
     }
 
-    private func colorForRight(left: Any?, merged: Any?, right: Any?) -> Color? {
+    private func colorForRight(key: String, left: Any?, merged: Any?, right: Any?) -> Color? {
         if !equality("", right, merged) || !equality("", left, right) {
             return rightColor
         }
         return nil
     }
 
-    private func colorForMerged(merged: Any?, left: Any?, right: Any?) -> Color? {
+    private func colorForMerged(key: String, merged: Any?, left: Any?, right: Any?) -> Color? {
         if equality("", merged, left) && !equality("", merged, right) { return leftColor }
         if equality("", merged, right) && !equality("", merged, left) { return rightColor }
         if equality("", merged, left) && equality("", merged, right) { return nil }
         return mergedDiffColor
+    }
+
+    private func typeColor(for key: String, left: Any?, merged: Any?, right: Any?) -> Color {
+        if equality(key, left, right) {
+            return areEqual(left, right) ? .secondary : .green
+        }
+        if compatibility(key, left, merged, right) { return .yellow }
+        if !equality(key, left, merged) { return .red }
+        return .yellow
     }
 
     // MARK: helpers
@@ -250,6 +316,21 @@ struct ThreeWayDiffView<T: PropertyIterable>: View {
 //      v = value
 //    }
         if let definable = value as? Definable { return definable.definition }
+        if let fields = value as? [MixedTypeField] {
+            return fields.definition
+        }
+        if let colors = value as? [AppleDBColor] {
+            // Sort only the bridge presentation; Device definitions retain
+            // their declared color-set order for source fidelity.
+            return "[\(colors.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }.map { $0.definition }.joined(separator: ", "))]"
+        }
+        // PropertyIterable may hand us an Optional<MixedTypeField> as `Any`;
+        // unwrap that container before falling back to its verbose description.
+        let mirror = Mirror(reflecting: value)
+        if mirror.displayStyle == .optional,
+           let child = mirror.children.first {
+            return stringify(child.value)
+        }
 //    if let s = v as? String { return "\"\(s)\"" }
 //    if let arr = v as? [String] { return "[\(arr.map { "\"\($0)\"" }.joined(separator: ", "))]" }
 //    if let arr = v as? [Any] {
@@ -313,11 +394,23 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
     @State private var deviceMode: DeviceMode = .merged
 
     var bridge: T
+    /// Loader-time projections; avoiding their recomputation is important
+    /// because DisclosureGroup can reevaluate its content repeatedly.
+    var matchedBridge: T?
+    var mergedBridge: T?
     private enum DiffContext: String, CaseIterable { case bridge = "Bridge", device = "Device" }
     private enum BridgeMode: String, CaseIterable { case combined = "Combined", left = "Left", merged = "Merged", right = "Right", source = "Source" }
     private enum DeviceMode: String, CaseIterable { case left = "Left", merged = "Merged", right = "Right" }
 
+    init(bridge: T, matchedBridge: T? = nil, mergedBridge: T? = nil) {
+        self.bridge = bridge
+        self.matchedBridge = matchedBridge
+        self.mergedBridge = mergedBridge
+    }
+
     var body: some View {
+        let leftBridge = matchedBridge ?? bridge.matchedBridge
+        let mergedProjection = mergedBridge ?? bridge.mergedBridge
         VStack {
             HStack {
                 Picker("Context", selection: $context) {
@@ -340,12 +433,14 @@ struct DiffSwitcherView<T: DeviceBridge>: View {
             let member = bridge
             Group {
                 if context == .bridge && bridgeMode == .combined {
-                    ThreeWayDiffView(left: member.matchedBridge, merged: member.mergedBridge, right: member, fixedMode: .combined, equality: { key, left, right in
+                    ThreeWayDiffView(left: leftBridge, merged: mergedProjection, right: member, fixedMode: .combined, equality: { key, left, right in
                         member.bridgeValuesEqual(key, left, right)
+                    }, compatibility: { key, left, merged, right in
+                        member.compatibleWhenMergedDiffers(key, left: left, merged: merged, right: right)
                     })
                 } else if context == .bridge {
-                    let left = member.matchedBridge.definition
-                    let merged = member.mergedBridge.definition
+                    let left = leftBridge.definition
+                    let merged = mergedProjection.definition
                     let right = bridgeMode == .source ? member.source.superCollapseWhitespace : member.definition
                     DiffView(
                         left: left,

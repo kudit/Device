@@ -469,6 +469,10 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case m5 = "Apple M5"
     case m5pro = "Apple M5 Pro"
     case m5max = "Apple M5 Max"
+	case m5ultra = "Apple M5 Ultra"
+	case m6 = "Apple M6"
+//	case m6pro = "Apple M6 Pro" // guessing
+//	case m6max = "Apple M6 Max" // guessing
     // NO M4 Ultra version
     // iPod/iPhone
     /// Samsung S5L8900 for original iPhone, iPhone 3G, original iPod touch (ARM 8900B and APL0098) (max iOS 4.2.1)/
@@ -498,11 +502,11 @@ public enum CPU: String, RawRepresentable, Hashable, CaseIterable, CaseNameConve
     case a13
     case a14 = "Apple A14 Bionic"
     case a16 = "Apple A16 Bionic"
-    case a17pro
-    case a18
-    case a18pro
+    case a17pro = "Apple A17 Pro"
+    case a18 = "Apple A18"
+    case a18pro = "Apple A18 Pro"
     case a19 = "Apple A19"
-    case a19pro
+    case a19pro = "Apple A19 Pro"
     case a20pro = "Apple A20 Pro"
     //  TV
     case intel_pm1 = "Intel Pentium M (1GHz)"
@@ -667,8 +671,9 @@ public extension Set<ApplePencil> {
     }
 }
 
+
 // MARK: Material Color
-public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
+public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable { // CaseNameConvertible is only used for debugging, so not necessary in struct version.
     // standard colors
     case black = "#000000" // complete black for default color
     case white = "#FFFFFF" // complete white for default white plastic color
@@ -789,8 +794,8 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
     static let iPhone13 = [green13, pink13, blue13, midnight13, starlight13, productRed13]
     
     // iPhone 13 Pro
-    case alpineGreen = "#576856", gold13 = "#fae7cf", graphite = "#54524f", sierraBlue = "#a7c1d9"
-    static let iPhone13Pro = [alpineGreen, starlight13, gold13, graphite, sierraBlue]
+    case alpineGreen = "#576856", gold13 = "#fae7cf", graphite = "#54524f", sierraBlue = "#a7c1d9", silver13 = "#f1f2ed"
+    static let iPhone13Pro = [alpineGreen, silver13, gold13, graphite, sierraBlue]
     
     // iPhone SE 3
     static let iPhoneSE3 = [midnight13, starlight13, productRed13]
@@ -831,7 +836,7 @@ public enum MaterialColor: String, CaseNameConvertible, Sendable, Codable {
 
     // iPhone 17 Pro
     case cosmicOrange = "#F77E2D", deepBlue = "#32374a"
-    static let iPhone17Pro = [cosmicOrange, deepBlue, white17]
+    static let iPhone17Pro = [cosmicOrange, deepBlue, white17] // Silver, Cosmic Orange, Deep Blue
 
     case softPink = "#fce7e6"
     static let iPhone17e = [softPink, white16, black16]
@@ -1010,7 +1015,7 @@ public extension MaterialColor {
         "Sage": [.sage],
         "sierra blue": [.sierraBlue],
         "Slate": [.titaniumSlate],
-		"Silver": [.solidSilver, .aluminumSilver, .stainlessSilver, .silver, .silver6, .silver11, .silver12, .silver14, .silver18, .silverSE, .iPodSilver, .iPodSilver6, .white17, .starlight13, .starlightA5, .starlightAir, .silverLight],
+		"Silver": [.solidSilver, .aluminumSilver, .stainlessSilver, .silver, .silver6, .silver11, .silver12, .silver13, .silver14, .silver18, .silverSE, .iPodSilver, .iPodSilver6, .white17, .starlightA5, .starlightAir, .silverLight],
         "Sky Blue": [.macbookairSkyblue, .skyBlueA4, .skyBlue],
         "Soft Pink": [.softPink],
 		"Space Gray": [.macbookSpacegray, .spaceGray11, .spaceGray6, .spaceGray8, .spaceGray9, .spacegrayHome, .spaceGrayA5, .spaceGrayM5, .spaceGraySE, .aluminumSpaceGray, .aluminumSpaceGray12, .macSpacegray],
@@ -1106,6 +1111,7 @@ public extension MaterialColor {
         return "TO_MAP:.\(self.caseName)"
     }
 }
+
 // Named colorsets
 public extension [MaterialColor] {
     static let `default` = [MaterialColor.black]

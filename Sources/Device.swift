@@ -23,7 +23,7 @@
 /// recursively register its direct dependencies.
 extension Device: Module {
     /// The version of the Device Library since cannot get directly from Package.
-    public static let version: Version = "2.14.0"
+    public static let version: Version = "2.15.0"
     
     /// The public source repository used for open-source support and license discovery.
     public static let openSourceRepository: String? = "https://github.com/kudit/Device"
@@ -967,6 +967,14 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     /// - parameter officialNameHint: Since identifiers may not be unique, can use a hint to try and find a better match.  e.g. "iPhone 6 Plus"
     /// - returns: An list of `Device` structs.
     public static func lookup(identifier: String? = nil, model: String? = nil, supportId: String? = nil, officialNameHint: String? = nil) -> [Device] {
+        // Bridge loaders ask the same lookup questions repeatedly while
+        // constructing matched and merged projections. Cache the immutable
+        // result so those repeated scans do not walk Device.all again.
+        let cacheKey = "\(identifier ?? "\u{2400}")|\(model ?? "\u{2400}")|\(supportId ?? "\u{2400}")|\(officialNameHint ?? "\u{2400}")"
+        lookupCacheLock.lock()
+        let cached = lookupCache[cacheKey]
+        lookupCacheLock.unlock()
+        if let cached { return cached }
         var matchingDevices: [Device] = []
         // Normalize the hint once for the entire lookup. The same prepared values
         // are reused by fallback filtering and result ordering instead of being
@@ -1001,6 +1009,9 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             matchingDevices = candidates.filter { $0.matchScore(matchHint) > 0.1 }
         }
         guard matchingDevices.count > 1 else {
+            lookupCacheLock.lock()
+            lookupCache[cacheKey] = matchingDevices
+            lookupCacheLock.unlock()
             return matchingDevices // no need to sort or anything if we already have exactly one or zero matches
         }
         // Sorting can invoke its comparator many times. Calculate each normalized
@@ -1011,8 +1022,16 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         })
         matchingDevices.sort { scores[$0, default: 0] > scores[$1, default: 0] }
 //      debug("MATCH RESULTS:\n\(matchingDevices.map { "\($0.matchScore(officialNameHint)): \($0.officialName)" }.joined(separator: "\n"))")
+        lookupCacheLock.lock()
+        lookupCache[cacheKey] = matchingDevices
+        lookupCacheLock.unlock()
         return matchingDevices
     }
+
+    /// Lookup results are immutable for the lifetime of the process; this
+    /// lightweight cache removes repeated fuzzy scans during bridge setup.
+    private static var lookupCache: [String: [Device]] = [:]
+    private static let lookupCacheLock = NSLock()
 
     /// Note: This hash function is not guaranteed to be stable across/between versions.
     public func hash(into hasher: inout Hasher) {
@@ -1178,7 +1197,6 @@ private extension String {
     /// than relying on a fixed range ending at `Date.nowBackport.year`.
     var removingParentheticalYearQualifiers: String {
         let trimmedName = trimmed
-        debug("removing parenthetical year qualifiers from: \(trimmedName)")
         guard trimmedName.last == ")",
               let closingParenthesis = trimmedName.lastIndex(of: ")") else {
             return self
@@ -1196,6 +1214,7 @@ private extension String {
         }
 
         // Remove only the final year segment so chip and screen-size qualifiers remain.
+        debug("removing parenthetical year qualifiers from: \(trimmedName)")
         return String(contentBeforeClosing[..<comma].trimmed) + ")"
     }
 }

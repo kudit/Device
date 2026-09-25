@@ -23,6 +23,9 @@ protocol DeviceBridge: Identifiable, Equatable, Sendable, Codable, PropertyItera
     func bridge(from device: Device) -> Self
     /// Compares a field after applying source-specific normalization rules.
     func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool
+    /// Allows a source to classify a missing optional field as compatible while
+    /// retaining strict comparison when both sources provide different values.
+    func compatibleWhenMergedDiffers(_ key: String, left: Any?, merged: Any?, right: Any?) -> Bool
     /// Hardware identifiers explicitly represented by this source row, before any local merge.
     var comparisonIdentifiers: [String] { get }
     /// Explicit source CPU alternatives, when the format provides them.
@@ -53,7 +56,7 @@ extension DeviceBridgeLoader {
     }
 }
 import SwiftUI
-enum MatchType {
+enum MatchType: Sendable {
     case identical
     case compatible // important fields match
     case mismatched // important fields mismatch
@@ -115,6 +118,7 @@ extension DeviceBridge {
     func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool {
         areEqual(left, right)
     }
+    func compatibleWhenMergedDiffers(_ key: String, left: Any?, merged: Any?, right: Any?) -> Bool { false }
     var matchType: MatchType {
         let members = groupedComparisons
         if !members.isEmpty {
@@ -122,7 +126,18 @@ extension DeviceBridge {
             // any projected member still makes the complete source row a mismatch.
             // A validated support-ID grouping is an exact match when no projected
             // member differs; the grouping itself is not a warning.
-            return members.contains { $0.matchType == .mismatched } ? .mismatched : .identical
+            if members.contains(where: { $0.matchType == .mismatched }) {
+                // Shared-support GPS/cellular rows can differ only in the
+                // presentation fields used to split the group. That is a
+                // compatible source grouping, not a hardware data failure.
+                let groupingOnly = members.allSatisfy { member in
+                    member.diffs.enumerated().allSatisfy { index, value in
+                        value != .mismatched || ["identifiers", "comment", "description", "safeDescription", "caseName"].contains(member.allKeyPaths.keys[index])
+                    }
+                }
+                return groupingOnly ? .compatible : .mismatched
+            }
+            return .identical
         }
         var overallMatchType: MatchType = .identical
         for diff in diffs {
@@ -136,6 +151,10 @@ extension DeviceBridge {
         return overallMatchType
     }
     private var diffs: [MatchType] {
+        // This trace is intentionally emitted once per comparison calculation;
+        // it identifies the exact field that makes a bridge red and helps find
+        // accidental repeated calculations from view rendering.
+        debug("🪲 (String(describing: Self.self)): calculating diffs for \(id)")
         var diffs = [MatchType]()
         let matched = matchedBridge
         let merged = mergedBridge
@@ -144,8 +163,16 @@ extension DeviceBridge {
             let left = matched[keyPath: path]
             let right = self[keyPath: path]
             let merged = merged[keyPath: path]
+            // A bridge support identifier is actionable when Device has no
+            // value. Do not let the merge inherit the source and hide the
+            // missing local catalog entry.
+            if key == "supportId", let local = left as? String, let source = right as? String,
+               local == .unknownSupportId, source != .unknownSupportId {
+                diffs.append(.mismatched)
+                continue
+            }
             if !bridgeValuesEqual(key, left, merged) {
-                if Self.diffIgnoreKeys.contains(key) {
+                if compatibleWhenMergedDiffers(key, left: left, merged: merged, right: right) || Self.diffIgnoreKeys.contains(key) {
                     matchType = .compatible
                 } else {
                     matchType = .mismatched
@@ -155,6 +182,9 @@ extension DeviceBridge {
                 matchType = .compatible
             }
             diffs.append(matchType)
+            if matchType == .mismatched {
+                debug("🪲 \(String(describing: Self.self)): red field \(key) for \(id)")
+            }
         }
         return diffs
     }
@@ -401,13 +431,12 @@ extension Device {
             // add the new capabilities in
             capabilities.formUnion(self.capabilities)
         }
+        // A merged definition represents both sides of the comparison. Keep
+        // every model number from Device and the bridge while preserving the
+        // local order and appending newly discovered source models once.
         var models = base.models
-        // Source grouping is projected before this merge, so known sibling parts
-        // are already separated. An unfamiliar part remains actionable even when
-        // other source parts overlap; overlap alone must not hide new information.
-        // Apple Watch models may differ and we definitely want the local version in that case to merge.
-        if self.models.count > 0 && (self.models != models || idiom == .watch) {
-            models = self.models
+        for model in self.models where !models.contains(model) {
+            models.append(model)
         }
         var colors = base.colors
         if self.colors.count > 0 && self.colors != .default && !Set(self.colors).isSubset(of: Set(colors)) {

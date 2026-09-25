@@ -1,5 +1,93 @@
 # ChangeLog
 
+If create an AppleMaterialColor struct, won't ColorComparison not be necessary since we can bridge everything to AppleMaterialColor?  Seems silly to include as a public API when AppleMaterialColor will accomplish the same thing.
+
+TODO: Please create a new AppleMaterialColor.swift file and struct like this:
+```swift
+import Color
+public typealias AMC = AppleMaterialColor // to make initialization easier
+public struct AppleMaterialColor: Sendable, Codable {
+	public var swatches: [String]
+	public var name: String
+	public init(swatches: [String], name: String) {
+		self.swatches = swatches
+		self.name = name
+	}
+	public init(_ swatch: String, _ name: String) {
+		self.init(swatches: [swatch], name: name)
+	}
+	public init(_ swatches: [String], _ name: String) {
+		self.init(swatches: swatches, name: name)
+	}
+	func colors<C: KuColor>() -> [C] {
+		self.swatches.map { C(string: $0, defaultColor: .grayFixed) }
+	}
+}
+public extension AppleMaterialColor {
+	// MARK: - Static colors
+	static let black = AMC("#000", "Black") // complete black for default color
+	static let white = AMC("#FFF", "White") // complete white for default white plastic color
+	static let blush = AMC("#e8d0d0", "Blush")
+
+	// iPod Touch (5th generation)
+    static let iPodBlack = AMC("#4d5663", "Black")
+    , iPodSilver = "#c9cbca", iPodPink = "#fb797e", iPodYellow = "#cace39", iPodBlue = "#26c4e5"
+    static let iPodTouch5thGen = [iPodBlack, iPodSilver, iPodPink, iPodYellow, iPodBlue]
+
+//	// This really should be done as a macro expansion so that I can include the caseName in the struct as a value and write the definitions like this:
+//	@Case("black", "#000", "Black")
+//	// which would expand to:
+//	static let black = AppleMaterialColor("#000", "Black")
+}
+```
+Then populate the `Static colors` section with **all** the colors from MaterialColor and be sure to include and preserve all the same comments, sections and header comments, and groupings and turn the case names into the static let variable names and pull the color names from the `MaterialColor.namedColors` dictionary.  When a case is in multiple name dictionaries, include all keys by setting the name to all the keys separated by slashes (like `static let starlightA5 = AMC("#e5e0d8", "Silver/Starlight")`).  The swatches is an array for multi-toned devices like some of the newer iMacs which should be:
+```
+	static let iMacBlue = AMC(["26476d","#a8bed2"], "Blue")
+	...
+    static let iMac2Ports = [iMacBlue, iMacGreen, iMacPink, iMacSilver]
+```
+Please modify the icons (like mac icons) to be a multi-tone "gradient" with a hard transition line rather than a gradual fade similar to how Apple shows the swatches on their website whenver there are multiple colors in the AppleMaterialColor.
+You should also create an extension on [AppleMaterialColor] that contains all the [MaterialColor] sets and names, however, to make things easier, they should be interspersed as separate extensions of AppleMaterialColor and [AppleMaterialColor] like this so that each new section is grouped together rather than having to modify multiple long lists:
+```
+// iPhone 13 Pro
+public extension AppleMaterialColor {
+	static let alpineGreen = AMC("#576856", "Alpine Green")
+	static let gold13 = AMC("#fae7cf", "Gold")
+	static let graphite = AMC("#54524f", "Graphite")
+	static let sierraBlue = AMC("#a7c1d9", "Sierra Blue")
+	static let silver13 = AMC("#f1f2ed", "Silver")
+}
+public extension [AppleMaterialColor] {
+	static let iPhone13Pro = [AppleMaterialColor.alpineGreen, .silver13, .gold13, .graphite, .sierraBlue]
+}
+[AppleMaterialColor].colorSets[iPhone13Pro] = "iPhone13Pro"
+
+```
+This way the colors can be defined as constants on AppleMaterialColors (so will should generally match the existing MaterialColors implementations) but if some devices use different names for the same hex value, then those can be distinctly referenced.
+
+(Once that is done): Please create a way of parsing colors from the comparison pages since the comparison page can show all the swatch colors as hex to verify that our data is correct/updated.  This could be done as an additional pass in the Apple page (IdentifyModelParsing.swift) parsing by instead of identifyPages being a dictionary to a string, it could be a dictionary to a tuple including the identify DEVICE page and the compare DEVICE page to pull additional details like capabilities that might not be on the identify overview and colors automatically.  For example, the iPhone comparison page is at: https://www.apple.com/iphone/compare/ and the color swatches are in the `colornav` section (example:
+```
+<div class="colornav-wrapper colornav-wrapper-iphone-13"><ul role="list" aria-label="Select a finish for iPhone 13" class="colornav-items"><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-green"><figcaption class="colornav-label">Green</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-pink"><figcaption class="colornav-label">Pink</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-blue"><figcaption class="colornav-label">Blue</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-midnight"><figcaption class="colornav-label">Midnight</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link current" aria-selected="true"><figure class="colornav-swatch colornav-swatch-starlight"><figcaption class="colornav-label">Starlight</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-red"><figcaption class="colornav-label"><span role="presentation" class="colornav-logo-productred colornav-logo-productred-centered"></span> <span class="colornav-label-hidden">Product Red</span></figcaption></figure></button></li></ul></div>
+```
+Note that iMacs may have multiple color swatches per item which is why we have AppleMaterialColors take an array of swatches instead of just a single value:
+```
+<div class="colornav-wrapper colornav-wrapper-iMac-24-M3_2"><ul role="list" class="colornav-items"><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-blue"><figcaption class="colornav-label">Blue</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-green"><figcaption class="colornav-label">Green</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-pink"><figcaption class="colornav-label">Pink</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link current"><figure class="colornav-swatch colornav-swatch-silver"><figcaption class="colornav-label">Silver</figcaption></figure></button></li></ul></div>
+```
+Note that the swatch colors will have to be looked up in the CSS page (https://www.apple.com/v/mac/compare/ah/built/styles/overview.built.css) but that should be able to be automated and fetched from the comparison page.  The names can be pulled from here as well and we may want to pull the identifier like `midnight` or `pink` or `green-light` from the css name as clue for naming the static variable (which may need to have a number appended if it conflicts with an existing static name).
+Please update the AppleDB.dev and other color comparisons to ensure that the names match exactly (including capitalization) and use the .delta function to ensure the hex values are < 0.05 delta.
+
+## v2.15.0 2026-09-25
+Added new Mac minis and Mac Studios.
+Fixed iPhone X incorrectly reporitng eSIM support.
+Updated release dates for several devices based on AppleDB.dev info.
+Fixed missing Apple Watch Ultra 4 support ID.
+** App Store above **
+Accepted DeviceKit's new hasEsimSupport field while preserving older definitions and avoiding false local eSIM conflicts.
+Mapped DeviceKit eSIM flags to Device capabilities and corrected Apple-page Mac Studio Max inference and capability definitions.
+Added Definable support for Device.Capability.
+Improved bridge parsing so that initialization and filtering are much faster.
+Code coverage is 42%.
+
 ## v2.14.0 2026-09-15
 Added September Apple devices: iPhone 18 Pro (Max), iPhone Duo, Apple Watch Series 12, and Apple Watch Ultra 4.
 Added screen collections, Duo display constants, Audio Intelligence capability, and fixed modern Watch 5G coverage.

@@ -113,7 +113,7 @@ extension Set<ApplePencil> {
     	24: [.secondGeneration, .pro],
     	34: [.usbC, .pro],
 	]
-	
+
 	var deviceKitPencilSupport: Int {
     	// this is a bad way of expressing pencil support.
     	if let num = Self.deviceKitMap.firstKey(for: self) {
@@ -169,7 +169,7 @@ struct DeviceKitDevice: DeviceBridge {
 	}
 	// https://github.com/devicekit/DeviceKit/blob/581df61650bc457ec00373a592a84be3e7468eb1/Source/Device.swift.gyb
 	static var diffIgnoreKeys: [String] {
-    	["imageURL"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
+		["imageURL"] // Images and support artwork are presentation data rather than device identity.
 	}
 
 	/// Normalizes DeviceKit presentation details before comparison with Device's canonical values.
@@ -186,17 +186,61 @@ struct DeviceKitDevice: DeviceBridge {
     	}
 		if key == "imageURL" { return true } // ignore differences in images
     	if key == "caseName" { return normalizedCaseName(left) == normalizedCaseName(right) }
-    	if key == "description" || key == "safeDescription" {
+	    if key == "description" || key == "safeDescription" {
 	    	return normalizedDeviceKitName(left) == normalizedDeviceKitName(right)
-    	}
-    	if key == "screenRatio", matched.idiom == .pad {
-	    	// DeviceKit supplies raw or rotated pixel ratios while Device exposes canonical tablet ratios.
-	    	return true
-    	}
+	    }
+	    if key == "screenRatio" {
+		return screenRatiosEquivalent(left, right)
+	    }
     	if key == "comment", let left = left as? String, let right = right as? String {
 	    	return normalizedSupportComment(left) == normalizedSupportComment(right)
     	}
     	return areEqual(left, right)
+	}
+
+	func compatibleWhenMergedDiffers(_ key: String, left: Any?, merged: Any?, right: Any?) -> Bool {
+	    if key == "screenRatio", right == nil, left != nil { return true }
+	    // DeviceKit omits screen metadata for products such as HomePod. Keep the
+	    // local screen definition and classify that source omission as yellow.
+	    if key == "screen", left != nil, right == nil { return true }
+	    // DeviceKit's rounded-corner field is known to be incomplete for several
+	    // Apple Watch generations. Preserve Device's value and report the source
+	    // omission as yellow while still treating a missing local value as red.
+	    if key == "hasRoundedDisplayCorners",
+	       left != nil,
+	       right != nil { return true }
+	    // A missing DeviceKit support identifier is source incompleteness. The
+	    // inverse case (Device has unknownSupportId) remains red in DeviceBridge.
+	    if key == "supportId",
+	       let source = right as? String,
+	       source == .unknownSupportId { return true }
+	    // DeviceKit has several known display-size errors (especially Apple Watch
+	    // entries).  A disagreement is therefore a source warning when both
+	    // sources provide a diagonal; a missing local diagonal remains a real
+	    // red conflict and is intentionally not covered by this exception.
+	    if key == "diagonal",
+	       let local = left as? Double,
+	       let source = right as? Double,
+	       local != 0,
+	       source != 0 {
+	        return true
+	    }
+	    guard key == "comment", let l = left as? String, let r = right as? String else { return false }
+	    let leftURL = l.extract(from: "(http", to: ")")
+	    let rightURL = r.extract(from: "(http", to: ")")
+	    // A missing DeviceKit support URL is a source completeness warning. If
+	    // both sides have links, normal resolution comparison remains strict.
+	    return (leftURL == nil) != (rightURL == nil)
+	}
+
+	/// Compares screen ratios independent of portrait/landscape ordering while
+	/// retaining enough precision to expose a genuinely incorrect ratio.
+	private func screenRatiosEquivalent(_ left: Any?, _ right: Any?) -> Bool {
+	    guard let lhs = left as? [Double], let rhs = right as? [Double], lhs.count == 2, rhs.count == 2,
+	          lhs[0] != 0, lhs[1] != 0, rhs[0] != 0, rhs[1] != 0 else { return areEqual(left, right) }
+	    let l = min(abs(lhs[0] / lhs[1]), abs(lhs[1] / lhs[0]))
+	    let r = min(abs(rhs[0] / rhs[1]), abs(rhs[1] / rhs[0]))
+	    return abs(l - r) <= 0.02
 	}
 
 	/// Applies the case-name spellings used by DeviceKit's generated source.
@@ -206,9 +250,12 @@ struct DeviceKitDevice: DeviceBridge {
 	}
 
 	/// Treats GPS suffixes and parenthetical inch labels as naming presentation differences.
-	private func normalizedDeviceKitName(_ value: Any?) -> String {
-    	guard let value = value as? String else { return String(describing: value) }
-    	return value
+    private func normalizedDeviceKitName(_ value: Any?) -> String {
+        guard let value = value as? String else { return String(describing: value) }
+			return value
+			.replacingOccurrences(of: " (GPS + Cellular)", with: "")
+			.replacingOccurrences(of: " (GPS)", with: "")
+			.replacingOccurrences(of: "Ultra2", with: "Ultra 2")
 			.replacingOccurrences(of: "  ", with: " ")
 	    	.trimmed
 	}
@@ -264,8 +311,25 @@ struct DeviceKitDevice: DeviceBridge {
 	var cpu: String
 	var hasUSBCConnectivity: Bool
 	var has5gSupport: Bool
-	
-	init(caseName: String, comment: String, imageURL: String, identifiers: [String], diagonal: Double, screenRatio: [Double]? = nil, description: String, safeDescription: String, ppi: Int, isPlusFormFactor: Bool, isPadMiniFormFactor: Bool, isPro: Bool, isXSeries: Bool, hasTouchID: Bool, hasFaceID: Bool, hasSensorHousing: Bool, supportsWirelessCharging: Bool, hasRoundedDisplayCorners: Bool, hasDynamicIsland: Bool, applePencilSupport: Int, hasForce3dTouchSupport: Bool, cameras: Int, hasLidarSensor: Bool, cpu: String, hasUSBCConnectivity: Bool, has5gSupport: Bool) {
+	/// DeviceKit's eSIM field maps directly to Device's `.esim` capability.
+	var hasEsimSupport: Bool
+	/// DeviceKit distinguishes dual-eSIM hardware from devices with only one eSIM slot.
+	var hasDualEsimSupport: Bool
+
+	/// Keeps temporary upstream exceptions visible in generated reports while
+	/// their source issues remain open and the comparison is intentionally yellow.
+	var generateComment: String {
+	    var report = deltaReport
+	    if identifiers.contains(where: { ["iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4"].contains($0) }) && applePencilSupport == 234 {
+	        report += "\n\nDeviceKit Pencil encoding is tracked at https://github.com/devicekit/DeviceKit/issues/504."
+	    }
+	    if !hasRoundedDisplayCorners && identifiers.contains(where: { $0.hasPrefix("Watch") }) {
+	        report += "\n\nDeviceKit rounded-corner metadata is tracked at https://github.com/devicekit/DeviceKit/issues/502."
+	    }
+	    return report
+	}
+
+	init(caseName: String, comment: String, imageURL: String, identifiers: [String], diagonal: Double, screenRatio: [Double]? = nil, description: String, safeDescription: String, ppi: Int, isPlusFormFactor: Bool, isPadMiniFormFactor: Bool, isPro: Bool, isXSeries: Bool, hasTouchID: Bool, hasFaceID: Bool, hasSensorHousing: Bool, supportsWirelessCharging: Bool, hasRoundedDisplayCorners: Bool, hasDynamicIsland: Bool, applePencilSupport: Int, hasForce3dTouchSupport: Bool, cameras: Int, hasLidarSensor: Bool, cpu: String, hasUSBCConnectivity: Bool, has5gSupport: Bool, hasEsimSupport: Bool = false, hasDualEsimSupport: Bool = false) {
     	self.caseName = caseName
     	self.comment = comment
     	self.imageURL = imageURL
@@ -291,7 +355,9 @@ struct DeviceKitDevice: DeviceBridge {
     	self.hasLidarSensor = hasLidarSensor
     	self.cpu = cpu
     	self.hasUSBCConnectivity = hasUSBCConnectivity
-    	self.has5gSupport = has5gSupport
+	    self.has5gSupport = has5gSupport
+	    self.hasEsimSupport = hasEsimSupport
+	    self.hasDualEsimSupport = hasDualEsimSupport
 	}
 
 	init(fields: [MixedTypeField]) {
@@ -321,9 +387,13 @@ struct DeviceKitDevice: DeviceBridge {
     	hasLidarSensor = fields[22].boolValue ?? .parseError
     	cpu = fields[23].stringValue ?? .parseError
     	hasUSBCConnectivity = fields[24].boolValue ?? .parseError
-    	has5gSupport = fields[25].boolValue ?? .parseError
+	    has5gSupport = fields[25].boolValue ?? .parseError
+	    // Positional archives predate eSIM support; current named records are
+	    // accepted by the parser and retain their explicit value.
+	    hasEsimSupport = fields.count > 26 ? (fields[26].boolValue ?? false) : false
+	    hasDualEsimSupport = fields.count > 27 ? (fields[27].boolValue ?? false) : false
 	}
-	
+
 	var supportLink: String? {
     	// support link extraction
     	if let supportLink = comment.extract(from: "(http", to: ")") {
@@ -331,7 +401,7 @@ struct DeviceKitDevice: DeviceBridge {
     	}
     	return nil
 	}
-	
+
 	var supportId: String? {
     	if let id = supportLink?.split(separator: "/").last {
 	    	String(id)
@@ -339,7 +409,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    	nil
     	}
 	}
-	
+
 	var matched: Device {
     	return Device.forcedLookup(identifier: identifiers.first, supportId: supportId, officialNameHint: description)
 	}
@@ -360,7 +430,7 @@ struct DeviceKitDevice: DeviceBridge {
     	if officialName.contains("Apple TV") {
 	    	officialName = officialName.replacingOccurrences(of: " (1st generation)", with: "")
     	}
-    	
+
     	officialName = description
 	    	.replacingOccurrences(of: "mini", with: "Mini")
 	    	.replacingOccurrences(of: " inch", with: "-inch")
@@ -369,10 +439,10 @@ struct DeviceKitDevice: DeviceBridge {
 	    	.replacingOccurrences(of: "10.5-inch 2nd Gen", with: "(10.5-inch)")
 	    	.replacingOccurrences(of: "XR", with: "Xʀ")
 	    	.trimmed
-	
+
     	officialName = officialName.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
     	officialName = officialName.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
-    	
+
     	// capabilities
     	var capabilities = Capabilities()
     	if let screenRatio, screenRatio.count == 2, screenRatio[1] != 0 {
@@ -408,7 +478,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    	if description.contains("Plus") {
     	    	capabilities.insert(.plus)
 	    	}
-	    	if description.contains("Max") {
+		if description.contains("Max") {
     	    	capabilities.insert(.max)
 	    	}
 	    	if description.contains("Air") {
@@ -435,37 +505,74 @@ struct DeviceKitDevice: DeviceBridge {
     	if hasDynamicIsland {
 	    	capabilities.insert(.dynamicIsland)
     	}
-    	capabilities.pencils = .init(deviceKitPencilSupport: applePencilSupport)
-    	if hasForce3dTouchSupport {
-	    	capabilities.insert(.force3DTouch)
-    	}
-    	capabilities.cameras = .init(deviceKitNum: cameras)
-    	if hasLidarSensor {
-	    	capabilities.insert(.lidar)
-    	}
-    	if hasUSBCConnectivity {
-	    	capabilities.insert(.usbC)
-    	}
-    	if has5gSupport {
-	    	capabilities.cellular = .fiveG
-    	}
-    	    	
-    	return Device(
-	    	idiom: .unspecified,
-	    	officialName: officialName,
-	    	identifiers: identifiers,
-	    	introduction: nil,
-	    	supportId: supportId ?? .unknownSupportId,
-	    	launchOSVersion: .zero,
-	    	unsupportedOSVersion: nil,
-	    	image: imageURL,
-	    	capabilities: capabilities,
-	    	models: [],
-	    	colors: [],
-	    	cpu: CPU(deviceKitString: cpu)
-    	).merged(from: matched)
+		// Apple documents only Apple Pencil (USB-C) and Apple Pencil Pro for
+		// M5 iPad Pro. DeviceKit's 234 also adds unsupported Pencil 2 support,
+		// so preserve the verified local capability set for this source issue.
+		let isM5IPad = identifiers.contains { ["iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4"].contains($0) }
+		if matched.idiom == .pad, isM5IPad {
+		    capabilities.pencils = matched.capabilities.pencils
+		} else {
+		    capabilities.pencils = .init(deviceKitPencilSupport: applePencilSupport)
+		}
+	if hasForce3dTouchSupport {
+		capabilities.insert(.force3DTouch)
 	}
-	
+	capabilities.cameras = .init(deviceKitNum: cameras)
+	if hasLidarSensor {
+		capabilities.insert(.lidar)
+	}
+	if hasUSBCConnectivity {
+		capabilities.insert(.usbC)
+	}
+	    if has5gSupport {
+		capabilities.cellular = .fiveG
+	    }
+	    if hasEsimSupport {
+		capabilities.insert(.esim)
+	    }
+	    if hasDualEsimSupport {
+		capabilities.insert(.dualesim)
+	    }
+
+		var converted = Device(
+		idiom: .unspecified,
+		officialName: officialName,
+		identifiers: identifiers,
+		introduction: nil,
+		supportId: supportId ?? .unknownSupportId,
+		launchOSVersion: .zero,
+		unsupportedOSVersion: nil,
+		image: imageURL,
+		capabilities: capabilities,
+		models: [],
+		colors: [],
+		cpu: CPU(deviceKitString: cpu)
+		).merged(from: matched)
+
+	    // eSIM support is a hardware fact. Replace the additive merge result so
+	    // a bad local eSIM claim is reported as a real mismatch (red).
+		var finalCapabilities = converted.capabilities
+	    finalCapabilities.remove(.esim)
+	    finalCapabilities.remove(.dualesim)
+	    if hasEsimSupport { finalCapabilities.insert(.esim) }
+	    if hasDualEsimSupport { finalCapabilities.insert(.dualesim) }
+
+	    // Preserve Device's canonical pad/watch screen while retaining DeviceKit's
+	    // raw ratio in the bridge row.  DeviceKit's known diagonal/ppi errors are
+	    // presentation warnings; the local hardware definition remains canonical.
+	    if matched.idiom == .pad || matched.idiom == .watch {
+		finalCapabilities.screen = matched.screen
+	    }
+	    converted = Device(idiom: converted.idiom, officialName: converted.officialName,
+		identifiers: converted.identifiers, introduction: converted.introduction,
+		supportId: converted.supportId, launchOSVersion: converted.launchOSVersion,
+		unsupportedOSVersion: converted.unsupportedOSVersion, image: converted.image,
+		capabilities: finalCapabilities, models: converted.models,
+		colors: converted.colors, cpu: converted.cpu)
+
+	    return converted
+	}
+
 	func bridge(from device: Device) -> DeviceKitDevice {
     	// assumes run on upgraded device
     	// create case name
@@ -536,7 +643,7 @@ struct DeviceKitDevice: DeviceBridge {
     	    	officialName = supportName
 	    	}
     	}
-    	
+
     	var comments = "Device is a\(officialName[officialName.startIndex].isVowel() ? "n" : "") [\(supportName)](\(device.supportURL))"
     	comments = comments.replacingOccurrences(of: " (9.7-inch)", with: " 9.7-inch")
     	comments = comments.replacingOccurrences(of: " (10.5-inch)", with: " 10.5-inch")
@@ -551,23 +658,19 @@ struct DeviceKitDevice: DeviceBridge {
     	var safeOfficialName = officialName.safeDescription.replacingOccurrences(of: "Xs", with: "XS")
     	safeOfficialName = safeOfficialName.replacingOccurrences(of: " 11-inch", with: " (11-inch)")
     	safeOfficialName = safeOfficialName.replacingOccurrences(of: " 12.9-inch", with: " (12.9-inch)")
-    	
+
     	// butcher for bad format
     	comments = comments.replacingOccurrences(of: "Ultra 2 (GPS + Cellular)", with: "Ultra2")
     	officialName = officialName.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
     	safeOfficialName = safeOfficialName.replacingOccurrences(of: "Ultra 2", with: "Ultra2")
-    	
-    	var imageURL = device.image ?? ""
-    	// we typically want to ignore changes to images since the ones we have are more likely to be right.
-    	if device.image != nil {
-	    	// we do want to include a difference if we don't have a device.image, but otherwise, ignore when calculating diffs.
-	    	imageURL = self.imageURL
-    	}
-    	if caseName == "homePod" {
-	    	imageURL = "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP773/homepod_space_gray_large_2x.jpg" // use different version
-    	}
 
-    	
+    	var imageURL = device.image ?? ""
+		// we typically want to ignore changes to images since the ones we have are more likely to be right, but that is handled by the compatible check and shouldn't be erased here
+		if caseName == "homePod" {
+			imageURL = "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP773/homepod_space_gray_large_2x.jpg" // use different version
+		}
+
+
     	let screen = device.screen // use capabilities version, not local variable version
     	var diagonal = screen?.diagonal ?? 0
     	if diagonal == 1.65 {
@@ -593,19 +696,12 @@ struct DeviceKitDevice: DeviceBridge {
     	    	ratio = [41.0, 59.0]
 	    	}
     	}
-    	// if ratio is close enough to what we have, don't worry about any differences
-    	if let myW = self.screenRatio?[0], let myH = self.screenRatio?[1], myH != 0, let myRatio = self.screenRatio {
-	    	let myR = myW / myH
-	    	let deviceR = (ratio?[0] ?? 1) / (ratio?[1] ?? 1)
-	    	if abs(myR - deviceR) < 0.1 {
-    	    	ratio = myRatio
-	    	}
-    	}
-    	
+	    // Keep DeviceKit's raw dimensions here; `toDevice` retains the local
+	    // canonical screen so this remains a visible compatible source delta.
     	// ignore cameras
-    	
+
     	let isXSeries = device.capabilities.biometrics == .faceID && idiom != .pad // faceID is proxy for "isXSeries"
-    	
+
     	return DeviceKitDevice(
 	    	caseName: caseName,
 	    	comment: comments,
@@ -632,7 +728,9 @@ struct DeviceKitDevice: DeviceBridge {
 	    	hasLidarSensor: device.has(.lidar),
 	    	cpu: device.cpu.deviceKitString,
 	    	hasUSBCConnectivity: device.has(.usbC),
-	    	has5gSupport: device.cellular == .fiveG)
+		has5gSupport: device.cellular == .fiveG,
+		hasEsimSupport: device.has(.esim),
+		hasDualEsimSupport: device.has(.dualesim))
 	}
 
 	func buildRatio(ratioInnerSpace: String) -> String {
@@ -668,7 +766,7 @@ struct DeviceKitDevice: DeviceBridge {
     	var identifiersSize = identifiers.count + 2
     	var diagonalSize = diagonal.count + 2
     	var ratioSize = ratio.count + 2
-    	
+
     	switch self.matched.idiom {
     	case .pod:
 	    	nameSize => 18
@@ -710,14 +808,14 @@ struct DeviceKitDevice: DeviceBridge {
     	default:
 	    	break
     	}
-    	    	
+
     	var nameSpace = String(repeating: " ", count: nameSize-caseName.count-3)
     	var commentSpace = String(repeating: " ", count: commentSize-comment.count-3)
     	var imageSpace = String(repeating: " ", count: imageSize-imageURL.count-3) // comma & quotes not included
     	var identifiersSpace = String(repeating: " ", count: identifiersSize-identifiers.count-1) // comma not included
     	var diagonalSpace = String(repeating: " ", count: diagonalSize-diagonal.count-1) // comma not included
     	var ratioSpace = String(repeating: " ", count: ratioSize-ratio.count-1) // comma not included
-    	
+
     	var prefix = deviceKitIndentation
     	if isAppleWatch {
 	    	preSpace = "\n\(deviceKitIndentation)"
@@ -734,7 +832,7 @@ struct DeviceKitDevice: DeviceBridge {
     	// Emit keyword-only capabilities and CPU for the current upstream constructor.
     	// Use a quoted safeDescription literal so the exported record can be parsed again.
     	return """
-\(prefix)Device(\(preSpace)\(caseName.definition),\(nameSpace)\(comment.definition),\(commentSpace)\(imageURL.definition),\(imageSpace)\(identifiers),\(identifiersSpace)\(diagonal),\(diagonalSpace)\(ratio),\(ratioSpace)\(description.definition), \(safeDescription.definition), \(ppi), isPlusFormFactor=\(isPlusFormFactor.deviceKitDefinition), isPadMiniFormFactor=\(isPadMiniFormFactor.deviceKitDefinition), isPro=\(isPro.deviceKitDefinition), isXSeries=\(isXSeries.deviceKitDefinition), hasTouchID=\(hasTouchID.deviceKitDefinition), hasFaceID=\(hasFaceID.deviceKitDefinition), hasSensorHousing=\(hasSensorHousing.deviceKitDefinition), supportsWirelessCharging=\(supportsWirelessCharging.deviceKitDefinition), hasRoundedDisplayCorners=\(hasRoundedDisplayCorners.deviceKitDefinition), hasDynamicIsland=\(hasDynamicIsland.deviceKitDefinition), applePencilSupport=\(applePencilSupport), hasForce3dTouchSupport=\(hasForce3dTouchSupport.deviceKitDefinition), cameras=\(cameras), hasLidarSensor=\(hasLidarSensor.deviceKitDefinition), cpu=\(cpu.definition), hasUSBCConnectivity=\(hasUSBCConnectivity.deviceKitDefinition), has5gSupport=\(has5gSupport.deviceKitDefinition)),
+\(prefix)Device(\(preSpace)\(caseName.definition),\(nameSpace)\(comment.definition),\(commentSpace)\(imageURL.definition),\(imageSpace)\(identifiers),\(identifiersSpace)\(diagonal),\(diagonalSpace)\(ratio),\(ratioSpace)\(description.definition), \(safeDescription.definition), \(ppi), isPlusFormFactor=\(isPlusFormFactor.deviceKitDefinition), isPadMiniFormFactor=\(isPadMiniFormFactor.deviceKitDefinition), isPro=\(isPro.deviceKitDefinition), isXSeries=\(isXSeries.deviceKitDefinition), hasTouchID=\(hasTouchID.deviceKitDefinition), hasFaceID=\(hasFaceID.deviceKitDefinition), hasSensorHousing=\(hasSensorHousing.deviceKitDefinition), supportsWirelessCharging=\(supportsWirelessCharging.deviceKitDefinition), hasRoundedDisplayCorners=\(hasRoundedDisplayCorners.deviceKitDefinition), hasDynamicIsland=\(hasDynamicIsland.deviceKitDefinition), applePencilSupport=\(applePencilSupport), hasForce3dTouchSupport=\(hasForce3dTouchSupport.deviceKitDefinition), cameras=\(cameras), hasLidarSensor=\(hasLidarSensor.deviceKitDefinition), cpu=\(cpu.definition), hasUSBCConnectivity=\(hasUSBCConnectivity.deviceKitDefinition), has5gSupport=\(has5gSupport.deviceKitDefinition), hasEsimSupport=\(hasEsimSupport.deviceKitDefinition), hasDualEsimSupport=\(hasDualEsimSupport.deviceKitDefinition)),
 """
 	}
 }
@@ -749,7 +847,7 @@ private enum DeviceKitDefinitionParser {
     	"isPro", "isXSeries", "hasTouchID", "hasFaceID", "hasSensorHousing",
     	"supportsWirelessCharging", "hasRoundedDisplayCorners", "hasDynamicIsland",
     	"applePencilSupport", "hasForce3dTouchSupport", "cameras", "hasLidarSensor",
-    	"cpu", "hasUSBCConnectivity", "has5gSupport"
+		"cpu", "hasUSBCConnectivity", "has5gSupport", "hasEsimSupport", "hasDualEsimSupport"
 	]
 
 	/// Reports schema changes as visible loader errors instead of silently returning an empty catalog.
@@ -881,7 +979,7 @@ private enum DeviceKitDefinitionParser {
 struct DeviceKitLoader: DeviceBridgeLoader {
 	let sourceURL = "https://raw.githubusercontent.com/devicekit/DeviceKit/refs/heads/master/Source/Device.swift.gyb"
 	let name = "DeviceKit"
-	
+
 	func devices() async throws -> [DeviceKitDevice] {
     	let code = try await fetchURL(urlString: sourceURL)
     	return try Self.parse(code)
@@ -1093,7 +1191,7 @@ public struct Migration {
     	var definitionString = """
     	%{
     	class Device:
-    	  def __init__(self, caseName, comment, imageURL, identifiers, diagonal, screenRatio, description, safeDescription, ppi, isPlusFormFactor, isPadMiniFormFactor, isPro, isXSeries, hasTouchID, hasFaceID, hasSensorHousing, supportsWirelessCharging, hasRoundedDisplayCorners, hasDynamicIsland, applePencilSupport, hasForce3dTouchSupport, cameras, hasLidarSensor, cpu, hasUSBCConnectivity, has5gSupport):
+	  def __init__(self, caseName, comment, imageURL, identifiers, diagonal, screenRatio, description, safeDescription, ppi, isPlusFormFactor, isPadMiniFormFactor, isPro, isXSeries, hasTouchID, hasFaceID, hasSensorHousing, supportsWirelessCharging, hasRoundedDisplayCorners, hasDynamicIsland, applePencilSupport, hasForce3dTouchSupport, cameras, hasLidarSensor, cpu, hasUSBCConnectivity, has5gSupport, hasEsimSupport=False, hasDualEsimSupport=False):
 	    	self.caseName = caseName
 	    	self.comment = comment
 	    	self.imageURL = imageURL
@@ -1120,12 +1218,14 @@ public struct Migration {
 	    	self.cpu = cpu
 	    	self.hasUSBCConnectivity = hasUSBCConnectivity
 	    	self.has5gSupport = has5gSupport
+			self.hasEsimSupport = hasEsimSupport
+			self.hasDualEsimSupport = hasDualEsimSupport
 
     	# iOS
     	ignore = [
     	"""
     	definitionString += printAllDevices(printProperty: \.deviceKitDefinition, sortFunc: { $0.deviceKitSortKey < $1.deviceKitSortKey })
-    	    	
+
     	return definitionString
 	}
 	/// Extract the current order for saving and preserving the DeviceKit order (which isn't in identifier order which is preferable)
@@ -1140,10 +1240,10 @@ public struct Migration {
 //    	print("\(device.definition)")
 //	  }
 //  }
-	
-	
-	
-	
+
+
+
+
 //  static func convertMacs() -> String {
 //	  let macsRaw = """
 //[
