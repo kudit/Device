@@ -1030,7 +1030,11 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
 
     /// Lookup results are immutable for the lifetime of the process; this
     /// lightweight cache removes repeated fuzzy scans during bridge setup.
+    #if compiler(>=5.10)
+    nonisolated(unsafe) private static var lookupCache: [String: [Device]] = [:]
+    #else
     private static var lookupCache: [String: [Device]] = [:]
+    #endif
     private static let lookupCacheLock = NSLock()
 
     /// Note: This hash function is not guaranteed to be stable across/between versions.
