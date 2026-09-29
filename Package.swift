@@ -7,7 +7,7 @@
 
 import PackageDescription
 
-let version = "2.11.0"
+let version = "2.15.0"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -25,6 +25,7 @@ var targets = [
 		name: packageLibraryName,
 		dependencies: [
 			.product(name: "Color Library", package: "color"), // apparently needs to be lowercase.  Also note this is "Color Library" not "Color"
+			.product(name: "Compatibility Library", package: "compatibility"), // Device uses Compatibility's Build and Module APIs directly.
 		],
 		path: "Sources"
 		// If resources need to be included in the module, include here
@@ -112,7 +113,9 @@ targets += [
 			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal but we're not using a string literal
 		],
 		path: "Development"
-//		,exclude: ["Device.xcodeproj/*"]
+		// Exclude package tests from the app target so Xcode and Swift Playgrounds
+		// never try to compile the same source as both app code and test code.
+		,exclude: ["DeviceTests"]
 		// Include test app resources.
         ,resources: resources
 //		,swiftSettings: [
@@ -130,6 +133,30 @@ targets += [
 
 #endif // for Swift Package compiling for https://swiftpackageindex.com/add-a-package
 
+// MARK: - Swift Package Manager tests
+// Swift Playgrounds app manifests do not support package test targets reliably, so
+// expose the deterministic regression suite only to ordinary SwiftPM and Xcode builds.
+#if !SwiftPlaygrounds && !canImport(PlaygroundSupport)
+// Migration bridges belong to the development app, not the public Device module.
+// Compile their real sources into the same test target on Apple hosts so parser
+// and grouping regressions run without launching the app or duplicating production code.
+let deviceTestPath = "Development/DeviceTests"
+let deviceTestExcludes = ["DeviceUITests.swift", "DeviceTest.xctestplan", "DeviceMigrationTests.swift"]
+let deviceTestSources: [String]? = nil
+targets += [
+	.testTarget(
+		name: "\(packageLibraryName)Tests",
+		dependencies: [
+			.init(stringLiteral: packageLibraryName), // Use the shared name while preserving the manifest pattern required by Playgrounds.
+			.product(name: "Compatibility Testing Library", package: "compatibility"), // Reuse Compatibility's public test adapter.
+		],
+		path: deviceTestPath,
+		exclude: deviceTestExcludes,
+		sources: deviceTestSources
+	),
+]
+#endif
+
 let package = Package(
 	name: packageLibraryName,
 	platforms: platforms,
@@ -137,7 +164,8 @@ let package = Package(
 	// include dependencies
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/kudit/Color", "1.1.4"..<"2.0.0"),
+		.package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
+		.package(url: "https://github.com/kudit/Compatibility.git", from: "1.19.9"),
 	],
 	targets: targets
 )

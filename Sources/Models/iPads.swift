@@ -33,6 +33,12 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         var capabilities = capabilities
         capabilities.cameras = cameras
         capabilities.cellular = cellular
+//    // Only cellular iPads include GPS; Wi-Fi-only identifiers are intentionally left
+//    // without this capability to match Apple's model split.
+        // HOWEVER we do not distinguish between the cellular and non-cellular models so we can't actually guarantee this.
+//    if cellular != .none {
+//      capabilities.insert(.gps)
+//    }
         capabilities.screen = screen
         capabilities.pencils = pencils
         device = Device(
@@ -102,7 +108,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad",
             identifiers: ["iPad1,1", "iPad1,2"], // 1,2 is 3g model
-            introduction: 2010.introductionYear,
+            introduction: "2010-04-03",
             supportId: "SP580",
             launchOSVersion: "3.2",
             unsupportedOSVersion: "6",
@@ -117,7 +123,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad 2",
             identifiers: ["iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-03-11",
             supportId: "SP622", // Apple has as sp622
             launchOSVersion: "4.3",
             unsupportedOSVersion: "10",
@@ -132,7 +138,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (3rd generation)",
             identifiers: ["iPad3,1", "iPad3,2", "iPad3,3"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-03-16",
             supportId: "SP647",
             launchOSVersion: "5.1",
             unsupportedOSVersion: "10",
@@ -147,7 +153,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad mini",
             identifiers: ["iPad2,5", "iPad2,6", "iPad2,7"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-03-16",
             supportId: "SP661",
             launchOSVersion: "6",
             unsupportedOSVersion: "10",
@@ -162,7 +168,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (4th generation)",
             identifiers: ["iPad3,4", "iPad3,5", "iPad3,6"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-11-02",
             supportId: "SP662",
             launchOSVersion: "6",
             unsupportedOSVersion: "11",
@@ -252,7 +258,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (5th generation)",
             identifiers: ["iPad6,11", "iPad6,12"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-03-24",
             supportId: "SP751",
             launchOSVersion: "10.3",
             unsupportedOSVersion: "17",
@@ -331,7 +337,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (6th generation)",
             identifiers: ["iPad7,5", "iPad7,6"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-03-30",
             supportId: "SP774",
             launchOSVersion: "11.4",
             unsupportedOSVersion: "18",
@@ -347,12 +353,12 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad Pro 11-inch",
             identifiers: ["iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-03-30",
             supportId: "SP784",
             launchOSVersion: "12.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ios12-ipad-pro-11-in.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners],
+            capabilities: [.pro, .fastCharge, .usbC, .biometrics(.faceID), .esim, .roundedCorners],
             models: ["A1980", "A2013", "A1934", "A1979"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .a12x,
@@ -363,12 +369,12 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad Pro 12.9-inch (3rd generation)",
             identifiers: ["iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-03-30",
             supportId: "SP785",
             launchOSVersion: "12.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ios12-ipad-pro-12-9-in.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .barometer],
+            capabilities: [.pro, .fastCharge, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .barometer],
             models: ["A1876", "A2014", "A1895", "A1983"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .a12x,
@@ -401,7 +407,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-mini-5gen.png",
             capabilities: [.mini, .headphoneJack, .lightning, .biometrics(.touchID), .esim],
-            models: ["A2133", "A2124", "A2125", "A2126"],
+            models: ["A2124", "A2125", "A2126", "A2133"],
             colors: .iPadMini5,
             cpu: .a12,
             cameras: [.iSight, .faceTimeHD1080p],
@@ -411,13 +417,13 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (7th generation)",
             identifiers: ["iPad7,11", "iPad7,12"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-09-25",
             supportId: "SP807",
             launchOSVersion: "13.1",
             unsupportedOSVersion: "26",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-7th-gen.png",
             capabilities: [.lightning, .biometrics(.touchID), .esim],
-            models: ["A2197", "A2200", "A2198"],
+            models: ["A2197", "A2198", "A2199", "A2200"],
             colors: .iPadMini5,
             cpu: .a10,
             cameras: [.iSight],
@@ -432,7 +438,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "13.4",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ios13-4-ipad-pro-4gen-11-in.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer],
+            capabilities: [.pro, .fastCharge, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer],
             models: ["A2228", "A2068", "A2230", "A2231"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .a12z,
@@ -448,7 +454,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "13.4",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ios13-4-ipad-pro-4gen-12-9-in.png",
-            capabilities: [.pro, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer],
+            capabilities: [.pro, .fastCharge, .usbC, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer],
             models: ["A2229", "A2069", "A2232", "A2233"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .a12z,
@@ -459,7 +465,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (8th generation)",
             identifiers: ["iPad11,6", "iPad11,7"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-09-18",
             supportId: "SP822",
             launchOSVersion: "14",
             unsupportedOSVersion: nil,
@@ -475,7 +481,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (9th generation)",
             identifiers: ["iPad12,1", "iPad12,2"],
-            introduction: 2021.introductionYear,
+			introduction: "2021-09-24",
             supportId: "SP849",
             launchOSVersion: "15",
             unsupportedOSVersion: nil,
@@ -496,7 +502,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "14.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-air-4th-gen-colors.png",
-            capabilities: [.air, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer],
+            capabilities: [.air, .fastCharge, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer],
             models: ["A2316", "A2324", "A2325", "A2072"],
             colors: [.spaceGrayM5, .silver6, .roseGoldA4, .skyBlueA4, .greenA4],
             cpu: .a14,
@@ -512,7 +518,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "15.4",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad-air-5th-gen-colors.png",
-            capabilities: [.air, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer, .appleIntelligence],
+            capabilities: [.air, .fastCharge, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer, .appleIntelligence],
             models: ["A2588", "A2589", "A2591"],
             colors: [.spaceGrayA5, .starlightA5, .pinkA5, .purpleA5, .blueA5],
             cpu: .m1,
@@ -523,12 +529,12 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (10th generation)",
             identifiers: ["iPad13,18", "iPad13,19"],
-            introduction: 2022.introductionYear,
+            introduction: "2022-10-26",
             supportId: "SP884",
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-10-gen-ipad.png",
-            capabilities: [.usbC, .biometrics(.touchID), .esim, .roundedCorners],
+            capabilities: [.fastCharge, .usbC, .biometrics(.touchID), .esim, .roundedCorners],
             models: ["A2696", "A2757", "A2777", "A3162"],
             colors: .iPad10,
             cpu: .a14,
@@ -544,7 +550,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "14.5.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/2021-ipad-pro-11-colors.png",
-            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
+            capabilities: [.pro, .fastCharge, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
             models: ["A2377", "A2459", "A2301", "A2460"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
@@ -560,7 +566,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "14.5.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/2021-ipad-pro-12-9-colors.png",
-            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
+            capabilities: [.pro, .fastCharge, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
             models: ["A2378", "A2379", "A2461", "A2462"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m1,
@@ -576,7 +582,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "15",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/ipad-mini-2021-colors.png",
-            capabilities: [.mini, .usbC, .biometrics(.touchID), .esim, .roundedCorners],
+            capabilities: [.mini, .fastCharge, .usbC, .biometrics(.touchID), .esim, .roundedCorners],
             models: ["A2567", "A2568", "A2569"],
             colors: [.spaceGrayA5, .starlightA5, .pinkA5, .purpleA5],
             cpu: .a15,
@@ -592,7 +598,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-11-inch-4gen-ipad-pro.png",
-            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
+            capabilities: [.pro, .fastCharge, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
             models: ["A2759", "A2761", "A2435", "A2762"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
@@ -608,7 +614,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "16.1",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad/fall-2022-12-9-inch-6gen-ipad-pro.png",
-            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
+            capabilities: [.pro, .fastCharge, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
             models: ["A2436", "A2437", "A2764", "A2766"],
             colors: [.spaceGrayM5, .silver6],
             cpu: .m2,
@@ -658,7 +664,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "17.5",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-2.png",
-            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
+            capabilities: [.pro, .fastCharge, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
             models: ["A2836", "A2837", "A3006"],
             colors: [.macbookSpaceblack, .solidSilver],
             cpu: .m4,
@@ -674,7 +680,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "17.5",
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2024-1.png",
-            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
+            capabilities: [.pro, .fastCharge, .usbC, .thunderbolt, .biometrics(.faceID), .esim, .roundedCorners, .lidar, .barometer, .appleIntelligence],
             models: ["A2925", "A2926", "A3007"],
             colors: [.macbookSpaceblack, .solidSilver],
             cpu: .m4,
@@ -690,7 +696,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "18", // iPadOS 18 (22A8350)
             unsupportedOSVersion: nil,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/ipad-mini/ipad-mini-2024-colors.png",
-            capabilities: [.mini, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .appleIntelligence],
+            capabilities: [.mini, .fastCharge, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .appleIntelligence],
             models: ["A2993", "A2995", "A2996"],
             colors: .iPadAirM2,
             cpu: .a17pro,
@@ -733,7 +739,7 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
         iPad(
             officialName: "iPad (A16)",
             identifiers: ["iPad15,7", "iPad15,8"],
-            introduction: 2025.introductionYear,
+            introduction: "2025-03-12",
             supportId: "122240",
             launchOSVersion: "18.2.1",
             unsupportedOSVersion: nil,
@@ -779,6 +785,40 @@ public struct iPad: IdiomType, HasScreen, HasCameras, HasCellular {
             cellular: .fiveG,
             screen: .i13,
             pencils: [.usbC, .pro]),
+
+        iPad(
+            officialName: "iPad Air 11-inch (M4)",
+            identifiers: ["iPad16,8", "iPad16,9"],
+            introduction: "2026-03-11",
+            supportId: "126471",
+            launchOSVersion: "26.3",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2026-ipad-air-11.png",
+            capabilities: [.air, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer, .appleIntelligence],
+            models: ["A3459", "A3460", "A3463"],
+            colors: .iPadAirM2,
+            cpu: .m4,
+            cameras: [.wide, .faceTimeHD1080p],
+            cellular: .fiveG,
+            screen: .i109,
+            pencils: [.usbC, .pro]),
+        iPad(
+            officialName: "iPad Air 13-inch (M4)",
+            identifiers: ["iPad16,10", "iPad16,11"],
+            introduction: "2026-03-11",
+            supportId: "126472",
+            launchOSVersion: "26.3",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/ipad/spring-2026-ipad-air-13.png",
+            capabilities: [.air, .usbC, .biometrics(.touchID), .esim, .roundedCorners, .barometer, .appleIntelligence],
+            models: ["A3461", "A3462", "A3464"],
+            colors: .iPadAirM2,
+            cpu: .m4,
+            cameras: [.wide, .faceTimeHD1080p],
+            cellular: .fiveG,
+            screen: .i129,
+            pencils: [.usbC, .pro]),
+
     ]
     
     // Lookup: https://support.apple.com/en-us/108043

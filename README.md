@@ -9,6 +9,22 @@ The primary goals are to be easily maintainable by multiple individuals, employ 
 
 This is actively maintained so if there is a feature request or change, we will strive to address within a week.
 
+## Documentation
+
+Swift Package Index builds and hosts Device's API reference from the `Device` library target. Public API comments provide the discoverable symbol documentation; the README contains the conceptual usage guides for identifying hardware, inspecting the current device, and separating build environments from hardware models. The package's [Swift Package Index page](https://swiftpackageindex.com/kudit/Device) provides the hosted documentation link after the next indexed build.
+
+When using Xcode, choose **Product → Build Documentation** to browse the symbol documentation locally. Keeping documentation attached to the public declarations keeps it available in Quick Help and avoids a separate DocC catalog that Swift Playgrounds would need to load.
+
+## Testing
+
+Run the deterministic package regression suite from the repository root:
+
+```shell
+swift test
+```
+
+The `DeviceTests` target wraps the reusable `Compatibility.TestCase` sections exposed by `Device.tests` and its registered dependencies. It is excluded from Swift Playgrounds manifests because Playgrounds loads the sample iOS application product rather than package test targets. Hardware-specific and UI tests remain available to the development Xcode project.
+
 
 ## Features
 - Can develop and modify without Xcode using Swift Playgrounds on iPad!
@@ -132,8 +148,6 @@ Install by adding this as a package dependency to your code.  This can be done i
 #### Swift 5+
 You can try these examples in a Swift Playground by adding package: `https://github.com/kudit/Device`
 
-If the repository is private, use the following link to import: `https://<your-PAT-string>@github.com/kudit/Device.git`
-
 Or you can manually enter the following in the Package.swift file:
 ```swift
 dependencies: [
@@ -189,31 +203,31 @@ if device.idiom == .pad {
 }
 ```
 
-### Check if running in a Simulator
+### Check if running in a Simulator (use Compatibility Build checks)
 ```swift
-if Device.isSimulator {
+if Build.isSimulator {
   // Running on one of the simulators
   // Skip doing something irrelevant for Simulator
 } 
 ```
 
-### Check if running in a Preview
+### Check if running in a Preview (use Compatibility Build checks)
 ```swift
-if Device.isPreview {
+if Build.isPreview {
   // Running in an XCode #Preview
 } 
 ```
 
-### Check if running in a Playground
+### Check if running in a Playground (use Compatibility Build checks)
 ```swift
-if Device.isPlayground {
+if Build.isPlayground {
   // Running in an XCode #Preview
 } 
 ```
 
-### Check if running on a physical device
+### Check if running on a physical device (use Compatibility Build checks)
 ```swift
-if Device.isRealDevice {
+if Build.isRealDevice {
   // Running on physical hardware and not a simulator
 } 
 ```

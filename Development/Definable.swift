@@ -7,11 +7,44 @@
 
 import Compatibility
 
+/// Emits the JSON-compatible literal for Compatibility's mixed scalar/array
+/// value so bridge views can use the same definition path as Device values.
+extension MixedTypeField: Definable {
+    public var definition: String {
+        if let stringValue { return stringValue.definition }
+        if let intValue { return intValue.definition }
+        if let doubleValue { return doubleValue.definition }
+        if let boolValue { return boolValue.definition }
+		if let arrayValue {
+            return "[\(arrayValue.compactMap { $0 }.map { $0.definition }.joined(separator: ", "))]"
+        }
+		if let dictionaryValue {
+			guard let dictionary = dictionaryValue.asDictionary() else { return "[:]" }
+			let values = dictionary.keys.sorted().compactMap { key -> String? in
+				guard let value = dictionary[key] else { return nil }
+                let mirror = Mirror(reflecting: value as Any)
+                // Keep the rendered value non-optional so Swift does not implicitly
+                // coerce `Any?` to `Any` or leave a dead nil-coalescing branch.
+                let unwrapped: Any = mirror.displayStyle == .optional
+                    ? (mirror.children.first?.value ?? "nil")
+                    : value
+                let rendered = (unwrapped as? MixedTypeField)?.definition
+                    ?? (unwrapped as? Definable)?.definition
+                    ?? String(describing: unwrapped)
+                return "\(key.definition): \(rendered)"
+            }
+            return "[\(values.joined(separator: ", "))]"
+        }
+        return "nil"
+    }
+}
+
 // TODO: Move this into a Definable package.
 // TODO: Use this to help with code generation more globally?  Add to KuditFrameworks/Compatibility?
 public protocol Definable {
     var definition: String { get }
 }
+
 public extension Collection where Element: Definable {
     var definition: String {
         "[\(self.map { $0.definition }.joined(separator: ", "))]"
@@ -89,4 +122,3 @@ extension Version: Definable {
         return self.compact.definition
     }
 }
-

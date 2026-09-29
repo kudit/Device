@@ -9,9 +9,20 @@
     }
   ],
   "defaultOptions" : {
-
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Device.xcodeproj",
+      "identifier" : "B5DD79B22BC94C8800457681",
+      "name" : "Device Info"
+    }
   },
   "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Device.xcodeproj",
+        "identifier" : "B5DD79CC2BC94C8A00457681",
+        "name" : "DeviceUITests"
+      }
+    },
     {
       "target" : {
         "containerPath" : "container:Device.xcodeproj",

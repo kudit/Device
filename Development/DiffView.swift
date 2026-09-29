@@ -39,6 +39,14 @@ struct DiffView: View {
         case source
     }
     @State var viewMode: DiffMode = .merged
+    var fixedMode: DiffMode?
+    init(left: String?, merged: String?, right: String?, source: String, fixedMode: DiffMode? = nil) {
+        self.left = left
+        self.merged = merged
+        self.right = right
+        self.source = source
+        self.fixedMode = fixedMode
+    }
     func mergedLine(left: String?, merged: String?, right: String?, diff: Bool) -> Text {
         // make sure each have a value and are non-optional
         let left = left ?? "MISSING"
@@ -52,16 +60,15 @@ struct DiffView: View {
         var output: [Text] = []
         // not all the same
         if left == merged {
-            // we have a different parsed value but we decided to go with the left value
-            output += [Text(merged)
-                .foregroundColor(.green)]
+            // The merge retained the local value: this is a left-side match.
+            output += [Text(merged).foregroundColor(.blue)]
         } else if diff { // if not diff, only output the right side
             output += [Text(left)
                 .foregroundColor(.blue)]
         } else if merged != right {
-            // merged may be different but we still want to output and highlight that it's neither the original nor the new exclusively
+            // The merged value is a synthesized hybrid of both sides.
             output += [Text(merged)
-                .foregroundColor(.red)]
+                .foregroundColor(.green)]
         }
         if diff || merged == right {
             // output right side
@@ -88,34 +95,48 @@ struct DiffView: View {
         }
         return output.joined(separator: Text("\n"))
     }
-    
+
+    /// Renders one generated definition only, coloring lines that differ from
+    /// the comparison definition while leaving equal lines black.
+    func single(_ primary: String?, comparedWith comparison: String?, color: Color) -> Text {
+        let primaryLines = primary?.lines ?? []
+        let comparisonLines = comparison?.lines ?? []
+        return (0..<primaryLines.count).map { index in
+            let line = Text(primaryLines[index])
+            return line.foregroundColor(index < comparisonLines.count && primaryLines[index] == comparisonLines[index] ? .primary : color)
+        }.joined(separator: Text("\n"))
+    }
+
     var body: some View {
-        Picker("Show", selection: $viewMode) {
-            ForEach(DiffMode.allCases, id: \.self) { mode in
-                Text(String(describing: mode))
-                    .tag(mode)
-            }
-        }
-        .pickerStyle(.segmentedBackport)
-        ScrollView {
-            Group {
-                switch viewMode {
-                case .left:
-                    Text(left ?? "EMPTY")
-                case .merged:
-                    merged(diff: false)
-                case .diff:
-                    merged(diff: true)
-                case .right:
-                    Text(right ?? "EMPTY")
-                case .source:
-                    Text(source)
+        Group {
+            if fixedMode == nil {
+                Picker("Show", selection: $viewMode) {
+                    ForEach(DiffMode.allCases, id: \.self) { mode in
+                        Text(String(describing: mode)).tag(mode)
+                    }
                 }
+                .pickerStyle(.segmentedBackport)
             }
-            //                    .lineLimit(nil) // TODO: Should we add this?
-            .backport.textSelection(.enabled)
+            switch fixedMode ?? viewMode {
+            case .left:
+                // Left is a single generated definition; color the whole block blue
+                // so it remains copyable without showing the opposite side.
+                single(left, comparedWith: right, color: .blue)
+            case .merged:
+                merged(diff: false)
+            case .diff:
+                merged(diff: true)
+            case .right:
+                // Right is a single generated definition; color it magenta to mark
+                // source-side values without duplicating the left block.
+                single(right, comparedWith: left, color: .magenta)
+            case .source:
+                Text(source)
+            }
         }
-        .backport.scrollDisabled() // so that we don't have issues but ScrollView is necessary for resizing when switching tabs.
+        // Apply text selection to the rendered Text labels/runs themselves. This
+        // preserves the original layout and colors while still allowing drag select.
+        .backport.textSelection(.enabled)
     }
 }
 
@@ -164,7 +185,11 @@ struct DiffRowView: View {
             Text(fieldName)
                 .font(.caption.bold())
             Text(leftValue)
+                // Keep these as plain labels; selection should not introduce the
+                // nested scrollable editing surfaces that made the diff hard to use.
+                .backport.textSelection(.enabled)
             Text(rightValue)
+                .backport.textSelection(.enabled)
         }
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
+    @Environment(\.colorScheme) private var colorScheme
     public var device: SomeCurrentDevice
     public init(device: SomeCurrentDevice) {
         self.device = device
@@ -16,8 +17,8 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
                     Text("*\(device.identifier) running \(device.systemInfo)*")
                 }
             }.font(.callout).padding(EdgeInsets(top: 0, leading: 0, bottom: 5, trailing: 0))
-//            Text("\(device.model)").opacity(0.5) // not necessary
-//            Text("\(device.localizedModel)").opacity(0.5) // not necessary
+//      Text("\(device.model)").opacity(0.5) // not necessary
+//      Text("\(device.localizedModel)").opacity(0.5) // not necessary
             HStack(alignment: .lastTextBaseline) {
                 // perhaps guage?  Otherwise text display with small units?
                 MonitoredCurrentDeviceView(device: device) { currentDevice in
@@ -37,16 +38,19 @@ public struct SystemInfoView<SomeCurrentDevice: CurrentDevice>: View {
                 }
 }
             
-            //            if let screen = device.screen {
+            //      if let screen = device.screen {
             // TODO: Create Application info view for version, icon, info, previous run versions, etc.
-//                if let image = UIApplication.shared.icon {
-//                    Image(uiImage: image)
-//                }
-//                Image("AppIcon", bundle: .module)
-//                Image(symbolName: "app")
+//        if let image = UIApplication.shared.icon {
+//          Image(uiImage: image)
+//        }
+//        Image("AppIcon", bundle: .module)
+//        Image(symbolName: "app")
         }
         .font(.caption)
         .padding()
+        // This panel is drawn on a light card even when its NavigationLink is
+        // selected, so it must not inherit the selection's white foreground.
+        .foregroundStyle(colorScheme == .dark ? .white : .black)
         .background {
             ZStack {
                 RoundedRectangle(cornerRadius: .devicePanelRadius)

@@ -72,7 +72,7 @@ public struct iPod: IdiomType, HasScreen {
     public static let all = [
     
         iPod(
-//            officialName: "iPod touch (1st generation)", // Apple tech specs page seems to have gone back to dropping 1st gen here.
+//      officialName: "iPod touch (1st generation)", // Apple tech specs page seems to have gone back to dropping 1st gen here.
             officialName: "iPod touch",
             identifiers: ["iPod1,1"],
             introduction: "2007-09-05",

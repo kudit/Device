@@ -5,36 +5,25 @@
 //  Created by Ben Ku on 7/6/24.
 //
 
-public protocol SymbolRepresentable {
-    /// An SF Symbol name string.
-    @MainActor
-    var symbolName: String { get }
-}
-
-/** Symbol Versions:
- 
- There are now twelve different sets of symbols to consider:
- SF Symbols v1.0 available in iOS 13.0, watchOS 6.0 and macOS 11.0
- SF Symbols v1.1 available in iOS 13.1, watchOS 6.1 and macOS 11.0
- SF Symbols v2.0 available in iOS 14.0, watchOS 7.0 and macOS 11.0
- SF Symbols v2.1 available in iOS 14.2, watchOS 7.1 and macOS 11.0
- SF Symbols v2.2 available in iOS 14.5, watchOS 7.4 and macOS 11.3
- SF Symbols v3.0 available in iOS 15.0, watchOS 8.0 and macOS 12.0
- SF Symbols v3.1 available in iOS 15.1, watchOS 8.1 and macOS 12.0
- SF Symbols v3.2 available in iOS 15.2, watchOS 8.3 and macOS 12.1
- SF Symbols v3.3 available in iOS 15.4, watchOS 8.5 and macOS 12.3
- SF Symbols v4.0 available in iOS 16.0, watchOS 9.0 and macOS 13.0
- SF Symbols v4.1 available in iOS 16.1, watchOS 9.1 and macOS 13.0
- SF Symbols v4.2 available in iOS 16.4, watchOS 9.4 and macOS 13.3
- SF Symbols v5 available in iOS 17, watchOS 10 and macOS 14
- SF Symbols v6 available in iOS 18, watchOS 11 and macOS 15
-
- */
 
 
 import Compatibility
 
-extension CloudStatus: SymbolRepresentable {}
+public extension SFSymbol {
+    @available(*, deprecated, renamed: "defaultUnknownSymbol")
+    static let defaultFallback = defaultUnknownSymbol
+}
+
+/// This is a helper to allow main actor isolated code to attempt to conform to SymbolRepresentable and for main actor isolated code to use either those or regular SymbolRepresentable items as sources for their symbol names without forcing all SymbolRepresentable to run on the main thread.
+@MainActor
+public protocol MainActorSymbolRepresentable {
+    var mainActorSymbolName: String { get }
+}
+
+public extension SymbolRepresentable {
+    @MainActor
+    var mainActorSymbolName: String { self.symbolName }
+}
 
 #if canImport(SwiftUI)
 import SwiftUI
@@ -42,7 +31,7 @@ import SwiftUI
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Image {
     /// Create image with a symbol name using system SF symbol or fall back to the symbol asset embedded in Device library.
-    init(symbolName: String) {
+    init(symbolName: SFSymbol) {
         var symbolName = symbolName
         let legacySymbolName = "\(symbolName).legacy"
         // use the new symbol name for the Xcode 15 symbol assets (should include colors and proper layering)
@@ -62,14 +51,16 @@ public extension Image {
         // get module image asset if possible
         self.init(symbolName, bundle: Bundle.module)
     }
-    @MainActor
     init(_ symbolRepresentable: some SymbolRepresentable) {
         self.init(symbolName: symbolRepresentable.symbolName)
     }
+    @MainActor
+    init(_ symbolRepresentable: some MainActorSymbolRepresentable) {
+        self.init(symbolName: symbolRepresentable.mainActorSymbolName)
+    }
 }
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-extension String {
-    public static let defaultFallback = "questionmark.square.fill"
+
+public extension String {
     /*
      Legacy versions for Symbol (iOS = catalyst = tvOS
      Device min: 15, 11, 14, 6 so create 1.0 or 2.0 versions for fallback.  Make note that watchOS 6 doesn’t support new symbols.
@@ -80,11 +71,12 @@ extension String {
      5.0 = iOS 17, macOS 14, watchOS 10, Xcode 15 * Anything before this, use legacy version.
      */
     /// helper for making sure symbolName: function always returns an actual image and never `nil`.
-    public func safeSymbolName(fallback: String = .defaultFallback) -> String {
+    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+    func safeSymbolName(fallback: String = .defaultUnknownSymbol) -> String {
         if !.nativeSymbolCheck(self) {
             // check for asset
             if !.nativeLocalCheck(self) {
-                if fallback == .defaultFallback {
+                if fallback == .defaultUnknownSymbol {
                     return fallback
                 } else {
                     // go through the fallback symbol to make sure it's valid (only time that would be invalid would be if we missed including it in the legacy resources).
@@ -104,7 +96,7 @@ import AppKit
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension Bool {
-    static func nativeSymbolCheck(_ symbolName: String) -> Bool {
+    static func nativeSymbolCheck(_ symbolName: SFSymbol) -> Bool {
 #if canImport(UIKit)
         return UIImage(systemName: symbolName) != nil
 #elseif canImport(AppKit)

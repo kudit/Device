@@ -12,7 +12,7 @@ import Compatibility
  Previous implementation for testing for simulator was to lookup in cases.  New version actually tests the bundle to see if we're running in a simulator.
  */
 
-public extension Device {    
+public extension Device {   
     /// Returns diagonal screen length in inches
     var diagonal: Double {
         guard let screen = self.screen else {
@@ -96,19 +96,21 @@ public extension Device {
     
     /// Returns whether the current device is a SwiftUI preview canvas
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.isPreview")
+    @available(*, deprecated, renamed: "Build.isPreview")
     @MainActor
     var isCanvas: Bool? {
-        return Device.current.isPreview
+        // Preserve DeviceKit's deprecated API while using the canonical process check.
+        return Build.isPreview
     }
     
     /// Returns whether the device is any of the simulator
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-    @available(*, deprecated, renamed: "Device.current.isSimulator")
+    @available(*, deprecated, renamed: "Build.isSimulator")
     @MainActor
     var isSimulator: Bool {
-        return Device.current.isSimulator
+        // Preserve DeviceKit's deprecated API while using the canonical process check.
+        return Build.isSimulator
     }
     
     /**
@@ -151,6 +153,41 @@ public extension Device {
     var ppi: Int? {
         return screen?.ppi
     }
+}
+
+// MARK: Listing helpers for Device Kit bridging
+public extension Device {
+    /// All iPods
+    @available(*, deprecated, renamed: "iPod.allDevices")
+    static var allPods: [Device] { iPod.allDevices }
+    
+    /// All iPhones
+    @available(*, deprecated, renamed: "iPhone.allDevices")
+    static var allPhones: [Device] { iPhone.allDevices }
+    
+    /// All iPads
+    @available(*, deprecated, renamed: "iPad.allDevices")
+    static var allPads: [Device] { iPad.allDevices }
+    
+    /// All TVs
+    @available(*, deprecated, renamed: "AppleTV.allDevices")
+    static var allTVs: [Device] { AppleTV.allDevices }
+    
+    /// All Watches
+    @available(*, deprecated, renamed: "AppleWatch.allDevices")
+    static var allWatches: [Device] { AppleWatch.allDevices }
+    
+    /// Returns whether the device is an iPod (real or simulator)
+    @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .idiom == .pod")
+    var isPod: Bool { idiom == .pod }
+    
+    /// Returns whether the device is an iPhone (real or simulator)
+    @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .idiom == .phone")
+    var isPhone: Bool { idiom == .phone }
+    
+    /// Returns whether the device is an iPad (real or simulator)
+    @available(*, deprecated, message: "If you need this, please explain the use-case.  Can test .idiom == .pad")
+    var isPad: Bool { idiom == .pad }
 }
 
 // MARK: Equatable
@@ -207,8 +244,8 @@ public extension Device {
             case .charging: self = .charging(batteryLevel)
             case .full: self = .full
             case .unplugged: self = .unplugged(batteryLevel)
-                //            @unknown default:
-                //                self = .unknown // To cover any future additions for which DeviceKit might not have updated yet.
+                //      @unknown default:
+                //        self = .unknown // To cover any future additions for which DeviceKit might not have updated yet.
             }
         }
         
@@ -256,33 +293,33 @@ public extension Device {
 //#if os(iOS) || os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
 //@available(iOS 8.0, watchOS 4.0, *)
 //extension BatteryState: Comparable {
-//    /// Tells if two battery states are equal.
-//    ///
-//    /// - parameter lhs: A battery state.
-//    /// - parameter rhs: Another battery state.
-//    ///
-//    /// - returns: `true` iff they are equal, otherwise `false`
-//    public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
-//        return lhs.description == rhs.description
-//    }
+//  /// Tells if two battery states are equal.
+//  ///
+//  /// - parameter lhs: A battery state.
+//  /// - parameter rhs: Another battery state.
+//  ///
+//  /// - returns: `true` iff they are equal, otherwise `false`
+//  public static func == (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
+//    return lhs.description == rhs.description
+//  }
 //
-//    /// Compares two battery states.
-//    ///
-//    /// - parameter lhs: A battery state.
-//    /// - parameter rhs: Another battery state.
-//    ///
-//    /// - returns: `true` if rhs is `.Full`, `false` when lhs is `.Full` otherwise their battery level is compared.
-//    public static func < (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
-//        switch (lhs, rhs) {
-//        case (.full, _): return false // return false (even if both are `.Full` -> they are equal)
-//        case (_, .full): return true // lhs is *not* `.Full`, rhs is
-//        case let (.charging(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
-//        case let (.charging(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
-//        case let (.unplugged(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
-//        case let (.unplugged(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
-//        default: return false // compiler won't compile without it, though it cannot happen
-//        }
+//  /// Compares two battery states.
+//  ///
+//  /// - parameter lhs: A battery state.
+//  /// - parameter rhs: Another battery state.
+//  ///
+//  /// - returns: `true` if rhs is `.Full`, `false` when lhs is `.Full` otherwise their battery level is compared.
+//  public static func < (lhs: Device.BatteryState, rhs: Device.BatteryState) -> Bool {
+//    switch (lhs, rhs) {
+//    case (.full, _): return false // return false (even if both are `.Full` -> they are equal)
+//    case (_, .full): return true // lhs is *not* `.Full`, rhs is
+//    case let (.charging(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
+//    case let (.charging(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
+//    case let (.unplugged(lhsLevel), .charging(rhsLevel)): return lhsLevel < rhsLevel
+//    case let (.unplugged(lhsLevel), .unplugged(rhsLevel)): return lhsLevel < rhsLevel
+//    default: return false // compiler won't compile without it, though it cannot happen
 //    }
+//  }
 //}
 //#endif
 

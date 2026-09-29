@@ -34,7 +34,7 @@ public struct BatteryView: View {
     var useSystemColors: Bool
     var includePercent: Bool
     var fontSize: Double
-    //    /// Include the backing view to improve contrast.
+    //  /// Include the backing view to improve contrast.
     var includeBacking: Bool
         
     /// Initializer without specifying a battery will assume CurrentDevice.battery, and if that is nil, will use the missing battery mock.
@@ -79,7 +79,7 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
     var useSystemColors: Bool
     var includePercent: Bool
     var fontSize: Double
-    //    /// Include the backing view to improve contrast.
+    //  /// Include the backing view to improve contrast.
     var includeBacking: Bool
     
     @Environment(\.colorScheme) var colorScheme
@@ -170,7 +170,7 @@ public struct SpecificBatteryView<SomeBattery: Battery>: View {
                     .renderingMode(.template)
                     .foregroundColor(
                         battery.isCharging ? .yellow : color)
-            }            
+            }         
         }
     }
     

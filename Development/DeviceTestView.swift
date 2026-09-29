@@ -84,7 +84,7 @@ struct TestAttributeListView<T: DeviceAttributeExpressible>: View {
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 #Preview("TestAttributeListView") {
-    TestAttributeListView(device: Device.current, header: "Environments", attributes: Device.Environment.allCases, styleView: true)
+    TestAttributeListView(device: Device.current, header: "Environments", attributes: Build.Environment.allCases, styleView: true)
 }
 
 
@@ -135,7 +135,7 @@ struct CurrentDeviceDetailsView: View {
                     }
                 }
             }
-            TestAttributeListView(device: currentDevice, header: "Environments", attributes: Device.Environment.allCases, styleView: styleView, size: size)
+            TestAttributeListView(device: currentDevice, header: "Environments", attributes: Build.Environment.allCases, styleView: styleView, size: size)
             TestAttributeListView(device: currentDevice,header: "Idioms", attributes: Device.Idiom.allCases, styleView: styleView, size: size)
             TestAttributeListView(device: currentDevice,header: "Capabilities", attributes: Capability.allCases, styleView: styleView, size: size)
         }
@@ -159,6 +159,10 @@ public struct DeviceTestView: View {
 
     @State var showMigrations = false
     @State var showAnimatedExample = false
+#if DEBUG
+    // DEBUG-only navigation state keeps the reusable Compatibility test catalog out of release builds.
+    @State private var showAllTests = false
+#endif
     
     @ViewBuilder
     var testView: some View {
@@ -181,17 +185,9 @@ public struct DeviceTestView: View {
                 Text("Battery")
             }
             Section("Environment (Swift \(Device.current.swiftVersion), Compatibility v\(Compatibility.version))") { 
-                NavigationLink {
-                    List {
-                        AttributeListView(device: Device.current, header: "Environments", attributes: Device.Environment.allCases)
-                    }
-                } label: {
-                    HStack {
-                        Spacer()
-                        EnvironmentsView()
-                        Spacer()
-                    }
-                }
+                // Display the sample app's process environment directly because mock
+                // devices no longer carry artificial simulator or preview state.
+                EnvironmentsView(Build.environments())
             }
             Section {
                 NavigationLink(destination: {
@@ -235,6 +231,15 @@ public struct DeviceTestView: View {
             })
 #if DEBUG // reordered because only first item is visible on iPhone 7.
             if Build.isDebug { // This feature should only be for developers, not in the actual app.
+                if #available(iOS 15, macOS 12, tvOS 17, watchOS 8, *) {
+                    // Expose the same registered module graph used by SwiftPM/Xcode tests for interactive debugging.
+                    Button("All Tests") {
+                        showAllTests = true
+                    }
+                    .backport.navigationDestination(isPresented: $showAllTests) {
+                        AllTestsListView()
+                    }
+                }
                 Button("Migration") {
                     showMigrations = true
                 }
@@ -252,7 +257,8 @@ public struct DeviceTestView: View {
         }
         .onAppear { // async test
             Task.detached {
-                let isSimulator = await Device.current.isSimulator
+                // Simulator status is process metadata supplied by Compatibility.Build.
+                let isSimulator = Build.isSimulator
                 let version: Version = await Device.current.systemVersion
                 let info = await Device.current.systemInfo
                 // don't actually print but we want the let above for testing using Device.current from background tasks. - not saying "false" so we don't get compiler warning that this will never be executed.

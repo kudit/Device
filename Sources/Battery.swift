@@ -46,7 +46,7 @@ public enum BatteryChangeType: Sendable {
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
-public protocol Battery: ObservableObject, SymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
+public protocol Battery: ObservableObject, MainActorSymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
@@ -76,7 +76,7 @@ public extension Battery {
     }
     
     /// System Image used to render a symbol representing the current state/charge level
-    var symbolName: String {
+    var mainActorSymbolName: String {
         let percent = currentLevel
         var percentWord: String
         if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10,  *) {
@@ -140,6 +140,28 @@ public extension Battery {
     }
 #endif
     
+    /// Provides a textual representation of the battery state in field form.
+    /// Examples:
+    /// ```
+    /// Battery level: 90%, device is plugged in.
+    /// Battery level: 100 % (Full), device is plugged in.
+    /// Battery level: \(batteryLevel)%, device is unplugged.
+    /// ```
+    var info: Field? {
+        let lowPowerMode = lowPowerMode ? " (low power mode)" : ""
+        let level = currentLevel
+        let batteryLevelString = "\(level)%"
+        let deviceIsString = "\(lowPowerMode), device is "
+        var description: String
+        switch currentState {
+        case .charging: description = "\(batteryLevelString)\(deviceIsString)charging."
+        case .full: description = "\(batteryLevelString) (Full)\(deviceIsString)plugged in."
+        case .unplugged: description = "\(batteryLevelString)\(deviceIsString)unplugged."
+        default: return nil
+        }
+        return Field("Battery level", description)
+    }
+    
     /// Provides a textual representation of the battery state.
     /// Examples:
     /// ```
@@ -148,15 +170,10 @@ public extension Battery {
     /// Battery level: \(batteryLevel)%, device is unplugged.
     /// ```
     var description: String {
-        let lowPowerMode = lowPowerMode ? " (low power mode)" : ""
-        let level = currentLevel
-        let batteryLevelString = "Battery level: \(level)%"
-        let deviceIsString = "\(lowPowerMode), device is "
-        switch currentState {
-        case .charging: return "\(batteryLevelString)\(deviceIsString)charging."
-        case .full: return "\(batteryLevelString) (Full)\(deviceIsString)plugged in."
-        case .unplugged: return "\(batteryLevelString)\(deviceIsString)unplugged."
-        default: return "Battery is unknown/unsupported."
+        if let info {
+            return info.description
+        } else {
+            return "Battery is unknown/unsupported."
         }
     }
 }
@@ -199,9 +216,9 @@ public class MockBattery: Battery {
         monitors.append(monitor)
     }
     
-//    public var id: String {
-//        "\(currentLevel)\(currentState)\(lowPowerMode)\(cycleLevelState)"
-//    }
+//  public var id: String {
+//    "\(currentLevel)\(currentState)\(lowPowerMode)\(cycleLevelState)"
+//  }
     
     /// Creates a mock Battery object that can be passed to a BatteryView or used for various things.  Will automatically cycle battery to empty and then charge to full and then empty again if `cycleLevelStateSeconds` is greater than 0.  If so, creates a timer that will automatically drain battery to 0 and then charge to 100 and then drain again every cycleLevelStateSeconds.
     public init(currentLevel: Int = -1, currentState: BatteryState = .unplugged, cycleLevelState: TimeInterval = 0, lowPowerMode: Bool = false) {
@@ -219,7 +236,7 @@ public class MockBattery: Battery {
                 switch self.currentState {
                 case .unknown:
                     // This really should never happen.  But if it does, go ahead and invalidate the timer.
-//                    timer.invalidate()
+//          timer.invalidate()
                     print("!Battery is in unknown state.  Should never happen.")
                     break
                 case .charging:
@@ -330,8 +347,8 @@ public class DeviceBattery: Battery {
         }
 //#if targetEnvironment(macCatalyst)
 //Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-//    self.objectWillChange.send()
-//    print("Manual notification Update \(Date().timeIntervalSinceReferenceDate)")
+//  self.objectWillChange.send()
+//  print("Manual notification Update \(Date().timeIntervalSinceReferenceDate)")
 //}
 //#endif
 #else
@@ -346,7 +363,7 @@ public class DeviceBattery: Battery {
             DeviceBattery.current._triggerBatteryUpdate(.level)
             // trigger both just in case
             DeviceBattery.current._triggerBatteryUpdate(.state)
-//            print("IOPSNotification for level and state")
+//      print("IOPSNotification for level and state")
         }, nil).takeRetainedValue() as CFRunLoopSource
         CFRunLoopAddSource(CFRunLoopGetCurrent(), loop, .defaultMode)
 #endif
@@ -358,7 +375,7 @@ public class DeviceBattery: Battery {
                 object: nil,
                 queue: OperationQueue.main
             ) { notification in
-                //                print("NSProcessInfoPowerStateDidChange notification")
+                //        print("NSProcessInfoPowerStateDidChange notification")
                 // Do your work after received notification
                 Task { @MainActor in
                     self._triggerBatteryUpdate(.lowPowerMode)
@@ -378,7 +395,7 @@ public class DeviceBattery: Battery {
 #if os(macOS) || targetEnvironment(macCatalyst)
     // TODO: Clean up unnecessary code.  Figure out "best" way.
     private func _levelPluggedIn() -> (level: Int, pluggedIn: Bool) {
-//        print("IOKit version")
+//    print("IOKit version")
         // thanks to https://github.com/thebarbican19/BatteryBoi
         let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
         let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
@@ -395,46 +412,46 @@ public class DeviceBattery: Battery {
             }
         }
         // This works, but below is better for exact state
-//        if (!(IOPSCopyExternalPowerAdapterDetails() != nil)) {
-//            print("not plugged in")
-//        } else {
-//            print("plugged in")
-//        }
+//    if (!(IOPSCopyExternalPowerAdapterDetails() != nil)) {
+//      print("not plugged in")
+//    } else {
+//      print("plugged in")
+//    }
         let psInfo = IOPSCopyPowerSourcesInfo().takeRetainedValue()
         let psList = IOPSCopyPowerSourcesList(psInfo).takeRetainedValue() as [CFTypeRef]
 
         var pluggedIn = true // assume true for macs without battery
         for ps in psList {
-//            print(ps)
+//      print(ps)
             if let psDesc = IOPSGetPowerSourceDescription(psInfo, ps).takeUnretainedValue() as? [String: Any] {
                 if //let type = psDesc[kIOPSTypeKey] as? String,
-                    //                   let isCharging = (psDesc[kIOPSIsChargingKey] as? Bool) {
-                    //                   print(type, "is charging:", isCharging)
+                    //           let isCharging = (psDesc[kIOPSIsChargingKey] as? Bool) {
+                    //           print(type, "is charging:", isCharging)
                     let powerSource = (psDesc[kIOPSPowerSourceStateKey] as? String) {
-//                    print("Power Source: \(powerSource)")
+//          print("Power Source: \(powerSource)")
                     if powerSource == "AC Power" {
-//                        if let capacity = psDesc[kIOPSCurrentCapacityKey] as? Int, capacity == 100 {
-//                            print("Capacity: \(capacity), Level: \(level)")
-//                            // TODO: Update current level
-//                            return .full
-//                        }
-//                        return .charging
+//              if let capacity = psDesc[kIOPSCurrentCapacityKey] as? Int, capacity == 100 {
+//              print("Capacity: \(capacity), Level: \(level)")
+//              // TODO: Update current level
+//              return .full
+//              }
+//              return .charging
                     } else {
                         pluggedIn = false
                     }
-//                    return .unplugged
+//          return .unplugged
                 }
             }
         }
-//        return .unknown
-//        if PowerDetail["Power Source State"] == "AC Power" {
-//            if PowerDetail["Current Capacity"] == 100 {
-//                return .full
-//            }
-//            return .charging
-//        } else {
-//            return .unplugged
-//        }
+//    return .unknown
+//    if PowerDetail["Power Source State"] == "AC Power" {
+//      if PowerDetail["Current Capacity"] == 100 {
+//        return .full
+//      }
+//      return .charging
+//    } else {
+//      return .unplugged
+//    }
         return (level, pluggedIn)
     }
 #endif
@@ -452,8 +469,14 @@ public class DeviceBattery: Battery {
 #elseif os(macOS) || targetEnvironment(macCatalyst)
         return _levelPluggedIn().level
 #elseif canImport(UIKit) && !os(tvOS) // UIDevice support
-//        UIDevice.current.isBatteryMonitoringEnabled = true
-//        print(UIDevice.current.batteryLevel)
+//    UIDevice.current.isBatteryMonitoringEnabled = true
+//    print(UIDevice.current.batteryLevel)
+        if Build.isDesignedForiPad && Device.current.idiom == .mac { // This may work on visionOS so don't necessarily shortcut
+            // The iOS compatibility runtime on macOS can expose a bogus 1% UIDevice
+            // battery level; returning -1 keeps direct DeviceBattery callers aligned
+            // with the framework convention for unavailable battery information.
+            return -1
+        }
         return Int(round(UIDevice.current.batteryLevel * 100)) // round() is actually not needed anymore since -[batteryLevel] seems to always return a two-digit precision number
         // but maybe that changes in the future.
 #else
@@ -468,7 +491,12 @@ public class DeviceBattery: Battery {
         defer {
             monitoring = currentMonitoring
         }
-//        print("state monitoring")
+        if Build.isDesignedForiPad {
+            // Host Mac battery state is not available to iPad apps running on macOS, so
+            // avoid converting the compatibility layer's bad level into a real state.
+            return .unknown
+        }
+//    print("state monitoring")
 #if os(watchOS)
         switch WKInterfaceDevice.current().batteryState {
         case .charging: return .charging
@@ -479,7 +507,7 @@ public class DeviceBattery: Battery {
             return .unknown // To cover any future additions for which DeviceKit might not have updated yet.
         }
 #elseif canImport(UIKit) && !os(tvOS)
-        //        print("UIDevice version")
+        //    print("UIDevice version")
         switch UIDevice.current.batteryState {
         case .charging: return .charging
         case .full:
