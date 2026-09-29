@@ -1,3 +1,5 @@
+// xcode: set sdk=iOS
+
 // swift-tools-version: 5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
@@ -164,8 +166,8 @@ let package = Package(
 	// include dependencies
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.
-		.package(url: "https://github.com/kudit/Color.git", from: "1.1.4"),
-		.package(url: "https://github.com/kudit/Compatibility.git", from: "1.19.9"),
+		.package(url: "https://github.com/kudit/Color.git", from: "1.5.5"),
+		.package(url: "https://github.com/kudit/Compatibility.git", from: "1.20.0"),
 	],
 	targets: targets
 )
