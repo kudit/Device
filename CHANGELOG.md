@@ -76,6 +76,11 @@ Note that iMacs may have multiple color swatches per item which is why we have A
 Note that the swatch colors will have to be looked up in the CSS page (https://www.apple.com/v/mac/compare/ah/built/styles/overview.built.css) but that should be able to be automated and fetched from the comparison page.  The names can be pulled from here as well and we may want to pull the identifier like `midnight` or `pink` or `green-light` from the css name as clue for naming the static variable (which may need to have a number appended if it conflicts with an existing static name).
 Please update the AppleDB.dev and other color comparisons to ensure that the names match exactly (including capitalization) and use the .delta function to ensure the hex values are < 0.05 delta.
 
+## v2.15.1 2026-10-03
+Updated Color to 1.5.5 and Compatibility to 1.20.0 to fix Swift Package Index builds.
+Fixed Swift 6 concurrency checking for the synchronized device lookup cache.
+Co-authored-by: @parmar-mehul
+
 ## v2.15.0 2026-09-25
 Added new Mac minis and Mac Studios.
 Fixed iPhone X incorrectly reporitng eSIM support.
