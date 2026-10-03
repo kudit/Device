@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 2.15.1
+- Synchronize Color 1.5.5 and Compatibility 1.20.0 dependency requirements and resolved versions for Swift Package Index builds.
+- Mark the lookup cache `nonisolated(unsafe)` on Swift 5.10+ while retaining compatibility with older compilers. Thanks to @parmar-mehul for contributing the fix in #11.
+
+
 If create an AppleMaterialColor struct, won't ColorComparison not be necessary since we can bridge everything to AppleMaterialColor?  Seems silly to include as a public API when AppleMaterialColor will accomplish the same thing.
 
 TODO: Please create a new AppleMaterialColor.swift file and struct like this:
