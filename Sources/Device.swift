@@ -23,7 +23,7 @@
 /// recursively register its direct dependencies.
 extension Device: Module {
     /// The version of the Device Library since cannot get directly from Package.
-    public static let version: Version = "2.15.0"
+    public static let version: Version = "2.15.1"
     
     /// The public source repository used for open-source support and license discovery.
     public static let openSourceRepository: String? = "https://github.com/kudit/Device"
