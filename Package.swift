@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // WARNING:
@@ -7,55 +7,60 @@
 
 import PackageDescription
 
-let version = "2.15.0"
+let version = "2.15.1"
 let packageLibraryName = "Device"
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
 var products = [
-    Product.library(
-        name: "\(packageLibraryName) Library",
-        targets: [packageLibraryName]
-    ),
+	Product.library(
+		name: "\(packageLibraryName) Library", // has to be named different from the iOSApplication or Swift Playgrounds won't open correctly
+		targets: [packageLibraryName]
+	),
 ]
 
 // Targets are the basic building blocks of a package, defining a module or a test suite.
+// Targets can depend on other targets in this package and products from dependencies.
 var targets = [
-    Target.target(
-        name: packageLibraryName,
-        dependencies: [
-            .product(name: "Color Library", package: "color"),
-            .product(name: "Compatibility Library", package: "compatibility"),
-        ],
-        path: "Sources",
-        resources: [
-            Resource.process("Resources"),
-        ]
-    ),
+	Target.target(
+		name: packageLibraryName,
+		dependencies: [
+			.product(name: "Color Library", package: "color"), // apparently needs to be lowercase.  Also note this is "Color Library" not "Color"
+			.product(name: "Compatibility Library", package: "compatibility"), // Device uses Compatibility's Build and Module APIs directly.
+		],
+		path: "Sources"
+		// If resources need to be included in the module, include here
+		,resources: [ // unfortuantely cannot be conditionally compiled based on Swift version since the tool seems to be run on latest version.
+			Resource.process("Resources"),
+		]
+//		,swiftSettings: [
+//			.enableUpcomingFeature("BareSlashRegexLiterals")
+//		]
+	),
 ]
 
 var platforms: [SupportedPlatform] = [
-    .macOS("10.15"),
-    .tvOS("11"),
-    .watchOS("4"),
+	.macOS("10.15"), // minimum for sleep, SwiftUI, ObservableObject, & @Published, 12 minimum for Date.now
+	.tvOS("11"), // 13 minimum for SwiftUI, 15 minimum for Date.now, 17 minimum for Menu
+	.watchOS("4"), // 6 minimum for SwiftUI, watchOS 7 typically needed for most UI, 8 for Date.now, however (for #buildAvailability) so really should be watchOS 9+.
 ]
 
 #if SwiftPlaygrounds || canImport(PlaygroundSupport)
 platforms += [
-    .iOS("15.2"),
+	.iOS("15.2"), // minimum for Swift Playgrounds support (maximum version for test iPhone 7)
 ]
 #else
 platforms += [
-    .iOS("11"),
+	.iOS("11"), // 13 minimum for Combine/SwiftUI, 15 minimum for Date.now, (maximum version for test iPhone 7)
 ]
 #endif
 
 #if compiler(>=5.9) && os(visionOS)
 platforms += [
-    .visionOS("1.0"),
+	.visionOS("1.0"), // unavailable in Swift Playgrounds so has to be separate
 ]
 #endif
 
-#if canImport(AppleProductTypes)
+#if canImport(AppleProductTypes) // swift package dump-package fails because of this
 import AppleProductTypes
 
 let executableTargetName = "\(packageLibraryName)TestAppModule"
@@ -68,104 +73,99 @@ let appName = "\(packageLibraryName) App"
 
 #if canImport(Foundation)
 import Foundation
-
-let isWASI =
-    ProcessInfo.processInfo.environment["SWIFT_TARGET_TRIPLE"]?.contains("wasm32") == true
-
-let resources: [Resource] = isWASI
-    ? []
-    : [.process("Resources")]
+let isWASI = ProcessInfo.processInfo.environment["SWIFT_TARGET_TRIPLE"]?.contains("wasm32") == true
+let resources: [Resource] = isWASI ? [] : [.process("Resources")]
 #else
 let resources: [Resource] = []
 #endif
 
 products += [
-    .iOSApplication(
-        name: appName,
-        targets: [executableTargetName],
-        teamIdentifier: "3QPV894C33",
-        displayVersion: version,
-        bundleVersion: "1",
-        appIcon: .asset("AppIcon"),
-        accentColor: .presetColor(.blue),
-        supportedDeviceFamilies: [
-            .pad,
-            .phone
-        ],
-        supportedInterfaceOrientations: [
-            .portrait,
-            .landscapeRight,
-            .landscapeLeft,
-            .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-        ],
-        capabilities: [
-            .outgoingNetworkConnections()
-        ],
-        appCategory: .developerTools
-    ),
+	.iOSApplication(
+		name: appName, // needs to match package name to open properly in Swift Playgrounds <v4.5, but must be different to run in v4.6 and greater.
+		targets: [executableTargetName],
+//		bundleIdentifier: "com.kudit.compatibility", // ignored in playgrounds
+		teamIdentifier: "3QPV894C33",
+		displayVersion: version,
+		bundleVersion: "1",
+		appIcon: .asset("AppIcon"),
+		accentColor: .presetColor(.blue),
+		supportedDeviceFamilies: [
+			.pad,
+			.phone
+		],
+		supportedInterfaceOrientations: [
+			.portrait,
+			.landscapeRight,
+			.landscapeLeft,
+			.portraitUpsideDown(.when(deviceFamilies: [.pad]))
+		],
+		capabilities: [
+			.outgoingNetworkConnections() // for networking tests and loading device images
+		],
+		appCategory: .developerTools
+	),
 ]
 
 targets += [
-    .executableTarget(
-        name: executableTargetName,
-        dependencies: [
-            .init(stringLiteral: packageLibraryName),
-        ],
-        path: "Development",
-        exclude: [
-            "DeviceTests"
-        ],
-        resources: resources
-    ),
+	.executableTarget(
+		name: executableTargetName,
+		dependencies: [
+			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal but we're not using a string literal
+		],
+		path: "Development"
+		// Exclude package tests from the app target so Xcode and Swift Playgrounds
+		// never try to compile the same source as both app code and test code.
+		,exclude: ["DeviceTests"]
+		// Include test app resources.
+        ,resources: resources
+//		,swiftSettings: [
+//			.enableUpcomingFeature("BareSlashRegexLiterals")
+//		]
+	),
+//	.testTarget(
+//		name: "\(packageLibraryName)Tests",
+//		dependencies: [
+//			.init(stringLiteral: packageLibraryName), // have to use init since normally would be assignable by string literal but we're not using a string literal
+//		],
+//		path: "Tests"
+//	),
 ]
 
-#endif
+#endif // for Swift Package compiling for https://swiftpackageindex.com/add-a-package
 
 // MARK: - Swift Package Manager tests
-
+// Swift Playgrounds app manifests do not support package test targets reliably, so
+// expose the deterministic regression suite only to ordinary SwiftPM and Xcode builds.
 #if !SwiftPlaygrounds && !canImport(PlaygroundSupport)
-
+// Migration bridges belong to the development app, not the public Device module.
+// Compile their real sources into the same test target on Apple hosts so parser
+// and grouping regressions run without launching the app or duplicating production code.
 let deviceTestPath = "Development/DeviceTests"
-
-let deviceTestExcludes = [
-    "DeviceUITests.swift",
-    "DeviceTest.xctestplan",
-    "DeviceMigrationTests.swift"
-]
-
+let deviceTestExcludes = ["DeviceUITests.swift", "DeviceTest.xctestplan", "DeviceMigrationTests.swift"]
 let deviceTestSources: [String]? = nil
-
 targets += [
-    .testTarget(
-        name: "\(packageLibraryName)Tests",
-        dependencies: [
-            .init(stringLiteral: packageLibraryName),
-            .product(
-                name: "Compatibility Testing Library",
-                package: "compatibility"
-            ),
-        ],
-        path: deviceTestPath,
-        exclude: deviceTestExcludes,
-        sources: deviceTestSources
-    ),
+	.testTarget(
+		name: "\(packageLibraryName)Tests",
+		dependencies: [
+			.init(stringLiteral: packageLibraryName), // Use the shared name while preserving the manifest pattern required by Playgrounds.
+			.product(name: "Compatibility Testing Library", package: "compatibility"), // Reuse Compatibility's public test adapter.
+		],
+		path: deviceTestPath,
+		exclude: deviceTestExcludes,
+		sources: deviceTestSources
+	),
 ]
-
 #endif
 
 let package = Package(
-    name: packageLibraryName,
-    platforms: platforms,
-    products: products,
-    dependencies: [
-        .package(
-            url: "https://github.com/kudit/Color.git",
-            from: "1.5.5"
-        ),
-        .package(
-            url: "https://github.com/kudit/Compatibility.git",
-            from: "1.20.0"
-        ),
-    ],
-    targets: targets
+	name: packageLibraryName,
+	platforms: platforms,
+	products: products,
+	// include dependencies
+	dependencies: [
+		// Dependencies declare other packages that this package depends on.
+		.package(url: "https://github.com/kudit/Color.git", from: "1.5.5"),
+		.package(url: "https://github.com/kudit/Compatibility.git", from: "1.20.0"),
+	],
+	targets: targets
 )
