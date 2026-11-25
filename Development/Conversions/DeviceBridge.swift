@@ -12,6 +12,9 @@ protocol DeviceBridge: Identifiable, Equatable, Sendable, Codable, PropertyItera
     static var diffIgnoreKeys: [String] { get }
     /// A string representation of the source (HTML clipping, JSON row, Text row
     var source: String { get }
+    /// Actual model-source initializer and a color-set-normalized proposal when
+    /// an Identify comparison has source-backed color evidence.
+    var modelCodeComparison: ModelSourceCodeComparison? { get }
     /// A specific Device that is the best match for this bridge data.  If multiple potentially match, we should pick the best match for this item (if this may happen, create multiple device bridges which will match with different devices).
     var matched: Device { get }
     /// A Device with updated fields based on this Bridge's values filling the matched device's values only when bridge values are missing.  Should be primarily the bridge's values though in case there is no device match or there is a conflict.
@@ -82,6 +85,7 @@ struct BridgeFieldDiff {
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 extension DeviceBridge {
     var definition: String { source }
+    var modelCodeComparison: ModelSourceCodeComparison? { nil }
     // Sources without an identifier collection remain ordinary single-record comparisons.
     var comparisonIdentifiers: [String] { [] }
     var comparisonCPUs: [CPU] { [] }
@@ -163,6 +167,12 @@ extension DeviceBridge {
             let left = matched[keyPath: path]
             let right = self[keyPath: path]
             let merged = merged[keyPath: path]
+            // Keep source-only metadata in its dedicated context, but do not
+            // let it affect catalog matching (including the left-vs-right path).
+            if Self.diffIgnoreKeys.contains(key) {
+                diffs.append(matchType)
+                continue
+            }
             // A bridge support identifier is actionable when Device has no
             // value. Do not let the merge inherit the source and hide the
             // missing local catalog entry.

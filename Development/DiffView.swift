@@ -141,7 +141,7 @@ struct DiffView: View {
 }
 
 import Device
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview {
     List {
         DiffView(
@@ -174,7 +174,7 @@ ulla nisl, venenatis eu orci sed, blandit condimentum enim. Nullam vel interdum 
 }
 
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct DiffRowView: View {
     var fieldName: String
     var leftValue: String
@@ -194,12 +194,12 @@ struct DiffRowView: View {
     }
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview {
     DiffRowView(fieldName: "TestField", leftValue: "Left", rightValue: "Right")
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct DiffObjectView<Object: PropertyIterable>: View {
     var left: Object
     var right: Object
@@ -225,7 +225,7 @@ struct DiffObjectView<Object: PropertyIterable>: View {
     }
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview {
     DiffObjectView(
         left: Device(identifier: "iPhone1,1"),

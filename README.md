@@ -15,6 +15,34 @@ Swift Package Index builds and hosts Device's API reference from the `Device` li
 
 When using Xcode, choose **Product → Build Documentation** to browse the symbol documentation locally. Keeping documentation attached to the public declarations keeps it available in Quick Help and avoids a separate DocC catalog that Swift Playgrounds would need to load.
 
+## Exporting custom SF Symbols
+
+To export a custom symbol for older SF Symbols compatibility, set the symbol's compatibility to **SF Symbols Fixed v2** in the SF Symbols app, then choose **File → Export Symbol**. Do not use **File → Export Template** for this step: that exports the current editable template format (Template v7 in SF Symbols 7), which may require Xcode 26 even when the symbol is configured for Fixed v2. In **Export Symbol**, choose the oldest Xcode version needed by the project; Xcode 12 is available for the Fixed v2 export.
+
+
+## Displays, poses and external presentations
+
+`Device.screens` lists the device's fixed built-in panel specifications. A `PresentationSnapshot` describes a particular app window's live bounds, safe area, size classes, and hosting panel. Output discovery and diagnostic report internals stay inside Device; applications consume the active presentation through the SwiftUI environment.
+
+```swift
+let panels = Device.current.device.screens
+
+struct ScreenDebugView: View {
+    @Environment(\.activeDisplay) private var display
+    @Environment(\.presentation) private var presentation
+
+    var body: some View { ScreenInfoView() }
+}
+
+ScreenDebugView().deviceDisplayContext()
+```
+
+`ScreenInfoView()` is a live, clickable summary for the window hosting it. It reports window dimensions and position separately from output/panel measurements. `ScreenInfoView(device:)` shows fixed hardware panels and supported poses. `Device.Pose` describes physical posture; `Device.Orientation` aliases `Screen.Orientation` for cardinal orientation. Foldable pose artwork includes seven `pose.*` assets. Watch orientation is derived from crown side. Unknown measurements stay nil instead of being inferred from aspect ratio.
+
+UIKit external presentation requires scene-based hosts. The built-in demo has external-presentation content and per-output rotation controls. The Digital Crown, Touch Bar, Keyboard, Hover, Pointer and related input backports remain in Device because they are part of its device/input diagnostics rather than generic Compatibility UI.
+
+For a Duo check, run the demo on an iPhone Duo simulator with Xcode 27.1, use Device Hub to fold/rotate it, and inspect the live card while moving the app between inner/outer panels and Split View. For physical display checks, connect a supported wired display or enable Control Center → Screen Mirroring, then inspect the external presentation and set each output's rotation in the app's External displays section. Stop mirroring/disconnect and confirm the corresponding presentation is removed. These checks require the relevant simulator or hardware; mock values cannot establish real hinge sensors, transport behavior, or external-output availability.
+
 ## Testing
 
 Run the deterministic package regression suite from the repository root:

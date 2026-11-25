@@ -60,8 +60,28 @@ public extension UIView {
 import SwiftUI
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Application {
-    func screenshots() -> [Image] {
-        var images = [Image]()
+    /// Convenience images for app-owned presentations; use captureAppPresentations for IDs/status.
+	@MainActor
+	func screenshots() -> [Image] { captureAppPresentations().compactMap(\.image) }
+
+	/// Whole-display capture is separate and permission-aware on macOS.
+	/// Calling without permission returns an empty result unless requestPermission is true.
+	@MainActor
+	func captureDesktopDisplays(requestPermission: Bool = false) -> [Image] {
+		#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+		if !CGPreflightScreenCaptureAccess() {
+			guard requestPermission && CGRequestScreenCaptureAccess() else { return [] }
+		}
+		return legacyDesktopScreenshots()
+		#else
+		return []
+		#endif
+	}
+
+	// Retains the original platform capture implementation separately from app captures.
+	@MainActor
+	private func legacyDesktopScreenshots() -> [Image] {
+        var images = [SwiftUI.Image]()
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 //    for window in NSApplication.shared.windows {
 //      if let image = window.renderImage() {
@@ -74,15 +94,17 @@ public extension Application {
             debug("Display access error: \(result)", level: .WARNING)
             return images
         }
+        guard displayCount > 0 else { return images }
         let allocated = Int(displayCount)
         let activeDisplays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocated)
+        defer { activeDisplays.deallocate() }
         result = CGGetActiveDisplayList(displayCount, activeDisplays, &displayCount)
         guard result == CGError.success else {
             debug("Display access error: \(result)", level: .WARNING)
             return images
         }
-        for i in 1...displayCount {
-            guard let screenShot = CGDisplayCreateImage(activeDisplays[Int(i-1)]) else { continue }
+        for i in 0..<min(Int(displayCount), allocated) {
+            guard let screenShot = CGDisplayCreateImage(activeDisplays[i]) else { continue }
             let image = NSImage(cgImage: screenShot, size: .init(width: CGFloat(screenShot.width), height: CGFloat(screenShot.height)))
             images.append(Image(nsImage: image))
         }
@@ -105,5 +127,65 @@ public extension Application {
         #endif
         return images
     }
+}
+#endif
+
+#if canImport(SwiftUI)
+/// A capture outcome for one app-owned presentation; this never claims a device-wide screenshot.
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+public struct AppPresentationCapture: Identifiable {
+	public enum Status: String, Sendable { case success, unsupported, incomplete }
+	public let id: String
+	public let displayID: String?
+	public let presentationID: String?
+	public let status: Status
+	public let image: SwiftUI.Image?
+	public let detail: String?
+}
+
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+@MainActor
+public extension Application {
+	/// Captures each owned window separately at its display's render scale.
+	/// Protected/video content can be absent. CarPlay template scenes without a drawable
+	/// app window are explicitly unsupported; no transport or entitlement is inferred.
+	func captureAppPresentations() -> [AppPresentationCapture] {
+		var results: [AppPresentationCapture] = []
+		#if canImport(UIKit) && !os(watchOS)
+		func capture(_ window: UIWindow) {
+			guard !window.isHidden else { return }
+			let snapshot = DisplayMonitor.shared.presentation(for: window)
+			guard window.bounds.width > 0 && window.bounds.height > 0 else {
+				results.append(.init(id: snapshot.id, displayID: snapshot.display.id, presentationID: snapshot.id, status: .unsupported, image: nil, detail: "The app window has no renderable bounds."))
+				return
+			}
+			let rendered = window.renderImage(scale: CGFloat(snapshot.display.scale ?? 1))
+			results.append(.init(id: snapshot.id, displayID: snapshot.display.id, presentationID: snapshot.id, status: rendered == nil ? .unsupported : .incomplete,
+				image: rendered.map { SwiftUI.Image(uiImage: $0) }, detail: "App layer capture; protected, video, and system surfaces may be omitted."))
+		}
+		let scenes = UIApplication.shared.connectedScenes
+		for scene in scenes {
+			guard let scene = scene as? UIWindowScene else {
+				let id = "scene-\(ObjectIdentifier(scene))"
+				results.append(.init(id: id, displayID: nil, presentationID: id, status: .unsupported, image: nil, detail: "Scene role \(scene.session.role.rawValue) has no drawable app window (for example, a CarPlay template scene)."))
+				continue
+			}
+			for window in scene.windows { capture(window) }
+		}
+		#elseif canImport(AppKit)
+		for window in (NSApp?.windows ?? []) where window.isVisible {
+			guard let snapshot = DisplayMonitor.shared.presentation(for: window), let view = window.contentView else { continue }
+			let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds)
+			var image: SwiftUI.Image?
+			if let bitmap {
+				view.cacheDisplay(in: view.bounds, to: bitmap)
+				let native = NSImage(size: view.bounds.size); native.addRepresentation(bitmap)
+				image = SwiftUI.Image(nsImage: native)
+			}
+			results.append(.init(id: snapshot.id, displayID: snapshot.display.id, presentationID: snapshot.id, status: image == nil ? .unsupported : .incomplete, image: image, detail: "App content-view capture; independent of permission-based whole-display capture."))
+		}
+		#endif
+		return results
+	}
 }
 #endif

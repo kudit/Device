@@ -11,6 +11,9 @@ import UIKit
 #if canImport(IOKit)
 import IOKit
 #endif
+#if canImport(Combine)
+import Combine
+#endif
 
 // String constants for SF Symbols
 public extension String {
@@ -21,6 +24,7 @@ public extension Device {
     @available(*, deprecated, renamed: "Build.Environment")
     typealias Environment = Build.Environment
 }
+
 extension Build.Environment: DeviceAttributeExpressible {}
 
 public extension Build.Environment {
@@ -50,14 +54,13 @@ public extension Build.Environment {
 public extension Device {
     /// An object representing the current device this software is running on.
     // TODO: Figure out how to handle this with concurrency.
-    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @MainActor
-    static let current: some CurrentDevice = ActualHardwareDevice() // singleton representing the current device but separated so that we can replace or mock and never directly access.
+    static var current: ActualHardwareDevice { ActualHardwareDevice.shared }
 }
 
 public enum ThermalState: SymbolRepresentable, Sendable {
     case nominal, fair, serious, critical
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
         switch self {
         case .nominal:
             return "thermometer.medium.slash"
@@ -106,9 +109,8 @@ public extension ProcessInfo.ThermalState {
 //#if canImport(Observable)
 //@Observable
 //#endif // TODO: this is only supported in iOS 17+ so wait to implement until we no longer need backwards compatibility
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-@MainActor // Inferred conformance to Sendable
-public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs explicit conformance to for background await usage.
+@MainActor
+public protocol CurrentDevice: DeviceType, Sendable {
     associatedtype BatteryType: Battery
 
     // Environment
@@ -142,7 +144,13 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs
     /// The brightness level of the screen from 0.0 to 1.0 (can be set)
     var brightness: Double? { get set }
     /// Returns the screen orientation if applicable or `nil`
-    var screenOrientation: Screen.Orientation? { get }
+    var screenOrientation: Device.LegacyOrientation? { get }
+    /// Previous cardinal orientation spelling, retained for UIKit-facing clients.
+    var legacyOrientation: Device.LegacyOrientation? { get }
+    /// Returns the latest cached physical orientation without starting motion updates.
+    var deviceOrientation: Device.Orientation { get }
+	/// User-configured Apple Watch Digital Crown side; nil on other platforms.
+	var crownSide: Device.CrownSide? { get }
     
     // Power and hardware
     /// Returns a battery object that can be monitored or queried for live data if a battery is present on the device.  If not, this will return `nil`.  Needed to be a concrete type for use in BatteryView.
@@ -153,7 +161,17 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs
     func disableIdleTimerWhenPluggedIn()
     /// Returns the current thermal state of the system (or nil if could not be determined)
     var thermalState: ThermalState { get }
-    
+    /// Returns the latest cached physical posture without starting motion updates.
+    var pose: Device.Pose { get }
+    /// Acquires one fresh motion sample for an occasional query without enabling continuous updates.
+    /// The callback receives the resulting device orientation and pose; the sensor stops afterward
+    /// unless a live pose observer is active.
+    @MainActor func requestMotionUpdate(completion: @escaping (Device.Orientation, Device.Pose) -> Void)
+    /// Acquires one fresh motion sample and returns only the resulting pose.
+    @MainActor func requestPoseUpdate(completion: @escaping (Device.Pose) -> Void)
+    /// Latest foreground-observed native hinge, or nil without an observer/support.
+    var hinge: Device.Hinge? { get }
+
     // Storage Info
     /// The volume’s total capacity in bytes.
     var volumeTotalCapacity: Int64? { get }
@@ -167,8 +185,62 @@ public protocol CurrentDevice: ObservableObject, DeviceType, Sendable { // needs
     /// will enable monitoring at the specified frequency.  If this is called multiple times, it will replace the existing monitor.
     func enableMonitoring(frequency: TimeInterval)
 }
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+
+public extension CurrentDevice {
+    var legacyOrientation: Device.LegacyOrientation? { screenOrientation }
+	var crownSide: Device.CrownSide? { nil }
+    var hinge: Device.Hinge? { nil }
+    var pose: Device.Pose { .unknown }
+	@MainActor func requestMotionUpdate(completion: @escaping (Device.Orientation, Device.Pose) -> Void) { completion(deviceOrientation, pose) }
+	@MainActor func requestPoseUpdate(completion: @escaping (Device.Pose) -> Void) { completion(pose) }
+	var deviceOrientation: Device.Orientation {
+		Device.Orientation(legacy: screenOrientation ?? .unknown, idiom: device.idiom, isFoldable: device.screens.count > 1)
+	}
+}
+
+/// An immutable point-in-time view of the live device values.
+///
+/// Use this when a consumer needs a stable value instead of subscribing to CurrentDevice updates.
+public struct CurrentDeviceSnapshot {
+	public let device: Device
+	public let identifier: String
+	public let name: String
+	public let systemName: String
+	public let systemVersion: Version
+	public let brightness: Double?
+	public let screenOrientation: Device.LegacyOrientation?
+	public let deviceOrientation: Device.Orientation
+	public let battery: BatterySnapshot?
+	public let thermalState: ThermalState
+	public let pose: Device.Pose
+	public let hinge: Device.Hinge?
+
+	@MainActor
+	public init(currentDevice: any CurrentDevice) {
+		device = currentDevice.device
+		identifier = currentDevice.identifier
+		name = currentDevice.name
+		systemName = currentDevice.systemName
+		systemVersion = currentDevice.systemVersion
+		brightness = currentDevice.brightness
+		screenOrientation = currentDevice.screenOrientation
+		deviceOrientation = currentDevice.deviceOrientation
+		if let battery = currentDevice.battery {
+			self.battery = BatterySnapshot(currentLevel: battery.currentLevel, currentState: battery.currentState, lowPowerMode: battery.lowPowerMode)
+		} else {
+			battery = nil
+		}
+		thermalState = currentDevice.thermalState
+		pose = currentDevice.pose
+		hinge = currentDevice.hinge
+	}
+}
+
 extension CurrentDevice {
+	/// Captures commonly consumed live properties without exposing an observable reference.
+	@MainActor
+	public var snapshot: CurrentDeviceSnapshot { CurrentDeviceSnapshot(currentDevice: self) }
+
     /// Returns the version number of Swift being used to compile
     public var swiftVersion: String {
         Build.swiftVersion
@@ -236,11 +308,13 @@ extension CurrentDevice {
         if let battery, let batteryInfo = battery.info {
             fields += [batteryInfo]
         }
+		DisplayMonitor.shared.start()
+		fields += CurrentDisplayInfo.fields(idiom: idiom, presentations: DisplayMonitor.shared.presentations, pose: pose, orientation: screenOrientation, isFoldable: device.screens.count > 1)
         // volume info
         fields += [
             Field("Volume Total Capacity", volumeTotalCapacity?.byteString(.file) ?? "n/a"),
-            Field("Volume Available Capacity for Important Resources", volumeAvailableCapacityForImportantUsage?.byteString(.file) ?? "n/a"),
-            Field("Volume Available Capacity for Opportunistic Resources", volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a"),
+//            Field("Important Available Capacity", volumeAvailableCapacityForImportantUsage?.byteString(.file) ?? "n/a"),
+//            Field("Opportunistic Available Capacity", volumeAvailableCapacityForOpportunisticUsage?.byteString(.file) ?? "n/a"),
             Field("Volume Available Capacity", volumeAvailableCapacity?.byteString(.file) ?? "n/a"),
         ]
         return fields
@@ -251,6 +325,34 @@ extension CurrentDevice {
     public var description: String {
         return info.description
     }
+}
+
+/// Support reports have no owning SwiftUI view, so list every discovered window
+/// instead of arbitrarily picking a globally "active" one. Unknown values stay explicit.
+enum CurrentDisplayInfo {
+	@MainActor static func fields(idiom: Device.Idiom, presentations: [PresentationSnapshot], pose: Device.Pose, orientation: Device.LegacyOrientation? = nil, isFoldable: Bool = false) -> [Field] {
+		func dimensions(_ bounds: DisplayRect?) -> String {
+			guard let size = bounds?.size else { return "Unavailable" }
+			return "\(size.width) × \(size.height) points"
+		}
+		var fields: [Field] = []
+		if idiom != .watch && idiom != .tv && idiom != .vision && presentations.count > 1 {
+			fields.append(Field("Window Sizes", presentations.isEmpty ? "Unavailable" : presentations.map { "\($0.id): \(dimensions($0.windowBounds))" }.joined(separator: "; ")))
+		}
+		if idiom == .watch {
+			fields.append(Field("Digital Crown Side", Device.current.crownSide?.accessibilityDescription ?? "Unavailable"))
+		}
+		if isFoldable {
+			fields.append(Field("Device Pose", pose.accessibilityDescription))
+			if let windowPlacement = presentations.first?.windowPlacement {
+				fields.append(Field("Window Placement", windowPlacement.rawValue))
+			}
+		}
+		if [.phone, .pad, .pod].contains(idiom) {
+			fields.append(Field("Device Orientation", orientation.map { String(describing: $0) } ?? "Unavailable"))
+		}
+		return fields
+	}
 }
 
 // MARK: - Hardware calculations from the system used that can be actor-independent
@@ -489,7 +591,7 @@ public extension Device {
     
     /// Returns the screen orientation if applicable or `nil`
     @MainActor
-    static var screenOrientation: Screen.Orientation? {
+    static var screenOrientation: Device.LegacyOrientation? {
 #if os(iOS) && !os(visionOS)
         switch UIDevice.current.orientation {
         case .unknown:
@@ -509,6 +611,12 @@ public extension Device {
         @unknown default:
             return .unknown
         }
+#elseif os(watchOS)
+		switch WKInterfaceDevice.current().crownOrientation {
+		case .left: return .portrait
+		case .right: return .portraitUpsideDown
+		@unknown default: return .unknown
+		}
 #else
         return nil
 #endif
@@ -579,10 +687,18 @@ public extension Device {
 
 
 // this is internal because it shouldn't be directly needed outside the framework.  Everything is exposed via CurrentDevice protocol.  However, making this internal causes issues with the release build and analyze so made public.
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor // All calculations/queries should be quick so we can isolate to main actor to give Sendable conformance.
-public final class ActualHardwareDevice: CurrentDevice {
+public final class ActualHardwareDevice: CurrentDevice, ObservableObjectBackport {
+	public var _objectWillChange: AnyObject?
+
 #if canImport(Combine)
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+	public var objectWillChange: ObservableObjectPublisher { backportObjectWillChange }
+#endif
+
+    @MainActor
+    public static let shared = ActualHardwareDevice()
+#if canImport(Combine) && !os(watchOS)
     public typealias BatteryType = MonitoredDeviceBattery
 #else
     public typealias BatteryType = DeviceBattery
@@ -595,17 +711,19 @@ public final class ActualHardwareDevice: CurrentDevice {
     static var timer: Timer?
     @MainActor
     public func enableMonitoring(frequency: TimeInterval) {
+		// stop any existing timers
         if let timer = Self.timer {
             timer.invalidate()
         }
         Self.timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
-            self.objectWillChange.send()
-            //      print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
+			self.objectWillChangeBackport()
+			//      print("AHD Update \(Date().timeIntervalSinceReferenceDate)")
         }
     }
     
     init() {
         device = Device(identifier: identifier)
+		DisplayMonitor.shared.didChange = { [weak self] in self?.objectWillChangeBackport() }
         // add screen orientation monitor (only supported by UIDevice which is fine)
 #if canImport(UIKit)
 #if os(iOS) // technically supported by mac catalyst as well but not sure when it would be ever used in tvOS or visionOS or macCatalyst etc.
@@ -615,7 +733,7 @@ public final class ActualHardwareDevice: CurrentDevice {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            self.objectWillChange.send()
+			self.objectWillChangeBackport()
         }
 #endif
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
@@ -624,9 +742,9 @@ public final class ActualHardwareDevice: CurrentDevice {
             object: nil,
             queue: OperationQueue.main
         ) { notification in
-            // Do your work after received notification
-            self.objectWillChange.send()
-        }
+			// Do your work after received notification
+			self.objectWillChangeBackport()
+		}
 #endif
 #endif
     }
@@ -776,9 +894,25 @@ public final class ActualHardwareDevice: CurrentDevice {
     }
     
     /// Returns the screen orientation if applicable or `nil`
-    public var screenOrientation: Screen.Orientation? {
+    public var screenOrientation: Device.LegacyOrientation? {
         Device.screenOrientation
     }
+
+	/// Returns the live physical orientation using camera-corner directions on tablets and foldables.
+	public var deviceOrientation: Device.Orientation {
+		return DisplayMonitor.shared.deviceOrientation
+	}
+	public var crownSide: Device.CrownSide? {
+#if os(watchOS)
+		switch WKInterfaceDevice.current().crownOrientation {
+		case .left: return .left
+		case .right: return .right
+		@unknown default: return nil
+		}
+#else
+		return nil
+#endif
+	}
     
     // MARK: - Power & Hardware
     
@@ -794,7 +928,7 @@ public final class ActualHardwareDevice: CurrentDevice {
             return nil
         }
         if device.has(.battery) {
-#if canImport(Combine)
+#if canImport(Combine) && !os(watchOS)
             return MonitoredDeviceBattery.current
 #else
             return DeviceBattery.current
@@ -803,18 +937,14 @@ public final class ActualHardwareDevice: CurrentDevice {
         return nil
     }
     
-#if canImport(Combine)
-    @Published private var _isIdleTimerDisabled = false
-#else
     private var _isIdleTimerDisabled = false
-#endif
     /// Ability to change/get the idle timeout setting.
     public var isIdleTimerDisabled: Bool {
         get {
             _isIdleTimerDisabled
         }
         set {
-            _isIdleTimerDisabled = newValue
+			observeChange(&_isIdleTimerDisabled, newValue)
             _disableIdleTimer(newValue)
         }
     }
@@ -826,11 +956,7 @@ public final class ActualHardwareDevice: CurrentDevice {
         UIApplication.shared.isIdleTimerDisabled = disabled
 #endif
     }
-#if canImport(Combine)
-    @Published private var _disableIdleTimerWhenPluggedIn = false
-#else
     private var _disableIdleTimerWhenPluggedIn = false
-#endif
     /// Automatically start monitoring the battery state to disable idle timer when plugged in and re-enable when unplugged.
     public func disableIdleTimerWhenPluggedIn() {
         guard !_disableIdleTimerWhenPluggedIn else {
@@ -859,7 +985,27 @@ public final class ActualHardwareDevice: CurrentDevice {
     public var thermalState: ThermalState {
         Device.thermalState
     }
+
+    /// Physical posture and orientation, independent of a window's layout.
+    public var pose: Device.Pose {
+        return DisplayMonitor.shared.pose
+    }
+
+	/// Delivers one fresh orientation and pose after briefly sampling device motion, then stops the sensor unless a live observer remains.
+	public func requestMotionUpdate(completion: @escaping (Device.Orientation, Device.Pose) -> Void) {
+		DisplayMonitor.shared.requestMotionUpdate(completion)
+	}
+
+	/// Delivers one fresh pose after briefly sampling device motion, then stops the sensor unless a live observer remains.
+	public func requestPoseUpdate(completion: @escaping (Device.Pose) -> Void) {
+		DisplayMonitor.shared.requestPoseUpdate(completion)
+	}
     
+    /// Latest foreground-observed native hinge, or nil without an observer/support.
+    public var hinge: Device.Hinge? {
+        DeviceHingeRegistry.shared.current
+    }
+
     
     // MARK: - Storage Info
     
@@ -884,30 +1030,40 @@ public final class ActualHardwareDevice: CurrentDevice {
     }   
 }
 
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 4, *)
 @MainActor
-public final class MockDevice: CurrentDevice {
+public final class MockDevice: CurrentDevice, ObservableObjectBackport {
     public typealias BatteryType = MockBattery
     public let device: Device
-    
+
+	public var _objectWillChange: AnyObject?
+#if canImport(Combine)
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+	public var objectWillChange: ObservableObjectPublisher { backportObjectWillChange }
+#endif
+
     var timer: Timer?
     public func enableMonitoring(frequency: TimeInterval) {
         if let timer {
             timer.invalidate()
         }
         timer = Timer.scheduledTimer(withTimeInterval: frequency, repeats: true) { timer in
-            self.objectWillChange.send()
+			Compatibility.main {
+				self.objectWillChangeBackport()
+			}
         }
     }
     
     static var mockCount = 1
     public var cycleAnimation: TimeInterval
     private var brightnessIncreasing = false
-#if canImport(Combine)
-    @Published internal var updateCount = 0
-#else
-    internal var updateCount = 0
-#endif
+	/// Backing state for the animation counter. Manual publication keeps this mock's
+	/// observable behavior consistent with its watchOS 4-compatible storage path.
+	private var _updateCount = 0
+	internal var updateCount: Int {
+		get { _updateCount }
+		set { observeChange(&_updateCount, newValue) }
+	}
     public init(
         device: Device? = nil,
         identifier: String? = nil,
@@ -922,7 +1078,8 @@ public final class MockDevice: CurrentDevice {
         isZoomed: Bool = false,
         isGuidedAccessSessionActive: Bool = false,
         brightness: Double? = 0.5,
-        screenOrientation: Screen.Orientation? = .landscapeLeft,
+        screenOrientation: Device.LegacyOrientation? = .landscapeLeft,
+        pose: Device.Pose? = nil,
         
         battery: BatteryType? = nil,
         isIdleTimerDisabled: Bool = false,
@@ -953,7 +1110,7 @@ public final class MockDevice: CurrentDevice {
                 launchOSVersion: "2",
                 unsupportedOSVersion: nil,
                 capabilities: [.screens([.undefined])],
-                colors: [.blue],
+				colors: .iMac2024,
                 cpu: .unknown)
         }
         self.name = name
@@ -967,6 +1124,11 @@ public final class MockDevice: CurrentDevice {
         self.isGuidedAccessSessionActive = isGuidedAccessSessionActive
         self.brightness = brightness
         self.screenOrientation = screenOrientation
+		self.pose = pose ?? Device.Pose.inferred(
+			orientation: Device.Orientation(legacy: screenOrientation ?? .unknown, idiom: self.device.idiom, isFoldable: self.device.screens.count > 1),
+			hinge: nil,
+			gravityZ: nil,
+			isFoldable: self.device.screens.count > 1)
         self.battery = battery
         self.isIdleTimerDisabled = isIdleTimerDisabled
         self.thermalState = thermalState
@@ -981,12 +1143,19 @@ public final class MockDevice: CurrentDevice {
         guard cycleAnimation > 0 else {
             return // no need to create timer if no cycle animation
         }
-        // create and schedule timer
-        animationTimer = Timer.scheduledTimer(withTimeInterval: cycleAnimation, repeats: true) { timer in
-            Task { @MainActor in
-                self.update()
-            }
+		// WASI's Foundation RunLoop has no `add(_:forMode:)`; this timer only drives
+		// the sample app's diagnostic animation, so omit it on that target.
+		#if !os(WASI)
+		// Common mode keeps the diagnostic animation advancing during scrolling and
+		// other run-loop interactions in the sample app.
+		let timer = Timer(timeInterval: cycleAnimation, repeats: true) { [weak self] _ in
+			Compatibility.main { [weak self] in
+				self?.update()
+			}
         }
+		animationTimer = timer
+		RunLoop.main.add(timer, forMode: .common)
+		#endif
     }
     var animationTimer: Timer?
 
@@ -1041,14 +1210,20 @@ public final class MockDevice: CurrentDevice {
         if updateCount % 7 == 0 {
             isZoomed = !isZoomed
         }
-        // orientation (every 5 ticks)
+        // Cycle the physical posture alongside the other mock measurements.
         if updateCount % 11 == 0 {
-            if var screenOrientation {
-                screenOrientation++
-                self.screenOrientation = screenOrientation
-            } else {
-                screenOrientation = .unknown
-            }
+			// Keep posture and orientation paired so the animated Duo mock can
+			// exercise meaningful combinations instead of changing only its pose.
+			let states: [(Device.Pose, Device.LegacyOrientation)] = [
+				(.closed, .portrait), (.closed, .landscapeRight), (.closed, .portraitUpsideDown), (.closed, .landscapeLeft),
+				(.fullyOpen, .portrait), (.fullyOpen, .landscapeRight), (.fullyOpen, .portraitUpsideDown), (.fullyOpen, .landscapeLeft),
+				(.fullyOpen, .faceUp), (.fullyOpen, .faceDown),
+				(.book, .portrait), (.book, .portraitUpsideDown),
+				(.tent, .landscapeRight), (.seated, .landscapeLeft), (.seated, .landscapeRight)
+			]
+			let state = states[((updateCount / 11) - 1) % states.count]
+			pose = state.0
+			screenOrientation = state.1
         }
         // guided access mode
         if updateCount % 17 == 0 {
@@ -1088,15 +1263,17 @@ public final class MockDevice: CurrentDevice {
     public let localizedModel: String
     
     public var isGuidedAccessSessionActive: Bool = false
-#if canImport(Combine)
+#if canImport(Combine) && !os(watchOS)
     @Published public var isZoomed: Bool = false
     @Published public var brightness: Double? = 0.5
-    @Published public var screenOrientation: Screen.Orientation? = .landscapeLeft
+    @Published public var screenOrientation: Device.LegacyOrientation? = .landscapeLeft
+    @Published public var pose: Device.Pose = .unknown
     @Published public var thermalState: ThermalState = .nominal
 #else
     public var isZoomed: Bool = false
     public var brightness: Double? = 0.5
-    public var screenOrientation: Screen.Orientation? = .landscapeLeft
+    public var screenOrientation: Device.LegacyOrientation? = .landscapeLeft
+    public var pose: Device.Pose = .unknown
     public var thermalState: ThermalState = .nominal
 #endif
     
@@ -1112,7 +1289,7 @@ public final class MockDevice: CurrentDevice {
     public var volumeAvailableCapacity: Int64?
         
     @MainActor
-    public static let animated = MockDevice(cycleAnimation: 0.1)
+	public static let animated = MockDevice(device: Device(identifier: "iPhone19,4"), cycleAnimation: 0.1)
     @MainActor
     public static let mocks = [
         animated,
@@ -1126,9 +1303,17 @@ public final class MockDevice: CurrentDevice {
     
 }
 
+#if canImport(Combine)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+extension ActualHardwareDevice: @preconcurrency ObservableObject {
+}
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+extension MockDevice: @preconcurrency ObservableObject {}
+#endif
+
 #if canImport(SwiftUI) && canImport(Foundation) && swift(>=5.9)
 import SwiftUI
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview("Animated Test") {
     List {
         CurrentDeviceInfoView(device: Device.current, includeStorage: true)

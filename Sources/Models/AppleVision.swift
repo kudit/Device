@@ -36,7 +36,7 @@ public struct AppleVision: IdiomType, HasCameras {
             image: image,
             capabilities: Device.Idiom.vision.capabilities.union(capabilities),
             models: models,
-            colors: [.silver],
+            colors: .iPodTouch,
             cpu: cpu
         )
     }
@@ -54,7 +54,7 @@ public struct AppleVision: IdiomType, HasCameras {
     }
     
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
         return "visionpro"
     }
 

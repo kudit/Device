@@ -17,7 +17,10 @@ struct MacLookup: DeviceBridge {
         scoped.models = comparisonIdentifiers.filter { member.identifiers.contains($0) }
         scoped.parts = sourceGroupValues(parts, member: member.models, group: group.map { $0.models })
         scoped.colors = sourceGroupValues(colors, member: member.colors.map { $0.name }, group: group.map { $0.colors.map { $0.name } })
-        scoped.name = sourceGroupName(name, member: member, group: group)
+        // MacLookup sometimes repeats the processor after Apple's parenthetical
+        // product name ("... (14-inch, M6) M6"); Apple's displayed name does not.
+        let normalizedName = name.removingRepeatedTrailingProcessor
+        scoped.name = sourceGroupName(normalizedName, member: member, group: group)
         // Variant repeats the parenthetical name; keep the comparison projection
         // internally consistent without modifying the original grouped source.
         scoped.variant = scoped.name.extract(from: "(", to: ")") ?? variant
@@ -37,7 +40,7 @@ struct MacLookup: DeviceBridge {
 
     var models: [String] // identifiers
     var kind: String // form
-    var colors: [String] // Convert to MaterialColors
+    var colors: [String] // Convert to AppleMaterialColors
     var name: String
     var notes: [String]?
     var variant: String // included in name so unused
@@ -55,27 +58,28 @@ struct MacLookup: DeviceBridge {
     }
         
     var matched: Device {
-        Device.forcedLookup(identifier: models.first, model: parts.first, officialNameHint: name)
+        Device.forcedLookup(identifier: models.first, model: parts.first, officialNameHint: name.removingRepeatedTrailingProcessor)
     }
     
     var merged: Device {
         // Preserve the singular API for older callers; group-aware exports use mergedDevices.
         if let member = groupedComparisons.first { return member.merged }
+        let normalizedName = name.removingRepeatedTrailingProcessor
         let form = Mac.Form.create(from: kind)
-        // convert colors to MaterialColors
+        // convert colors to AppleMaterialColors
         let matched = self.matched
-        let colorContext = matched.colors.isEmpty ? self.name : matched.officialName
-        var materials = [MaterialColor]()
+        let colorContext = matched.colors.isEmpty ? normalizedName : matched.officialName
+        var materials = [AppleMaterialColor]()
         for color in colors {
             // Prefer the local matched device name when available so generic Mac
             // colors such as Silver and Space Black resolve against the correct Mac
             // palette even when MacLookup includes an extra year or combined CPU
             // wording in its product name.
-            materials.append(MaterialColor(named: color, context: colorContext))
+            materials.append(AppleMaterialColor(named: color, context: colorContext))
         }
         // if we match, go ahead and use the matched order
-        let materialsNames = materials.map { $0.caseName }.sorted()
-        let colorNames = matched.colors.map { $0.caseName }.sorted()
+        let materialsNames = materials.map { $0.name }.sorted()
+        let colorNames = matched.colors.map { $0.name }.sorted()
         if materials.isEmpty || materialsNames == colorNames {
             // just use the matched colors since we clearly aren't providing here or aren't correct
             materials = matched.colors
@@ -97,7 +101,7 @@ struct MacLookup: DeviceBridge {
         capabilities.insert(.usbC)
         capabilities.subtract(form.capabilities) // will automatically be added by form so no need to double add.
         return Mac(
-            officialName: name,
+            officialName: normalizedName,
             identifiers: models.distilled,
             introduction: nil,
             supportId: .unknownSupportId,
@@ -149,6 +153,21 @@ extension [String] {
         return items
     }
 }
+
+private extension String {
+	/// Removes only a trailing chip label already present inside the final parentheses.
+	var removingRepeatedTrailingProcessor: String {
+		guard let close = lastIndex(of: ")"),
+			let open = self[..<close].lastIndex(of: "("),
+			let chipPart = self[self.index(after: open)..<close].split(separator: ",").last,
+			let chip = Optional(String(chipPart).trimmed), // will always return a value but adding Optional allows keeping in the guard.
+			!chip.isEmpty
+		else { return self }
+		let suffix = " " + chip
+		guard hasSuffix(suffix) else { return self }
+		return String(dropLast(suffix.count))
+	}
+}
 extension Mac.Form {
     /// Name (ex: "MacBook Pro", "iMac", "Mac mini")
     static func create(from kindString: String) -> Mac.Form {
@@ -176,14 +195,15 @@ extension Mac.Form {
             kindString = "Mac"
         case .iMac:
             kindString = "iMac"
-        case .macBook, .macBookGen1, .macBookGen2:
+        case .macBook, .macBookGen1, .macBookGen2, .macBookGen3:
             kindString = "MacBook"
         case .macMini:
             kindString = "Mac mini"
         case .macStudio:
             kindString = "Mac Studio"
         }
-        if context.is(.pro) {
+        // Mac mini has a Pro chip tier, but Apple's product kind remains "Mac mini".
+        if context.is(.pro), self != .macMini {
             kindString += " Pro"
         }
         if context.is(.air) {

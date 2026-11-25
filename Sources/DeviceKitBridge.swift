@@ -12,10 +12,11 @@ import Compatibility
  Previous implementation for testing for simulator was to lookup in cases.  New version actually tests the bundle to see if we're running in a simulator.
  */
 
-public extension Device {   
+@available(iOS 11, tvOS 11, watchOS 4, *)
+public extension Device {
     /// Returns diagonal screen length in inches
     var diagonal: Double {
-        guard let screen = self.screen else {
+        guard let screen = screens.first else {
             return -1
         }
         return screen.diagonal ?? -1
@@ -24,7 +25,7 @@ public extension Device {
     /// Returns screen ratio as a tuple.  May need to reduce as will return a resolution.
     @available(*, deprecated, message: "Please let us know how you're using this and why this might be necessary vs querying the screen dimensions.")
     var screenRatio: (Int, Int) {
-        guard let screen = self.screen else {
+        guard let screen = screens.first else {
             return (-1,-1)
         }
         let resolution = screen.resolution
@@ -33,14 +34,9 @@ public extension Device {
     }
     
     /// The brightness level of the screen (between 0 and 100).  Only supported on iOS and macCatalyst.  Returns -1 if not supported.
-    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @MainActor
     var screenBrightness: Int {
-        if let brightness = Device.current.brightness {
-            return Int(brightness * 100)
-        } else {
-            return -1
-        }
+		return Device.current.snapshot.brightness.map { Int($0 * 100) } ?? -1
     }
     
     /// allX static functions not included.  If you have a use case that needs any of these rather than testing, please let us know.
@@ -95,7 +91,6 @@ public extension Device {
     }
     
     /// Returns whether the current device is a SwiftUI preview canvas
-    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Build.isPreview")
     @MainActor
     var isCanvas: Bool? {
@@ -105,7 +100,6 @@ public extension Device {
     
     /// Returns whether the device is any of the simulator
     /// Useful when there is a need to check and skip running a portion of code (location request or others)
-    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @available(*, deprecated, renamed: "Build.isSimulator")
     @MainActor
     var isSimulator: Bool {
@@ -151,11 +145,12 @@ public extension Device {
     
     /// PPI (Pixels per Inch) on the current device's screen (if applicable). When the device is not applicable this property returns nil.
     var ppi: Int? {
-        return screen?.ppi
+        return screens.first?.ppi
     }
 }
 
 // MARK: Listing helpers for Device Kit bridging
+@available(iOS 11, tvOS 11, watchOS 4, *)
 public extension Device {
     /// All iPods
     @available(*, deprecated, renamed: "iPod.allDevices")
@@ -191,6 +186,7 @@ public extension Device {
 }
 
 // MARK: Equatable
+@available(iOS 11, tvOS 11, watchOS 4, *)
 extension Device: Equatable {
     
     /// Compares two devices.
@@ -209,8 +205,7 @@ extension Device: Equatable {
 }
 
 // MARK: Battery
-#if os(iOS) || os(watchOS)
-@available(iOS 8.0, watchOS 4.0, *)
+@available(iOS 11, tvOS 11, watchOS 4, *)
 public extension Device {
     /**
      This enum describes the state of the battery.  This should not be used as there is no unknown or no-battery state.
@@ -229,31 +224,29 @@ public extension Device {
         /// The associated value is in percent (0—100).
         case unplugged(Int)
         
-        @available(iOS 13.0, watchOS 6, *)
         @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
         @MainActor
         fileprivate init() {
-            guard let battery = Device.current.battery else {
-                self = .full
-                return
-            }
-            let batteryLevel = battery.currentLevel
-            let state = battery.currentState
-            switch state {
-            case .unknown: self = .full // this seems like the wrong behavior which is why this is deprecated.
-            case .charging: self = .charging(batteryLevel)
-            case .full: self = .full
-            case .unplugged: self = .unplugged(batteryLevel)
-                //      @unknown default:
-                //        self = .unknown // To cover any future additions for which DeviceKit might not have updated yet.
-            }
+			guard let battery = Device.current.snapshot.battery else {
+				self = .full
+				return
+			}
+			let batteryLevel = battery.currentLevel
+			let state = battery.currentState
+			switch state {
+			case .unknown: self = .full // this seems like the wrong behavior which is why this is deprecated.
+			case .charging: self = .charging(batteryLevel)
+			case .full: self = .full
+			case .unplugged: self = .unplugged(batteryLevel)
+				//      @unknown default:
+				//        self = .unknown // To cover any future additions for which DeviceKit might not have updated yet.
+			}
         }
         
         /// The user enabled Low Power mode
-        @available(iOS 13.0, watchOS 6, *)
         @MainActor
         public var lowPowerMode: Bool {
-            return Device.current.battery?.lowPowerMode ?? false
+			return Device.current.snapshot.battery?.lowPowerMode ?? false
         }
         
         /// Provides a textual representation of the battery state.
@@ -263,15 +256,14 @@ public extension Device {
         /// Battery level: 100 % (Full), device is plugged in.
         /// Battery level: \(batteryLevel)%, device is unplugged.
         /// ```
-        @available(iOS 13.0, watchOS 6, *)
         @MainActor
         public var description: String {
-            return Device.current.battery?.description ?? "No Battery"
+			guard let battery = Device.current.snapshot.battery else { return "No Battery" }
+			return "Battery level: \(battery.currentLevel)% (\(battery.currentState))"
         }
     }
     
     /// The state of the battery
-    @available(iOS 13.0, watchOS 6, *)
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
     @MainActor
     var batteryState: BatteryState? {
@@ -279,15 +271,13 @@ public extension Device {
     }
     
     /// Battery level ranges from 0 (fully discharged) to 100 (100% charged).
-    @available(iOS 13.0, watchOS 6, *)
     @available(*, deprecated, message: "If you need this, please explain the use-case.  Should use Device.current.battery to get state or level or monitor for changes.")
     @MainActor
     var batteryLevel: Int? {
-        return Device.current.battery?.currentLevel
+		return Device.current.snapshot.battery?.currentLevel
     }
     
 }
-#endif
 
 // MARK: Device.Batterystate: Comparable
 //#if os(iOS) || os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
@@ -323,22 +313,20 @@ public extension Device {
 //}
 //#endif
 
-#if os(iOS)
+@available(iOS 11, tvOS 11, watchOS 4, *)
 public extension Device {
     // MARK: Orientation
     
     /// Defaults to `landscape` if we do not have a screen or cannot get the orientation.
-    @available(iOS 13.0, *)
     @MainActor
-    var orientation: Screen.Orientation {
-        return Device.current.screenOrientation ?? .unknown
+    var orientation: Device.LegacyOrientation {
+		return Device.current.snapshot.screenOrientation ?? .unknown
     }
 }
-#endif
 
-#if os(iOS)
 // MARK: Apple Pencil
 /// NOTE: This is for compatibility support.  Query the supportedPencils property instead for more complete results.
+@available(iOS 11, tvOS 11, watchOS 4, *)
 extension Device {
     /**
      This option set describes the current Apple Pencils
@@ -372,8 +360,8 @@ extension Device {
         return []
     }
 }
-#endif
 
+@available(iOS 11, tvOS 11, watchOS 4, *)
 extension Device {
     /// Returns whether or not the current device has a camera
     public var hasCamera: Bool {
@@ -383,9 +371,9 @@ extension Device {
 }
 
 // MARK: DiskSpace
+@available(iOS 11, tvOS 11, watchOS 4, *)
 extension Device {
     /// All volumes capacity information in bytes.
-    @available(iOS 11.0, *)
     @available(*, deprecated, message: "If you need this, please let us know why.")
     public static var volumes: [URLResourceKey: Int64]? {
 #if os(tvOS) || os(watchOS) || !canImport(Combine)

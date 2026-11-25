@@ -9,9 +9,16 @@ import Testing
 /// Runs every reusable Device and dependency test through Compatibility's shared adapter.
 @Suite
 struct DeviceTests {
+	@Test func deviceModulePublishesSharedTestEntries() async {
+		let entries = await Device.testEntries(including: [Device.self])
+		#expect(!entries.isEmpty)
+		#expect(entries.contains { $0.moduleIdentifier == Device.moduleIdentifier && $0.moduleName == "Device" })
+		#expect(entries.contains { $0.moduleIdentifier == Device.moduleIdentifier && $0.section == "Displays and presentations" })
+	}
+
     @Test("Device Module Tests", arguments: await Device.testEntries())
     @MainActor
-    @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     func moduleTests(entry: ModuleTestEntry) async throws {
         try await entry.execute()
     }

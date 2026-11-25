@@ -1,11 +1,11 @@
 #if canImport(Device) // since this is needed in XCode but is unavailable in Playgrounds.
 @_exported import Device
-@_exported import Compatibility // TODO: Import KuditConnect??
+@_exported import Compatibility // TODO: Import Support
 #endif
 #if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 
-@available(iOS 15, macOS 12, tvOS 17, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @main
 struct DeviceTestApp: App {
     init() {
@@ -41,15 +41,17 @@ struct DeviceTestApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            if #available(iOS 15, watchOS 8, tvOS 15, macOS 12, *) {
-                DeviceTestView()
+//            if #available(iOS 15, watchOS 8, tvOS 15, macOS 12, *) {
+				DeviceTestView()
+					.deviceDisplayContext()
+					.deviceExternalPresentation { context in ExternalDisplayDiagnosticsView(context: context) }
 //          .onAppear {
 //              Device.current.isIdleTimerDisabled = true
 //          }
-            } else {
-                // Fallback on earlier versions
-                Text("UI Tests not available on older platforms.  However, framework code should still work.")
-            }
+//            } else {
+//                // Fallback on earlier versions
+//                Text("UI Tests not available on older platforms.  However, framework code should still work.")
+//            }
         }
     }
 }

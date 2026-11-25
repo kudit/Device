@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Lightweight per-project entry point. Fetches the runner matching the
+# Compatibility version pinned by this package's Package.resolved.
+set -euo pipefail
+
+package_dir="$(cd "$(dirname "$0")" && pwd)"
+compatibility_version="${SPI_COMPATIBILITY_VERSION:-}"
+
+if [[ -z "$compatibility_version" ]]; then
+	compatibility_version="$(python3 - "$package_dir" <<'PY'
+import glob
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+paths = [root / "Package.resolved"]
+paths += [pathlib.Path(p) for p in glob.glob(str(root / "*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"))]
+paths += [pathlib.Path(p) for p in glob.glob(str(root / "*.xcworkspace/xcshareddata/swiftpm/Package.resolved"))]
+for path in paths:
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        continue
+    pins = data.get("pins", data.get("object", {}).get("pins", []))
+    for pin in pins:
+        location = pin.get("location", pin.get("repositoryURL", ""))
+        if pin.get("identity", "").lower() == "compatibility" or location.rstrip("/").endswith("/Compatibility.git"):
+            version = pin.get("state", {}).get("version")
+            if version:
+                print(version)
+                raise SystemExit(0)
+PY
+)"
+fi
+
+if [[ ! "$compatibility_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+	printf 'Could not determine the resolved Compatibility version. Set SPI_COMPATIBILITY_VERSION (for example, 1.21.4).\n' >&2
+	exit 2
+fi
+
+work_dir="$(mktemp -d "${TMPDIR:-/tmp}/spichecks-wrapper.XXXXXX")"
+trap 'rm -rf "$work_dir"' EXIT
+base_url="https://raw.githubusercontent.com/kudit/Compatibility/v${compatibility_version}"
+for script in spichecks spichecks-install; do
+	# GitHub's raw-content endpoint can transiently fail during TLS setup; retries
+	# keep that transport hiccup from aborting the whole local check run.
+	downloaded=0
+	for attempt in 1 2 3; do
+		if curl --fail --location --silent --show-error "$base_url/$script" -o "$work_dir/$script"; then
+			downloaded=1
+			break
+		fi
+		if (( attempt < 3 )); then sleep "$attempt"; fi
+	done
+	if (( ! downloaded )); then exit 1; fi
+	chmod +x "$work_dir/$script"
+done
+
+case "${1:-}" in
+	--utm) "$work_dir/spichecks" --utm "$package_dir" "${@:2}" ;;
+	--install|--uninstall|--list|--help|-h) "$work_dir/spichecks" "$@" ;;
+	*) "$work_dir/spichecks" "$package_dir" "$@" ;;
+esac

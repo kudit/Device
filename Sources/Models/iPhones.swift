@@ -23,19 +23,17 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
         image: String?,
         capabilities: Capabilities = [],
         models: [String] = [],
-        colors: [MaterialColor],
+        colors: [AppleMaterialColor],
         cpu: CPU,
         cameras: Set<Camera>, // force setting here
         cellular: Cellular, // force setting here
-        screen: Screen? = nil,
-        screens: [Screen]? = nil // force setting here; `screen` remains a source-compatible alias
+        screens: [Screen] // Explicit panels override any screen capability defaults.
     ) {
         var capabilities = capabilities
         capabilities.cameras = cameras
         capabilities.cellular = cellular
-        // Explicit `screens` wins; otherwise retain a grouped definition's display list
-        // before falling back to the source-compatible single-screen parameter.
-        capabilities.screens = screens ?? (capabilities.screens.isEmpty ? screen.map { [$0] } ?? [] : capabilities.screens)
+        // Explicit panels override grouped capability defaults, including an empty list.
+        capabilities.screens = screens
         // Apple added the magnetometer/digital compass in the iPhone 3GS; applying
         // this generation boundary centrally keeps every later iPhone definition
         // consistent without repeating the capability in each model.
@@ -51,13 +49,27 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: launchOSVersion,
             unsupportedOSVersion: unsupportedOSVersion,
             image: image,
-            capabilities: capabilities.union(Device.Idiom.phone.capabilities), // all iPhones have batteries
+            capabilities: capabilities.union(Device.Idiom.phone.capabilities).union([.touchDisplay]), // all iPhones have batteries and touch displays
             models: models,
             colors: colors,
             cpu: cpu
         )
     }
     
+	/// Source-compatible single-panel initializer. An omitted panel preserves capability defaults.
+	public init(
+		officialName: String, identifiers: [String], introduction: DateString? = nil,
+		supportId: String, launchOSVersion: Version, unsupportedOSVersion: Version?,
+		image: String?, capabilities: Capabilities = [], models: [String] = [],
+		colors: [AppleMaterialColor], cpu: CPU, cameras: Set<Camera>, cellular: Cellular,
+		screen: Screen? = nil
+	) {
+		self.init(officialName: officialName, identifiers: identifiers, introduction: introduction,
+			supportId: supportId, launchOSVersion: launchOSVersion, unsupportedOSVersion: unsupportedOSVersion,
+			image: image, capabilities: capabilities, models: models, colors: colors, cpu: cpu,
+			cameras: cameras, cellular: cellular, screens: screen.map { [$0] } ?? capabilities.screens)
+	}
+
     public init(identifier: String) { // Public for DeviceKit testing
         self.init(
             officialName: "Unknown iPhone",
@@ -82,7 +94,10 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
     }
 
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
+        if screens.count > 1 {
+            return "pose.closed.portrait"
+        }
         if #available(iOS 16, macOS 13, macCatalyst 16, tvOS 16, watchOS 9,  *) {
             if has(.dynamicIsland) {
                 return "iphone.gen3"
@@ -112,7 +127,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone-original-colors.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             models: ["A1203"],
-            colors: [.silver],
+            colors: .iPodTouch,
             cpu: .s5L8900,
             cameras: [.twoMP],
             cellular: .edge,
@@ -127,7 +142,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-iphone3g-colors.jpg",
             capabilities: [.headphoneJack, .thirtyPin, .ringerSwitch],
             models: ["A1324", "A1241"],
-            colors: [.black],
+            colors: .blackSet,
             cpu: .s5L8900,
             cameras: [.twoMP],
             cellular: .threeG,
@@ -428,7 +443,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/identify-iphone-11-colors.jpg",
             capabilities: [.lightning, .wirelessCharging, .fastCharge, .biometrics(.faceID), .esim, .nfc, .roundedCorners, .notch, .ringerSwitch, .barometer, .applePay],
             models: ["A2111", "A2223", "A2221", "A2222"],
-            colors: .iPhone11,
+			colors: [.purple11, .yellow11, .green11, .black11, .white11, .red11],
             cpu: .a13,
             cameras: [.main12MP, .ultraWide, .trueDepth12MP],
             cellular: .lte,
@@ -896,7 +911,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "27",
             unsupportedOSVersion: nil,
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-18-pro-colors.png",
-            capabilities: [.pro, .usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence],
+            capabilities: [.pro, .usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .actionButton, .cameraControl, .variableAperture, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence],
 			models: ["A3472", "A3713", "A3715", "A3714"],
             colors: .iPhone18Pro,
             cpu: .a20pro,
@@ -911,7 +926,7 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             launchOSVersion: "27",
             unsupportedOSVersion: nil,
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-18-pro-max-colors.png",
-            capabilities: [.pro, .max, .usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .actionButton, .cameraControl, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence],
+            capabilities: [.pro, .max, .usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.faceID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .actionButton, .cameraControl, .variableAperture, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence],
 			models: ["A3473", "A3716", "A3718", "A3717"],
             colors: .iPhone18Pro,
             cpu: .a20pro,
@@ -922,13 +937,13 @@ public struct iPhone: IdiomType, HasScreen, HasCameras, HasCellular {
             officialName: "iPhone Duo",
             identifiers: ["iPhone19,4"],
             introduction: "2026-10-23",
-            supportId: .unknownSupportId,
+            supportId: "148588",
             launchOSVersion: "27",
             unsupportedOSVersion: nil,
-            image: "http://www.apple.com/v/iphone/compare/am/images/overview/compare_iphone_duo_night_sky__l4khpo7rqpeu_large_2x.jpg",
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/iphone/iphone-duo/iphone-duo-colors.png",
             // Preserve the draft panel dimensions recorded below. The inner panel
             // is additional metadata; no foldable capability or active-panel claim is required.
-            capabilities: [.usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.touchID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .cameraControl, .lidar, .barometer, .crashDetection, .applePay, .appleIntelligence, .pencils([.usbC])],
+            capabilities: [.usbC, .wirelessCharging, .fastCharge, .magSafe, .biometrics(.touchID), .esim, .dualesim, .nfc, .roundedCorners, .dynamicIsland, .alwaysOnDisplay, .cameraControl, .barometer, .crashDetection, .applePay, .appleIntelligence, .pencils([.usbC])],
 			models: ["A3447", "A3719", "A3720", "A3721"],
             colors: .iPhoneDuo,
             cpu: .a20pro,

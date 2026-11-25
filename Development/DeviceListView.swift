@@ -8,6 +8,21 @@
 #if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 
+private struct SearchableDeviceEntry {
+	let device: DeviceType
+	let terms: [String]
+	let joinedTerms: String
+
+	init(device: DeviceType) {
+		self.device = device
+		var terms = device.officialName.components(separatedBy: " ") + [device.cpu.caseName] + device.identifiers + device.models + device.capabilities.map { $0.caseName }
+		// TODO: include all OS versions so can search for all devices that support iOS15 or macOS16
+		if let year = device.introductionYear { terms.append(year.string) }
+		self.terms = terms.map(\.asSearchTerm)
+		joinedTerms = self.terms.joined(separator: " ")
+	}
+}
+
 public extension String {
     var asSearchTerm: String {
         // add space after , to make sure that this doesn't count for identifiers which contain a comma
@@ -15,15 +30,17 @@ public extension String {
     }
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public struct DeviceListView<Destination: View>: View {
     public var devices: [DeviceType]
     
     @State var searchText = ""
+    private let searchableDevices: [SearchableDeviceEntry]
     
     private let destination: (DeviceType) -> Destination
     public init(devices: [any DeviceType], @ViewBuilder destination: @escaping (DeviceType) -> Destination) {
         self.devices = devices
+        searchableDevices = devices.map(SearchableDeviceEntry.init(device:))
         self.destination = destination
     }
     
@@ -32,7 +49,10 @@ public struct DeviceListView<Destination: View>: View {
         var sections = [(String,[DeviceType])]()
         var lastIdiom: Device.Idiom?
         var sectionDevices = [DeviceType]()
-        for device in devices {
+        let normalizedSearch = searchText.asSearchTerm
+        let searchWords = normalizedSearch.components(separatedBy: " ").filter { !$0.isEmpty }
+        for entry in searchableDevices {
+            let device = entry.device
             if device.idiom != lastIdiom {
                 if let lastIdiom, sectionDevices.count > 0 {
                     sections.append((lastIdiom.label, sectionDevices))
@@ -40,20 +60,11 @@ public struct DeviceListView<Destination: View>: View {
                 }
                 lastIdiom = device.idiom
             }
-            var searchableTerms = device.officialName.components(separatedBy: " ") + [device.cpu.caseName] + device.identifiers + device.models + device.capabilities.map { $0.caseName }
-            // TODO: include all os versions so can search for all devices that support iOS15 or macOS16
-            if let year = device.introduction?.date?.year {
-                searchableTerms += [year.string]
-            }
-            // normalize
-            searchableTerms = searchableTerms.map { $0.asSearchTerm }
-            
-            let searchText = searchText.asSearchTerm
             var show = true
-            if searchText.contains(" ") {
-                show = searchableTerms.containsAll(searchText.components(separatedBy: " "))
-            } else if searchText != "" {
-                show = searchableTerms.joined(separator: " ").contains(searchText)
+            if searchWords.count > 1 {
+                show = entry.terms.containsAll(searchWords)
+            } else if let word = searchWords.first {
+                show = entry.joinedTerms.contains(word)
             }
             
             if show {
@@ -84,7 +95,8 @@ public struct DeviceListView<Destination: View>: View {
         .searchable(text: $searchText, prompt: "Devices")
     }
 }
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension DeviceListView where Destination == DeviceDetailView {
     init(devices: [any DeviceType]) {
         self.init(devices: devices) { device in
@@ -93,15 +105,10 @@ public extension DeviceListView where Destination == DeviceDetailView {
     }
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview("All Devices") {
     NavigationView {
-        DeviceListView(devices: Device.all) { device in
-            List {
-                DeviceInfoView(device: device, includeScreen: true, includeAttributes: true)
-            }
-            .padding()
-        }
+		DeviceListView(devices: Device.all)
     }
 }
 #endif

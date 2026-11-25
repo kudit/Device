@@ -7,8 +7,35 @@
 
 import PackageDescription
 
-let version = "2.15.1"
+let version = "3.0.0"
 let packageLibraryName = "Device"
+
+// Asset catalogs are meaningful only to Apple platform builds. Use SwiftPM's
+// manifest environment API so old Swift toolchains don't import the host SDK's
+// Foundation module while evaluating this manifest.
+let targetContext = [
+	"SWIFT_TARGET_TRIPLE",
+	"TARGET_TRIPLE",
+	"SWIFT_BUILD_TARGET",
+	"ARCHS",
+	"ARCH",
+	"SDKROOT",
+	"SDK_NAME",
+	"PLATFORM_NAME",
+].compactMap { Context.environment[$0]?.lowercased() }.joined(separator: " ")
+// SPI's swift-sdk/triple selectors are command-line options and are not always
+// forwarded into manifest evaluation. Its runner sets this explicit marker for
+// Linux, WASI, and Android builds.
+let isNonAppleTarget =
+	Context.environment["DEVICE_NON_APPLE_TARGET"] == "1"
+	|| ["linux", "wasm", "wasi", "android", "aarch64"].contains { targetContext.contains($0) }
+#if os(Linux)
+let isLinuxHost = true
+#else
+let isLinuxHost = false
+#endif
+let deviceResources: [Resource] = isNonAppleTarget || isLinuxHost ? [] : [.process("Resources")]
+let deviceResourceExcludes = deviceResources.isEmpty ? ["Resources"] : []
 
 // Products define the executables and libraries a package produces, making them visible to other packages.
 var products = [
@@ -28,10 +55,10 @@ var targets = [
 			.product(name: "Compatibility Library", package: "compatibility"), // Device uses Compatibility's Build and Module APIs directly.
 		],
 		path: "Sources"
-		// If resources need to be included in the module, include here
-		,resources: [ // unfortuantely cannot be conditionally compiled based on Swift version since the tool seems to be run on latest version.
-			Resource.process("Resources"),
-		]
+		// Asset catalogs are excluded entirely on Linux/WASI/Android so SwiftPM does not
+		// pass them to unsupported resource processors.
+		,exclude: deviceResourceExcludes
+		,resources: deviceResources
 //		,swiftSettings: [
 //			.enableUpcomingFeature("BareSlashRegexLiterals")
 //		]
@@ -39,7 +66,7 @@ var targets = [
 ]
 
 var platforms: [SupportedPlatform] = [
-	.macOS("10.15"), // minimum for sleep, SwiftUI, ObservableObject, & @Published, 12 minimum for Date.now
+	.macOS("10.10"), // 10.15 minimum for SwiftUI, ObservableObject, and @Published; 12 minimum for Date.now
 	.tvOS("11"), // 13 minimum for SwiftUI, 15 minimum for Date.now, 17 minimum for Menu
 	.watchOS("4"), // 6 minimum for SwiftUI, watchOS 7 typically needed for most UI, 8 for Date.now, however (for #buildAvailability) so really should be watchOS 9+.
 ]
@@ -50,7 +77,7 @@ platforms += [
 ]
 #else
 platforms += [
-	.iOS("11"), // 13 minimum for Combine/SwiftUI, 15 minimum for Date.now, (maximum version for test iPhone 7)
+	.iOS("8"), // 13 minimum for Combine/SwiftUI, 15 minimum for Date.now, (maximum version for test iPhone 7)
 ]
 #endif
 
@@ -72,9 +99,7 @@ let appName = "\(packageLibraryName) App"
 #endif
 
 #if canImport(Foundation)
-import Foundation
-let isWASI = ProcessInfo.processInfo.environment["SWIFT_TARGET_TRIPLE"]?.contains("wasm32") == true
-let resources: [Resource] = isWASI ? [] : [.process("Resources")]
+let resources = deviceResources
 #else
 let resources: [Resource] = []
 #endif
@@ -141,11 +166,18 @@ targets += [
 // Compile their real sources into the same test target on Apple hosts so parser
 // and grouping regressions run without launching the app or duplicating production code.
 let deviceTestPath = "Development/DeviceTests"
-let deviceTestExcludes = ["DeviceUITests.swift", "DeviceTest.xctestplan", "DeviceMigrationTests.swift"]
-let deviceTestSources: [String]? = nil
+// Keep the portable shared module test entry point in SwiftPM while excluding files
+// that are owned by the Xcode UI and development-only test targets.
+let deviceTestSources = ["DeviceTests.swift"]
+let deviceTestExcludes = [
+	"DeviceKitBridgeTests.swift",
+	"DeviceMigrationTests.swift",
+	"DeviceUITests.swift",
+	"DeviceTest.xctestplan",
+]
 targets += [
 	.testTarget(
-		name: "\(packageLibraryName)Tests",
+		name: "\(packageLibraryName)ModuleTests",
 		dependencies: [
 			.init(stringLiteral: packageLibraryName), // Use the shared name while preserving the manifest pattern required by Playgrounds.
 			.product(name: "Compatibility Testing Library", package: "compatibility"), // Reuse Compatibility's public test adapter.

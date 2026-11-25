@@ -8,7 +8,7 @@
 #if canImport(SwiftUI) && canImport(Foundation)
 import SwiftUI
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 private struct BridgeComparisonSnapshot<B: DeviceBridge>: Sendable {
     let bridge: B
     let matchedDevice: Device
@@ -17,7 +17,7 @@ private struct BridgeComparisonSnapshot<B: DeviceBridge>: Sendable {
     let matchType: MatchType
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View where Loader.Bridge == Bridge {
     private enum Filter: String { case green, yellow, red }
     var loader: Loader
@@ -40,7 +40,11 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
         // should be reported and investigated, not silently discarded by the UI.
         guard let filter else { return bridges }
         return bridges.filter {
-            switch filter { case .green: cachedComparisons[String(describing: $0.id)]?.matchType == .identical; case .yellow: cachedComparisons[String(describing: $0.id)]?.matchType == .compatible; case .red: cachedComparisons[String(describing: $0.id)]?.matchType == .mismatched }
+            switch filter {
+                case .green: cachedComparisons[String(describing: $0.id)]?.matchType == .identical
+                case .yellow: cachedComparisons[String(describing: $0.id)]?.matchType == .compatible
+                case .red: cachedComparisons[String(describing: $0.id)]?.matchType == .mismatched
+            }
         }
     }
     private var sectionTitle: String {
@@ -138,7 +142,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                      let matchedDevice = snapshot?.matchedDevice ?? bridge.matched
                     // Every row's open state comes only from the user's toggle;
                     // red severity controls color/visibility, never expansion.
-                    DisclosureGroup(isExpanded: Binding(get: { expanded.contains(rowID) }, set: { isExpanded in
+					 Backport.DisclosureGroup(isExpanded: Binding(get: { expanded.contains(rowID) }, set: { isExpanded in
                          if isExpanded { expanded.insert(rowID) } else { expanded.remove(rowID) }
                      })) {
                          VStack {
@@ -178,7 +182,7 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                  }
                  .padding(.vertical, 6)
                  .frame(maxWidth: .infinity)
-                 .background(.bar)
+                 .backport.background(.bar)
              }
              .toolbar {
                  if generating {
@@ -200,12 +204,14 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
                  }
              }
              .toolbar {
+#if !os(watchOS)
                  ToolbarItem(placement: .principal) {
                      HStack(spacing: 12) {
                          Text(sectionTitle).font(.headline)
                          Link("View Source", destination: loader.source)
                      }
                  }
+#endif
              }
              .navigationTitle(sectionTitle)
          }
@@ -219,18 +225,17 @@ struct DeviceComparisons<Bridge: DeviceBridge, Loader: DeviceBridgeLoader>: View
 
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview("Device Comparisons") {
     DeviceComparisons(loader: AppleDeviceLoader())
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview("Processing View") {
-    DeviceComparisons(loader: PageParser(sourceURL: PageParser.identifyPages["iPhones"]!))
+    DeviceComparisons(loader: PageParser(sourceURL: PageParser.identifyPages["iPhones"]!.identify))
 }
 
-#if DEBUG
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 struct MigrationMenu: View {
     @State var temporaryText: String = "Calculating..."
     @ViewBuilder
@@ -242,21 +247,29 @@ struct MigrationMenu: View {
     var body: some View {
         List {
             navItem(loader: AppleDeviceLoader())
-            ForEach(PageParser.identifyPages.sorted(by: >), id: \.key) { (label, page) in
-                navItem(loader: PageParser(sourceURL: page))
+            ForEach(PageParser.identifyPages.sorted { $0.key > $1.key }, id: \.key) { (label, page) in
+                navItem(loader: PageParser(sourceURL: page.identify))
             }
             navItem(loader: MobileDeviceLoader())
             navItem(loader: MacLookupLoader())
             navItem(loader: DeviceKitLoader())
             navItem(loader: AppleDBLoader())
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                NavigationLink {
+                    ComparisonImportView()
+                } label: {
+                    Label("Comparison Import", systemImage: "eyeglasses")
+                }
+            }
+        }
     }
 }
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 #Preview("Migration Menu") {
     MigrationMenu()
 }
 
-#endif
 #endif

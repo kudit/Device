@@ -21,6 +21,26 @@ public extension String {
         return self.normalized.replacingCharacters(in: .whitespacesAndNewlines, with: "")
     }
 }
+
+private extension String {
+    /// Returns capture groups for every match while keeping the parser small
+    /// and compatible with the package's older deployment targets.
+    func matches(pattern: String) -> [[String]] {
+        guard let expression = try? NSRegularExpression(pattern: pattern, options: []) else { return [] }
+        return expression.matches(in: self, range: NSRange(startIndex..., in: self)).map { match in
+            (0..<match.numberOfRanges).compactMap { index in
+                let range = match.range(at: index)
+                guard range.location != NSNotFound, let swiftRange = Range(range, in: self) else { return nil }
+                return String(self[swiftRange])
+            }
+        }
+    }
+
+    /// Returns the first regular-expression match, including its capture groups.
+    func firstMatch(pattern: String) -> [String]? {
+        matches(pattern: pattern).first
+    }
+}
 public extension String {
     /// Whitespace collapsed and then replacing occurrances of ` \n` with `\n` and then collapsed again.
     var superCollapseWhitespace: String {
@@ -55,6 +75,11 @@ public extension Capabilities {
     }
 }
 
+struct ModelSourceCodeComparison: Sendable, Codable, Equatable {
+    let actual: String
+    let proposed: String
+}
+
 struct ParsedItem: DeviceBridge {   
     var comparisonIdentifiers: [String] { identifiers }
     var comparisonCPUs: [CPU] { CPU.sourceChoices(in: officialName) + (cpu == .unknown ? [] : [cpu]) }
@@ -75,7 +100,7 @@ struct ParsedItem: DeviceBridge {
         return scoped
     }
     static var diffIgnoreKeys: [String] {
-        ["source"] // filter out and ignore these paths when calculating exact match - for things like DeviceKit comments or images/support URLs since we know those may differ
+        ["source", "modelCodeComparison"] // source evidence is shown in dedicated views, not as a catalog-field mismatch
     }
 
     var officialName: String
@@ -88,8 +113,38 @@ struct ParsedItem: DeviceBridge {
     var capabilities = Capabilities()
     var partNumbers: [String] = []
     var cpu = CPU.unknown
-    var colors: [MaterialColor] = []
+    var colors: [AppleMaterialColor] = []
     var source: String
+    var modelCodeComparison: ModelSourceCodeComparison? = nil
+
+    /// CSS provenance (`cssKeys`) is diagnostic metadata, not part of a finish.
+    /// Compare ordered visible names and literal swatches so identical colors
+    /// don't turn red just because one source retained different CSS selectors.
+    func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool {
+        guard key == "colors",
+              let lhs = left as? [AppleMaterialColor],
+              let rhs = right as? [AppleMaterialColor] else {
+            return areEqual(left, right)
+        }
+		return Self.orderedColorsEqual(lhs, rhs) || Self.orderedColorsEqual(lhs, Array(rhs.reversed()))
+    }
+
+	private static func orderedColorsEqual(_ lhs: [AppleMaterialColor], _ rhs: [AppleMaterialColor]) -> Bool {
+		guard lhs.count == rhs.count else { return false }
+		return zip(lhs, rhs).allSatisfy { local, source in
+			normalizedColorName(local.name) == normalizedColorName(source.name)
+				&& local.swatches.map(normalizedHex) == source.swatches.map(normalizedHex)
+		}
+	}
+
+    private static func normalizedColorName(_ name: String) -> String {
+        let compact = name.lowercased().filter { $0.isLetter || $0.isNumber }
+        return compact == "productred" ? "productred" : compact
+    }
+
+    private static func normalizedHex(_ hex: String) -> String {
+        hex.trimmed.lowercased().replacingOccurrences(of: "#", with: "")
+    }
     
     // since multiple bridges may have the same source, unique ID
     var id: String {
@@ -151,7 +206,10 @@ struct ParsedItem: DeviceBridge {
             cpu = .unknown
         }
         var colors = device.colors
-        if self.colors.isEmpty || self.colors.containsAll(colors) {
+        // Apple identify pages are treated as exact source data. A CSS rounding
+        // difference must remain visible instead of being normalized here.
+        // Reverse equality changes match status, never the local order shown by the diff.
+        if self.colors.isEmpty || Self.orderedColorsEqual(self.colors, colors) {
             colors = self.colors
         }
         return ParsedItem(
@@ -172,30 +230,48 @@ struct ParsedItem: DeviceBridge {
 
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 8, *)
 actor PageParser: DeviceBridgeLoader {
-    static let identifyPages = [
-        "MacBook Pros": "https://support.apple.com/en-us/108052",
-        "iPods": "https://support.apple.com/en-us/103823",
-        "iPads": "https://support.apple.com/en-us/108043",
-        "iPhones": "https://support.apple.com/en-us/108044",
-        "MacBook Air": "https://support.apple.com/en-us/102869",
-        "MacBooks": "https://support.apple.com/en-us/103257",
-        "iMacs": "https://support.apple.com/en-us/108054",
-        "Mac Pros": "https://support.apple.com/en-us/102887",
-        "Mac minis": "https://support.apple.com/en-us/102852",
-        "Mac Studios": "https://support.apple.com/en-us/102231",
-        "Apple TVs": "https://support.apple.com/en-us/101605",
-        "Apple Watches": "https://support.apple.com/en-us/108056",
-        "Apple Vision Pros": "https://support.apple.com/en-mk/125375",
+    private struct ComparisonColorInfo {
+        let colors: [AppleMaterialColor]
+        let wrapper: String
+        let css: String
+    }
+    /// Keeps Apple's identify and comparison sources together.  The comparison
+    /// source is optional because Apple does not publish a comparison page for
+    /// every product family.
+    struct ApplePages {
+        let identify: String
+        let compare: String?
+    }
+
+    static let identifyPages: [String: ApplePages] = [
+        "MacBook Pros": .init(identify: "https://support.apple.com/en-us/108052", compare: "https://www.apple.com/mac/compare/"),
+		"iPods": .init(identify: "https://support.apple.com/en-us/103823", compare: nil),
+        "iPads": .init(identify: "https://support.apple.com/en-us/108043", compare: "https://www.apple.com/ipad/compare/"),
+        "iPhones": .init(identify: "https://support.apple.com/en-us/108044", compare: "https://www.apple.com/iphone/compare/"),
+        "MacBook Air": .init(identify: "https://support.apple.com/en-us/102869", compare: "https://www.apple.com/mac/compare/"),
+        "MacBooks": .init(identify: "https://support.apple.com/en-us/103257", compare: "https://www.apple.com/mac/compare/"),
+        "iMacs": .init(identify: "https://support.apple.com/en-us/108054", compare: "https://www.apple.com/mac/compare/"),
+        "Mac Pros": .init(identify: "https://support.apple.com/en-us/102887", compare: "https://www.apple.com/mac/compare/"),
+        "Mac minis": .init(identify: "https://support.apple.com/en-us/102852", compare: "https://www.apple.com/mac/compare/"),
+        "Mac Studios": .init(identify: "https://support.apple.com/en-us/102231", compare: "https://www.apple.com/mac/compare/"),
+        "Apple TVs": .init(identify: "https://support.apple.com/en-us/101605", compare: nil),
+        "Apple Watches": .init(identify: "https://support.apple.com/en-us/108056", compare: "https://www.apple.com/watch/compare/"),
+        "Apple Vision Pros": .init(identify: "https://support.apple.com/en-mk/125375", compare: nil),
     ]
 
     let sourceURL: String
     let name: String
+    let comparePages: ApplePages?
+    private var comparisonColors: [String: ComparisonColorInfo] = [:]
+    private var modelSource = ""
     var content: String?
     var items: [ParsedItem] = []
 
     init(sourceURL: String) {
         self.sourceURL = sourceURL
-        self.name = " " + Self.identifyPages.first(where: { $0.value == sourceURL })!.key
+        let page = Self.identifyPages.first(where: { $0.value.identify == sourceURL })!
+        self.name = " " + page.key
+        self.comparePages = page.value
     }
 
     func devices() async -> [ParsedItem] {
@@ -204,6 +280,22 @@ actor PageParser: DeviceBridgeLoader {
 
     func devices(progress: (@Sendable (_ completed: Int, _ total: Int, _ message: String) -> Void)?) async -> [ParsedItem] {
         let content = try? await fetchURL(urlString: sourceURL)
+        modelSource = await loadModelSource() ?? ""
+        // Comparison pages expose the canonical finish names and CSS hex values
+        // that the support overview often omits.  Parse them once before the
+        // identify sections so every model can reuse the same source snapshot.
+        if let compareURL = comparePages?.compare,
+           let compareContent = try? await fetchURL(urlString: compareURL) {
+            var styles = ""
+            if let stylesURL = compareContent.firstMatch(pattern: #"(?i)<link[^>]+href=[\"']([^\"']+\.css[^\"']*)[\"']"#)?[1] {
+                // Apple changes versioned CSS paths periodically, so discover
+                // the current stylesheet from the comparison document when a
+                // stable family URL is not available.
+                let absoluteURL = stylesURL.hasPrefix("http") ? stylesURL : "https://www.apple.com" + (stylesURL.hasPrefix("/") ? stylesURL : "/" + stylesURL)
+                styles = (try? await fetchURL(urlString: absoluteURL)) ?? ""
+            }
+            comparisonColors = comparisonColors(in: compareContent, styles: styles)
+        }
         var parts = [String]()
         if content?.contains("Identify your Apple Watch") ?? false, let p = content?.components(separatedBy: "<h2 ") {
             // Apple Watch sections are family h2 blocks containing several h3
@@ -235,6 +327,216 @@ actor PageParser: DeviceBridgeLoader {
         return items
     }
 
+    private func loadModelSource() async -> String? {
+        let fileName: String
+        if name.contains("iPads") { fileName = "iPads.swift" }
+        else if name.contains("iPhones") { fileName = "iPhones.swift" }
+        else if name.contains("Apple Watches") { fileName = "AppleWatches.swift" }
+        else if name.contains("Apple TVs") { fileName = "AppleTVs.swift" }
+        else if name.contains("Apple Vision Pros") { fileName = "AppleVision.swift" }
+        else if name.contains("iPods") { fileName = "iPods.swift" }
+        else if name.contains("HomePods") { fileName = "HomePods.swift" }
+        else if name.contains("Mac") { fileName = "Macs.swift" }
+        else { return nil }
+
+#if os(macOS)
+        let bundledURL = Bundle.main.resourceURL?
+            .appendingPathComponent("MigrationSources/Models")
+            .appendingPathComponent(fileName)
+        if let bundledURL, let source = try? String(contentsOf: bundledURL, encoding: .utf8), !source.isEmpty {
+            return source
+        }
+#endif
+
+#if os(macOS)
+        let localPaths = [
+            URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Sources/Models/\(fileName)").path,
+            URL(fileURLWithPath: "/Users/\(NSUserName())/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Models/\(fileName)").path,
+            ("~/Documents/Kudit/Kudits/Library/Device.swiftpm/Sources/Models/\(fileName)" as NSString).expandingTildeInPath
+        ]
+        for localPath in localPaths where FileManager.default.fileExists(atPath: localPath) {
+            if let source = try? String(contentsOfFile: localPath, encoding: .utf8) { return source }
+        }
+#endif
+        let rawURL = URL(string: "https://raw.githubusercontent.com/kudit/Device/main/Sources/Models/\(fileName)")!
+        return try? await fetchURL(urlString: rawURL.absoluteString)
+    }
+
+    private func modelCodeComparison(identifiers: [String], appleColors: [AppleMaterialColor]) -> ModelSourceCodeComparison? {
+        guard !modelSource.isEmpty, !identifiers.isEmpty,
+              let blocks = try? NSRegularExpression(pattern: #"(?ms)^[ \t]{8}[A-Za-z][A-Za-z0-9]*\([ \t\r\n]*officialName:\s*\"[^\"]+\".*?^[ \t]{8,}[^\n]*\),[ \t]*$"#) else { return nil }
+        let blockMatches = blocks.matches(in: modelSource, range: NSRange(modelSource.startIndex..., in: modelSource))
+        for match in blockMatches {
+            guard let range = Range(match.range, in: modelSource) else { continue }
+            let block = String(modelSource[range])
+            guard let identifierMatch = block.firstMatch(pattern: #"(?s)identifiers\s*:\s*\[([^\]]+)\]"#), identifierMatch.count > 1 else { continue }
+            let blockIdentifiers = identifierMatch[1].matches(pattern: #"\"([^\"]+)\""#).compactMap { $0.count > 1 ? $0[1] : nil }
+            guard blockIdentifiers.contains(where: identifiers.contains),
+                  let colorMatch = block.firstMatch(pattern: #"(?s)\bcolors\s*:\s*(\[[^\]]*\]|\.[A-Za-z_][A-Za-z0-9_]*)"#),
+                  colorMatch.count > 1, !appleColors.isEmpty else { continue }
+
+            let targetSignatures = appleColors.map(modelColorSignature)
+            let actual = colorMatch[1]
+            let matchingSets = [AppleMaterialColor].colorSets.filter { entry in
+                entry.key.map(modelColorSignature) == targetSignatures || entry.key.map(modelColorSignature) == Array(targetSignatures.reversed())
+            }
+            let sourceSetName = actual.first == "." ? String(actual.dropFirst()) : nil
+            let setEntry = matchingSets.first(where: { $0.value == sourceSetName })
+                ?? matchingSets.sorted { lhs, rhs in
+                    lhs.value.count == rhs.value.count
+                        ? lhs.value.localizedStandardCompare(rhs.value) == .orderedAscending
+                        : lhs.value.count < rhs.value.count
+                }.first
+            let setName = setEntry?.value ?? generatedColorSetName(for: blockIdentifiers.first ?? identifiers[0])
+            let expectedExpression = ".\(setName)"
+            guard let expressionRange = block.range(of: actual) else { continue }
+            var proposed = block
+            proposed.replaceSubrange(expressionRange, with: expectedExpression)
+            if setEntry == nil, let range = proposed.range(of: expectedExpression) {
+                proposed.replaceSubrange(range, with: expectedExpression + " /* define this named set from Apple comparison colors */")
+            }
+            return ModelSourceCodeComparison(actual: block.trimmed, proposed: proposed.trimmed)
+        }
+        return nil
+    }
+
+    private func modelColorSignature(_ color: AppleMaterialColor) -> String {
+        "\(color.name.trimmingCharacters(in: .whitespacesAndNewlines))|\(color.swatches.map { $0.lowercased() }.joined(separator: ","))"
+    }
+
+    private func generatedColorSetName(for identifier: String) -> String {
+        let stem = identifier.replacingOccurrences(of: "[^A-Za-z0-9]", with: "", options: .regularExpression)
+        let lowerCamel = String(stem.prefix(1)).lowercased() + String(stem.dropFirst())
+        var candidate = lowerCamel.isEmpty ? "deviceColors" : lowerCamel + "Colors"
+        let used = Set([AppleMaterialColor].colorSets.values)
+        var suffix = 2
+        while used.contains(candidate) {
+            candidate = "\(lowerCamel)Colors\(suffix)"
+            suffix += 1
+        }
+        return candidate
+    }
+
+    /// Extracts comparison-page color entries, retaining CSS class order so
+    /// multi-tone products become ordered AppleMaterialColor swatches.
+    private func comparisonColors(in html: String, styles: String) -> [String: ComparisonColorInfo] {
+        let wrapperPattern = #"(?s)<div[^>]*class="[^"]*colornav-wrapper-([^"]+)"[^>]*>(.*?)</div>\s*</div>"#
+        let wrapperMatches = html.matches(pattern: wrapperPattern)
+        var result = [String: ComparisonColorInfo]()
+        for wrapper in wrapperMatches {
+            guard wrapper.count > 2 else { continue }
+            let key = wrapper[1]
+            let body = wrapper[2]
+            var colors = [AppleMaterialColor]()
+            for item in body.matches(pattern: #"(?s)<li[^>]*>(.*?)</li>"#) {
+                guard item.count > 1 else { continue }
+                let section = item[1]
+                let tokens = section.matches(pattern: #"colornav-swatch-([A-Za-z0-9_-]+)"#).compactMap { $0.count > 1 ? $0[1] : nil }
+                guard !tokens.isEmpty else { continue }
+                let parsedLabel = section.extract(from: "<figcaption", to: "</figcaption>")?.tagsStripped.trimmed.whitespaceCollapsed
+                let label = parsedLabel.flatMap { $0.caseInsensitiveCompare("Finish") == .orderedSame ? nil : $0 }
+                    ?? tokens.map(displayName(forCSSKey:)).joined(separator: " / ")
+                let hexes = tokens.map { cssHex(for: $0, wrapperKey: key, in: styles) }
+                colors.append(AppleMaterialColor(swatches: hexes, name: label, cssKeys: tokens))
+            }
+            let css = tokensCSS(for: colors, wrapperKey: key, in: styles)
+            result[key] = ComparisonColorInfo(colors: colors, wrapper: wrapper[0], css: css)
+        }
+        return result
+    }
+
+    private func tokensCSS(for colors: [AppleMaterialColor], wrapperKey: String, in styles: String) -> String {
+        colors.flatMap(\.cssKeys).compactMap { token in
+            let escaped = NSRegularExpression.escapedPattern(for: token)
+            let pattern = #"(?is)[^{}]*\.colornav-swatch-"# + escaped + #"[^{}]*\{[^{}]*\}"#
+            let matches = styles.matches(pattern: pattern).compactMap(\.first)
+            let scoped = matches.filter { $0.contains(".colornav-wrapper-\(wrapperKey)") }
+            let generic = matches.filter { !$0.contains(".colornav-wrapper-") }
+            return (scoped.isEmpty ? generic : scoped).first
+        }.joined(separator: "\n")
+    }
+
+    private func cssHex(for token: String, wrapperKey: String, in styles: String) -> String {
+        let escaped = NSRegularExpression.escapedPattern(for: token)
+        let pattern = #"(?is)([^{}]*\.colornav-swatch-"# + escaped + #"[^{}]*)\{[^{}]*?(?:background(?:-color)?\s*:\s*)(#[0-9a-f]{3,8})[^{}]*\}"#
+        let matches = styles.matches(pattern: pattern)
+        let scoped = matches.filter { $0.count > 2 && $0[1].contains(".colornav-wrapper-\(wrapperKey)") }
+        let generic = matches.filter { $0.count > 2 && !$0[1].contains(".colornav-wrapper-") }
+        return (scoped.isEmpty ? generic : scoped).first.flatMap { $0.count > 2 ? $0[2] : nil } ?? "#808080"
+    }
+
+    private func displayName(forCSSKey key: String) -> String {
+        let known = ["spaceblack": "Space Black", "spacegray": "Space Gray", "rosegold": "Rose Gold", "skyblue": "Sky Blue", "starlight": "Starlight", "midnight": "Midnight", "productred": "Product Red"]
+        if let name = known[key.lowercased()] { return name }
+        return key.replacingOccurrences(of: "([a-z])([A-Z])", with: "$1 $2", options: .regularExpression)
+            .replacingOccurrences(of: "[-_]", with: " ", options: .regularExpression)
+            .capitalized
+    }
+
+    private func comparisonColors(for officialName: String) -> [AppleMaterialColor] {
+        matchingComparisonInfo(for: officialName)?.colors ?? []
+    }
+
+    private func comparisonInfo(for officialName: String) -> ComparisonColorInfo? {
+        matchingComparisonInfo(for: officialName)
+    }
+
+    private func matchingComparisonInfo(for officialName: String) -> ComparisonColorInfo? {
+        func normalizedTokens(_ value: String) -> Set<String> {
+            let expanded = value.lowercased()
+                .replacingOccurrences(of: #"(\d+)(st|nd|rd|th)?gen\b"#, with: "$1$2 generation", options: .regularExpression)
+            return Set(expanded.split(whereSeparator: { !$0.isLetter && !$0.isNumber }).compactMap { token in
+                switch token {
+                case "gen": return "generation"
+                case "in", "inch", "inches": return nil
+                default: return String(token)
+                }
+            })
+        }
+        let target = normalizedTokens(officialName)
+        let matches = comparisonColors.compactMap { key, value -> (Set<String>, ComparisonColorInfo)? in
+            let candidate = normalizedTokens(key)
+            return candidate == target || candidate.isSubset(of: target) || target.isSubset(of: candidate) ? (candidate, value) : nil
+        }
+        return matches.max { lhs, rhs in
+            abs(target.count - lhs.0.count) > abs(target.count - rhs.0.count)
+        }?.1
+    }
+
+    /// Generates a copy-pasteable proposal for a new or changed comparison
+    /// color set. Existing exact swatches are marked for static-key lookup.
+    private func colorProposal(for officialName: String, colors: [AppleMaterialColor]) -> String {
+        let setKey = officialName.replacingOccurrences(of: "[^A-Za-z0-9]", with: "", options: .regularExpression)
+        let definitions = colors.enumerated().map { index, color in
+            let cssKey = color.cssKeys.first ?? color.name.replacingOccurrences(of: "[^A-Za-z0-9]", with: "", options: .regularExpression)
+            let variable = cssKey + (index == 0 ? "" : "\(index)")
+            if let existing = AppleMaterialColor.namedColors[color.name]?.first(where: { $0.swatches == color.swatches }) {
+                let hex = existing.swatches.first ?? ""
+                return "\tlet \(variable) = (.matched(\"\(hex)\")) // use the existing AppleMaterialColor static key"
+            }
+            let hex = color.swatches.first ?? "#808080"
+            return "\tlet \(variable) = AMC(\"\(hex)\", \"\(color.name)\")"
+        }.joined(separator: "\n")
+        let names = colors.enumerated().map { index, color in
+            let cssKey = color.cssKeys.first ?? color.name.replacingOccurrences(of: "[^A-Za-z0-9]", with: "", options: .regularExpression)
+            return cssKey + (index == 0 ? "" : "\(index)")
+        }.joined(separator: ", ")
+        return """
+{
+// \(officialName)
+//public extension AppleMaterialColor {
+\(definitions)
+	let \(setKey) = [\(names)]
+//}
+//public extension [AppleMaterialColor] {
+//	static let \(setKey) = AMC.\(setKey)
+//}
+//		.\(setKey): \"\(setKey)\",
+	return \(setKey)
+}()
+"""
+    }
+
     private enum WatchConnectivity {
         case legacy
         case gps
@@ -253,7 +555,7 @@ actor PageParser: DeviceBridgeLoader {
         /// Apple model numbers listed for this product group and case size.
         var models: [String] = []
         /// Colors parsed from Apple's visible material/color list for this group.
-        var colors: [MaterialColor] = []
+        var colors: [AppleMaterialColor] = []
         /// The aluminum image used by convention for GPS-only watch variants.
         var aluminumImage: String?
         /// The normal stainless/titanium image used by convention for cellular
@@ -449,8 +751,8 @@ actor PageParser: DeviceBridgeLoader {
             }
     }
 
-    private func watchColors(from variant: String, productName: String) -> [MaterialColor] {
-        var colors = [MaterialColor]()
+    private func watchColors(from variant: String, productName: String) -> [AppleMaterialColor] {
+        var colors = [AppleMaterialColor]()
         let colorFragments = variant.components(separatedBy: "</li>")
         for fragment in colorFragments {
             let rawLine = fragment.tagsStripped.whitespaceCollapsed.trimmed
@@ -482,40 +784,52 @@ actor PageParser: DeviceBridgeLoader {
                 guard !cleanedName.isEmpty else {
                     continue
                 }
-                // Keep material in lookup keys only for names Apple reuses across
-                // materials. Unambiguous names such as Blue or Green continue to
-                // use the established generic color-name mappings.
-                let sharedMaterialColorNames = ["white", "gray", "silver", "gold", "rose gold", "yellow gold", "space black", "natural"]
                 let qualifiedName: String
-                if productName == "Apple Watch SE", materialName == "Aluminum", cleanedName.lowercased() == "gold" {
-                    // The original SE uses Apple's later brushed-gold aluminum,
-                    // not the paler aluminum gold used by first-generation watches.
-                    qualifiedName = "SE Aluminum Gold"
-                } else if productName.containsAny(["Series 8", "Series 9"]), materialName == "Stainless", cleanedName.lowercased() == "space black" {
+                if productName.containsAny(["Series 8", "Series 9"]), materialName == "Stainless", cleanedName.lowercased() == "space black" {
                     // Series 8 and 9 list true Space Black in their Hermes block,
                     // while Graphite is already listed by the standard stainless
                     // block. Select the distinct Hermès finish directly.
-                    qualifiedName = "Hermes Stainless Space Black"
+                    qualifiedName = "Space Black Stainless"
+                } else if materialName == "Titanium", cleanedName.lowercased().containsAny(["dark", "space black"]) {
+                    // The Identify page calls the dark Series 5 titanium finish
+                    // "Dark Titanium"; the device catalog uses Apple's
+                    // comparison-page name, "Space Black Titanium".
+                    qualifiedName = "Space Black Titanium"
+                } else if productName.containsAny(["Series 5", "Series 6", "Series X"]), materialName == "Titanium", cleanedName.lowercased().containsAny(["light", "natural", "titanium"]) {
+                    // The light Series 5 titanium finish is the catalog's
+                    // unqualified "Titanium" entry.
+                    // So is Series 6 unqualified Titanium.
+                    qualifiedName = "Titanium"
+                } else if productName.containsAny(["Series 6", "Series X"]), materialName == "Stainless", cleanedName.lowercased().containsAny(["space black"]) {
+                    // This is Apple Watch Hermès and it really looks the same as graphite so go with that
+                    qualifiedName = "Graphite Stainless"
+                } else if materialName == "Stainless", cleanedName.lowercased().containsAny(["silver", "steel"]) {
+                    qualifiedName = "Stainless Steel"
+                } else if materialName == "Aluminum", cleanedName.lowercased().containsAny(["red"]) {
+                    qualifiedName = .productRed + " Aluminum"
                 } else {
-                    qualifiedName = materialName.flatMap { material in
-                    sharedMaterialColorNames.contains(cleanedName.lowercased())
-                        ? "\(material) \(cleanedName)"
-                        : nil
-                    } ?? cleanedName
+                    // The catalog names finishes as "Color Material" (for
+                    // example, "Rose Gold Aluminum"), while the old parser
+                    // qualified only a short allowlist and generated the
+                    // opposite order for those entries. Keep all material
+                    // labels so same-named finishes resolve to the right set.
+                    qualifiedName = materialName == "18-Karat"
+                        ? "18-Karat \(cleanedName)"
+                        : materialName.map { "\(cleanedName) \($0)" } ?? cleanedName
                 }
-                colors.append(MaterialColor(named: qualifiedName, context: productName))
+                colors.append(AppleMaterialColor(named: qualifiedName, context: productName))
             }
             if lowercasedLine.contains("stainless steel") {
                 // Apple describes the natural stainless finish as just
-                // "stainless steel". Material-word removal otherwise leaves no
-                // color name, so explicitly retain it as Stainless Silver while
-                // separately parsed colors such as Space Black remain intact.
-                colors.append(MaterialColor(named: "Stainless Silver", context: productName))
+                // "stainless steel". Resolve that catalog name directly; the
+                // unregistered "Silver Stainless" alias fell back to generic
+                // Silver and made the parsed watch palette incorrect.
+                colors.append(AppleMaterialColor(named: "Stainless Steel", context: productName))
             }
             if lowercasedLine.hasPrefix("titanium ") || lowercasedLine.hasPrefix("titanium or") {
                 // A bare Titanium finish has no adjective left after material-word
                 // removal, so retain the unqualified light titanium swatch.
-                colors.append(MaterialColor(named: "Titanium", context: productName))
+                colors.append(AppleMaterialColor(named: "Titanium", context: productName))
             }
         }
         colors.removeDuplicates()
@@ -555,7 +869,7 @@ actor PageParser: DeviceBridgeLoader {
                     ? (group.premiumImage ?? group.aluminumImage)
                     : (group.aluminumImage ?? group.premiumImage)
             }
-            let parsedItem = ParsedItem(
+            var parsedItem = ParsedItem(
                 officialName: group.productName,
                 idiom: .watch,
                 identifiers: [identifier],
@@ -565,6 +879,7 @@ actor PageParser: DeviceBridgeLoader {
                 partNumbers: models.unique,
                 colors: group.colors,
                 source: section)
+            parsedItem.modelCodeComparison = modelCodeComparison(identifiers: [identifier], appleColors: group.colors)
             items.append(parsedItem)
         }
     }
@@ -578,7 +893,7 @@ actor PageParser: DeviceBridgeLoader {
         var image: String? = nil
         var capabilities = Capabilities()
         var partNumbers: [String] = []
-        var colors: [MaterialColor] = []
+        var colors: [AppleMaterialColor] = []
         var cpu = CPU.unknown
         var parsedIdentifiers = [String: [String]]()
 
@@ -810,7 +1125,10 @@ actor PageParser: DeviceBridgeLoader {
                     macForm = .macProGen3
                 }
             } else if officialName.contains("MacBook") {
-                if year < 2012 { // June 11, 2012
+                if officialName.contains("PROLED XDR") {
+                    // These MacBook Pros use the Dynamic Island and touch display form.
+                    macForm = .macBookGen3
+                } else if year < 2012 { // June 11, 2012
                     // MagSafe can be found on the MacBook (2006–2011), MacBook Pro (2006 through mid-2012, non-Retina) and MacBook Air (2008–2011) notebook computers.
                     macForm = .macBook
                     capabilities.insert(.magSafe1)
@@ -839,11 +1157,24 @@ actor PageParser: DeviceBridgeLoader {
         // Check for colors
         if string.contains("Colors:"), let parsedColors = string.extract(from: "Colors:", to: "</p>")?.tagsStripped.replacingOccurrences(of: " and ", with: ",").components(separatedBy: ",") {
             for c in parsedColors {
-                let parsedColor = MaterialColor(named: c.trimmed, context: officialName)
+                let parsedColor = AppleMaterialColor(named: c.trimmed, context: officialName)
                 colors.append(parsedColor)
             }
         }
+		let overviewColors = colors
+        // Prefer the comparison page's ordered, CSS-backed colors when the
+        // product title can be matched; retain overview colors as a fallback.
+        let comparisonColors = comparisonColors(for: officialName)
+        if !comparisonColors.isEmpty {
+            colors = comparisonColors
+        }
         colors.removeDuplicates()
+        var parsedSource = source
+        if let info = comparisonInfo(for: officialName) {
+            let hasExactMatch = !overviewColors.isEmpty && overviewColors.matchesPalette(info.colors)
+            let matchStatus = hasExactMatch ? "exact match" : "new or mismatched colors"
+            parsedSource += "\n\n<!-- Apple comparison color evidence -->\n\(info.wrapper)\n\n<!-- Parsed CSS -->\n\(info.css)\n\n<!-- Generated proposal (\(matchStatus)) -->\n\(colorProposal(for: officialName, colors: info.colors))"
+        }
 
         // TODO: Check for <chip> section.
         var parsedChip: String?
@@ -854,9 +1185,17 @@ actor PageParser: DeviceBridgeLoader {
         } else if string.contains("This model has the"), let pc = string.extract(from: "This model has the", to: "chip")?.tagsStripped.trimmed, !pc.contains(" or ") {
             parsedChip = pc
         }
-        if let parsedChip, !parsedChip.contains("M5") { // M5 models include the name inside the parentheses and should be added in the identifier breakout below
-            // append to the product name
-            officialName += " \(parsedChip)"
+        if let parsedChip {
+			// Apple titles already include their chip on many pages (including
+			// "MacBook Pro (14-inch, M6)"); append only chip variants absent from the title.
+			let chipChoices = Set(CPU.sourceChoices(in: parsedChip))
+			let titleChoices = Set(CPU.sourceChoices(in: officialName))
+			let chipAlreadyInTitle = chipChoices.isEmpty
+				? officialName.localizedCaseInsensitiveContains(parsedChip)
+				: chipChoices.isSubset(of: titleChoices)
+			if !chipAlreadyInTitle {
+				officialName += " \(parsedChip)"
+			}
         }
         
         // A source can name several processors. Keep that ambiguity until the
@@ -891,7 +1230,7 @@ actor PageParser: DeviceBridgeLoader {
         for (_, identifiers) in parsedIdentifiers {
             // Preserve the source grouping. Shared-support comparison resolves local
             // members without maintaining per-generation identifier/CPU exception maps here.
-            let parsedItem = ParsedItem(
+            var parsedItem = ParsedItem(
                 officialName: officialName,
                 idiom: idiom,
                 identifiers: identifiers.unique,
@@ -903,7 +1242,8 @@ actor PageParser: DeviceBridgeLoader {
                 partNumbers: partNumbers,
                 cpu: cpu,
                 colors: colors,
-                source: source)
+                source: parsedSource)
+            parsedItem.modelCodeComparison = modelCodeComparison(identifiers: identifiers, appleColors: colors)
             items.append(parsedItem)
         }
     }

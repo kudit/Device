@@ -36,7 +36,7 @@ public struct AppleTV: IdiomType {
             image: image,
             capabilities: capabilities.union(Device.Idiom.tv.capabilities),
             models: models,
-            colors: [.black],
+            colors: .blackSet,
             cpu: cpu)
     }
 
@@ -53,12 +53,23 @@ public struct AppleTV: IdiomType {
     }
     
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
         return "appletv"
     }
 
     public static let all = [ // https://support.apple.com/en-us/101605  // Public for DeviceKit testing
         
+        AppleTV(
+            officialName: "Apple TV 4K (4th generation)",
+            identifiers: ["AppleTV18,1"],
+            introduction: "2026-11-13",
+            supportId: "102337",
+            launchOSVersion: "27.2",
+            unsupportedOSVersion: nil,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-4th-generation-and-siri-remote-4th-generation.png",
+            capabilities: [.ethernet],
+            models: ["A3593"],
+            cpu: .a19),
         AppleTV(
             officialName: "Apple TV 4K (3rd generation) Wi-Fi + Ethernet",
             identifiers: ["AppleTV14,1"],
@@ -94,10 +105,10 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV 4K (1st generation)",
             identifiers: ["AppleTV6,2"],
-            introduction: 2017.introductionYear,
+			introduction: "2017-09-22",
             supportId: "111929", // SP769
             launchOSVersion: "11",
-            unsupportedOSVersion: nil,
+            unsupportedOSVersion: "27",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4k-1gen.png",
             capabilities: [.ethernet],
             models: ["A1842"],
@@ -105,10 +116,10 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV HD",
             identifiers: ["AppleTV5,3"],
-            introduction: 2015.introductionYear,
+			introduction: "2015-10-30",
             supportId: "111928", // SP724
             launchOSVersion: "9",
-            unsupportedOSVersion: "28",
+            unsupportedOSVersion: "27",
             image: "https://cdsassets.apple.com/live/7WUAS350/images/apple-tv/apple-tv-4gen-hd.png",
             capabilities: [.ethernet, .usbC],
             models: ["A1625"],
@@ -128,7 +139,7 @@ public struct AppleTV: IdiomType {
         AppleTV(
             officialName: "Apple TV (3rd generation)",
             identifiers: ["AppleTV3,1"],
-            introduction: 2012.introductionYear,
+			introduction: "2012-03-16",
             supportId: "112429", // SP648
             launchOSVersion: "5.1",
             unsupportedOSVersion: "8",

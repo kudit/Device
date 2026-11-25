@@ -8,7 +8,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.SymbolicBreakpoint">
          <BreakpointContent
             uuid = "E4C3D05B-D78F-4787-B2F8-0DC8AD8A9AE1"
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             symbolName = "malloc_error_break"
@@ -20,32 +20,32 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "8F7BB909-3917-495C-ADD7-2766C8742C43"
+            uuid = "FF5296AD-301D-4D45-9E4C-802270584AE8"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../Sources/Symbols.swift"
+            filePath = "../Sources/AppleMaterialColor.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "80"
-            endingLineNumber = "80"
-            landmarkName = "safeSymbolName(fallback:)"
+            startingLineNumber = "50"
+            endingLineNumber = "50"
+            landmarkName = "init(named:context:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "1A803985-EEEA-4776-8125-60F6E875A015"
+            uuid = "707E53D0-B35F-4BB0-B2EC-9B02E9821777"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../Sources/Battery.swift"
+            filePath = "../Sources/Hardware.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "478"
-            endingLineNumber = "478"
-            landmarkName = "currentLevel"
+            startingLineNumber = "292"
+            endingLineNumber = "292"
+            landmarkName = "sorted"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>

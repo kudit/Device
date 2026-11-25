@@ -2,7 +2,7 @@
   "configurations" : [
     {
       "id" : "DE2D9903-E4C5-41F6-B398-21E6053C27A4",
-      "name" : "Configuration 1",
+      "name" : "All Device Tests",
       "options" : {
 
       }

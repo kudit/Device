@@ -25,11 +25,11 @@ public struct iPod: IdiomType, HasScreen {
         cameras: Set<Camera>,
         screen: Screen,
         models: [String] = [],
-        colors: [MaterialColor],
+        colors: [AppleMaterialColor],
         cpu: CPU
     ) {
         var capabilities = capabilities
-        capabilities.screen = screen
+        capabilities.screens = [screen] + Array(capabilities.screens.dropFirst())
         capabilities.cameras = cameras
         device = Device(
             idiom: .pod,
@@ -40,7 +40,7 @@ public struct iPod: IdiomType, HasScreen {
             launchOSVersion: launchOSVersion,
             unsupportedOSVersion: unsupportedOSVersion,
             image: image,
-            capabilities: capabilities.union(Device.Idiom.pod.capabilities),
+            capabilities: capabilities.union(Device.Idiom.pod.capabilities).union([.touchDisplay]),
             models: models,
             colors: colors,
             cpu: cpu
@@ -60,12 +60,12 @@ public struct iPod: IdiomType, HasScreen {
             cameras: [],
             screen: .i35o,
             // models
-            colors: [.white],
+            colors: .whiteSet,
             cpu: .unknown)
     }
     
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
         return "ipodtouch"
     }
     
@@ -84,7 +84,7 @@ public struct iPod: IdiomType, HasScreen {
             cameras: [],
             screen: .i35o,
             models: ["A1213"],
-            colors: [.silver],
+            colors: .iPodTouch,
             cpu: .s5L8900),
         iPod(
             officialName: "iPod touch (2nd generation)",
@@ -98,12 +98,12 @@ public struct iPod: IdiomType, HasScreen {
             cameras: [],
             screen: .i35,
             models: ["A1288", "A1319"],
-            colors: [.silver],
+            colors: .iPodTouch,
             cpu: .s5L8720),
         iPod(
             officialName: "iPod touch (3rd generation)",
             identifiers: ["iPod3,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-09-09",
             supportId: "pp115",
             launchOSVersion: "3.1.1",
             unsupportedOSVersion: "6",
@@ -112,12 +112,12 @@ public struct iPod: IdiomType, HasScreen {
             cameras: [],
             screen: .i35,
             models: ["A1318"],
-            colors: [.silver],
+            colors: .iPodTouch,
             cpu: .s5L8922),
         iPod(
             officialName: "iPod touch (4th generation)",
             identifiers: ["iPod4,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-09-12",
             supportId: "112431",
             launchOSVersion: "4.1",
             unsupportedOSVersion: "7",
@@ -131,7 +131,7 @@ public struct iPod: IdiomType, HasScreen {
         iPod(
             officialName: "iPod touch (5th generation)",
             identifiers: ["iPod5,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-10-11",
             supportId: "SP657",
             launchOSVersion: "6",
             unsupportedOSVersion: "10",
@@ -145,7 +145,7 @@ public struct iPod: IdiomType, HasScreen {
         iPod(
             officialName: "iPod touch (5th generation 16 GB, Mid 2013)",
             identifiers: ["iPod5,1"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-05-31",
             supportId: "118467",
             launchOSVersion: "6",
             unsupportedOSVersion: "10",
@@ -159,7 +159,7 @@ public struct iPod: IdiomType, HasScreen {
         iPod(
             officialName: "iPod touch (6th generation)",
             identifiers: ["iPod7,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-07-15",
             supportId: "SP720",
             launchOSVersion: "8.4",
             unsupportedOSVersion: "13",
@@ -173,7 +173,7 @@ public struct iPod: IdiomType, HasScreen {
         iPod(
             officialName: "iPod touch (7th generation)",
             identifiers: ["iPod9,1"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-05-28",
             supportId: "SP796",
             launchOSVersion: "12.3.1",
             unsupportedOSVersion: "16",

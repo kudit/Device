@@ -12,6 +12,9 @@ import SwiftUI // for Color
 import IOKit
 import IOKit.ps
 #endif
+#if canImport(Combine)
+import Combine
+#endif
 import Compatibility // for Foundation for Timer and backport ObservableObject
 
 /// This enum describes the state of the battery.
@@ -44,9 +47,8 @@ public enum BatteryChangeType: Sendable {
     case level, state, lowPowerMode
 }
 
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
-public protocol Battery: ObservableObject, MainActorSymbolRepresentable, Identifiable { // , CustomStringConvertible cannot conform since MainActor isolated, Identifiable should use object instance comparisons
+public protocol Battery: AnyObject, MainActorSymbolRepresentable {
     /// The percentage battery level from 0—100.  If this cannot be determined for some reason, this will return -1.  Unfortunately, on some devices, Apple restricts this to every 5% instead of every % 🙁
     var currentLevel: Int { get }
     /// The current state of the battery.
@@ -61,9 +63,11 @@ public protocol Battery: ObservableObject, MainActorSymbolRepresentable, Identif
     /// Callback takes a `battery` parameter and the `BatteryChangeType`
     func monitor(_ monitor: @escaping BatteryMonitor)
 }
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 public extension Battery {
-    /// Return true if the device is actively charging.  Equivalent to testing `curerntState == .charging`
+	/// Stable object identity used by the availability-gated Identifiable conformance.
+//	nonisolated var id: ObjectIdentifier { ObjectIdentifier(self) } // unnecessary because Swift automatically makes objects identifiable?
+
+	/// Return true if the device is actively charging.  Equivalent to testing `curerntState == .charging`
     var isCharging: Bool { currentState == .charging }
     /// Return true if the device is plugged in.
     var isPluggedIn: Bool { currentState == .charging || currentState == .full }
@@ -76,7 +80,7 @@ public extension Battery {
     }
     
     /// System Image used to render a symbol representing the current state/charge level
-    var mainActorSymbolName: String {
+    var mainActorSymbolName: SFSymbol {
         let percent = currentLevel
         var percentWord: String
         if #available(iOS 17, macOS 14, macCatalyst 17, tvOS 17, watchOS 10,  *) {
@@ -84,23 +88,29 @@ public extension Battery {
         } else {
             percentWord = ""
         }
+        let symbolName: SFSymbol
         if currentState == .charging {
-            return "battery.100\(percentWord).bolt"
+            symbolName = "battery.100\(percentWord).bolt"
         } else if percent > 87 {
-            return "battery.100\(percentWord)"
+            symbolName = "battery.100\(percentWord)"
         } else if percent > 63 {
-            return "battery.75\(percentWord)"
+            symbolName = "battery.75\(percentWord)"
         } else if percent > 38 {
-            return "battery.50\(percentWord)"
+            symbolName = "battery.50\(percentWord)"
         } else if percent > 10 {
-            return "battery.25\(percentWord)"
+            symbolName = "battery.25\(percentWord)"
         } else {
-            return "battery.0\(percentWord)"
+            symbolName = "battery.0\(percentWord)"
         }
+		if #available(anyAppleOS 27.0, *), percentWord == "percent" {
+			return "\(symbolName).fixed"
+		}
+		return symbolName
     }
 
 #if canImport(SwiftUI)
     /// Color for the battery icon.  Should mirror the system battery icon.
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     @MainActor
     var systemColor: Color {
         var redLevel = 20
@@ -121,6 +131,7 @@ public extension Battery {
     }
     
     /// Expanded colors so there is always a background color for contrast.
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     var color: Color {
         // since this is just for visionOS, assume no lowPowerMode
         if currentLevel <= 20 {
@@ -196,25 +207,57 @@ public struct BatterySnapshot: Sendable {
     ]
 }
 
-// Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
-public class MockBattery: Battery {
+/// Shared mutable battery state and change publication for mock and monitored batteries.
+///
+/// The publisher is stored as `AnyObject` so this type can still be loaded on deployment
+/// targets where Combine's `ObservableObjectPublisher` is unavailable.
+@MainActor
+public class MutableBattery: Battery, ObservableObjectBackport {
+	public var _objectWillChange: AnyObject?
+
 #if canImport(Combine)
-    @Published public var currentLevel: Int = -1
-    @Published public var currentState: BatteryState = .unplugged
-    @Published public var lowPowerMode: Bool = false
-#else
-    public var currentLevel: Int = -1
-    public var currentState: BatteryState = .unplugged
-    public var lowPowerMode: Bool = false
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+	public var objectWillChange: ObservableObjectPublisher { backportObjectWillChange }
 #endif
-    // save so a similar battery without a cycle level doesn't get merged.
-    public var cycleLevelState: TimeInterval
-    public var monitoring: Bool = false // add observers to trigger changes?
-    public var monitors = [BatteryMonitor]()
-    public func monitor(_ monitor: @escaping BatteryMonitor) {
-        monitors.append(monitor)
-    }
+
+	private var _currentLevel: Int = -1
+	public var currentLevel: Int {
+		get { _currentLevel }
+		set { observeChange(&_currentLevel, newValue) }
+	}
+	private var _currentState: BatteryState = .unplugged
+	public var currentState: BatteryState {
+		get { _currentState }
+		set { observeChange(&_currentState, newValue) }
+	}
+	private var _lowPowerMode: Bool = false
+	public var lowPowerMode: Bool {
+		get { _lowPowerMode }
+		set { observeChange(&_lowPowerMode, newValue) }
+	}
+
+	/// Whether battery monitoring is enabled for this mutable battery.
+	public var monitoring = false
+	/// Registered callbacks, exposed for compatibility with the existing mock API.
+	public var monitors = [BatteryMonitor]()
+
+	/// Creates mutable battery state without requiring Combine on older operating systems.
+	public init(currentLevel: Int = -1, currentState: BatteryState = .unplugged, lowPowerMode: Bool = false) {
+		_currentLevel = currentLevel
+		_currentState = currentState
+		_lowPowerMode = lowPowerMode
+	}
+
+	/// Adds a callback that is invoked when a subclass reports a battery change.
+	public func monitor(_ monitor: @escaping BatteryMonitor) {
+		monitors.append(monitor)
+	}
+}
+
+// Mocks are for testing functions that require a battery.  However, this mock doesn't update.  TODO: create a version that publishes changes every second to simulate drain/charging.
+public class MockBattery: MutableBattery {
+	// save so a similar battery without a cycle level doesn't get merged.
+	public var cycleLevelState: TimeInterval
     
 //  public var id: String {
 //    "\(currentLevel)\(currentState)\(lowPowerMode)\(cycleLevelState)"
@@ -222,18 +265,16 @@ public class MockBattery: Battery {
     
     /// Creates a mock Battery object that can be passed to a BatteryView or used for various things.  Will automatically cycle battery to empty and then charge to full and then empty again if `cycleLevelStateSeconds` is greater than 0.  If so, creates a timer that will automatically drain battery to 0 and then charge to 100 and then drain again every cycleLevelStateSeconds.
     public init(currentLevel: Int = -1, currentState: BatteryState = .unplugged, cycleLevelState: TimeInterval = 0, lowPowerMode: Bool = false) {
-        self.currentLevel = currentLevel
-        self.currentState = currentState
-        self.lowPowerMode = lowPowerMode
         self.cycleLevelState = cycleLevelState
+        super.init(currentLevel: currentLevel, currentState: currentState, lowPowerMode: lowPowerMode)
         
         guard cycleLevelState > 0 else {
             return // no need to create timer if no cycle level
         }
         // create and schedule timer (no need to keep reference)
         _ = Timer.scheduledTimer(withTimeInterval: cycleLevelState, repeats: true) { timer in
-            Task { @MainActor in
-                switch self.currentState {
+			Compatibility.main {
+				switch self.currentState {
                 case .unknown:
                     // This really should never happen.  But if it does, go ahead and invalidate the timer.
 //          timer.invalidate()
@@ -286,10 +327,16 @@ public class MockBattery: Battery {
     }
 }
 
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
-public class DeviceBattery: Battery {
-    @MainActor
+public class DeviceBattery: Battery, ObservableObjectBackport {
+	public var _objectWillChange: AnyObject?
+
+#if canImport(Combine)
+	@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+	public var objectWillChange: ObservableObjectPublisher { backportObjectWillChange }
+#endif
+
+	@MainActor
     public static let current = DeviceBattery() // only time this is initialized typically
         
     private var monitors: [BatteryMonitor] = []
@@ -331,7 +378,7 @@ public class DeviceBattery: Battery {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            Task { @MainActor in
+				Compatibility.main {
                 self._triggerBatteryUpdate(.level)
             }
         }
@@ -341,7 +388,7 @@ public class DeviceBattery: Battery {
             queue: OperationQueue.main
         ) { notification in
             // Do your work after received notification
-            Task { @MainActor in
+				Compatibility.main {
                 self._triggerBatteryUpdate(.state)
             }
         }
@@ -377,7 +424,7 @@ public class DeviceBattery: Battery {
             ) { notification in
                 //        print("NSProcessInfoPowerStateDidChange notification")
                 // Do your work after received notification
-                Task { @MainActor in
+				Compatibility.main {
                     self._triggerBatteryUpdate(.lowPowerMode)
                 }
             }
@@ -387,6 +434,7 @@ public class DeviceBattery: Battery {
     
     private func _triggerBatteryUpdate(_ notificationType: BatteryChangeType) {
         // Do your work after received notification
+		objectWillChangeBackport()
         for monitor in self.monitors {
             monitor(self, notificationType)
         }
@@ -552,19 +600,14 @@ public class DeviceBattery: Battery {
     }
 }
 
-#if canImport(Combine)
 /// Mirrors the DeviceBattery but automatically updates and monitors for changes rather than pulling staticly.
-@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 @MainActor
-public class MonitoredDeviceBattery: Battery {
+public class MonitoredDeviceBattery: MutableBattery {
     @MainActor
     public static let current = MonitoredDeviceBattery() // only time this is initialized typically
-    
-    @Published public var currentLevel: Int = -1
-    @Published public var currentState: BatteryState = .unplugged
-    @Published public var lowPowerMode: Bool = false
-    
+
     private init() {
+        super.init()
         // enable monitoring for self
         self.monitor { battery, changeType in
             switch changeType {
@@ -598,7 +641,7 @@ public class MonitoredDeviceBattery: Battery {
     }
     
     /// Probably not needed directly, but here to wrap DeviceBattery.current.monitoring (which should always be true due to this monitoring)
-    public var monitoring: Bool {
+    public override var monitoring: Bool {
         get {
             DeviceBattery.current.monitoring
         }
@@ -607,8 +650,15 @@ public class MonitoredDeviceBattery: Battery {
         }
     }
     
-    public func monitor(_ monitor: @escaping BatteryMonitor) {
+    public override func monitor(_ monitor: @escaping BatteryMonitor) {
         DeviceBattery.current.monitor(monitor)
     }
 }
+
+#if canImport(Combine)
+// Live battery values remain queryable before watchOS 6; these conformances are only for SwiftUI observation.
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+extension DeviceBattery: @preconcurrency ObservableObject, Identifiable {}
+@available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
+extension MutableBattery: @preconcurrency ObservableObject, Identifiable {}
 #endif

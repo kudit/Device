@@ -23,7 +23,7 @@ public struct HomePod: IdiomType {
         image: String?,
         capabilities: Capabilities = [],
         models: [String] = [],
-        colors: [MaterialColor],
+        colors: [AppleMaterialColor],
         cpu: CPU)
     {
         device = Device(
@@ -55,11 +55,11 @@ public struct HomePod: IdiomType {
     }
     
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
         if self.is(.mini) {
-            return "homepodmini"
+            return "homepodmini.fill"
         }
-        return "homepod"
+        return "homepod.fill"
     }
 
     public static let all = [ // Public for DeviceKit testing
@@ -99,6 +99,23 @@ public struct HomePod: IdiomType {
             models: ["A2825", "A2878"],
             colors: .homePod,
             cpu: .s7),
-        
+		HomePod(
+			officialName: "HomePod mini 2",
+			// Published firmware and AppleDB identify this generation separately
+			// from the original mini. The A-number is not yet in Apple's support
+			// material, so do not copy the original mini's model number here.
+			identifiers: ["AudioAccessory11,1"],
+			introduction: "2026-10-30",
+			supportId: .unknownSupportId,
+			launchOSVersion: "27.2", // audioOS
+			unsupportedOSVersion: nil,
+			image: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/homepod-mini-select-202610?wid=1080&hei=800&fmt=jpeg&qlt=90&.v=K2c3bEwyaWVDeDZkdHpLbHkwcGVSdWV6Y2RFUDJIZjNNL0drRzBRQnVCN2J2QWtudTM3aGhQSXBRdG9ZWloyNEJkRlpCNVhYU3AwTldRQldlSnpRa0N2TE82ZG83bTM1bXRKeHlobm5SWGs",
+			capabilities: [.mini],
+			models: [],
+			// Keep the catalog colors empty until Apple publishes accurate
+			// swatch values; the original mini's palette is not this model's.
+			colors: .homePodMini2,
+			cpu: .s10),
+
     ]
 }

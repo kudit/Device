@@ -4,8 +4,11 @@
 //
 //  Created by Ben Ku on 3/25/24.
 //
-#if DEBUG
+#if canImport(Testing)
 @testable import Device // so we can access all devices and DeviceType
+#else
+import Device
+#endif
 
 // For converting to deviceKitDefinition format
 extension Bool {
@@ -199,6 +202,9 @@ struct DeviceKitDevice: DeviceBridge {
 	}
 
 	func compatibleWhenMergedDiffers(_ key: String, left: Any?, merged: Any?, right: Any?) -> Bool {
+	    // DeviceKit's HomePod record carries a 4:5 ratio despite HomePod having
+	    // no user-facing display. Do not treat that metadata as a device conflict.
+	    if key == "screenRatio", matched.idiom == .homePod { return true }
 	    if key == "screenRatio", right == nil, left != nil { return true }
 	    // DeviceKit omits screen metadata for products such as HomePod. Keep the
 	    // local screen definition and classify that source omission as yellow.
@@ -315,6 +321,8 @@ struct DeviceKitDevice: DeviceBridge {
 	var hasEsimSupport: Bool
 	/// DeviceKit distinguishes dual-eSIM hardware from devices with only one eSIM slot.
 	var hasDualEsimSupport: Bool
+	/// Newer DeviceKit migrations may include this flag; older records omit it.
+	var isFoldable: Bool
 
 	/// Keeps temporary upstream exceptions visible in generated reports while
 	/// their source issues remain open and the comparison is intentionally yellow.
@@ -329,7 +337,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    return report
 	}
 
-	init(caseName: String, comment: String, imageURL: String, identifiers: [String], diagonal: Double, screenRatio: [Double]? = nil, description: String, safeDescription: String, ppi: Int, isPlusFormFactor: Bool, isPadMiniFormFactor: Bool, isPro: Bool, isXSeries: Bool, hasTouchID: Bool, hasFaceID: Bool, hasSensorHousing: Bool, supportsWirelessCharging: Bool, hasRoundedDisplayCorners: Bool, hasDynamicIsland: Bool, applePencilSupport: Int, hasForce3dTouchSupport: Bool, cameras: Int, hasLidarSensor: Bool, cpu: String, hasUSBCConnectivity: Bool, has5gSupport: Bool, hasEsimSupport: Bool = false, hasDualEsimSupport: Bool = false) {
+	init(caseName: String, comment: String, imageURL: String, identifiers: [String], diagonal: Double, screenRatio: [Double]? = nil, description: String, safeDescription: String, ppi: Int, isPlusFormFactor: Bool, isPadMiniFormFactor: Bool, isPro: Bool, isXSeries: Bool, hasTouchID: Bool, hasFaceID: Bool, hasSensorHousing: Bool, supportsWirelessCharging: Bool, hasRoundedDisplayCorners: Bool, hasDynamicIsland: Bool, applePencilSupport: Int, hasForce3dTouchSupport: Bool, cameras: Int, hasLidarSensor: Bool, cpu: String, hasUSBCConnectivity: Bool, has5gSupport: Bool, hasEsimSupport: Bool = false, hasDualEsimSupport: Bool = false, isFoldable: Bool = false) {
     	self.caseName = caseName
     	self.comment = comment
     	self.imageURL = imageURL
@@ -358,6 +366,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    self.has5gSupport = has5gSupport
 	    self.hasEsimSupport = hasEsimSupport
 	    self.hasDualEsimSupport = hasDualEsimSupport
+	    self.isFoldable = isFoldable
 	}
 
 	init(fields: [MixedTypeField]) {
@@ -392,6 +401,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    // accepted by the parser and retain their explicit value.
 	    hasEsimSupport = fields.count > 26 ? (fields[26].boolValue ?? false) : false
 	    hasDualEsimSupport = fields.count > 27 ? (fields[27].boolValue ?? false) : false
+	    isFoldable = fields.count > 28 ? (fields[28].boolValue ?? false) : false
 	}
 
 	var supportLink: String? {
@@ -457,9 +467,9 @@ struct DeviceKitDevice: DeviceBridge {
     	    	let height = Int(height)
     	    	let screen = Screen(diagonal: diagonal, resolution: (width, height), ppi: ppi)
     	    	if width.doubleValue == screenRatio[0] && height.doubleValue == screenRatio[1] {
-	    	    	capabilities.screen = matched.screen
+				capabilities.screens = matched.screens
     	    	} else {
-	    	    	capabilities.screen = screen
+				capabilities.screens = [screen]
     	    	}
 	    	}
 	    	// TODO: Check the matched device's screen and use that if the ratio and ppi matches or is close enough just use that
@@ -561,7 +571,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    // raw ratio in the bridge row.  DeviceKit's known diagonal/ppi errors are
 	    // presentation warnings; the local hardware definition remains canonical.
 	    if matched.idiom == .pad || matched.idiom == .watch {
-		finalCapabilities.screen = matched.screen
+		finalCapabilities.screens = matched.screens
 	    }
 	    converted = Device(idiom: converted.idiom, officialName: converted.officialName,
 		identifiers: converted.identifiers, introduction: converted.introduction,
@@ -671,7 +681,7 @@ struct DeviceKitDevice: DeviceBridge {
 		}
 
 
-    	let screen = device.screen // use capabilities version, not local variable version
+		let screen = device.screens.first // use catalog panel metadata, not the bridge ratio
     	var diagonal = screen?.diagonal ?? 0
     	if diagonal == 1.65 {
 	    	diagonal = 1.6
@@ -700,7 +710,12 @@ struct DeviceKitDevice: DeviceBridge {
 	    // canonical screen so this remains a visible compatible source delta.
     	// ignore cameras
 
-    	let isXSeries = device.capabilities.biometrics == .faceID && idiom != .pad // faceID is proxy for "isXSeries"
+	// DeviceKit's legacy X-series/sensor-housing flags describe the front
+	// display camera housing, which can exist without Face ID (iPhone Duo).
+	let hasSensorHousing = device.capabilities.biometrics == .faceID
+		|| device.has(.notch)
+		|| device.has(.dynamicIsland)
+	let isXSeries = idiom == .phone && hasSensorHousing
 
     	return DeviceKitDevice(
 	    	caseName: caseName,
@@ -718,7 +733,7 @@ struct DeviceKitDevice: DeviceBridge {
 	    	isXSeries: isXSeries,
 	    	hasTouchID: device.capabilities.biometrics == .touchID,
 	    	hasFaceID: device.capabilities.biometrics == .faceID,
-	    	hasSensorHousing: isXSeries,
+		hasSensorHousing: hasSensorHousing,
 	    	supportsWirelessCharging: device.has(.wirelessCharging),
 	    	hasRoundedDisplayCorners: device.has(.roundedCorners),
 	    	hasDynamicIsland: device.has(.dynamicIsland),
@@ -730,7 +745,8 @@ struct DeviceKitDevice: DeviceBridge {
 	    	hasUSBCConnectivity: device.has(.usbC),
 		has5gSupport: device.cellular == .fiveG,
 		hasEsimSupport: device.has(.esim),
-		hasDualEsimSupport: device.has(.dualesim))
+		hasDualEsimSupport: device.has(.dualesim),
+		isFoldable: device.screens.count > 1)
 	}
 
 	func buildRatio(ratioInnerSpace: String) -> String {
@@ -832,7 +848,7 @@ struct DeviceKitDevice: DeviceBridge {
     	// Emit keyword-only capabilities and CPU for the current upstream constructor.
     	// Use a quoted safeDescription literal so the exported record can be parsed again.
     	return """
-\(prefix)Device(\(preSpace)\(caseName.definition),\(nameSpace)\(comment.definition),\(commentSpace)\(imageURL.definition),\(imageSpace)\(identifiers),\(identifiersSpace)\(diagonal),\(diagonalSpace)\(ratio),\(ratioSpace)\(description.definition), \(safeDescription.definition), \(ppi), isPlusFormFactor=\(isPlusFormFactor.deviceKitDefinition), isPadMiniFormFactor=\(isPadMiniFormFactor.deviceKitDefinition), isPro=\(isPro.deviceKitDefinition), isXSeries=\(isXSeries.deviceKitDefinition), hasTouchID=\(hasTouchID.deviceKitDefinition), hasFaceID=\(hasFaceID.deviceKitDefinition), hasSensorHousing=\(hasSensorHousing.deviceKitDefinition), supportsWirelessCharging=\(supportsWirelessCharging.deviceKitDefinition), hasRoundedDisplayCorners=\(hasRoundedDisplayCorners.deviceKitDefinition), hasDynamicIsland=\(hasDynamicIsland.deviceKitDefinition), applePencilSupport=\(applePencilSupport), hasForce3dTouchSupport=\(hasForce3dTouchSupport.deviceKitDefinition), cameras=\(cameras), hasLidarSensor=\(hasLidarSensor.deviceKitDefinition), cpu=\(cpu.definition), hasUSBCConnectivity=\(hasUSBCConnectivity.deviceKitDefinition), has5gSupport=\(has5gSupport.deviceKitDefinition), hasEsimSupport=\(hasEsimSupport.deviceKitDefinition), hasDualEsimSupport=\(hasDualEsimSupport.deviceKitDefinition)),
+\(prefix)Device(\(preSpace)\(caseName.definition),\(nameSpace)\(comment.definition),\(commentSpace)\(imageURL.definition),\(imageSpace)\(identifiers),\(identifiersSpace)\(diagonal),\(diagonalSpace)\(ratio),\(ratioSpace)\(description.definition), \(safeDescription.definition), \(ppi), isPlusFormFactor=\(isPlusFormFactor.deviceKitDefinition), isPadMiniFormFactor=\(isPadMiniFormFactor.deviceKitDefinition), isPro=\(isPro.deviceKitDefinition), isXSeries=\(isXSeries.deviceKitDefinition), hasTouchID=\(hasTouchID.deviceKitDefinition), hasFaceID=\(hasFaceID.deviceKitDefinition), hasSensorHousing=\(hasSensorHousing.deviceKitDefinition), supportsWirelessCharging=\(supportsWirelessCharging.deviceKitDefinition), hasRoundedDisplayCorners=\(hasRoundedDisplayCorners.deviceKitDefinition), hasDynamicIsland=\(hasDynamicIsland.deviceKitDefinition), applePencilSupport=\(applePencilSupport), hasForce3dTouchSupport=\(hasForce3dTouchSupport.deviceKitDefinition), cameras=\(cameras), hasLidarSensor=\(hasLidarSensor.deviceKitDefinition), cpu=\(cpu.definition), hasUSBCConnectivity=\(hasUSBCConnectivity.deviceKitDefinition), has5gSupport=\(has5gSupport.deviceKitDefinition), hasEsimSupport=\(hasEsimSupport.deviceKitDefinition), hasDualEsimSupport=\(hasDualEsimSupport.deviceKitDefinition), isFoldable=\(isFoldable.deviceKitDefinition)),
 """
 	}
 }
@@ -847,7 +863,7 @@ private enum DeviceKitDefinitionParser {
     	"isPro", "isXSeries", "hasTouchID", "hasFaceID", "hasSensorHousing",
     	"supportsWirelessCharging", "hasRoundedDisplayCorners", "hasDynamicIsland",
     	"applePencilSupport", "hasForce3dTouchSupport", "cameras", "hasLidarSensor",
-		"cpu", "hasUSBCConnectivity", "has5gSupport", "hasEsimSupport", "hasDualEsimSupport"
+		"cpu", "hasUSBCConnectivity", "has5gSupport", "hasEsimSupport", "hasDualEsimSupport", "isFoldable"
 	]
 
 	/// Reports schema changes as visible loader errors instead of silently returning an empty catalog.
@@ -890,13 +906,23 @@ private enum DeviceKitDefinitionParser {
 	    	    	}
 	    	    	values[key] = try value(literal)
     	    	}
-    	    	if hasKeywords {
+			if hasKeywords {
 	    	    	guard position <= 9 else { throw ParseError(reason: "Only the first nine fields may be positional in keyword records.") }
 	    	    	// Mirror upstream's documented defaults; required metadata and CPU are never invented.
 	    	    	for field in fields.dropFirst(9) where field != "cpu" && values[field] == nil {
     	    	    	values[field] = ["applePencilSupport", "cameras"].contains(field) ? 0 : false
 	    	    	}
+			} else {
+				// Archived positional rows stop at has5gSupport (field 25). Newer
+				// bridge flags are optional schema additions and must not invalidate
+				// those previously valid records.
+				for field in fields.dropFirst(26) where values[field] == nil {
+					values[field] = false
+				}
     	    	}
+			// Keep the positional archive schema readable after adding this optional
+			// keyword-only extension to the source format.
+			if values["isFoldable"] == nil { values["isFoldable"] = false }
     	    	guard fields.allSatisfy({ values[$0] != nil }) else {
 	    	    	throw ParseError(reason: "Missing required fields: \(fields.filter { values[$0] == nil }.joined(separator: ", ")).")
     	    	}
@@ -925,21 +951,28 @@ private enum DeviceKitDefinitionParser {
     	var escaped = false
     	var comment = false
     	for character in source {
-	    	if comment {
-    	    	if character == "\n" { comment = false; token.append(" ") }
-    	    	continue
-	    	}
-	    	if quoted {
+		if comment {
+			if character == "\n" {
+                    comment = false
+                    token.append(" ")
+			}
+			continue
+		}
+		if quoted {
     	    	token.append(character)
     	    	if escaped { escaped = false }
     	    	else if character == "\\" { escaped = true }
     	    	else if character == "\"" { quoted = false }
     	    	continue
 	    	}
-	    	switch character {
-	    	case "#": comment = true
-	    	case "\"": quoted = true; token.append(character)
-	    	case "[", "(": delimiters.append(character); token.append(character)
+		switch character {
+		case "#": comment = true
+		case "\"":
+                quoted = true
+                token.append(character)
+		case "[", "(":
+                delimiters.append(character)
+                token.append(character)
 	    	case "]", ")":
     	    	if character == ")", delimiters.isEmpty {
 	    	    	if !token.trimmed.isEmpty { arguments.append(token.trimmed) }
@@ -1191,7 +1224,7 @@ public struct Migration {
     	var definitionString = """
     	%{
     	class Device:
-	  def __init__(self, caseName, comment, imageURL, identifiers, diagonal, screenRatio, description, safeDescription, ppi, isPlusFormFactor, isPadMiniFormFactor, isPro, isXSeries, hasTouchID, hasFaceID, hasSensorHousing, supportsWirelessCharging, hasRoundedDisplayCorners, hasDynamicIsland, applePencilSupport, hasForce3dTouchSupport, cameras, hasLidarSensor, cpu, hasUSBCConnectivity, has5gSupport, hasEsimSupport=False, hasDualEsimSupport=False):
+	  def __init__(self, caseName, comment, imageURL, identifiers, diagonal, screenRatio, description, safeDescription, ppi, isPlusFormFactor, isPadMiniFormFactor, isPro, isXSeries, hasTouchID, hasFaceID, hasSensorHousing, supportsWirelessCharging, hasRoundedDisplayCorners, hasDynamicIsland, applePencilSupport, hasForce3dTouchSupport, cameras, hasLidarSensor, cpu, hasUSBCConnectivity, has5gSupport, hasEsimSupport=False, hasDualEsimSupport=False, isFoldable=False):
 	    	self.caseName = caseName
 	    	self.comment = comment
 	    	self.imageURL = imageURL
@@ -1220,6 +1253,7 @@ public struct Migration {
 	    	self.has5gSupport = has5gSupport
 			self.hasEsimSupport = hasEsimSupport
 			self.hasDualEsimSupport = hasDualEsimSupport
+			self.isFoldable = isFoldable
 
     	# iOS
     	ignore = [
@@ -1281,4 +1315,3 @@ public struct Migration {
 //  }
 }
 */
-#endif

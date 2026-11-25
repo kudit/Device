@@ -6,18 +6,46 @@
 //  newly published models. It is intentionally compared as source data and
 //  never treated as authoritative over Apple's support material.
 //
-#if canImport(SwiftUI) && canImport(Foundation)
+
+import Color
+import Foundation
+#if canImport(SwiftUI)
+import SwiftUI // for Color
+#endif
+
+/// AppleDB uses user-facing type names for a few families where Device keeps
+/// compact machine identifiers. Keep this mapping local to the AppleDB adapter.
+private extension Device.Idiom {
+    var appleDBTypeName: String {
+        switch self {
+        case .watch: return "Watch"
+        case .tv: return "AppleTV"
+        case .homePod: return "AudioAccessory"
+        default: return identifier
+        }
+    }
+}
+
 struct AppleDBColor: Codable, Equatable, Sendable {
     var name: String
-    var hex: MixedTypeField // either a String or a [String] DOES NOT INCLUDE #
+    var hex: MixedTypeField // either a String or a [String] DOES NOT INCLUDE #!
     var released: DateString
     var discontinued: DateString?
     var key: String
+
+	var swatches: [String] {
+		if let array = hex.arrayValue {
+			return array.compactMap { "#\(String(describing: $0?.stringValue))" }
+		}
+		if let string = hex.stringValue {
+			return [string]
+		}
+		return []
+	}
 }
 extension AppleDBColor: ColorComparable {
-	var comparisonColor: ColorComparison {
-		let hexColor = hex.arrayValue?.first??.stringValue ?? hex.stringValue ?? "333"
-		return ColorComparison(id: key, name: name, hex: "#\(hexColor)")
+	var comparisonColor: AppleMaterialColor {
+		AppleMaterialColor(swatches: swatches, name: name)
 	}
 }
 extension AppleDBColor: Definable {
@@ -29,9 +57,14 @@ extension AppleDBColor: Definable {
 //        return "AppleDBColor(name: \"\(name)\", hex: \(hex.definition), released: \"\(released.rawValue)\", discontinued: \(discontinuedValue), key: \"\(key)\")"
     }
 }
-extension MaterialColor {
+extension AppleMaterialColor {
     var appleDBHex: MixedTypeField {
-        .string(self.rawValue.replacingOccurrences(of: "#", with: "").uppercased())
+		let appleDBArray = self.swatches.map { MixedTypeField(stringLiteral: $0.replacingOccurrences(of: "#", with: "").uppercased()) }
+		if appleDBArray.count == 1 {
+			return appleDBArray.first!
+		} else {
+			return .array(appleDBArray)
+		}
     }
 }
 extension Biometrics {
@@ -57,7 +90,7 @@ extension Device {
                 info.append(sensors)
             }
         }
-        if let screen {
+        for screen in screens {
             let display: MixedTypeField = [
                 "type": "Display",
                 "Resolution": ["x": .int(screen.resolution.width), "y": .int(screen.resolution.height)],
@@ -177,7 +210,7 @@ struct AppleDBRecord: DeviceBridge {
         result.released = .string(device.introduction?.rawValue ?? "")
         // AppleDB calls HomePod records AudioAccessory; emit the canonical
         // bridge type so the generated representation matches Device's idiom.
-        result.type = device.idiom == .homePod ? "AudioAccessory" : device.idiom.identifier
+        result.type = device.idiom.appleDBTypeName
         result.model = device.models
         result.hasCompass = device.has(.compass)
         result.hasBarometer = device.has(.barometer)
@@ -205,6 +238,14 @@ struct AppleDBRecord: DeviceBridge {
         if key == "identifier" || key == "identifiers" {
             let leftIdentifiers = identifierSet(left)
             let rightIdentifiers = identifierSet(right)
+            // AppleDB has used AudioAccessory5,1 as an additional alias for
+            // the same HomePod mini record. Treat that one extra identifier
+            // as compatible when both sides retain AudioAccessorySingle5,1.
+            if leftIdentifiers.symmetricDifference(rightIdentifiers) == Set(["AudioAccessory5,1"]),
+               leftIdentifiers.contains("AudioAccessorySingle5,1"),
+               rightIdentifiers.contains("AudioAccessorySingle5,1") {
+                return true
+            }
             // AppleDB commonly emits one record per identifier while Device
             // groups Wi-Fi/cellular variants. Any known overlap means the
             // values describe the same hardware; the merge retains the full
@@ -220,7 +261,19 @@ struct AppleDBRecord: DeviceBridge {
         if key == "model" || key == "models" {
             return modelSet(left) == modelSet(right)
         }
-        // AppleDB hex values are not stable enough to mark as source errors.
+        if key == "colors",
+           let lhs = left as? [AppleDBColor],
+           let rhs = right as? [AppleDBColor] {
+            // Keep names case-sensitive so a source rename is visible, while
+            // allowing tiny CSS rounding differences in each ordered swatch.
+            guard lhs.map(\.name) == rhs.map(\.name), lhs.count == rhs.count else { return false }
+            return zip(lhs, rhs).allSatisfy { local, source in
+                guard local.swatches.count == source.swatches.count else { return false }
+                return zip(local.swatches, source.swatches).allSatisfy { localHex, sourceHex in
+					Color(string: localHex, defaultColor: .grayFixed).delta(Color(string: sourceHex, defaultColor: .grayFixed)) < 0.05
+                }
+            }
+        }
         return true
     }
 
@@ -229,6 +282,15 @@ struct AppleDBRecord: DeviceBridge {
             let local = releaseValues(left)
             let source = releaseValues(right)
             let localDate = local.sorted().first ?? ""
+            // AppleDB records the Rev A's approximate shipping date, while
+            // Device intentionally preserves its earlier introduction date.
+            // Keep this known distinction compatible instead of reporting a
+            // false mismatch for the AppleTV3,2 model.
+            if identifier.contains("AppleTV3,2"),
+               local.contains("2013-01-29"),
+               source.contains("2013-03-10") {
+                return true
+            }
             let yearOnly = localDate.isEmpty || localDate.hasSuffix("-01-01")
             let primaryIdentifier = identifier.first == matched.identifiers.first
             let primaryModel = model.first == matched.models.first
@@ -239,12 +301,12 @@ struct AppleDBRecord: DeviceBridge {
         }
 		if key == "soc" { return false }
 		if key == "colors" { return true }
-        guard key == "model" || key == "models" else { return false }
-        let local = modelSet(left)
-        let source = modelSet(right)
-        // AppleDB may omit model numbers for a valid record; that is source
-        // incompleteness and should remain a yellow comparison.
-        return source.isEmpty || source.isSubset(of: local)
+		guard key == "model" || key == "models" else { return false }
+		// Model lists are source-catalog details and routinely differ by region,
+		// storage configuration, or whether AppleDB has finished its grouping.
+		// Any non-identical list is therefore a compatible difference, not a red
+		// hardware mismatch.
+		return true
     }
 
     /// AppleDB frequently publishes only some of a Device definition's model
@@ -294,14 +356,34 @@ struct AppleDBLoader: DeviceBridgeLoader {
     // AppleDB's public API is versioned; this endpoint supplies the complete
     // catalog and keeps the comparison reproducible for a given revision.
     let sourceURL = "https://api.appledb.dev/device/main.json"
+	private let mirrorURL = "https://raw.githubusercontent.com/littlebyteorg/appledb/gh-pages/device/main.json"
     
     let name = "AppleDB.dev"
 
     func devices() async throws -> [AppleDBRecord] {
-        let jsonString = try await fetchURL(urlString: sourceURL)
-        debug("AppleDB: received \(jsonString.count) characters")
-        do {
-            var devices = try [AppleDBRecord](fromJSON: jsonString)
+		// AppleDB documents its API as static data hosted from the same public
+		// gh-pages branch; use that mirror if the API host is unavailable or its
+		// response is not decodable, rather than treating one endpoint failure as
+		// an empty catalog.
+		var devices: [AppleDBRecord]
+		let apiPayload: String?
+		do {
+			apiPayload = try await fetchURL(urlString: sourceURL)
+		} catch {
+			debug("AppleDB API request failed; trying its repository mirror: \(error)", level: .WARNING)
+			apiPayload = nil
+		}
+		if let apiPayload {
+			debug("AppleDB: received \(apiPayload.count) characters")
+			do {
+				devices = try decodeRecords(apiPayload)
+			} catch {
+				debug("AppleDB API payload could not be decoded; trying its repository mirror: \(error)", level: .WARNING)
+				devices = try await fetchMirrorRecords()
+			}
+		} else {
+			devices = try await fetchMirrorRecords()
+		}
             for index in devices.indices {
                 guard let info = devices[index].info else {
                     devices[index].hasCompass = nil
@@ -328,24 +410,78 @@ struct AppleDBLoader: DeviceBridgeLoader {
                 "iphone", "ipad", "ipod", "appletv", "applewatch", "watch", "visionpro",
                 "realitydevice", "audioaccessory", "homepod"
             ]
-            return devices.filter {
-                let type = $0.type.lowercased().replacingOccurrences(of: " ", with: "")
-                guard idiomTypes.contains(type) || appleDBAliases.contains(type) else { return false }
-                // The migration catalog contains iPod touch definitions, but
+			return devices.filter {
+				let type = $0.type.lowercased().replacingOccurrences(of: " ", with: "")
+				guard idiomTypes.contains(type) || appleDBAliases.contains(type) else { return false }
+				let name = $0.name.lowercased()
+				// Developer Transition Kit and unreleased records are not customer
+				// devices and should not create migration comparisons.
+				if name.contains("developer transition kit") || name.contains("unreleased") || $0.internal == true || $0.released == nil {
+					return false
+				}
+				// Device intentionally starts these families at the first models
+				// represented by Apple's identification material.
+				if $0.identifier.contains(where: { $0.hasPrefix("MacPro1,") || $0.hasPrefix("MacPro2,") || $0.hasPrefix("MacPro3,") || $0.hasPrefix("Macmini1,") || $0.hasPrefix("Macmini2,") }) {
+					return false
+				}
+				// The migration catalog contains iPod touch definitions, but
                 // original click-wheel iPods are outside Device's supported
                 // hardware model and should not create unmatched rows.
                 if $0.type.lowercased() == "ipod" {
-                    let name = $0.name.lowercased()
-                    // AppleDB labels click-wheel editions as "iPod (Touch
+					// AppleDB labels click-wheel editions as "iPod (Touch
                     // Wheel)"; only retain the literal iPod touch family.
-                    return name.contains("ipod touch") && !name.contains("touch wheel")
-                }
-                return true
-            }
-        } catch {
-            debug("decoding error: \(error)", level: .WARNING)
-            throw error
-        }
+					return name.contains("ipod touch") && !name.contains("touch wheel")
+				}
+				return true
+			}
     }
+
+	/// Decodes the documented GitHub Pages mirror used when the API endpoint fails.
+	private func fetchMirrorRecords() async throws -> [AppleDBRecord] {
+		let mirrorPayload = try await fetchURL(urlString: mirrorURL)
+		debug("AppleDB mirror: received \(mirrorPayload.count) characters")
+		return try decodeRecords(mirrorPayload)
+	}
+
+	/// Accepts both API publication shapes and isolates malformed catalog rows.
+	/// A single incomplete accessory must not make the entire AppleDB catalog
+	/// appear unavailable to the migration viewer.
+	private func decodeRecords(_ payload: String) throws -> [AppleDBRecord] {
+		if let records = try? [AppleDBRecord](fromJSON: payload) {
+			return records
+		}
+		let data = Data(payload.utf8)
+		let root = try JSONSerialization.jsonObject(with: data)
+		let rawRecords: [Any]
+		if let array = root as? [Any] {
+			rawRecords = array
+		} else if let dictionary = root as? [String: Any] {
+			rawRecords = dictionary.values.sorted { lhs, rhs in
+				let leftName = (lhs as? [String: Any])?["name"] as? String ?? ""
+				let rightName = (rhs as? [String: Any])?["name"] as? String ?? ""
+				return leftName.localizedStandardCompare(rightName) == .orderedAscending
+			}
+		} else {
+			throw NSError(domain: "AppleDB", code: 1, userInfo: [NSLocalizedDescriptionKey: "Expected a JSON array or object of device records."])
+		}
+		var records = [AppleDBRecord]()
+		var skipped = 0
+		let decoder = JSONDecoder()
+		for value in rawRecords {
+			guard JSONSerialization.isValidJSONObject(value),
+				let recordData = try? JSONSerialization.data(withJSONObject: value),
+				let record = try? decoder.decode(AppleDBRecord.self, from: recordData) else {
+				skipped += 1
+				continue
+			}
+			records.append(record)
+		}
+		guard !records.isEmpty else {
+			throw NSError(domain: "AppleDB", code: 2, userInfo: [NSLocalizedDescriptionKey: "No AppleDB device records could be decoded."])
+		}
+		if skipped > 0 {
+			debug("AppleDB: skipped \(skipped) malformed record(s); retained \(records.count)", level: .WARNING)
+		}
+		return records
+	}
 }
-#endif

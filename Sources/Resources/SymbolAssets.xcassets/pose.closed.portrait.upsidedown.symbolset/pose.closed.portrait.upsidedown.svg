@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Generator: Apple Native CoreSVG 232.5-->
+<!DOCTYPE svg
+PUBLIC "-//W3C//DTD SVG 1.1//EN"
+       "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3300" height="2200">
+ <!--glyph: "", point size: 100.0, font version: "19.2d2e1", template writer version: "128"-->
+ <style>.monochrome-0 {-sfsymbols-variable-threshold:0.0;-sfsymbols-motion-group:2}
+.monochrome-1 {-sfsymbols-variable-threshold:0.51;-sfsymbols-motion-group:1}
+.monochrome-2 {-sfsymbols-motion-group:0;-sfsymbols-always-pulses:true}
+
+.multicolor-0:systemMintColor {-sfsymbols-variable-threshold:0.0;-sfsymbols-motion-group:2}
+.multicolor-1:systemGreenColor {-sfsymbols-variable-threshold:0.51;-sfsymbols-motion-group:1}
+.multicolor-2:systemYellowColor {-sfsymbols-motion-group:0;-sfsymbols-always-pulses:true}
+
+.hierarchical-0:tertiary {-sfsymbols-variable-threshold:0.0;-sfsymbols-motion-group:2}
+.hierarchical-1:secondary {-sfsymbols-variable-threshold:0.51;-sfsymbols-motion-group:1}
+.hierarchical-2:primary {-sfsymbols-motion-group:0}
+
+.SFSymbolsPreviewWireframe {fill:none;opacity:1.0;stroke:black;stroke-width:0.5}
+</style>
+ <g id="Notes">
+  <rect height="2200" id="artboard" style="fill:white;opacity:1" width="3300" x="0" y="0"/>
+  <line style="fill:none;stroke:black;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="292" y2="292"/>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;font-weight:bold;" transform="matrix(1 0 0 1 263 322)">Weight/Scale Variations</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 559.711 322)">Ultralight</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 856.422 322)">Thin</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 1153.13 322)">Light</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 1449.84 322)">Regular</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 1746.56 322)">Medium</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 2043.27 322)">Semibold</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 2339.98 322)">Bold</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 2636.69 322)">Heavy</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:middle;" transform="matrix(1 0 0 1 2933.4 322)">Black</text>
+  <line style="fill:none;stroke:black;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1903" y2="1903"/>
+  <g transform="matrix(0.2 0 0 0.2 263 1933)">
+   <path d="m46.2402 4.15039c21.5332 0 39.4531-17.8711 39.4531-39.4043s-17.9688-39.4043-39.502-39.4043c-21.4844 0-39.3555 17.8711-39.3555 39.4043s17.9199 39.4043 39.4043 39.4043Zm0-7.42188c-17.7246 0-31.8848-14.209-31.8848-31.9824s14.1113-31.9824 31.8359-31.9824c17.7734 0 32.0312 14.209 32.0312 31.9824s-14.209 31.9824-31.9824 31.9824Zm-17.9688-31.9824c0 2.14844 1.51367 3.61328 3.75977 3.61328h10.498v10.5957c0 2.19727 1.46484 3.71094 3.61328 3.71094 2.24609 0 3.71094-1.51367 3.71094-3.71094v-10.5957h10.5957c2.19727 0 3.71094-1.46484 3.71094-3.61328 0-2.19727-1.51367-3.71094-3.71094-3.71094h-10.5957v-10.5469c0-2.24609-1.46484-3.75977-3.71094-3.75977-2.14844 0-3.61328 1.51367-3.61328 3.75977v10.5469h-10.498c-2.24609 0-3.75977 1.51367-3.75977 3.71094Z"/>
+  </g>
+  <g transform="matrix(0.2 0 0 0.2 281.506 1933)">
+   <path d="m58.5449 14.5508c27.2461 0 49.8047-22.6074 49.8047-49.8047 0-27.2461-22.6074-49.8047-49.8535-49.8047-27.1973 0-49.7559 22.5586-49.7559 49.8047 0 27.1973 22.6074 49.8047 49.8047 49.8047Zm0-8.30078c-23.0469 0-41.4551-18.457-41.4551-41.5039s18.3594-41.5039 41.4062-41.5039 41.5527 18.457 41.5527 41.5039-18.457 41.5039-41.5039 41.5039Zm-22.6562-41.5039c0 2.39258 1.66016 4.00391 4.15039 4.00391h14.3555v14.4043c0 2.44141 1.66016 4.15039 4.05273 4.15039 2.44141 0 4.15039-1.66016 4.15039-4.15039v-14.4043h14.4043c2.44141 0 4.15039-1.61133 4.15039-4.00391 0-2.44141-1.70898-4.15039-4.15039-4.15039h-14.4043v-14.3555c0-2.49023-1.70898-4.19922-4.15039-4.19922-2.39258 0-4.05273 1.70898-4.05273 4.19922v14.3555h-14.3555c-2.49023 0-4.15039 1.70898-4.15039 4.15039Z"/>
+  </g>
+  <g transform="matrix(0.2 0 0 0.2 304.924 1933)">
+   <path d="m74.8535 28.3203c34.8145 0 63.623-28.8086 63.623-63.5742 0-34.8145-28.8574-63.623-63.6719-63.623-34.7656 0-63.5254 28.8086-63.5254 63.623 0 34.7656 28.8086 63.5742 63.5742 63.5742Zm0-9.08203c-30.1758 0-54.4434-24.3164-54.4434-54.4922 0-30.2246 24.2188-54.4922 54.3945-54.4922 30.2246 0 54.541 24.2676 54.541 54.4922 0 30.1758-24.2676 54.4922-54.4922 54.4922Zm-28.8574-54.4922c0 2.58789 1.85547 4.39453 4.58984 4.39453h19.7266v19.7754c0 2.68555 1.85547 4.58984 4.44336 4.58984 2.68555 0 4.54102-1.85547 4.54102-4.58984v-19.7754h19.7754c2.68555 0 4.58984-1.80664 4.58984-4.39453 0-2.73438-1.85547-4.58984-4.58984-4.58984h-19.7754v-19.7266c0-2.73438-1.85547-4.63867-4.54102-4.63867-2.58789 0-4.44336 1.9043-4.44336 4.63867v19.7266h-19.7266c-2.73438 0-4.58984 1.85547-4.58984 4.58984Z"/>
+  </g>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;font-weight:bold;" transform="matrix(1 0 0 1 263 1953)">Design Variations</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1971)">Symbols are supported in up to nine weights and three scales.</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1989)">For optimal layout with text and other symbols, vertically align</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 2007)">symbols with the adjacent text.</text>
+  <line style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="776" x2="776" y1="1919" y2="1933"/>
+  <g transform="matrix(0.2 0 0 0.2 776 1933)">
+   <path d="m16.5527 0.78125c2.58789 0 3.85742-0.976562 4.78516-3.71094l6.29883-17.2363h28.8086l6.29883 17.2363c0.927734 2.73438 2.19727 3.71094 4.73633 3.71094 2.58789 0 4.24805-1.5625 4.24805-4.00391 0-0.830078-0.146484-1.61133-0.537109-2.63672l-22.9004-60.9863c-1.12305-2.97852-3.125-4.49219-6.25-4.49219-3.02734 0-5.07812 1.46484-6.15234 4.44336l-22.9004 61.084c-0.390625 1.02539-0.537109 1.80664-0.537109 2.63672 0 2.44141 1.5625 3.95508 4.10156 3.95508Zm13.4766-28.3691 11.8652-32.8613h0.244141l11.8652 32.8613Z"/>
+  </g>
+  <line style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="792.836" x2="792.836" y1="1919" y2="1933"/>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;font-weight:bold;" transform="matrix(1 0 0 1 776 1953)">Margins</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 776 1971)">Leading and trailing margins on the left and right side of each symbol</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 776 1989)">can be adjusted by modifying the x-location of the margin guidelines.</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 776 2007)">Modifications are automatically applied proportionally to all</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 776 2025)">scales and weights.</text>
+  <g transform="matrix(0.2 0 0 0.2 1289 1933)">
+   <path d="m14.209 9.32617 8.49609 8.54492c4.29688 4.3457 9.22852 4.05273 13.8672-1.07422l53.4668-58.9355-4.83398-4.88281-53.0762 58.3984c-1.75781 2.00195-3.41797 2.49023-5.76172 0.146484l-5.85938-5.81055c-2.34375-2.29492-1.80664-4.00391 0.195312-5.81055l57.373-54.0039-4.88281-4.83398-57.959 54.4434c-4.93164 4.58984-5.32227 9.47266-1.02539 13.8184Zm32.0801-90.9668c-2.09961 2.05078-2.24609 4.93164-1.07422 6.88477 1.17188 1.80664 3.4668 2.97852 6.68945 2.14844 7.32422-1.70898 14.9414-2.00195 22.0703 2.68555l-2.92969 7.27539c-1.70898 4.15039-0.830078 7.08008 1.85547 9.81445l11.4746 11.5723c2.44141 2.44141 4.49219 2.53906 7.32422 2.05078l5.32227-0.976562 3.32031 3.36914-0.195312 2.7832c-0.195312 2.49023 0.439453 4.39453 2.88086 6.78711l3.80859 3.71094c2.39258 2.39258 5.46875 2.53906 7.8125 0.195312l14.5508-14.5996c2.34375-2.34375 2.24609-5.32227-0.146484-7.71484l-3.85742-3.80859c-2.39258-2.39258-4.24805-3.17383-6.64062-2.97852l-2.88086 0.244141-3.22266-3.17383 1.2207-5.61523c0.634766-2.83203-0.146484-5.0293-3.07617-7.95898l-10.9863-10.9375c-16.6992-16.6016-38.8672-16.2109-53.3203-1.75781Zm7.4707 1.85547c12.1582-8.88672 28.6133-7.37305 39.7461 3.75977l12.1582 12.0605c1.17188 1.17188 1.36719 2.09961 1.02539 3.80859l-1.61133 7.42188 7.51953 7.42188 4.93164-0.292969c1.26953-0.0488281 1.66016 0.0488281 2.63672 1.02539l2.88086 2.88086-12.207 12.207-2.88086-2.88086c-0.976562-0.976562-1.12305-1.36719-1.07422-2.68555l0.341797-4.88281-7.4707-7.42188-7.61719 1.26953c-1.61133 0.341797-2.34375 0.195312-3.56445-0.976562l-10.0098-10.0098c-1.26953-1.17188-1.41602-2.00195-0.634766-3.85742l4.39453-10.4492c-7.8125-7.27539-17.9688-10.4004-28.125-7.42188-0.78125 0.195312-1.07422-0.439453-0.439453-0.976562Z"/>
+  </g>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;font-weight:bold;" transform="matrix(1 0 0 1 1289 1953)">Exporting</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 1289 1971)">Symbols should be outlined when exporting to ensure the</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 1289 1989)">design is preserved when submitting to Xcode.</text>
+  <text id="template-version" style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1933)">Template v.5.0</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1951)">Requires Xcode 15 or greater</text>
+  <text id="descriptive-name" style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1969)">Generated from wirelesscharging</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;text-anchor:end;" transform="matrix(1 0 0 1 3036 1987)">Typeset at 100.0 points</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 726)">Small</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1156)">Medium</text>
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1586)">Large</text>
+ </g>
+ <g id="Guides">
+  <g id="H-reference" style="fill:#27AAE1;stroke:none;" transform="matrix(1 0 0 1 339 696)">
+   <path d="M0.993654 0L3.63775 0L29.3281-67.1323L30.0303-67.1323L30.0303-70.459L28.1226-70.459ZM11.6885-24.4799L46.9815-24.4799L46.2315-26.7285L12.4385-26.7285ZM55.1196 0L57.7637 0L30.6382-70.459L29.4326-70.459L29.4326-67.1323Z"/>
+  </g>
+  <line id="Baseline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="696" y2="696"/>
+  <line id="Capline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="625.541" y2="625.541"/>
+  <g id="H-reference" style="fill:#27AAE1;stroke:none;" transform="matrix(1 0 0 1 339 1126)">
+   <path d="M0.993654 0L3.63775 0L29.3281-67.1323L30.0303-67.1323L30.0303-70.459L28.1226-70.459ZM11.6885-24.4799L46.9815-24.4799L46.2315-26.7285L12.4385-26.7285ZM55.1196 0L57.7637 0L30.6382-70.459L29.4326-70.459L29.4326-67.1323Z"/>
+  </g>
+  <line id="Baseline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1126" y2="1126"/>
+  <line id="Capline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1055.54" y2="1055.54"/>
+  <g id="H-reference" style="fill:#27AAE1;stroke:none;" transform="matrix(1 0 0 1 339 1556)">
+   <path d="M0.993654 0L3.63775 0L29.3281-67.1323L30.0303-67.1323L30.0303-70.459L28.1226-70.459ZM11.6885-24.4799L46.9815-24.4799L46.2315-26.7285L12.4385-26.7285ZM55.1196 0L57.7637 0L30.6382-70.459L29.4326-70.459L29.4326-67.1323Z"/>
+  </g>
+  <line id="Baseline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1556" y2="1556"/>
+  <line id="Capline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1485.54" y2="1485.54"/>
+  <line id="left-margin-Ultralight-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="504.388" x2="504.388" y1="600.785" y2="720.121"/>
+  <line id="right-margin-Ultralight-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="615.034" x2="615.034" y1="600.785" y2="720.121"/>
+  <line id="left-margin-Regular-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1387.05" x2="1387.05" y1="600.785" y2="720.121"/>
+  <line id="right-margin-Regular-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1512.64" x2="1512.64" y1="600.785" y2="720.121"/>
+  <line id="left-margin-Black-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="2861.45" x2="2861.45" y1="600.785" y2="720.121"/>
+  <line id="right-margin-Black-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="3005.35" x2="3005.35" y1="600.785" y2="720.121"/>
+ </g>
+ <g id="Symbols">
+<g id="Ultralight-S" transform="matrix(0.40262857 0 0 0.40262857 532.2252 627.5531431)">
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" fill-rule="evenodd" d="M123.0567 172.61 L27.9163 172.61 L24.4798 172.3895 L21.1107 171.727 L17.925 170.6526 L14.9539 169.1926 L12.2276 167.374 L9.7755 165.2245 L7.626 162.7724 L5.8074 160.0461 L4.3474 157.075 L3.273 153.8893 L2.6105 150.5202 L2.39 147.0837 L2.39 27.9163 L2.6105 24.4798 L3.273 21.1107 L4.3474 17.925 L5.8074 14.9539 L7.626 12.2276 L9.7755 9.7755 L12.2276 7.626 L14.9539 5.8074 L17.925 4.3474 L21.1107 3.273 L24.4798 2.6105 L27.9163 2.39 L123.0567 2.39 L124.0404 2.4328 L125.0462 2.5764 L126.0202 2.8328 L126.9527 3.2167 L127.8229 3.7389 L128.6019 4.3981 L129.2611 5.1771 L129.7833 6.0473 L130.1672 6.9798 L130.4236 7.9538 L130.5672 8.9596 L130.61 9.9433 L130.61 165.0567 L130.5672 166.0404 L130.4236 167.0462 L130.1672 168.0202 L129.7833 168.9527 L129.2611 169.8229 L128.6019 170.6019 L127.8229 171.2611 L126.9527 171.7833 L126.0202 172.1672 L125.0462 172.4236 L124.0404 172.5672 Z M123.5568 167.3633 L124.0094 167.2987 L124.3548 167.2078 L124.6029 167.1056 L124.7743 167.0028 L124.8981 166.8981 L125.0028 166.7743 L125.1056 166.6029 L125.2078 166.3548 L125.2987 166.0094 L125.3633 165.5568 L125.39 164.9433 L125.39 10.0567 L125.3633 9.4432 L125.2987 8.9906 L125.2078 8.6452 L125.1056 8.3971 L125.0028 8.2257 L124.8981 8.1019 L124.7743 7.9972 L124.6029 7.8944 L124.3548 7.7922 L124.0094 7.7013 L123.5568 7.6367 L122.9433 7.61 L28.0837 7.61 L25.1533 7.798 L22.4541 8.3288 L19.9188 9.1839 L17.5646 10.3407 L15.4101 11.7779 L13.4745 13.4745 L11.7779 15.4101 L10.3407 17.5646 L9.1839 19.9188 L8.3288 22.4541 L7.798 25.1533 L7.61 28.0837 L7.61 146.9163 L7.798 149.8467 L8.3288 152.5459 L9.1839 155.0812 L10.3407 157.4354 L11.7779 159.5899 L13.4745 161.5255 L15.4101 163.2221 L17.5646 164.6593 L19.9188 165.8161 L22.4541 166.6712 L25.1533 167.202 L28.0837 167.39 L122.9433 167.39 Z"/>
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" fill-rule="evenodd" d="M47.0000 154.6100 86.0000 154.6100 86.9988 149.5887 87.8455 150.1545 88.4113 151.0012 88.6100 152.0000 88.4113 152.9988 87.8455 153.8455 86.9988 154.4113 86.0000 149.3900 47.0000 149.3900 46.0012 154.4113 45.1545 153.8455 44.5887 152.9988 44.3900 152.0000 44.5887 151.0012 45.1545 150.1545 46.0012 149.5887 Z"/>
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" d="M25.5 145 C25.5 141.9624 27.9624 139.5 31 139.5 C34.0376 139.5 36.5 141.9624 36.5 145 C36.5 148.0376 34.0376 150.5 31 150.5 C27.9624 150.5 25.5 148.0376 25.5 145 Z"/>
+  </g>
+<g id="Regular-S" transform="matrix(0.40262857 0 0 0.40262857 1423.2252 627.5531431)">
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" fill-rule="evenodd" d="M123.0978 174.5 L27.8558 174.5 L24.2359 174.2677 L20.6243 173.5575 L17.2031 172.4037 L14.0086 170.8339 L11.0753 168.8772 L8.4361 166.5639 L6.1228 163.9247 L4.1661 160.9914 L2.5963 157.7969 L1.4425 154.3757 L0.7323 150.7641 L0.5 147.1442 L0.5 27.8558 L0.7323 24.2359 L1.4425 20.6243 L2.5963 17.2031 L4.1661 14.0086 L6.1228 11.0753 L8.4361 8.4361 L11.0753 6.1228 L14.0086 4.1661 L17.2031 2.5963 L20.6243 1.4425 L24.2359 0.7323 L27.8558 0.5 L123.0978 0.5 L124.2156 0.5486 L125.4216 0.7209 L126.6232 1.0371 L127.8034 1.5231 L128.9268 2.1971 L129.943 3.057 L130.8029 4.0732 L131.4769 5.1966 L131.9629 6.3768 L132.2791 7.5784 L132.4514 8.7844 L132.5 9.9022 L132.5 165.0978 L132.4514 166.2156 L132.2791 167.4216 L131.9629 168.6232 L131.4769 169.8034 L130.8029 170.9268 L129.943 171.943 L128.9268 172.8029 L127.8034 173.4769 L126.6232 173.9629 L125.4216 174.2791 L124.2156 174.4514 Z M123.3817 165.4792 L123.634 165.4431 L123.7518 165.4121 L123.7521 165.412 L123.6705 165.461 L123.557 165.557 L123.461 165.6705 L123.412 165.7521 L123.4121 165.7518 L123.4431 165.634 L123.4792 165.3817 L123.5 164.9022 L123.5 10.0978 L123.4792 9.6183 L123.4431 9.366 L123.4121 9.2482 L123.412 9.2479 L123.461 9.3295 L123.557 9.443 L123.6705 9.539 L123.7521 9.588 L123.7518 9.5879 L123.634 9.5569 L123.3817 9.5208 L122.9022 9.5 L28.1442 9.5 L25.3972 9.6763 L22.9405 10.1594 L20.6406 10.935 L18.5099 11.9821 L16.5624 13.2812 L14.8139 14.8139 L13.2812 16.5624 L11.9821 18.5099 L10.935 20.6406 L10.1594 22.9405 L9.6763 25.3972 L9.5 28.1442 L9.5 146.8558 L9.6763 149.6028 L10.1594 152.0595 L10.935 154.3594 L11.9821 156.4901 L13.2812 158.4376 L14.8139 160.1861 L16.5624 161.7188 L18.5099 163.0179 L20.6406 164.065 L22.9405 164.8406 L25.3972 165.3237 L28.1442 165.5 L122.9022 165.5 Z"/>
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" fill-rule="evenodd" d="M47.0000 156.5000 86.0000 156.5000 87.7221 147.8425 89.1820 148.8180 90.1575 150.2779 90.5000 152.0000 90.1575 153.7221 89.1820 155.1820 87.7221 156.1575 86.0000 147.5000 47.0000 147.5000 45.2779 156.1575 43.8180 155.1820 42.8425 153.7221 42.5000 152.0000 42.8425 150.2779 43.8180 148.8180 45.2779 147.8425 Z"/>
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" d="M25.5 145 C25.5 141.9624 27.9624 139.5 31 139.5 C34.0376 139.5 36.5 141.9624 36.5 145 C36.5 148.0376 34.0376 150.5 31 150.5 C27.9624 150.5 25.5 148.0376 25.5 145 Z"/>
+  </g>
+<g id="Black-S" transform="matrix(0.40262857 0 0 0.40262857 2906.2252 627.5531431)">
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" fill-rule="evenodd" d="M123.1643 177.56 L27.7577 177.56 L23.841 177.3087 L19.8368 176.5213 L16.0343 175.2389 L12.4782 173.4914 L9.2097 171.3111 L6.2677 168.7323 L3.6889 165.7903 L1.5086 162.5218 L-0.2389 158.9657 L-1.5213 155.1632 L-2.3087 151.159 L-2.56 147.2423 L-2.56 27.7577 L-2.3087 23.841 L-1.5213 19.8368 L-0.2389 16.0343 L1.5086 12.4782 L3.6889 9.2097 L6.2677 6.2677 L9.2097 3.6889 L12.4782 1.5086 L16.0343 -0.2389 L19.8368 -1.5213 L23.841 -2.3087 L27.7577 -2.56 L123.1643 -2.56 L124.4991 -2.502 L126.0293 -2.2834 L127.5994 -1.8702 L129.1809 -1.219 L130.7139 -0.2992 L132.1143 0.8857 L133.2992 2.2861 L134.219 3.8191 L134.8702 5.4006 L135.2834 6.9707 L135.502 8.5009 L135.56 9.8357 L135.56 165.1643 L135.502 166.4991 L135.2834 168.0293 L134.8702 169.5994 L134.219 171.1809 L133.2992 172.7139 L132.1143 174.1143 L130.7139 175.2992 L129.1809 176.219 L127.5994 176.8702 L126.0293 177.2834 L124.4991 177.502 Z M123.0981 162.4286 L123.0262 162.4389 L122.7756 162.5048 L122.3747 162.6699 L121.8833 162.9647 L121.3857 163.3857 L120.9647 163.8833 L120.6699 164.3747 L120.5048 164.7756 L120.4389 165.0262 L120.4286 165.0981 L120.44 164.8357 L120.44 10.1643 L120.4286 9.9019 L120.4389 9.9738 L120.5048 10.2244 L120.6699 10.6253 L120.9647 11.1167 L121.3857 11.6143 L121.8833 12.0353 L122.3747 12.3301 L122.7756 12.4952 L123.0262 12.5611 L123.0981 12.5714 L122.8357 12.56 L28.2423 12.56 L25.7921 12.7172 L23.728 13.1231 L21.8094 13.7702 L20.0403 14.6395 L18.428 15.715 L16.9823 16.9823 L15.715 18.428 L14.6395 20.0403 L13.7702 21.8094 L13.1231 23.728 L12.7172 25.7921 L12.56 28.2423 L12.56 146.7577 L12.7172 149.2079 L13.1231 151.272 L13.7702 153.1906 L14.6395 154.9597 L15.715 156.572 L16.9823 158.0177 L18.428 159.285 L20.0403 160.3605 L21.8094 161.2298 L23.728 161.8769 L25.7921 162.2828 L28.2423 162.44 L122.8357 162.44 Z"/>
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" fill-rule="evenodd" d="M47.0000 159.5600 86.0000 159.5600 88.8931 145.0155 91.3457 146.6543 92.9845 149.1069 93.5600 152.0000 92.9845 154.8931 91.3457 157.3457 88.8931 158.9845 86.0000 144.4400 47.0000 144.4400 44.1069 158.9845 41.6543 157.3457 40.0155 154.8931 39.4400 152.0000 40.0155 149.1069 41.6543 146.6543 44.1069 145.0155 Z"/>
+   <path class="monochrome-0 multicolor-0:systemMintColor hierarchical-0:tertiary" d="M25.5 145 C25.5 141.9624 27.9624 139.5 31 139.5 C34.0376 139.5 36.5 141.9624 36.5 145 C36.5 148.0376 34.0376 150.5 31 150.5 C27.9624 150.5 25.5 148.0376 25.5 145 Z"/>
+  </g>
+ </g>
+</svg>

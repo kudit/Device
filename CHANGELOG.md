@@ -1,80 +1,30 @@
 # ChangeLog
 
-If create an AppleMaterialColor struct, won't ColorComparison not be necessary since we can bridge everything to AppleMaterialColor?  Seems silly to include as a public API when AppleMaterialColor will accomplish the same thing.
-
-TODO: Please create a new AppleMaterialColor.swift file and struct like this:
-```swift
-import Color
-public typealias AMC = AppleMaterialColor // to make initialization easier
-public struct AppleMaterialColor: Sendable, Codable {
-	public var swatches: [String]
-	public var name: String
-	public init(swatches: [String], name: String) {
-		self.swatches = swatches
-		self.name = name
-	}
-	public init(_ swatch: String, _ name: String) {
-		self.init(swatches: [swatch], name: name)
-	}
-	public init(_ swatches: [String], _ name: String) {
-		self.init(swatches: swatches, name: name)
-	}
-	func colors<C: KuColor>() -> [C] {
-		self.swatches.map { C(string: $0, defaultColor: .grayFixed) }
-	}
-}
-public extension AppleMaterialColor {
-	// MARK: - Static colors
-	static let black = AMC("#000", "Black") // complete black for default color
-	static let white = AMC("#FFF", "White") // complete white for default white plastic color
-	static let blush = AMC("#e8d0d0", "Blush")
-
-	// iPod Touch (5th generation)
-    static let iPodBlack = AMC("#4d5663", "Black")
-    , iPodSilver = "#c9cbca", iPodPink = "#fb797e", iPodYellow = "#cace39", iPodBlue = "#26c4e5"
-    static let iPodTouch5thGen = [iPodBlack, iPodSilver, iPodPink, iPodYellow, iPodBlue]
-
-//	// This really should be done as a macro expansion so that I can include the caseName in the struct as a value and write the definitions like this:
-//	@Case("black", "#000", "Black")
-//	// which would expand to:
-//	static let black = AppleMaterialColor("#000", "Black")
-}
-```
-Then populate the `Static colors` section with **all** the colors from MaterialColor and be sure to include and preserve all the same comments, sections and header comments, and groupings and turn the case names into the static let variable names and pull the color names from the `MaterialColor.namedColors` dictionary.  When a case is in multiple name dictionaries, include all keys by setting the name to all the keys separated by slashes (like `static let starlightA5 = AMC("#e5e0d8", "Silver/Starlight")`).  The swatches is an array for multi-toned devices like some of the newer iMacs which should be:
-```
-	static let iMacBlue = AMC(["26476d","#a8bed2"], "Blue")
-	...
-    static let iMac2Ports = [iMacBlue, iMacGreen, iMacPink, iMacSilver]
-```
-Please modify the icons (like mac icons) to be a multi-tone "gradient" with a hard transition line rather than a gradual fade similar to how Apple shows the swatches on their website whenver there are multiple colors in the AppleMaterialColor.
-You should also create an extension on [AppleMaterialColor] that contains all the [MaterialColor] sets and names, however, to make things easier, they should be interspersed as separate extensions of AppleMaterialColor and [AppleMaterialColor] like this so that each new section is grouped together rather than having to modify multiple long lists:
-```
-// iPhone 13 Pro
-public extension AppleMaterialColor {
-	static let alpineGreen = AMC("#576856", "Alpine Green")
-	static let gold13 = AMC("#fae7cf", "Gold")
-	static let graphite = AMC("#54524f", "Graphite")
-	static let sierraBlue = AMC("#a7c1d9", "Sierra Blue")
-	static let silver13 = AMC("#f1f2ed", "Silver")
-}
-public extension [AppleMaterialColor] {
-	static let iPhone13Pro = [AppleMaterialColor.alpineGreen, .silver13, .gold13, .graphite, .sierraBlue]
-}
-[AppleMaterialColor].colorSets[iPhone13Pro] = "iPhone13Pro"
-
-```
-This way the colors can be defined as constants on AppleMaterialColors (so will should generally match the existing MaterialColors implementations) but if some devices use different names for the same hex value, then those can be distinctly referenced.
-
-(Once that is done): Please create a way of parsing colors from the comparison pages since the comparison page can show all the swatch colors as hex to verify that our data is correct/updated.  This could be done as an additional pass in the Apple page (IdentifyModelParsing.swift) parsing by instead of identifyPages being a dictionary to a string, it could be a dictionary to a tuple including the identify DEVICE page and the compare DEVICE page to pull additional details like capabilities that might not be on the identify overview and colors automatically.  For example, the iPhone comparison page is at: https://www.apple.com/iphone/compare/ and the color swatches are in the `colornav` section (example:
-```
-<div class="colornav-wrapper colornav-wrapper-iphone-13"><ul role="list" aria-label="Select a finish for iPhone 13" class="colornav-items"><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-green"><figcaption class="colornav-label">Green</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-pink"><figcaption class="colornav-label">Pink</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-blue"><figcaption class="colornav-label">Blue</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-midnight"><figcaption class="colornav-label">Midnight</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link current" aria-selected="true"><figure class="colornav-swatch colornav-swatch-starlight"><figcaption class="colornav-label">Starlight</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-red"><figcaption class="colornav-label"><span role="presentation" class="colornav-logo-productred colornav-logo-productred-centered"></span> <span class="colornav-label-hidden">Product Red</span></figcaption></figure></button></li></ul></div>
-```
-Note that iMacs may have multiple color swatches per item which is why we have AppleMaterialColors take an array of swatches instead of just a single value:
-```
-<div class="colornav-wrapper colornav-wrapper-iMac-24-M3_2"><ul role="list" class="colornav-items"><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-blue"><figcaption class="colornav-label">Blue</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-green"><figcaption class="colornav-label">Green</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link"><figure class="colornav-swatch colornav-swatch-pink"><figcaption class="colornav-label">Pink</figcaption></figure></button></li><li class="colornav-item"><button class="colornav-link current"><figure class="colornav-swatch colornav-swatch-silver"><figcaption class="colornav-label">Silver</figcaption></figure></button></li></ul></div>
-```
-Note that the swatch colors will have to be looked up in the CSS page (https://www.apple.com/v/mac/compare/ah/built/styles/overview.built.css) but that should be able to be automated and fetched from the comparison page.  The names can be pulled from here as well and we may want to pull the identifier like `midnight` or `pink` or `green-light` from the css name as clue for naming the static variable (which may need to have a number appended if it conflicts with an existing static name).
-Please update the AppleDB.dev and other color comparisons to ensure that the names match exactly (including capitalization) and use the .delta function to ensure the hex values are < 0.05 delta.
+## v3.0.0 2026-11-24
+Added iPad mini (A20 Pro), iMac M6, HomeView, HomePod 2, and updated Apple TV device entries (Apple TV HD will not support tvOS 27).
+Added multi-panel hardware specifications, live window diagnostics, foldable-device pose/hinge reporting, and scene-based external presentation controls.
+Added SF Symbols for all seven iPhone Duo poses.
+Added detailed capability descriptions for biometrics, Apple Pencil models, and variable aperture.
+Improved Apple finishes to support multi-tone devices like iMacs.
+Added a live keyboard-event diagnostic.
+Added a compact screen card that opens full presentation measurements including new orientation values, hinge percent, and window placment values on iPhone Duo.
+Added a separate capability test row for each Apple Pencil model.
+Apple Watch now reports crown-side in screen info.
+** App Store above **
+Added ability to access debug mode through the keyboard event diagnostics (type "kudit") in the sample app rather than relying on DEBUG flag.
+Device orientation uses camera-corner directions for devices, with legacy UIKit orientation retained as a compatibility bridge; added live window placement and hinge-open indicators to screen-state diagnostics.
+Fixed and updated test targets.
+Added the Compatibility SPIchecks wrapper.
+Prevented duplicate chip suffixes in parsed Apple product names.
+BatteryView now uses fixed battery symbols since they're broken in anyAppleOS 27.  Updated the `battery.slash` symbol.
+Added a live SF Symbol inspector to the hardware Styles view, with an editable name field and shared default, hierarchical, palette, and multicolor previews.
+Added source badges to the SF Symbol inspector to distinguish native symbols, modern assets, legacy assets, and fallbacks.
+DeviceKit X-series and sensor-housing comparisons now recognize notch and Dynamic Island hardware without Face ID.
+**Migration Guide**
+When upgrading from v2.x, replace `MaterialColor` with `AppleMaterialColor`; use `.legacyColor` only where a single `Color` is required and use palette gradient styles when rendering multitone finishes.
+Replace reads of `device.screen` with `device.screens.first` when the primary panel is intended. Replace writes with `screens = [...]`; use the `screens:` initializer for multi-panel hardware. Existing `screen:` initializers remain available for convenience.
+Use `Device.Pose` for physical posture, `Device.Orientation` for current device state, and `Device.LegacyOrientation` (also `Screen.LegacyOrientation`) for UIKit-style cardinal directions. `Screen.Orientation` aliases `Device.Orientation`; fixed `Device.screens` panel specifications do not contain live orientation or brightness. Read window bounds, placement, safe areas, and size classes from `@Environment(\.presentation)` or `ScreenInfoView`; live output discovery and diagnostic reports are internal implementation details. UIKit external presentation now requires a scene configuration.
+For old Watch deployments, use the backport observation API where `ObservableObject` is not provided by the OS. Mock device and battery implementations remain available for previews and in-app module tests.
 
 ## v2.15.1 2026-10-03
 Updated Color to 1.5.5 and Compatibility to 1.20.0 to fix Swift Package Index builds.
@@ -634,8 +584,9 @@ Heath's additions and re-working code for IdiomType so that we can subclass and 
 ## v1.0.0 2024-02-16
 Initial Project based off of DeviceKit but designed to be more maintainable and compatible.
 
-## Bugs to fix:
+## Bugs to Fix
 Known issues that need to be addressed.
+- [ ] Complete physical display and input acceptance: real Duo hinge/pose transitions, safe areas on both panels, and wired/AirPlay external presentations including independent poster-TV rotation.
 - [ ] On iPhone 7, Migration button not present.  When going into detail screen for a device, after transitioning, the view resets to the list.
 - [ ] Fix so highlighted row inverts primary color text in light mode.
 - [ ] Screen view on visionOS text should be black not background since more contrasty and no dark mode.
@@ -647,15 +598,13 @@ Known issues that need to be addressed.
         Crown Sequencer was set up without a view property. This will inevitably lead to incorrect crown indicator states
         overrelease of detent assertion detected
 - [ ] Odd warning: Device.swiftpm/Sources/Resources/SymbolAssets.xcassets: Could not get trait set for device Watch7,2 with version 10.4
+- [ ] See if Label("text", symbolName:) can be used to simplify AttributeLists. 
 
-## Roadmap:
+## Roadmap
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
-- [ ] Add tests like in Compatiblity.
-- [ ] Increased legacy support back to first Swift versions.
+- [ ] Add Device status widgets. The widget/Watch complication extension remains unimplemented.
 - [ ] Add in symbols into comparison diff views for capabilities rather than the string representations.
-- [ ] Create a macOS codename lookup tool (put in number and it should show the codename) in search, or just list all the codenamed systems in reverse order.
 - [ ] In definition, have a lookup for pre-defined screens like we do for colorsets so it shows the predefined set reather than the full definition.
-- [ ] Add Apple Intelligence as a capability feature.
 - [ ] Create migration export that checks values against defaults primarily to check definitions are in the correct order and that named color sets are being used (test to see if color set is equal to named colorset and if so, replace with the named case rather than the listed colors).
 - [ ] Device Test: Have a Way of specifying a narrow layout for Apple Watch and iPhone 7 where the thermal section should be separate and wrap rather than HStack.  Improve layout for watchOS.  Make sure description text is visible and scrollable.
 - [ ] Device Test: Improve layout and UI in tvOS. (Optimize)
@@ -675,12 +624,9 @@ Planned features and anticipated API changes.  If you want to contribute, this i
 - [ ] Device: Have capabilities list slider and toggle be stuck to top of screen when scrolling.
 - [ ] Re-work so custom symbols are image constants rather than using strings which may be unavailable (perhaps use with symbol enum package?)
 - [ ] See if there's a way to automate tests on various platform combinations.
-- [ ] Support landscape on iPhone for test view and use size classes to re-layout.
-- [ ] Add a variable for interfaceOrientation (separate from device orientation) that indicates the UI paradigm (portrait or landscape) and when the device switches to face up/down and doesn't rotate, should still report the current value (last known value).  Should report landscape in mac, vision, and tv devices, landscape by default in iPads, portrait by default in iPhone and watch.
 - [ ] Create replacement for rounded display corners since faceID is a good proxy but misses modern touchID power button iPads.  Have as capability.
 - [ ] Add way of getting battery cycle count and health? https://stackoverflow.com/questions/34571222/get-battery-percentage-on-mac-in-swift
-- [ ] Add additional notification monitors that can be subscribed to:
-        UIDevice.orientationDidChangeNotification
+- [ ] Add additional notification monitors that can be subscribed to (device orientation changes are already monitored):
         UIDevice.proximityStateDidChangeNotification
         NSBundleResourceRequestLowDiskSpace
         NSSystemClockDidChange // A notification posted whenever the system clock is changed.
@@ -690,9 +636,8 @@ Planned features and anticipated API changes.  If you want to contribute, this i
         ProcessInfo.thermalState
 - [ ] Look into creating bar for screen resolution PPI to indicate if it's high resolution or not.  Have area indicated that is considered "retina" - have bar as a conditional presentation if SwiftCharts is available.
 
-## Proposals:
+## Proposals
 This is where proposals can be discussed for potential movement to the roadmap.
-- [ ] Backport to the oldest version of Swift?
 - [ ] add a way of searching by capability
 - [ ] Add code to device to detect whether screen recording or screenshot is in progress.  Add notification callback?  `addScreenRecordingModeChangeCallback { oldMode, newMode in }`
     https://developer.apple.com/documentation/swiftui/environmentvalues/isscenecaptured#
@@ -710,7 +655,7 @@ This is where proposals can be discussed for potential movement to the roadmap.
 - [ ] If there's a way to fetch the actual model number (like MN572LL/A), then we can use this to give information of the state of the device (new, refurb, replaced, personalized, etc): https://osxdaily.com/2018/01/27/determine-iphone-new-refurbished-replaced/
 - [ ] Should forceTouch and touch3d be separated?  Discuss in issues or here.
 - [ ] Add always on capability to watches and phones.
-- [ ] Add orientation and brightness to current device description?
+- [ ] Add screen brightness to the current device description (orientation and foldable pose are already included).
 - [ ] Device: have code to make battery monitor dimmed and grayed out if App switches or goes to sleep so the wind coming back it doesn't show misinformation”.  Test with iPhone.  Maybe shouldn’t happen because would be problematic with visionOS?
 - [ ] Getting Computer Information (must give reason since can be used for fingerprinting so not included currently):
 var processorCount: Int
@@ -787,6 +732,8 @@ NOTE: Version needs to be updated in the following places:
 - [ ] Package.swift iOSApplication product displayVersion.
 - [ ] Device.version constant (must be hard coded since inaccessible in code)
 - [ ] Update changelog and tag with matching version in GitHub.
+
+iPhone Duo Pose information: https://support.apple.com/guide/iphone/pose-iphone-duo-iphv3p93k1bm/ios
 
 Tests:
 Playgrounds Preview Mac

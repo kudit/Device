@@ -60,6 +60,10 @@ public struct Screen: Hashable, Sendable, Codable {
     public var diagonal: Double?
     public var resolution: Size // width, height in pixels
     public var ppi: Int?
+	/// Catalog-only projection, excluding measured state from specification comparisons.
+	public var specification: Screen {
+		Screen(diagonal: diagonal, resolution: (resolution.width, resolution.height), ppi: ppi)
+	}
     
 //  public static func == (lhs: Screen, rhs: Screen) -> Bool {
 //    lhs.diagonal == rhs.diagonal
@@ -70,7 +74,7 @@ public struct Screen: Hashable, Sendable, Codable {
     public init(
         diagonal: Double? = nil,
         resolution: (Int, Int),
-        ppi: Int? = nil
+		ppi: Int? = nil
     ) {
         self.diagonal = diagonal
         self.resolution = Size(width: resolution.0, height: resolution.1)
@@ -81,6 +85,8 @@ public struct Screen: Hashable, Sendable, Codable {
     public static let p720 = Screen(resolution: (1280,720))
     public static let p1080 = Screen(resolution: (1920,1080))
     public static let vision = Screen(resolution: (3660,3200))
+    /// Apple HomeView's 6.98-inch viewable square display.
+    public static let homeView = Screen(diagonal: 6.98, resolution: (1088,1088), ppi: 220)
     // MARK: iPhones
     // original iPhone
     public static let i35o = Screen(diagonal: 3.5, resolution: (320,480), ppi: 163)
@@ -137,6 +143,8 @@ public struct Screen: Hashable, Sendable, Codable {
     public static let i79x1536 = Screen(diagonal: 7.9, resolution: (1536,2048), ppi: 326)
     // iPad mini 6
     public static let i83 = Screen(diagonal: 8.3, resolution: (1488,2266), ppi: 326)
+    // iPad mini (A20 Pro)
+    public static let i85 = Screen(diagonal: 8.5, resolution: (2316,1512), ppi: 326)
     // iPad Pro 11
     public static let i11 = Screen(diagonal: 11.0, resolution: (1668,2388), ppi: 264)
     // iPad Pro
@@ -159,51 +167,8 @@ public struct Screen: Hashable, Sendable, Codable {
     public static let w49 = Screen(diagonal: 2.2, resolution: (410,502), ppi: 338)
     public static let w49b = Screen(diagonal: 2.2, resolution: (422,514), ppi: 326)
 
-    /**
-     This enum describes the state of the orientation.
-     - Landscape: The device is in Landscape Orientation
-     - Portrait:  The device is in Portrait Orientation
-     */
-    public enum Orientation: Int, Hashable, SymbolRepresentable, CaseIterable, Sendable {
-        case unknown = 0
-
-        case portrait = 1 // Device oriented vertically, home button on the bottom
-
-        case portraitUpsideDown = 2 // Device oriented vertically, home button on the top
-
-        case landscapeLeft = 3 // Device oriented horizontally, home button on the right
-
-        case landscapeRight = 4 // Device oriented horizontally, home button on the left
-
-        case faceUp = 5 // Device oriented flat, face up
-
-        case faceDown = 6 // Device oriented flat, face down
-
-        public var symbolName: String {
-            switch self {
-            case .unknown:
-                "questionmark.square"
-            case .portrait:
-                "rectangle.portrait"
-            case .portraitUpsideDown:
-                "rectangle.portrait.slash"
-            case .landscapeLeft:
-                "rectangle"
-            case .landscapeRight:
-                "rectangle.fill"
-            case .faceUp:
-                "square.fill"
-            case .faceDown:
-                "square.slash"
-            }
-        }
-        
-        public var isLandscape: Bool {
-            return [.landscapeLeft, .landscapeRight].contains(self)
-        }
-
-        public var isPortrait: Bool {
-            return [.portrait, .portraitUpsideDown].contains(self)
-        }
-    }
+    /// Compatibility spelling for the device's current physical orientation.
+    public typealias Orientation = Device.Orientation
+	/// Previous UIKit cardinal values for callers migrating from `Screen.Orientation`.
+	public typealias LegacyOrientation = Device.LegacyOrientation
 }

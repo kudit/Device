@@ -21,7 +21,16 @@ extension Biometrics: Definable {}
 extension Camera: Definable {}
 extension Cellular: Definable {}
 extension ApplePencil: Definable {}
-extension MaterialColor: Definable {}
+extension AppleMaterialColor: Definable {
+	public var definition: String {
+		// Mark exact catalog matches so the proposal points maintainers at the
+		// existing static key instead of silently creating a duplicate value.
+		if let matched = AppleMaterialColor.namedColors[name]?.first(where: { $0.swatches == swatches }) {
+			return "AMC(\"\(swatches.definition)\", \"MATCHED\(matched.name)\")"
+		}
+		return "AMC(\(swatches.definition), \"\(name)\")"
+	}
+}
 extension AppleWatch.WatchSize: Definable {}
 extension AppleWatch.WatchSize.BandSize: Definable {}
 extension Mac.Form: Definable {}
@@ -156,7 +165,7 @@ public extension Device {
 //      colors = ""
 //    }
         //    debug("\(colors)") // for figuring out duplicate key crash
-        if let key = [MaterialColor].colorSets[self.colors] {
+        if let key = [AppleMaterialColor].colorSets[self.colors] {
             colors = "colors: .\(key),\n\(indentSpace)"
         }
         
@@ -172,11 +181,12 @@ public extension Device {
         }
         capabilities.cellular = nil // make sure doesn't appear also in capabilities
         
-        var screen = ""
-        if let s = capabilities.screen, s != Screen.undefined, idiom != .tv, idiom != .homePod, idiom != .watch {
-            screen = ",\n\(indentSpace)screen: \(s.definition)"
-        }
-        capabilities.screen = nil // make sure doesn't appear also in capabilities
+		var screen = ""
+		let addressableScreens = capabilities.screens.filter { $0 != .undefined }
+		if !addressableScreens.isEmpty, idiom != .tv, idiom != .homePod, idiom != .watch {
+			screen = ",\n\(indentSpace)screens: \(addressableScreens.definition)"
+		}
+        capabilities.screens = [] // make sure doesn't appear also in capabilities
         
         var pencils = ",\n\(indentSpace)pencils: \(capabilities.pencils.sorted.definition)"
         if capabilities.pencils.count == 0 {
@@ -186,7 +196,7 @@ public extension Device {
         
         var watchSize = ""
         if idiom == .watch, let size = capabilities.watchSize {
-            capabilities.screen = nil // should be in the watch size
+            capabilities.screens = [] // should be in the watch size
             capabilities.watchSize = nil // remove so not appears in capabilities list
             watchSize = ",\n\(indentSpace)size: \(size.definition)"
         }

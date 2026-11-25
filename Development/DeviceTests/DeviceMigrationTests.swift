@@ -3,7 +3,7 @@
 @_exported import Compatibility
 @_exported import Device
 
-#if DEBUG && canImport(SwiftUI) && canImport(Testing)
+#if canImport(SwiftUI) && canImport(Testing)
 import Testing
 
 @Suite
@@ -105,8 +105,8 @@ struct DeviceMigrationTests {
     /// Apple lists the Ultra 3 active display as 422 × 514 pixels at 326 ppi.
     @Test func appleWatchUltra3PixelDensityMatchesTechSpecs() {
         let ultra3 = Device(identifier: "Watch7,12")
-        #expect(ultra3.screen?.resolution == Screen.Size(width: 422, height: 514))
-        #expect(ultra3.screen?.ppi == 326)
+        #expect(ultra3.screens.first?.resolution == Screen.Size(width: 422, height: 514))
+        #expect(ultra3.screens.first?.ppi == 326)
     }
 
     /// A minimal faithful source fixture avoids network dependence and unrelated source metadata churn.

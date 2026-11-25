@@ -34,7 +34,7 @@ struct AppleDeviceSoftwareItem: Codable, Equatable, CustomStringConvertible {
     var name: String
     var version: AppleDeviceVersion
     var description: String {
-        "Supported OSs: \(device_version.min) < \(device_version.max, default: "<current>")"
+		"Supported OSs: \(device_version.min) < \(device_version.max?.description ?? "<current>")"
     }
 }
 
@@ -106,6 +106,8 @@ extension Device.Idiom {
             self = .watch
         } else if appleDeviceName.contains("HomePod") {
             self = .homePod
+        } else if appleDeviceName.contains("HomeView") {
+            self = .homeView
         } else if appleDeviceName.contains("Apple Vision") {
             self = .vision
         } else if appleDeviceName.contains("AirPods") {
@@ -134,6 +136,8 @@ extension Device.Idiom {
             return "Apple Watch"
         case .homePod:
             return "HomePod"
+        case .homeView:
+            return "Apple HomeView"
         case .vision:
             return "Apple Vision Pro"
             //      @unknown default:
@@ -142,29 +146,103 @@ extension Device.Idiom {
     }
 }
 
-enum AppleDeviceTrait: String, Codable, RawRepresentable {
-    case actionButton = "button.action"
-    case cameraControl = "button.camera"
-    case homeButton = "button.home"
-    case alwaysOnDisplay = "display.always-on"
-    case dynamicIsland = "display.dynamic-island"
-    case fluidDisplay = "display.fluid" // edge-to-edge display?  ignore since we don't really use this.
-    case proMotion = "display.pro-motion"
-    case displayNotch = "display.notch"
-    case faceID = "id.face"
-    case opticID = "id.optic"
-    case touchID = "id.touch"
-    case appleIntelligence = "intelligence"
+enum AppleDeviceTrait: Codable, Definable, CustomStringConvertible, Hashable {
+    case actionButton
+    case cameraControl
+    case homeButton
+    case alwaysOnDisplay
+    case dynamicIsland
+    case fluidDisplay // edge-to-edge display?  ignore since we don't really use this.
+    case proMotion
+    case displayNotch
+    case faceID
+    case opticID
+    case touchID
+    case appleIntelligence
     // Upstream now publishes these traits; retaining both prevents one new value
     // from failing decoding of the entire comparison catalog.
-    case magSafe = "magsafe"
-    case foldableDisplay = "display.foldable"
+    case magSafe
+    case foldableDisplay
     // For AirPods
-    case audioANC = "audio.anc" // active noise cancellation?
-    case audioSpatial = "audio.spatial"
+    case audioANC // active noise cancellation?
+    case audioSpatial
+    case unknown(String)
+
+    private init(sourceValue: String) {
+        switch sourceValue {
+        case "button.action": self = .actionButton
+        case "button.camera": self = .cameraControl
+        case "button.home": self = .homeButton
+        case "display.always-on": self = .alwaysOnDisplay
+        case "display.dynamic-island": self = .dynamicIsland
+        case "display.fluid": self = .fluidDisplay
+        case "display.pro-motion": self = .proMotion
+        case "display.notch": self = .displayNotch
+        case "id.face": self = .faceID
+        case "id.optic": self = .opticID
+        case "id.touch": self = .touchID
+        case "intelligence": self = .appleIntelligence
+        case "magsafe": self = .magSafe
+        case "display.foldable": self = .foldableDisplay
+        case "audio.anc": self = .audioANC
+        case "audio.spatial": self = .audioSpatial
+        default: self = .unknown(sourceValue)
+        }
+    }
+
+    private var sourceValue: String {
+        switch self {
+        case .actionButton: return "button.action"
+        case .cameraControl: return "button.camera"
+        case .homeButton: return "button.home"
+        case .alwaysOnDisplay: return "display.always-on"
+        case .dynamicIsland: return "display.dynamic-island"
+        case .fluidDisplay: return "display.fluid"
+        case .proMotion: return "display.pro-motion"
+        case .displayNotch: return "display.notch"
+        case .faceID: return "id.face"
+        case .opticID: return "id.optic"
+        case .touchID: return "id.touch"
+        case .appleIntelligence: return "intelligence"
+        case .magSafe: return "magsafe"
+        case .foldableDisplay: return "display.foldable"
+        case .audioANC: return "audio.anc"
+        case .audioSpatial: return "audio.spatial"
+        case .unknown(let value): return value
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.init(sourceValue: try container.decode(String.self))
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(sourceValue)
+    }
+
     // Device does not yet model a folding display, so preserve that source trait
     // for round trips without inventing a corresponding hardware capability.
-    static let unmappedTraits: [AppleDeviceTrait] = [.fluidDisplay, .proMotion, .foldableDisplay]
+    static let unmappedTraits: [AppleDeviceTrait] = [.fluidDisplay, .proMotion]
+
+    /// Retain source traits that Device does not yet represent as capabilities.
+    var shouldPreserveInBridge: Bool {
+        switch self {
+        case .unknown:
+            return true
+        default:
+            return Self.unmappedTraits.contains(self)
+        }
+    }
+
+    var definition: String {
+        sourceValue
+    }
+
+    var description: String {
+        sourceValue
+    }
 }
 
 extension Capability {
@@ -184,7 +262,7 @@ extension Capability {
         .appleIntelligence: .appleIntelligence,
         .magSafe: .magSafe, // Compare the newly published trait with Device's existing capability.
     ]
-        
+
     init?(appleDeviceTrait: AppleDeviceTrait) {
         for (key, value) in Capability.appleDeviceTraits {
             if key == appleDeviceTrait {
@@ -194,7 +272,7 @@ extension Capability {
         }
         return nil
     }
-    
+
     var appleDeviceTrait: AppleDeviceTrait? {
         for (key, value) in Capability.appleDeviceTraits {
             if self == value {
@@ -251,7 +329,19 @@ struct AppleDevice: DeviceBridge {
     var internal_names: [String]
     var a_numbers: [String]
     var ids: [String]
-    
+
+    func bridgeValuesEqual(_ key: String, _ left: Any?, _ right: Any?) -> Bool {
+        if key == "ids",
+           let local = left as? [String],
+           let source = right as? [String] {
+            // F* Apple Devices lists the canonical HomePod identifier but may
+            // omit Device's single-unit alias. A source subset is not a conflict.
+            let localIDs = Set(local)
+            return localIDs.isSuperset(of: Set(source))
+        }
+        return areEqual(left, right)
+    }
+
 //  static let nameMapping = [ // AppleDevice name : Device officialName
 //    "iPad mini (7th Gen)": "iPad mini (A17 Pro)",
 //    "iPad Pro (11-inch) (5th Gen)": "iPad Pro 11-inch (M4)",
@@ -264,9 +354,13 @@ struct AppleDevice: DeviceBridge {
 //  ]
 
     var matched: Device {
-        Device.forcedLookup(identifier: ids.first, officialNameHint: gen_name)
+		// HomePod mini has both a canonical identifier and a single-unit alias
+		// in Device; prefer Apple's canonical AudioAccessory identifier whenever
+		// the source row contains it, while still accepting alias-only records.
+		let preferredIdentifier = ids.first(where: { $0 == "AudioAccessory5,1" }) ?? ids.first
+		return Device.forcedLookup(identifier: preferredIdentifier, officialNameHint: gen_name)
     }
-        
+
     var merged: Device {
         // Avoid manufacturing a single combined device for a grouped source record.
         if let member = groupedComparisons.first { return member.merged }
@@ -276,15 +370,15 @@ struct AppleDevice: DeviceBridge {
                 capabilities.insert(capability)
             }
         }
-        
+
         // "fix" device names
         var officialName = matched.officialName
         if let gen_name, gen_name != "Unspecified" {
             officialName = gen_name
         }
-                
+
         let models = a_numbers.count == 0 ? matched.models : a_numbers
-                        
+
         return Device(
             idiom: .init(appleDeviceName: name),
             officialName: officialName,
@@ -305,11 +399,7 @@ struct AppleDevice: DeviceBridge {
         if (device.biometrics == nil || device.biometrics == Biometrics.none) && [.phone, .pod, .pad].contains(device.idiom) {
             traits.append(.homeButton)
         }
-        for unmapped in AppleDeviceTrait.unmappedTraits {
-            if self.traits.contains(unmapped) {
-                traits.append(unmapped) // not tracking (yet)
-            }
-        }
+        traits.append(contentsOf: self.traits.filter(\.shouldPreserveInBridge))
         // go through capabilities and map
         traits.append(contentsOf: device.capabilities.compactMap { $0.appleDeviceTrait })
         // It's all over the place for iPads.
@@ -321,6 +411,10 @@ struct AppleDevice: DeviceBridge {
                 traits.append(.homeButton)
             }
         }
+        // iPhone Duo support
+        if device.screens.count > 1 {
+            traits.append(.foldableDisplay)
+        }
 /*
         // "fix"es because Apple Device list has some bad data
         if traits.contains(.displayNotch) && device.idiom == .pad {
@@ -330,7 +424,7 @@ struct AppleDevice: DeviceBridge {
         if device.identifiers.contains("Watch7,12") {
             traits.remove(.actionButton)
         }*/
-        
+
         if Set(traits) == Set(self.traits) {
             traits = self.traits // make sure this is the same order since it isn't a set.
         }
@@ -343,13 +437,13 @@ struct AppleDevice: DeviceBridge {
         if self.name.contains(name) {
             name = self.name // ignore Apple TV HD is just called Apple TV
         }
-        
+
         var gen_name: String? = device.officialName
         if self.gen_name == .unknown || self.gen_name == nil {
             // local data isn't better, but doesn't need to be updated, so don't flag as different
             gen_name = self.gen_name
         }
-        
+
 //    // "fix" Apple Vision Pro naming inconsistency NOTE: family will likely never be bad, so just assume it's my value and ignore.
 //    var family = device.idiom.identifier
 //    if self.family == "Apple_Vision" {
@@ -359,7 +453,7 @@ struct AppleDevice: DeviceBridge {
 //    } else if self.family == "Apple_Watch" {
 //      family = self.family
 //    }
-        
+
         var software = software
         // update fields with device values if available
         if !software.isEmpty, let swf = software.first, let swl = software.last {
@@ -383,13 +477,13 @@ struct AppleDevice: DeviceBridge {
 //      id: device.idiom.osName.lowercased(),
 //      name: device.idiom.osName,
 //      version: AppleDeviceVersion(min: "1.0", max: "26.0"))],
-        
+
         // make sure we ignore if this already exists (Device version may have more)
         var a_numbers = a_numbers
         if device.models.containsAll(a_numbers) {
             a_numbers = self.a_numbers
         }
-        
+
         // Apple Watch ids are grouped, so ignore the fact that we've split
         var ids = device.identifiers
         if self.ids.containsAll(ids) {
@@ -408,7 +502,7 @@ struct AppleDevice: DeviceBridge {
             a_numbers: a_numbers,
             ids: ids)
     }
-        
+
     var source: String {
         self.prettyJSON
     }
@@ -469,7 +563,7 @@ struct AppleDeviceLoader: DeviceBridgeLoader {
     let sourceURL = "https://raw.githubusercontent.com/superepicstudios/apple-devices/refs/heads/main/swift/Sources/AppleDevices/Resources/data.json"
 
     let name = "F* AppleDevice" // fuckingappledevices.com
-    
+
     func devices() async throws -> [AppleDevice] {
         // import Apple Device data.json
         let jsonString = try await fetchURL(urlString: sourceURL)
@@ -493,7 +587,7 @@ struct AppleDeviceLoader: DeviceBridgeLoader {
         }
         return returnDevices
     }
-    
+
     // MARK: - for generation
 
 /*  // For generating a new file based on our data in case we want to submit a pull request?

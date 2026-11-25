@@ -8,7 +8,7 @@
 import Compatibility
 
 public struct Mac: IdiomType {
-    public enum Form: String, Hashable, CaseIterable, CaseNameConvertible, Sendable, Codable {
+    public enum Form: String, Hashable, CaseIterable, CaseNameConvertible, Sendable, Codable, SymbolRepresentable {
         /// original cheese grater
         case macProGen1 = "macpro.gen1"
         /// trash can
@@ -21,9 +21,14 @@ public struct Mac: IdiomType {
         case macBookGen1 = "macbook.gen1"
         /// magSafe 3, notch
         case macBookGen2 = "macbook.gen2"
+        /// dynamic island, touch screen
+        case macBookGen3 = "macbook.gen3"
         case macMini = "macmini"
         case macStudio = "macstudio"
         case iMac = "desktopcomputer"
+        public var symbolName: SFSymbol {
+            self.rawValue
+        }
         /// Form-specific capabilities
         public var capabilities: Capabilities {
             switch self {
@@ -39,6 +44,8 @@ public struct Mac: IdiomType {
                 Mac.Form.macBook.capabilities.union([.cameras([.faceTimeHD720p]), .magSafe2])
             case .macBookGen2:
                 Mac.Form.macBook.capabilities.union([.usbC, .thunderbolt, .notch, .cameras([.faceTimeHD1080p]), .biometrics(.touchID), .magSafe3])
+            case .macBookGen3:
+                Mac.Form.macBook.capabilities.union([.usbC, .thunderbolt, .dynamicIsland, .cameras([.faceTimeHD1080p]), .biometrics(.touchID), .magSafe3, .touchDisplay])
             case .macMini:
                 [.mini, .headphoneJack, .ethernet]
             case .macStudio:
@@ -61,6 +68,8 @@ public struct Mac: IdiomType {
             case .macBookGen1:
                 return true
             case .macBookGen2:
+                return true
+            case .macBookGen3:
                 return true
             case .macMini:
                 return false
@@ -88,7 +97,7 @@ public struct Mac: IdiomType {
         image: String?,
         capabilities: Capabilities = [],
         models: [String] = [],
-        colors: [MaterialColor],
+        colors: [AppleMaterialColor],
         cpu: CPU,
         screen: Screen? = nil
     )
@@ -145,8 +154,8 @@ public struct Mac: IdiomType {
     }
 
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
-        return self.form.rawValue
+    public var symbolName: SFSymbol {
+        return self.form.symbolName
     }
 
     public static let all = [ // Public for DeviceKit testing
@@ -155,9 +164,36 @@ public struct Mac: IdiomType {
 
         // MARK: - iMacs
         Mac(
+            officialName: "iMac (24-inch, M6, Four ports)",
+            identifiers: ["Mac18,2"],
+            introduction: "2026-11-06",
+            supportId: "148299",
+            launchOSVersion: "27.2.1",
+            unsupportedOSVersion: nil,
+            form: .iMac,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-24in-m6-four-ports-colors.png",
+            capabilities: [.usbC, .thunderbolt, .biometrics(.touchID), .appleIntelligence],
+            models: ["MH114xx/A", "MH154xx/A", "MH164xx/A", "MH174xx/A", "MH184xx/A", "MH194xx/A", "MH1D4xx/A", "MH1F4xx/A", "MH1G4xx/A", "MH1H4xx/A", "MH1J4xx/A", "MH1N4xx/A", "MH1P4xx/A", "MH1Q4xx/A", "MH1R4xx/A", "MH1W4xx/A", "MH1X4xx/A", "MH204xx/A", "MH214xx/A", "MH224xx/A", "MH234xx/A", "MH244xx/A", "MH254xx/A", "MH264xx/A", "MH274xx/A", "MH284xx/A", "MH294xx/A", "MH2A4xx/A", "MH2C4xx/A", "MH2D4xx/A", "MH2E4xx/A", "MH2F4xx/A", "MH2G4xx/A", "MH2H4xx/A", "MH2J4xx/A", "MH2K4xx/A", "MH2L4xx/A", "MH2M4xx/A", "MH2N4xx/A", "MH2P4xx/A", "MH2Q4xx/A", "MH2T4xx/A", "MH2U4xx/A", "MH2V4xx/A", "MH2W4xx/A", "MH2X4xx/A", "MH2Y4xx/A"],
+            colors: .iMac2026,
+            cpu: .m6),
+        Mac(
+            officialName: "iMac (24-inch, M6, Two ports)",
+            identifiers: ["Mac18,2"],
+            introduction: "2026-11-06",
+            supportId: "148298",
+            launchOSVersion: "27.2.1",
+            unsupportedOSVersion: nil,
+            form: .iMac,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-24in-m6-two-ports-colors.png",
+            capabilities: [.usbC, .thunderbolt, .biometrics(.touchID), .appleIntelligence],
+            models: ["MH064xx/A", "MH074xx/A", "MH084xx/A", "MH094xx/A", "MH0A4xx/A", "MH0D4xx/A", "MH0F4xx/A", "MH0G4xx/A", "MH0J4xx/A", "MH0M4xx/A", "MH0Q4xx/A", "MH0U4xx/A", "MH0V4xx/A", "MH0W4xx/A", "MH0X4xx/A", "MH104xx/A"],
+            colors: .iMac2026,
+            cpu: .m6),
+        
+        Mac(
             officialName: "iMac (24-inch, 2024, Four ports)",
             identifiers: ["Mac16,3"],
-            introduction: 2024.introductionYear,
+            introduction: "2024-11-08",
             supportId: "121557",
             launchOSVersion: "15",
             unsupportedOSVersion: nil,
@@ -170,7 +206,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (24-inch, 2024, Two ports)",
             identifiers: ["Mac16,2"],
-            introduction: 2024.introductionYear,
+            introduction: "2024-11-08",
             supportId: "121556",
             launchOSVersion: "15",
             unsupportedOSVersion: nil,
@@ -183,7 +219,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (24-inch, 2023, Four ports)",
             identifiers: ["Mac15,5"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-11-07",
             supportId: "117734",
             launchOSVersion: "13.5",
             unsupportedOSVersion: nil,
@@ -196,7 +232,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (24-inch, 2023, Two ports)",
             identifiers: ["Mac15,4"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-11-07",
             supportId: "117733",
             launchOSVersion: "13.5",
             unsupportedOSVersion: nil,
@@ -209,7 +245,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (24-inch, M1, 2021)", // four ports
             identifiers: ["iMac21,1"],
-            introduction: 2021.introductionYear,
+            introduction: "2021-05-21",
             supportId: "111895",
             launchOSVersion: "11.3",
             unsupportedOSVersion: nil,
@@ -222,7 +258,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (24-inch, M1, 2021)", // two ports
             identifiers: ["iMac21,2"],
-            introduction: 2021.introductionYear,
+            introduction: "2021-05-21",
             supportId: "111895", // SP839
             launchOSVersion: "11.3",
             unsupportedOSVersion: nil,
@@ -235,7 +271,7 @@ public struct Mac: IdiomType {
         Mac( // TODO: Duplicate so there are separate entries??
             officialName: "iMac (Retina 5K, 27-inch, 2020)",
             identifiers: ["iMac20,1", "iMac20,2"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-08-04",
             supportId: "111913", // SP821
             launchOSVersion: "10.15.6",
             unsupportedOSVersion: nil,
@@ -243,12 +279,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2020.jpg",
             capabilities: [.ethernet, .usbC, .thunderbolt], // .usbA, .cardReader // facetime HD camera
             models: ["MXWT2xx/A", "MXWU2xx/A", "MXWV2xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, 2019)",
             identifiers: ["iMac19,1"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-03-19",
             supportId: "111998",
             launchOSVersion: "10.14.4",
             unsupportedOSVersion: "26",
@@ -256,12 +292,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2019.jpg",
             capabilities: [.ethernet, .usbC, .thunderbolt], // .usbA, .cardReader // facetime HD camera
             models: ["MRQYxx/A", "MRR0xx/A", "MRR1xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, 2019)",
             identifiers: ["iMac19,2"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-03-19",
             supportId: "111963",
             launchOSVersion: "10.14.4",
             unsupportedOSVersion: "26",
@@ -269,12 +305,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2019.jpg",
             capabilities: [.ethernet, .usbC, .thunderbolt], // .usbA, .cardReader // facetime HD camera
             models: ["MRT3xx/A", "MRT4xx/A", "MHK23xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac Pro (2017)",
             identifiers: ["iMacPro1,1"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-12-14",
             supportId: "111995",
             launchOSVersion: "10.13.2",
             unsupportedOSVersion: "26",
@@ -287,7 +323,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, 2017)",
             identifiers: ["iMac18,3"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-06-07",
             supportId: "111969",
             launchOSVersion: "10.12.4",
             unsupportedOSVersion: "14",
@@ -295,12 +331,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2017.jpg",
             capabilities: [.ethernet, .usbC, .thunderbolt], // .usbA, .cardReader // facetime camera
             models: ["MNE92xx/A", "MNEA2xx/A", "MNED2xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, 2017)",
             identifiers: ["iMac18,2"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-06-07",
             supportId: "112026",
             launchOSVersion: "10.12.4",
             unsupportedOSVersion: "14",
@@ -308,12 +344,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2017.jpg",
             capabilities: [.ethernet, .usbC, .thunderbolt], // .usbA, .cardReader
             models: ["MNDY2xx/A", "MNE02xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, 2017)",
             identifiers: ["iMac18,1"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-06-07",
             supportId: "111921",
             launchOSVersion: "10.12.4",
             unsupportedOSVersion: "14",
@@ -321,12 +357,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2017.jpg", // NOTE: Image needs to be unique?  Why is this?
             capabilities: [.ethernet, .usbC, .thunderbolt], // .usbA, .cardReader
             models: ["MMQA2xx/A", "MHK03xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, Late 2015)",
             identifiers: ["iMac17,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-10-13",
             supportId: "112035",
             launchOSVersion: "10.11",
             unsupportedOSVersion: "13",
@@ -334,12 +370,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-late-2015.jpg",
             capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
             models: ["MK462xx/A", "MK472xx/A", "MK482xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 4K, 21.5-inch, Late 2015)",
             identifiers: ["iMac16,2"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-10-13",
             supportId: "112034",
             launchOSVersion: "10.11",
             unsupportedOSVersion: "13",
@@ -347,12 +383,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2015.jpg",
             capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
             models: ["MK452xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Late 2015)",
             identifiers: ["iMac16,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-10-13",
             supportId: "112036",
             launchOSVersion: "10.11",
             unsupportedOSVersion: "13",
@@ -360,12 +396,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2015.jpg",
             capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
             models: ["MK142xx/A", "MK442xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, Mid 2015)",
             identifiers: ["iMac15,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-05-19",
             supportId: "112434",
             launchOSVersion: "10.10.2",
             unsupportedOSVersion: "12",
@@ -373,12 +409,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-mid-2015.jpg",
             capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
             models: ["MF885xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (Retina 5K, 27-inch, Late 2014)",
             identifiers: ["iMac15,1"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-10-16",
             supportId: "112436",
             launchOSVersion: "10.10",
             unsupportedOSVersion: "12",
@@ -386,12 +422,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2014.jpg",
             capabilities: [.ethernet, .thunderbolt], // .usbA, .cardReader, .miniDisplayPort
             models: ["MF886xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Mid 2014)",
             identifiers: ["iMac14,4"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-06-18",
             supportId: "112031",
             launchOSVersion: "10.9.3",
             unsupportedOSVersion: "12",
@@ -399,12 +435,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2014.jpg",
             capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MF883xx/A", "MG022xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (27-inch, Late 2013)",
             identifiers: ["iMac14,2"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-09-24",
             supportId: "111970",
             launchOSVersion: "10.8.4",
             unsupportedOSVersion: "11",
@@ -412,12 +448,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2013.jpg",
             capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["ME086xx/A", "ME088xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Late 2013)",
             identifiers: ["iMac14,1"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-09-24",
             supportId: "111967",
             launchOSVersion: "10.8.4",
             unsupportedOSVersion: "11",
@@ -425,12 +461,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2013.jpg",
             capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["ME086xx/A", "ME087xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (27-inch, Late 2012)",
             identifiers: ["iMac13,2"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-10-23",
             supportId: "112433",
             launchOSVersion: "10.8.2",
             unsupportedOSVersion: "11",
@@ -438,12 +474,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2012.jpg",
             capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MD095xx/A", "MD096xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Late 2012)",
             identifiers: ["iMac13,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-10-23",
             supportId: "112435",
             launchOSVersion: "10.8.2",
             unsupportedOSVersion: "11",
@@ -451,12 +487,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2012.jpg",
             capabilities: [.ethernet, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MD093xx/A", "MD094xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (27-inch, Mid 2011)",
             identifiers: ["iMac12,2"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-05-03",
             supportId: "112569",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -464,12 +500,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2011.jpg",
             capabilities: [.ethernet, .fireWire, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort, .irReceiver, .superDrive
             models: ["MC813xx/A", "MC814xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Mid 2011)",
             identifiers: ["iMac12,1"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-05-03",
             supportId: "111983",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -477,12 +513,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2011.jpg",
             capabilities: [.ethernet, .fireWire, .thunderbolt, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort, .irReceiver
             models: ["MC309xx/A", "MC812xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (27-inch, Mid 2010)",
             identifiers: ["iMac11,3"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-07-27",
             supportId: "112566",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
@@ -490,12 +526,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2010.jpg",
             capabilities: [.ethernet, .fireWire, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MC510xx/A", "MC511xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Mid 2010)",
             identifiers: ["iMac11,2"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-07-27",
             supportId: "112567",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
@@ -503,12 +539,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2010.jpg",
             capabilities: [.ethernet, .fireWire], // .usbA, .cardReader, .miniDisplayPort
             models: ["MC508xx/A", "MC509xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (27-inch, Late 2009)",
             identifiers: ["iMac10,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-10-20",
             supportId: "112564",
             launchOSVersion: "10.6.1",
             unsupportedOSVersion: "10.14",
@@ -516,12 +552,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-27-2009-late.jpg",
             capabilities: [.ethernet, .fireWire, .targetDisplayMode], // .usbA, .cardReader, .miniDisplayPort
             models: ["MB952xx/A", "MB953xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (21.5-inch, Late 2009)",
             identifiers: ["iMac10,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-10-20",
             supportId: "112565",
             launchOSVersion: "10.6.1",
             unsupportedOSVersion: "10.14",
@@ -529,12 +565,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-21-5-2009-late.jpg",
             capabilities: [.ethernet, .fireWire], // .usbA, .cardReader, .miniDisplayPort
             models: ["MB950xx/A", "MC413xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (24-inch, Early 2009)",
             identifiers: ["iMac9,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-03-03",
             supportId: "112427",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",
@@ -542,12 +578,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-24-2009-early.jpg",
             capabilities: [.ethernet, .fireWire, .targetDisplayMode], // .usbA, .miniDisplayPort
             models: ["MB418xx/A", "MB419xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "iMac (20-inch, Early 2009)",
             identifiers: ["iMac9,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-03-03",
             supportId: "112427",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",
@@ -555,7 +591,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/imac/imac-20-2009-early.jpg",
             capabilities: [.ethernet, .fireWire], // .usbA, .miniDisplayPort
             models: ["MB417xx/A", "MC019xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
 
         // MARK: - MacBook Neos
@@ -571,13 +607,14 @@ public struct Mac: IdiomType {
             capabilities: [.usbC, .biometrics(.touchID), .appleIntelligence], // touchID only on 512GB model. // TODO: Add .displayPort?
             models: ["A3404"],
             colors: .macbookNeo, // screen size 13" 2408 by 1506 pixels 219ppi
-            cpu: .a18pro),
+            cpu: .a18pro,
+            screen: Screen(diagonal: 13.0, resolution: (2408,1506), ppi: 219)),
 
         // MARK: - MacBooks
         Mac(
             officialName: "MacBook (Retina, 12-inch, 2017)",
             identifiers: ["MacBook10,1"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-06-07",
             supportId: "SP757",
             launchOSVersion: "10.12.5",
             unsupportedOSVersion: "14",
@@ -585,12 +622,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/macbook-2017-device.jpg",
             capabilities: [.usbC],
             models: ["MNYF2XX/A", "MNYG2XX/A", "MNYH2XX/A", "MNYJ2XX/A", "MNYK2XX/A", "MNYL2XX/A", "MNYM2XX/A", "MNYN2XX/A"],
-            colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .solidSilver],
+			colors: .macbookRoseGoldSet,
             cpu: .intel),
         Mac(
             officialName: "MacBook (Retina, 12-inch, Early 2016)",
             identifiers: ["MacBook9,1"],
-            introduction: 2016.introductionYear,
+            introduction: "2016-04-20",
             supportId: "SP741",
             launchOSVersion: "10.11.4",
             unsupportedOSVersion: "13",
@@ -598,12 +635,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/macbook-2016-device.jpg",
             capabilities: [.usbC],
             models: ["MLH72xx/A", "MLH82xx/A", "MLHA2xx/A", "MLHC2xx/A", "MLHE2xx/A", "MLHF2xx/A", "MMGL2xx/A", "MMGM2xx/A"],
-            colors: [.macbookRoseGold, .macbookSpacegray, .macbookGold, .solidSilver],
+			colors: .macbookRoseGoldSet,
             cpu: .intel),
         Mac(
             officialName: "MacBook (Retina, 12-inch, Early 2015)",
             identifiers: ["MacBook8,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-04-10",
             supportId: "SP712",
             launchOSVersion: "10.10.2",
             unsupportedOSVersion: "12",
@@ -616,7 +653,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook (13-inch, Mid 2010)",
             identifiers: ["MacBook7,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-05-18",
             supportId: "SP584",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
@@ -624,12 +661,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/macbook-late-2009-2010-device.jpg",
             capabilities: [.usbC, .magSafe1],
             models: ["MC516xx/A"],
-            colors: [.white],
+            colors: .whiteSet,
             cpu: .intel),
         Mac(
             officialName: "MacBook (13-inch, Late 2009)",
             identifiers: ["MacBook6,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-10-20",
             supportId: "SP579",
             launchOSVersion: "10.6.1",
             unsupportedOSVersion: "10.14",
@@ -637,12 +674,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/macbook-late-2009-2010-device.jpg",
             capabilities: [.usbC, .magSafe1],
             models: ["MC207xx/A"],
-            colors: [.white],
+            colors: .whiteSet,
             cpu: .intel),
         Mac(
             officialName: "MacBook (13-inch, Mid 2009)",
             identifiers: ["MacBook5,2"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-05-27",
             supportId: "SP512",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",
@@ -650,12 +687,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/macbook-early-mid-2009-device.jpg",
             capabilities: [.usbC, .magSafe1],
             models: ["MC240xx/A"],
-            colors: [.white],
+            colors: .whiteSet,
             cpu: .intel),
         Mac(
             officialName: "MacBook (13-inch, Early 2009)",
             identifiers: ["MacBook5,2"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-01-20",
             supportId: "SP504",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",
@@ -663,7 +700,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook/macbook-early-mid-2009-device.jpg",
             capabilities: [.usbC, .magSafe1],
             models: ["MB881xx/A"],
-            colors: [.white],
+            colors: .whiteSet,
             cpu: .intel),
 
         // MARK: - MacBook Airs
@@ -678,8 +715,9 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/macbook-air-15in-m5-colors.png",
             capabilities: [.air, .appleIntelligence],
             models: ["MDV94xx/A", "MDVA4xx/A", "MDVC4xx/A", "MDVD4xx/A", "MDVE4xx/A", "MDVF4xx/A", "MDVH4xx/A", "MDVK4xx/A", "MDVN4xx/A", "MDVQ4xx/A", "MDVT4xx/A", "MDVU4xx/A"],
-            colors: .macbookAir2025,
-            cpu: .m5),
+            colors: .macbookAirSkyBlueSet,
+            cpu: .m5,
+            screen: Screen(diagonal: 15.3, resolution: (2880,1864), ppi: 224)),
         Mac(
             officialName: "MacBook Air (13-inch, M5)",
             identifiers: ["Mac17,3"],
@@ -691,8 +729,9 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/macbook-air-13in-m5-colors.png",
             capabilities: [.air, .appleIntelligence],
             models: ["MDH74xx/A", "MDH84xx/A", "MDHA4xx/A", "MDHC4xx/A", "MDHD4xx/A", "MDHE4xx/A", "MDHF4xx/A", "MDHG4xx/A", "MDHH4xx/A", "MDHJ4xx/A", "MDHK4xx/A"],
-            colors: .macbookAir2025,
-            cpu: .m5),
+            colors: .macbookAirSkyBlueSet,
+            cpu: .m5,
+            screen: Screen(diagonal: 13.6, resolution: (2560,1664), ppi: 224)),
 
         Mac(
             officialName: "MacBook Air (15-inch, M4, 2025)",
@@ -705,7 +744,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2025-macbook-air-15in-colors.png",
             capabilities: [.air, .usbC, .notch, .appleIntelligence],
             models: ["MC6J4xx/A", "MC6K4xx/A", "MC6L4xx/A", "MC7A4xx/A", "MC7C4xx/A", "MC7D4xx/A", "MDG34xx/A", "MDG84xx/A", "MDG94xx/A", "MW1G3xx/A", "MW1H3xx/A", "MW1J3xx/A", "MW1K3xx/A", "MW1L3xx/A", "MW1M3xx/A"],
-            colors: .macbookAir2025,
+            colors: .macbookAirSkyBlueSet,
             cpu: .m4),
         Mac(
             officialName: "MacBook Air (13-inch, M4, 2025)",
@@ -718,12 +757,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2025-macbook-air-13in-colors.png",
             capabilities: [.air, .usbC, .notch, .appleIntelligence],
             models: ["MC654xx/A", "MC6A4xx/A", "MC6C4xx/A", "MC6T4xx/A", "MC6U4xx/A", "MC6V4xx/A", "MDG24xx/A", "MDG54xx/A", "MDG64xx/A", "MW0W3xx/A", "MW0X3xx/A", "MW0Y3xx/A", "MW103xx/A", "MW123xx/A", "MW133xx/A"],
-            colors: .macbookAir2025,
+            colors: .macbookAirSkyBlueSet,
             cpu: .m4),
         Mac(
             officialName: "MacBook Air (15-inch, M3, 2024)",
             identifiers: ["Mac15,13"],
-            introduction: 2024.introductionYear,
+            introduction: "2024-03-08",
             supportId: "118552", // SP913
             launchOSVersion: "14.4",
             unsupportedOSVersion: nil,
@@ -731,12 +770,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2024-macbook-air-15in-m3-colors.png",
             capabilities: [.air, .usbC, .notch, .appleIntelligence],
             models: ["MRYM3xx/A", "MRYP3xx/A", "MRYR3xx/A", "MRYU3xx/A", "MRYN3xx/A", "MRYQ3xx/A", "MRYT3xx/A", "MRYV3xx/A", "MXD13xx/A", "MXD23xx/A", "MXD33xx/A", "MXD43xx/A"],
-            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            colors: .macbookAirMidnightSet,
             cpu: .m3),
         Mac(
             officialName: "MacBook Air (13-inch, M3, 2024)",
             identifiers: ["Mac15,12"],
-            introduction: 2024.introductionYear,
+            introduction: "2024-03-08",
             supportId: "118551", // SP912
             launchOSVersion: "14.4",
             unsupportedOSVersion: nil,
@@ -744,13 +783,13 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2024-macbook-air-13in-m3-colors.png",
             capabilities: [.air, .usbC, .notch, .appleIntelligence],
             models: ["MRXN3xx/A", "MRXQ3xx/A", "MRXT3xx/A", "MRXV3xx/A", "MRXP3xx/A", "MRXR3xx/A", "MRXU3xx/A", "MRXW3xx/A", "MXCR3xx/A", "MXCT3xx/A", "MXCU3xx/A", "MXCV3xx/A"],
-            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            colors: .macbookAirMidnightSet,
             cpu: .m3),
 
         Mac(
             officialName: "MacBook Air (15-inch, M2, 2023)",
             identifiers: ["Mac14,15"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-06-13",
             supportId: "111346",
             launchOSVersion: "13.4",
             unsupportedOSVersion: nil,
@@ -758,12 +797,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2023-macbook-air-15in-m2-colors.png",
             capabilities: [.air, .usbC, .notch, .appleIntelligence],
             models: ["MQKP3xx/A", "MQKQ3xx/A", "MQKR3xx/A", "MQKT3xx/A", "MQKU3xx/A", "MQKV3xx/A", "MQKW3xx/A", "MQKX3xx/A"],
-            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+			colors: .macbookAirMidnightSet,
             cpu: .m2),
         Mac(
             officialName: "MacBook Air (M2, 2022)",
             identifiers: ["Mac14,2"],
-            introduction: 2022.introductionYear,
+            introduction: "2022-07-15",
             supportId: "111867",
             launchOSVersion: "12.4",
             unsupportedOSVersion: nil,
@@ -771,12 +810,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/2022-macbook-air-m2-colors.png",
             capabilities: [.air, .usbC, .appleIntelligence],
             models: ["MLXW3xx/A", "MLXX3xx/A", "MLXY3xx/A", "MLY03xx/A", "MLY13xx/A", "MLY23xx/A", "MLY33xx/A", "MLY43xx/A"],
-            colors: [.solidSilver, .macbookairStarlight, .macbookSpacegray, .macbookairMidnight],
+            colors: .macbookAirMidnightSet,
             cpu: .m2),
         Mac(
             officialName: "MacBook Air (M1, 2020)",
             identifiers: ["MacBookAir10,1"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-11-17",
             supportId: "111883",
             launchOSVersion: "11.0.1",
             unsupportedOSVersion: nil,
@@ -784,12 +823,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/macbook-air-2020-late-device.jpg",
             capabilities: [.air, .usbC, .biometrics(.touchID), .appleIntelligence],
             models: ["MGN63xx/A", "MGN93xx/A", "MGND3xx/A", "MGN73xx/A", "MGNA3xx/A", "MGNE3xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
+			colors: .macbookGoldSet,
             cpu: .m1),
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2020)",
             identifiers: ["MacBookAir9,1"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-03-25",
             supportId: "111991",
             launchOSVersion: "10.15.3",
             unsupportedOSVersion: "26",
@@ -797,12 +836,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-air/macbook-air-2020-device.jpg",
             capabilities: [.air, .usbC, .biometrics(.touchID)],
             models: ["MVH22xx/A", "MVH42xx/A", "MVH52xx/A", "MWTJ2xx/A", "MWTK2xx/A", "MWTL2xx/A"],
-            colors: [.macbookSpacegray, .macbookGold, .solidSilver],
+			colors: .macbookGoldSet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2019)",
             identifiers: ["MacBookAir8,2"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-07-09",
             supportId: "111948",
             launchOSVersion: "10.14.5",
             unsupportedOSVersion: "15",
@@ -815,7 +854,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (Retina, 13-inch, 2018)",
             identifiers: ["MacBookAir8,1"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-11-07",
             supportId: "111933",
             launchOSVersion: "10.14.1",
             unsupportedOSVersion: "15",
@@ -828,7 +867,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, 2017)",
             identifiers: ["MacBookAir7,2"],
-            introduction: 2017.introductionYear,
+            introduction: "2017-06-07",
             supportId: "111924",
             launchOSVersion: "10.10.2",
             unsupportedOSVersion: "13",
@@ -841,7 +880,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Early 2015)",
             identifiers: ["MacBookAir7,2"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-03-09",
             supportId: "111956",
             launchOSVersion: "10.10.2",
             unsupportedOSVersion: "13",
@@ -854,7 +893,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Early 2015)",
             identifiers: ["MacBookAir7,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-03-09",
             supportId: "112441",
             launchOSVersion: "10.10.2",
             unsupportedOSVersion: "13",
@@ -867,7 +906,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Early 2014)",
             identifiers: ["MacBookAir6,2"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-04-29",
             supportId: "111944",
             launchOSVersion: "10.9.2",
             unsupportedOSVersion: "12",
@@ -880,7 +919,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Early 2014)",
             identifiers: ["MacBookAir6,1"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-04-29",
             supportId: "112032",
             launchOSVersion: "10.9.2",
             unsupportedOSVersion: "12",
@@ -893,7 +932,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Mid 2013)",
             identifiers: ["MacBookAir6,2"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-06-10",
             supportId: "111938",
             launchOSVersion: "10.8.4",
             unsupportedOSVersion: "12",
@@ -906,7 +945,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Mid 2013)",
             identifiers: ["MacBookAir6,1"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-06-10",
             supportId: "112437",
             launchOSVersion: "10.9.2",
             unsupportedOSVersion: "12",
@@ -919,7 +958,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Mid 2012)",
             identifiers: ["MacBookAir5,2"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "111966",
             launchOSVersion: "10.8.2",
             unsupportedOSVersion: "11",
@@ -932,7 +971,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Mid 2012)",
             identifiers: ["MacBookAir5,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "112008",
             launchOSVersion: "10.7.4",
             unsupportedOSVersion: "11",
@@ -945,7 +984,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Mid 2011)",
             identifiers: ["MacBookAir4,2"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-07-21",
             supportId: "112038",
             launchOSVersion: "10.7",
             unsupportedOSVersion: "10.14",
@@ -958,7 +997,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Mid 2011)",
             identifiers: ["MacBookAir4,1"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-07-21",
             supportId: "112439",
             launchOSVersion: "10.7",
             unsupportedOSVersion: "10.14",
@@ -971,7 +1010,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (13-inch, Late 2010)",
             identifiers: ["MacBookAir3,2"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-10-20",
             supportId: "112585",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.14",
@@ -984,7 +1023,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (11-inch, Late 2010)",
             identifiers: ["MacBookAir3,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-10-20",
             supportId: "112580",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.14",
@@ -997,7 +1036,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Air (Mid 2009)",
             identifiers: ["MacBookAir2,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-06-08",
             supportId: "112660",
             launchOSVersion: "10.5.7",
             unsupportedOSVersion: "10.12",
@@ -1012,6 +1051,79 @@ public struct Mac: IdiomType {
 
         // lookup details here: https://support.apple.com/en-us/108052
         Mac(
+            officialName: "MacBook Pro (16-inch PROLED XDR, M5 Max)",
+            identifiers: ["Mac17,12"],
+            introduction: "2026-11-06",
+            supportId: "148302",
+            launchOSVersion: "0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen3,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-proled-xdr-m5-pro-m5-max.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID), .touchDisplay],
+            models: ["MJ2W4xx/A", "MJ2X4xx/A", "MJ2Y4xx/A", "MJ304xx/A", "MJ314xx/A", "MJ334xx/A", "MMF94xx/A", "MMFA4xx/A"],
+            colors: .mseriesMacbookPros,
+            cpu: .m5max,
+            screen: Screen(diagonal: 16.3, resolution: (3472,2266), ppi: 254)),
+        Mac(
+            officialName: "MacBook Pro (16-inch PROLED XDR, M5 Pro)",
+            identifiers: ["Mac17,10"],
+            introduction: "2026-11-06",
+            supportId: "148302",
+            launchOSVersion: "0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen3,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-proled-xdr-m5-pro-m5-max.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID), .touchDisplay],
+            models: ["MJ2W4xx/A", "MJ2X4xx/A", "MJ2Y4xx/A", "MJ304xx/A", "MJ314xx/A", "MJ334xx/A", "MMF94xx/A", "MMFA4xx/A"],
+            colors: .mseriesMacbookPros,
+            cpu: .m5pro,
+            screen: Screen(diagonal: 16.3, resolution: (3472,2266), ppi: 254)),
+        
+        Mac(
+            officialName: "MacBook Pro (14-inch PROLED XDR, M5 Max)",
+            identifiers: ["Mac17,13"],
+            introduction: "2026-11-06",
+            supportId: "148301",
+            launchOSVersion: "0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen3,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-proled-xdr-m5-pro-m5-max.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID), .touchDisplay],
+            models: ["MJ2G4xx/A", "MJ2J4xx/A", "MJ2K4xx/A", "MJ2M4xx/A", "MJ2N4xx/A", "MJ2Q4xx/A", "MJ2T4xx/A", "MJ2V4xx/A", "MMF54xx/A", "MMF64xx/A"],
+            colors: .mseriesMacbookPros,
+            cpu: .m5max,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1986), ppi: 254)),
+        Mac(
+            officialName: "MacBook Pro (14-inch PROLED XDR, M5 Pro)",
+            identifiers: ["Mac17,11"],
+            introduction: "2026-11-06",
+            supportId: "148301",
+            launchOSVersion: "0",
+            unsupportedOSVersion: nil,
+            form: .macBookGen3,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-proled-xdr-m5-pro-m5-max.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID), .touchDisplay],
+            models: ["MJ2G4xx/A", "MJ2J4xx/A", "MJ2K4xx/A", "MJ2M4xx/A", "MJ2N4xx/A", "MJ2Q4xx/A", "MJ2T4xx/A", "MJ2V4xx/A", "MMF54xx/A", "MMF64xx/A"],
+            colors: .mseriesMacbookPros,
+            cpu: .m5pro,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1986), ppi: 254)),
+
+        Mac(
+            officialName: "MacBook Pro (14-inch, M6)",
+            identifiers: ["Mac18,1"],
+            introduction: "2026-11-06",
+            supportId: "148300",
+            launchOSVersion: "27.2.1",
+            unsupportedOSVersion: nil,
+            form: .macBookGen2,
+            image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m6.png",
+            capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
+            models: ["MHWT4xx/A", "MHWU4xx/A", "MHWV4xx/A", "MHWW4xx/A", "MHWX4xx/A", "MHWY4xx/A"],
+            colors: .mseriesMacbookPros,
+            cpu: .m6,
+            screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
+
+        Mac(
             officialName: "MacBook Pro (16-inch, M5 Pro)",
             identifiers: ["Mac17,6"],
             introduction: "2026-03-11",
@@ -1022,7 +1134,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m5-pro-m5-max.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MGE44xx/A", "MGE64xx/A", "MGE74xx/A", "MGE94xx/A", "MGEA4xx/A", "MGEC4xx/A", "MGED4xx/A", "MGEE4xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m5pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1036,7 +1148,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m5-pro-m5-max.png",
             capabilities: [.pro, .max, .appleIntelligence],
             models: ["MGE44xx/A", "MGE64xx/A", "MGE74xx/A", "MGE94xx/A", "MGEA4xx/A", "MGEC4xx/A", "MGED4xx/A", "MGEE4xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m5max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
 
@@ -1051,7 +1163,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-pro-m5-max.png",
             capabilities: [.pro, .max, .appleIntelligence],
             models: ["MGDN4xx/A", "MGDP4xx/A", "MGDQxx/A", "MGDR4xx/A", "MGDT4xx/A", "MGDU4xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m5max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1065,7 +1177,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-pro-m5-max.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MGDN4xx/A", "MGDP4xx/A", "MGDQxx/A", "MGDR4xx/A", "MGDT4xx/A", "MGDU4xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m5pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
 
@@ -1080,7 +1192,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m5-colors.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MDE04xx/A", "MDE14xx/A", "MDE34xx/A", "MDE44xx/A", "MDE54xx/A", "MDE64xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m5,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
 
@@ -1095,7 +1207,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-colors.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MCX04xx/A", "MCX14xx/A", "MW2U3xx/A", "MW2V3xx/A", "MW2W3xx/A", "MW2X3xx/A", "MXCM3xx/A", "MXCN3xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m4,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1109,7 +1221,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m4pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1123,7 +1235,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2024-m4-pro-m4-max-colors.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MXE63xx/A", "MX2E3xx/A", "MX2F3xx/A", "MX2G3xx/A", "MX2H3xx/A", "MX2J3xx/A", "MX2K3xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m4max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1137,7 +1249,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MX2T3xx/A", "MX2U3xx/A", "MX2W3xx/A", "MX2X3xx/A", "MX2Y3xx/A", "MX313xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m4max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1151,7 +1263,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2024-colors.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MX2V3xx/A", "MX303xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m4pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1165,7 +1277,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-2023.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MPHE3xx/A", "MPHF3xx/A", "MPHG3xx/A", "MPHH3xx/A", "MPHJ3xx/A", "MPHK3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .m2pro),
         Mac(
             officialName: "MacBook Pro (16-inch, 2023)",
@@ -1178,7 +1290,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2023.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MNWG3xx/A", "MNW93xx/A", "MNWK3xx/A", "MNWD3xx/A", "MNWF3xx/A", "MNW83xx/A", "MNWJ3xx/A", "MNWC3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .m2pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1192,7 +1304,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-nov-2023-silver-space-gray.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MR7J3xx/A", "MR7K3xx/A", "MRX23xx/A", "MTL73xx/A", "MTL83xx/A", "MTLC3xx/A", "MXE03xx/A", "MXE13xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .m3,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1206,7 +1318,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m3pro,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1220,7 +1332,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-14in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["FRX33xx/A", "FRX43xx/A", "FRX54xx/A", "FRX63xx/A", "FRX73xx/A", "FRX83xx/A", "MRX33xx/A", "MRX43xx/A", "MRX53xx/A", "MRX63xx/A", "MRX73xx/A", "MRX83xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m3max,
             screen: Screen(diagonal: 14.2, resolution: (3024,1964), ppi: 254)),
         Mac(
@@ -1234,7 +1346,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m3pro,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1248,7 +1360,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-m3-pro-m3-max-nov-2023-silver-space-black.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["FRW13xx/A", "FRW23xx/A", "FRW33xx/A", "FRW43xx/A", "FRW63xx/A", "FRW73xx/A", "FUW63xx/A", "FUW73xx/A", "MRW13xx/A", "MRW23xx/A", "MRW33xx/A", "MRW43xx/A", "MRW63xx/A", "MRW73xx/A"],
-            colors: [.solidSilver, .macbookSpaceblack],
+            colors: .mseriesMacbookPros,
             cpu: .m3max,
             screen: Screen(diagonal: 16.2, resolution: (3456,2234), ppi: 254)),
         Mac(
@@ -1262,7 +1374,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-13-in-M2-2022.png",
             capabilities: [.pro, .usbC, .biometrics(.touchID), .appleIntelligence],
             models: ["MNEH3xx/A", "MNEJ3xx/A", "MNEP3xx/A", "MNEQ3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .m2),
         Mac(
             officialName: "MacBook Pro (14-inch, 2021)",
@@ -1275,7 +1387,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2021-14in.png",
             capabilities: [.pro, .biometrics(.touchID), .appleIntelligence],
             models: ["MKGP3xx/A", "MKGQ3xx/A", "MKGR3xx/A", "MKGT3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             // Apple sold the 2021 14-inch MacBook Pro with M1 Pro and M1 Max; this
             // combined entry uses the lower shared chip family and should be split if
             // callers need to distinguish Pro-vs-Max configurations.
@@ -1291,7 +1403,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2021-16in.png",
             capabilities: [.pro, .appleIntelligence],
             models: ["MK183xx/A", "MK193xx/A", "MK1A3xx/A", "MK1E3xx/A", "MK1F3xx/A", "MK1H3xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             // Apple sold the 2021 16-inch MacBook Pro with M1 Pro and M1 Max; this
             // combined entry uses the lower shared chip family and should be split if
             // callers need to distinguish Pro-vs-Max configurations.
@@ -1299,7 +1411,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, M1, 2020)",
             identifiers: ["MacBookPro17,1"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-11-17",
             supportId: "111893",
             launchOSVersion: "11.0.1",
             unsupportedOSVersion: nil,
@@ -1307,12 +1419,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2020-late-13in-device.jpg",
             capabilities: [.pro, .usbC, .biometrics(.touchID), .appleIntelligence],
             models: ["MYD83xx/A", "MYD92xx/A", "MYDA2xx/A", "MYDC2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .m1),
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,3"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-05-04",
             supportId: "111981",
             launchOSVersion: "10.15.4",
             unsupportedOSVersion: "26",
@@ -1320,12 +1432,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2020-13in-device-3.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MXK32xx/A", "MXK52xx/A", "MXK62xx/A", "MXK72xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro16,2"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-05-04",
             supportId: "111339",
             launchOSVersion: "10.15.4",
             unsupportedOSVersion: nil,
@@ -1333,12 +1445,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2020-13in-device-3.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MWP42xx/A", "MWP52xx/A", "MWP62xx/A", "MWP72xx/A", "MWP82xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (16-inch, 2019)",
             identifiers: ["MacBookPro16,1", "MacBookPro16,4"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-11-13",
             supportId: "111932",
             launchOSVersion: "10.15.1",
             unsupportedOSVersion: nil,
@@ -1346,12 +1458,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-16in-2019.jpg",
             capabilities: [.pro, .usbC, .biometrics(.touchID)],
             models: ["MVVJ2xx/A", "MVVK2xx/A", "MVVL2xx/A", "MVVM2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,4"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-07-09",
             supportId: "111945", // SP799
             launchOSVersion: "10.14.5",
             unsupportedOSVersion: "26",
@@ -1359,12 +1471,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2018-13in-device.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MUHN2xx/A", "MUHP2xx/a", "MUHQ2xx/A", "MUHR2xx/A", "MUHR2xx/B"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2019)",
             identifiers: ["MacBookPro15,1", "MacBookPro15,3"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-05-21",
             supportId: "111941",
             launchOSVersion: "10.13.6",
             unsupportedOSVersion: "26",
@@ -1372,12 +1484,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2018-15in-device-2.jpg",
             capabilities: [.pro, .usbC, .biometrics(.touchID)],
             models: ["MV902xx/A", "MV912xx/A", "MV922xx/A", "MV932xx/A", "MV942xx/A", "MV952xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro15,2"],
-            introduction: 2019.introductionYear,
+            introduction: "2019-05-21",
             supportId: "111997",
             launchOSVersion: "10.13.6",
             unsupportedOSVersion: "26",
@@ -1385,7 +1497,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2018-13in-device.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MV962xx/A", "MV972xx/A", "MV982xx/A", "MV992xx/A", "MV9A2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2018)",
@@ -1398,7 +1510,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2018-15in-device-2.jpg",
             capabilities: [.pro, .usbC, .biometrics(.touchID)],
             models: ["MR932xx/A", "MR942xx/A", "MR952xx/A", "MR962xx/A", "MR972xx/A", "MUQH2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",
@@ -1411,7 +1523,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2018-13in-device.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MR9Q2xx/A", "MR9R2xx/A", "MR9T2xx/A", "MR9U2xx/A", "MR9V2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2017)",
@@ -1424,7 +1536,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2017-15in-device.jpg",
             capabilities: [.pro, .usbC, .biometrics(.touchID)],
             models: ["MPTR2xx/A", "MPTT2xx/A", "MPTU2xx/A", "MPTV2xx/A", "MPTW2xx/A", "MPTX2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports)",
@@ -1437,7 +1549,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2017-13in-device.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MPXV2xx/A", "MPXW2xx/A", "MPXX2xx/A", "MPXY2xx/A", "MQ002xx/A", "MQ012xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)",
@@ -1450,12 +1562,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2017-13in-device-2thunderbolt-3ports.jpg",
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MPXQ2xx/A", "MPXR2xx/A", "MPXT2xx/A", "MPXU2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (15-inch, 2016)", // Touchbook, macOS 12
             identifiers: ["MacBookPro13,3"],
-            introduction: 2016.introductionYear,
+            introduction: "2016-10-27",
             supportId: "111975",
             launchOSVersion: "10.12.1",
             unsupportedOSVersion: "13",
@@ -1463,12 +1575,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2016-15in-device.jpg",
             capabilities: [.pro, .usbC, .biometrics(.touchID)],
             models: ["MLH32xx/A", "MLH42xx/A", "MLH52xx/A", "MLW72xx/A", "MLW82xx/A", "MLW92xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2016, Four Thunderbolt 3 ports)",
             identifiers: ["MacBookPro13,2"],
-            introduction: 2016.introductionYear,
+            introduction: "2016-10-27",
             supportId: "112003",
             launchOSVersion: "10.12.1",
             unsupportedOSVersion: "13",
@@ -1476,12 +1588,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2016-13in-device.jpg",
             capabilities: [.pro, .usbC, .thunderbolt, .biometrics(.touchID)],
             models: ["MLH12xx/A", "MLVP2xx/A", "MNQF2xx/A", "MNQG2xx/A", "MPDK2xx/A", "MPDL2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)",
             identifiers: ["MacBookPro13,1"],
-            introduction: 2016.introductionYear,
+            introduction: "2016-10-27",
             supportId: "111999",
             launchOSVersion: "10.12",
             unsupportedOSVersion: "13",
@@ -1489,12 +1601,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/macbook-pro/macbook-pro-2016-13in-device.jpg",
             capabilities: [.pro, .usbC, .thunderbolt],
             models: ["MLL42xx/A", "MLUQ2xx/A"],
-            colors: [.solidSilver, .macbookSpacegray],
+            colors: .macbookSpaceGraySet,
             cpu: .intel),
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2015)",
             identifiers: ["MacBookPro11,4", "MacBookPro11,5"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-05-19",
             supportId: "111955",
             launchOSVersion: "10.10.3",
             unsupportedOSVersion: "13",
@@ -1507,7 +1619,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Early 2015)",
             identifiers: ["MacBookPro12,1"],
-            introduction: 2015.introductionYear,
+            introduction: "2015-03-09",
             supportId: "111959",
             launchOSVersion: "10.10.2",
             unsupportedOSVersion: "13",
@@ -1520,7 +1632,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2014)",
             identifiers: ["MacBookPro11,2", "MacBookPro11,3"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-07-29",
             supportId: "111935",
             launchOSVersion: "10.9",
             unsupportedOSVersion: "12",
@@ -1533,7 +1645,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Mid 2014)",
             identifiers: ["MacBookPro11,1"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-07-29",
             supportId: "111942",
             launchOSVersion: "10.9",
             unsupportedOSVersion: "12",
@@ -1546,7 +1658,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Late 2013)",
             identifiers: ["MacBookPro11,2", "MacBookPro11,3"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-10-22",
             supportId: "111971",
             launchOSVersion: "10.9",
             unsupportedOSVersion: "12",
@@ -1559,7 +1671,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Late 2013)",
             identifiers: ["MacBookPro11,1"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-10-22",
             supportId: "111946",
             launchOSVersion: "10.9",
             unsupportedOSVersion: "12",
@@ -1572,7 +1684,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Early 2013)",
             identifiers: ["MacBookPro10,1"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-02-13",
             supportId: "118465",
             launchOSVersion: "10.7.4",
             unsupportedOSVersion: "11",
@@ -1585,7 +1697,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Early 2013)",
             identifiers: ["MacBookPro10,2"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-02-13",
             supportId: "118466",
             launchOSVersion: "10.8.2",
             unsupportedOSVersion: "11",
@@ -1598,7 +1710,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 13-inch, Late 2012)",
             identifiers: ["MacBookPro10,2"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-10-23",
             supportId: "118463",
             launchOSVersion: "10.8.2",
             unsupportedOSVersion: "11",
@@ -1611,7 +1723,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (Retina, 15-inch, Mid 2012)",
             identifiers: ["MacBookPro10,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "112576",
             launchOSVersion: "10.7.4",
             unsupportedOSVersion: "11",
@@ -1623,7 +1735,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Mid 2012)",
             identifiers: ["MacBookPro9,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "112568",
             launchOSVersion: "10.7.3",
             unsupportedOSVersion: "11",
@@ -1636,7 +1748,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Mid 2012)",
             identifiers: ["MacBookPro9,2"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "111958",
             launchOSVersion: "10.7.3",
             unsupportedOSVersion: "11",
@@ -1649,7 +1761,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Late 2011)",
             identifiers: ["MacBookPro8,3"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-10-24",
             supportId: "112418",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -1662,7 +1774,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Late 2011)",
             identifiers: ["MacBookPro8,2"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-10-24",
             supportId: "112586",
             launchOSVersion: "10.7.2",
             unsupportedOSVersion: "10.14",
@@ -1675,7 +1787,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Late 2011)",
             identifiers: ["MacBookPro8,1"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-10-24",
             supportId: "111341",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -1688,7 +1800,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Early 2011)",
             identifiers: ["MacBookPro8,3"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-02-24",
             supportId: "112598",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -1701,7 +1813,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Early 2011)",
             identifiers: ["MacBookPro8,2"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-02-24",
             supportId: "112599",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -1714,7 +1826,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Early 2011)",
             identifiers: ["MacBookPro8,1"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-02-24",
             supportId: "112600",
             launchOSVersion: "10.6.6",
             unsupportedOSVersion: "10.14",
@@ -1727,7 +1839,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Mid 2010)",
             identifiers: ["MacBookPro6,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-04-13",
             supportId: "112606",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
@@ -1740,7 +1852,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Mid 2010)",
             identifiers: ["MacBookPro6,2"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-04-13",
             supportId: "112605",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
@@ -1753,7 +1865,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Mid 2010)",
             identifiers: ["MacBookPro7,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-04-13",
             supportId: "112604",
             launchOSVersion: "10.6.3",
             unsupportedOSVersion: "10.14",
@@ -1766,7 +1878,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Mid 2009)",
             identifiers: ["MacBookPro5,2"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-06-08",
             supportId: "112473",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",
@@ -1779,7 +1891,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Mid 2009)",
             identifiers: ["MacBookPro5,3"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-06-08",
             supportId: "112624",
             launchOSVersion: "10.5.7",
             unsupportedOSVersion: "10.12",
@@ -1792,7 +1904,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, 2.53GHz, Mid 2009)",
             identifiers: ["MacBookPro5,3"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-06-08",
             supportId: "112624",
             launchOSVersion: "10.5.7",
             unsupportedOSVersion: "10.12",
@@ -1805,7 +1917,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (13-inch, Mid 2009)",
             identifiers: ["MacBookPro5,5"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-06-08",
             supportId: "112474",
             launchOSVersion: "10.5.7",
             unsupportedOSVersion: "10.12",
@@ -1818,7 +1930,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Early 2009)",
             identifiers: ["MacBookPro5,2"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-02-06",
             supportId: "112526",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",
@@ -1831,7 +1943,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Late 2008)",
             identifiers: ["MacBookPro5,1"],
-            introduction: 2008.introductionYear,
+            introduction: "2008-10-14",
             // Apple’s current support catalog exposes this legacy model through its manuals page.
             supportId: "https://support.apple.com/en-us/docs/mac/132121",
             launchOSVersion: "10.5.5",
@@ -1845,7 +1957,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (17-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
-            introduction: 2008.introductionYear,
+            introduction: "2008-02-26",
             // Apple groups the early-2008 15-inch specifications with the same legacy family page.
             supportId: "https://support.apple.com/en-us/docs/mac/131884",
             launchOSVersion: "10.5.2",
@@ -1859,7 +1971,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "MacBook Pro (15-inch, Early 2008)",
             identifiers: ["MacBookPro4,1"],
-            introduction: 2008.introductionYear,
+            introduction: "2008-02-26",
             // Apple groups the early-2008 specifications on this legacy manuals page.
             supportId: "https://support.apple.com/en-us/docs/mac/131884",
             launchOSVersion: "10.5.2",
@@ -1884,7 +1996,7 @@ public struct Mac: IdiomType {
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-m5-max.png",
 			capabilities: [],
 			models: ["MHL64xx/A"],
-			colors: [.silverLight],
+			colors: .silverSet,
 			cpu: .m5max),
 		Mac(
 			officialName: "Mac Studio (M5 Ultra)",
@@ -1897,13 +2009,13 @@ public struct Mac: IdiomType {
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-m5-ultra.png",
 			capabilities: [],
 			models: ["MHL74xx/A"],
-			colors: [.silverLight],
+			colors: .silverSet,
 			cpu: .m5ultra),
 
         Mac(
             officialName: "Mac Studio (2022) M1 Max", // have to be different from next item or will crash
             identifiers: ["Mac13,1"],
-            introduction: 2022.introductionYear,
+            introduction: "2022-03-18",
             supportId: "111900", // have to be different from next item or will crash?? - not sure why since identifiers and officialName are different
             launchOSVersion: "12.3",
             unsupportedOSVersion: nil,
@@ -1911,12 +2023,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-2022-m1-max.png",
             capabilities: [.usbC, .thunderbolt, .headphoneJack, .appleIntelligence], // .hdmi, .sdCardSlot, .ethernet, .usbA, no battery
             models: ["MJMV2xx/a"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m1max),
         Mac(
             officialName: "Mac Studio (2022) M1 Ultra", // have to be different from next item or will crash
             identifiers: ["Mac13,2"],
-            introduction: 2022.introductionYear,
+            introduction: "2022-03-18",
             supportId: "111900",
             launchOSVersion: "12.3",
             unsupportedOSVersion: nil,
@@ -1924,12 +2036,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-2022-m1-ultra.png",
             capabilities: [.usbC, .thunderbolt, .headphoneJack, .appleIntelligence], // .hdmi, .sdCardSlot, .ethernet, .usbA, no battery
             models: ["MJMW3xx/a"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m1ultra),
         Mac(
             officialName: "Mac Studio (2023) M2 Max", // have to be different from next item or will crash
             identifiers: ["Mac14,13"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-06-13",
             supportId: "111835", // have to be different from next item or will crash? - not sure why since identifiers and officialName are different
             launchOSVersion: "13.4",
             unsupportedOSVersion: nil,
@@ -1937,12 +2049,12 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-2023-m2-max.png",
             capabilities: [.usbC, .thunderbolt, .headphoneJack, .appleIntelligence], // .hdmi, .sdCardSlot, .ethernet, .usbA, no battery
             models: ["MQH73xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m2max),
         Mac(
             officialName: "Mac Studio (2023) M2 Ultra", // have to be different from next item or will crash
             identifiers: ["Mac14,14"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-06-13",
             supportId: "111835", // have to be different from next item or will crash?? - not sure why since identifiers and officialName are different
             launchOSVersion: "13.4",
             unsupportedOSVersion: nil,
@@ -1950,7 +2062,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-2023-m2-ultra.png",
             capabilities: [.usbC, .thunderbolt, .headphoneJack, .appleIntelligence], // .hdmi, .sdCardSlot, .ethernet, .usbA, no battery
             models: ["MQH63xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m2ultra),
         Mac(
             officialName: "Mac Studio (2025) M4 Max", // have to be different from next item or will crash
@@ -1963,7 +2075,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-2025-m4-max.png",
             capabilities: [.usbC, .thunderbolt, .headphoneJack, .appleIntelligence], // .hdmi, .sdCardSlot, .ethernet, .usbA, no battery
             models: ["MU963xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m4max),
         Mac(
             officialName: "Mac Studio (2025) M3 Ultra", // have to be different from next item or will crash
@@ -1976,7 +2088,7 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-studio/mac-studio-2025-m3-ultra.png",
             capabilities: [.usbC, .thunderbolt, .headphoneJack, .appleIntelligence], // .hdmi, .sdCardSlot, .ethernet, .usbA, no battery
             models: ["MU973xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m3ultra),
 
 
@@ -1992,7 +2104,7 @@ public struct Mac: IdiomType {
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-m6.png",
 			capabilities: [.usbC, .thunderbolt],
 			models: ["MHQK4xx/A", "MHQL4xx/A", "MHQM4xx/A", "MHQV4xx/A"],
-			colors: [.silverLight],
+			colors: .silverSet,
 			cpu: .m6),
 		Mac(
 			officialName: "Mac mini (M5 Pro)",
@@ -2005,13 +2117,13 @@ public struct Mac: IdiomType {
 			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-m5-pro.png",
 			capabilities: [.usbC, .thunderbolt, .biometrics(.touchID)],
 			models: ["MHQN4xx/A", "MHQU4xx/A"],
-			colors: [.silverLight],
+			colors: .silverSet,
 			cpu: .m5pro),
 
 		Mac(
             officialName: "Mac mini (2024) M4 Pro", // have to be different from next item or will crash
             identifiers: ["Mac16,11"], // "Mac16,15"
-            introduction: 2024.introductionYear,
+            introduction: "2024-11-08",
             supportId: "121555", // have to be different from next item or will crash? - not sure why since identifiers and officialName are different
             launchOSVersion: "15.0",
             unsupportedOSVersion: nil,
@@ -2019,25 +2131,25 @@ public struct Mac: IdiomType {
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2024.png", // have to be different from next item or will crash? - not sure why since identifiers and officialName are different
             capabilities: [.headphoneJack, .usbC, .thunderbolt, .appleIntelligence],
             models: ["MCX44xx/A", "MCYT4xx/A", "MDAP4xx/A", "MDAQ4xx/A", "MDAY4xx/A", "MU9D3xx/A", "MU9E3xx/A"],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m4pro),
         Mac(
             officialName: "Mac mini (2024) M4",
             identifiers: ["Mac16,10"],
-            introduction: 2024.introductionYear,
+            introduction: "2024-11-08",
             supportId: "121555",
             launchOSVersion: "15.0",
             unsupportedOSVersion: nil,
             form: .macMini,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-mini/mac-mini-2024.png",
             capabilities: [.usbC, .thunderbolt, .appleIntelligence],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m4),
 
         Mac(
             officialName: "Mac mini (2023) M2",
             identifiers: ["Mac14,3"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-01-24",
             supportId: "111837", // SP891
             launchOSVersion: "13.2",
             unsupportedOSVersion: nil,
@@ -2050,7 +2162,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (2023) M2 Pro",
             identifiers: ["Mac14,12"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-01-24",
             supportId: "111837",
             launchOSVersion: "13.2",
             unsupportedOSVersion: nil,
@@ -2063,7 +2175,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (M1, 2020)",
             identifiers: ["Macmini9,1"],
-            introduction: 2020.introductionYear,
+            introduction: "2020-11-17",
             supportId: "111894",
             launchOSVersion: "11.0.1",
             unsupportedOSVersion: nil,
@@ -2076,7 +2188,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (2018)",
             identifiers: ["Macmini8,1"],
-            introduction: 2018.introductionYear,
+            introduction: "2018-11-07",
             supportId: "111912",
             launchOSVersion: "10.14",
             unsupportedOSVersion: "26",
@@ -2089,7 +2201,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Late 2014)",
             identifiers: ["Macmini7,1"],
-            introduction: 2014.introductionYear,
+            introduction: "2014-10-16",
             supportId: "111931",
             launchOSVersion: "10.10",
             unsupportedOSVersion: "13",
@@ -2102,7 +2214,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Late 2012)",
             identifiers: ["Macmini6,1", "Macmini6,2"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-10-23",
             supportId: "111926",
             launchOSVersion: "10.8.1",
             unsupportedOSVersion: "11",
@@ -2115,7 +2227,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Mid 2011)",
             identifiers: ["Macmini5,1", "Macmini5,2"],
-            introduction: 2011.introductionYear,
+            introduction: "2011-07-21",
             supportId: "112007",
             launchOSVersion: "10.7",
             unsupportedOSVersion: "10.14",
@@ -2128,7 +2240,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Mid 2010)",
             identifiers: ["Macmini4,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-06-15",
             supportId: "112588",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.14",
@@ -2141,7 +2253,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Late 2009)",
             identifiers: ["Macmini3,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-10-20",
             supportId: "112482",
             launchOSVersion: "10.6",
             unsupportedOSVersion: "10.12",
@@ -2154,7 +2266,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac mini (Early 2009)",
             identifiers: ["Macmini3,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-03-03",
             supportId: "111345",
             launchOSVersion: "10.5",
             unsupportedOSVersion: "10.12", // everymac says last supported is 10.11.6
@@ -2166,70 +2278,70 @@ public struct Mac: IdiomType {
             cpu: .intel),
 
         // MARK: - Mac Pros
-        Mac(
-            officialName: "Mac Pro (2023)",
-            identifiers: ["Mac14,8"],
-            introduction: 2023.introductionYear,
-            supportId: "111343",
-            launchOSVersion: "13.4",
-            unsupportedOSVersion: nil,
-            form: .macProGen3,
-            image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2019.jpg",
-            capabilities: [.biometrics(.touchID), .appleIntelligence],
-            colors: [.silverLight],
-            cpu: .m2ultra),
+		Mac(
+			officialName: "Mac Pro (2023)",
+			identifiers: ["Mac14,8"],
+			introduction: "2023-06-13",
+			supportId: "111343",
+			launchOSVersion: "13.4",
+			unsupportedOSVersion: nil,
+			form: .macProGen3,
+			image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2019.jpg",
+			capabilities: [.biometrics(.touchID), .appleIntelligence],
+			colors: .silverSet,
+			cpu: .m2ultra),
         Mac(
             officialName: "Mac Pro (Rack, 2023)",
             identifiers: ["Mac14,8"],
-            introduction: 2023.introductionYear,
+            introduction: "2023-06-13",
             supportId: "111343",
             launchOSVersion: "13.4",
             unsupportedOSVersion: nil,
             form: .macProGen3,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2019-rack.jpg",
             capabilities: [.biometrics(.touchID), .appleIntelligence],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .m2ultra),
         Mac(
             officialName: "Mac Pro (2019)",
             identifiers: ["MacPro7,1"],
-            introduction: 2019.introductionYear,
+			introduction: "2019-12-10",
             supportId: "118461",
             launchOSVersion: "10.15.1",
             unsupportedOSVersion: nil,
             form: .macProGen3,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2019.jpg",
             capabilities: [.biometrics(.touchID)],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "Mac Pro (Rack, 2019)",
             identifiers: ["MacPro7,1"],
-            introduction: 2019.introductionYear,
+			introduction: "2019-12-10",
             supportId: "111907",
             launchOSVersion: "10.15.1",
             unsupportedOSVersion: nil,
             form: .macProGen3,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2019-rack.jpg",
             capabilities: [.biometrics(.touchID)],
-            colors: [.silverLight],
+            colors: .silverSet,
             cpu: .intel),
         Mac(
             officialName: "Mac Pro (Late 2013)",
             identifiers: ["MacPro6,1"],
-            introduction: 2013.introductionYear,
+            introduction: "2013-11-23",
             supportId: "112025",
             launchOSVersion: "10.9.1",
             unsupportedOSVersion: "13",
             form: .macProGen2,
             image: "https://cdsassets.apple.com/live/7WUAS350/images/mac-pro/id-mac-pro-2013.jpg",
             models: ["ME253xx/A", "MD878xx/A"],
-            colors: [.black], // shiny jet black
+            colors: .blackSet, // shiny jet black
             cpu: .intel),
         Mac(
             officialName: "Mac Pro (Mid 2012)",
             identifiers: ["MacPro5,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "118464",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.15",
@@ -2241,7 +2353,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro Server (Mid 2012)",
             identifiers: ["MacPro5,1"],
-            introduction: 2012.introductionYear,
+            introduction: "2012-06-11",
             supportId: "118464",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.15",
@@ -2253,7 +2365,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (Mid 2010)",
             identifiers: ["MacPro5,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-11-05",
             supportId: "112578",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.15",
@@ -2266,7 +2378,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro Server (Mid 2010)",
             identifiers: ["MacPro5,1"],
-            introduction: 2010.introductionYear,
+            introduction: "2010-11-05",
             supportId: "112578",
             launchOSVersion: "10.6.4",
             unsupportedOSVersion: "10.15",
@@ -2279,7 +2391,7 @@ public struct Mac: IdiomType {
         Mac(
             officialName: "Mac Pro (Early 2009)",
             identifiers: ["MacPro4,1"],
-            introduction: 2009.introductionYear,
+            introduction: "2009-03-09",
             supportId: "112590",
             launchOSVersion: "10.5.6",
             unsupportedOSVersion: "10.12",

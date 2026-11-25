@@ -23,7 +23,7 @@
 /// recursively register its direct dependencies.
 extension Device: Module {
     /// The version of the Device Library since cannot get directly from Package.
-    public static let version: Version = "2.15.1"
+    public static let version: Version = "3.0.0"
     
     /// The public source repository used for open-source support and license discovery.
     public static let openSourceRepository: String? = "https://github.com/kudit/Device"
@@ -52,12 +52,19 @@ extension Device: Module {
     @MainActor
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     public static let tests: OrderedDictionary<String, [TestCase]> = [
+		"Displays and presentations": DisplayAPITests.tests,
         "Device Lookup": [
             TestCase("Known identifier lookup") {
                 let device = Device(identifier: "iPhone16,1")
                 try expectEqual(device.idiom, .phone)
                 try expect(device.identifiers.contains("iPhone16,1"), "Known identifiers should include the requested identifier")
                 try expect(!device.officialName.isEmpty, "Known devices should have an official name")
+            },
+            TestCase("HomeView identifiers use the display-equipped accessory idiom") {
+                let homeView = Device(identifier: "HomeAccessory17,1")
+                try expectEqual(homeView.idiom, .homeView)
+                try expectEqual(homeView.officialName, "HomeView")
+                try expectEqual(Device(identifier: "HomeAccessory17,2").idiom, .homeView)
             },
             TestCase("Unknown identifier fallback") {
                 let identifier = "FutureDevice99,1"
@@ -83,34 +90,38 @@ extension Device: Module {
         "Screens": [
             TestCase("Single and non-addressable screen collections") {
                 let phone = Device(identifier: "iPhone13,2")
-                try expectEqual(phone.screens, phone.screen.map { [$0] } ?? [])
+                try expectEqual(phone.screens.count, 1)
+                try expectEqual(phone.screens.first?.resolution, Screen.Size(width: 1170, height: 2532))
+                let homeView = Device(identifier: "HomeAccessory17,1")
+                try expectEqual(homeView.screens, [.homeView])
+                try expectEqual(homeView.screens.first?.resolution, Screen.Size(width: 1088, height: 1088))
                 for identifier in ["AudioAccessory5,1", "AppleTV6,2", "RealityDevice17,1"] {
                     try expect(Device(identifier: identifier).screens.isEmpty, "No fixed addressable app screens for \(identifier)")
                 }
             },
-            TestCase("Multiple panels preserve the single-screen API and Codable metadata") {
+            TestCase("Multiple panels preserve primary order and Codable metadata") {
                 let front = Screen(resolution: (1398,2034), ppi: 460)
                 let inner = Screen(resolution: (1878,2670), ppi: 430)
                 var capabilities = Capabilities()
                 capabilities.screens = [front, inner]
-                try expectEqual(capabilities.screen, front)
+                try expectEqual(capabilities.screens.first, front)
                 try expectEqual(capabilities.screens, [front, inner])
                 // Updating the primary screen must not discard secondary metadata.
-                capabilities.screen = .i63
+                capabilities.screens = [.i63] + Array(capabilities.screens.dropFirst())
                 try expectEqual(capabilities.screens, [.i63, inner])
                 #if canImport(Foundation)
                 let decoded = try JSONDecoder().decode(Capabilities.self, from: JSONEncoder().encode(capabilities))
                 try expectEqual(decoded.screens, capabilities.screens)
                 #endif
                 capabilities.screens = []
-                try expect(capabilities.screen == nil && capabilities.screens.isEmpty)
+                try expect(capabilities.screens.isEmpty)
             },
             TestCase("Duo draft exposes front and inner panels") {
                 // The draft currently shares an identifier with another model;
                 // select by exact name without changing the maintainer's placeholder.
                 let duo = Device.all.first { $0.officialName == "iPhone Duo" }
                 try expectEqual(duo?.screens.count, 2)
-                try expectEqual(duo?.screen, duo?.screens.first)
+                try expectEqual(duo?.screens, [.id54, .id76])
             },
             TestCase("Host identifier validation excludes compatibility and board values") {
                 #if os(macOS) || os(iOS)
@@ -270,7 +281,7 @@ extension Device: Module {
                 // Fuzzy lookup may return equally plausible candidates, so verify the
                 // uniquely identified M5 15-inch model without depending on sort order.
                 try expect(matches.first?.identifiers == ["Mac17,4"])
-                try expect(matches.first?.colors == .macbookAir2025)
+                try expect(matches.first?.colors == .macbookAirSkyBlueSet)
             },
             TestCase("Lookup filter apple watch name fallback by idiom") {
                 // This intentionally uses name-only lookup to exercise the expensive
@@ -375,6 +386,14 @@ public extension DeviceType {
     var officialName: String { device.officialName }
     var identifiers: [String] { device.identifiers }
     var introduction: DateString? { device.introduction }
+    /// Reads the year from catalog dates without invoking Foundation's general
+    /// date parser when a view only needs the year component.
+    var introductionYear: Int? {
+        guard let rawDate = device.introduction?.rawValue else { return nil }
+        let rawYear = rawDate.prefix(4)
+        guard rawYear.count == 4 else { return nil }
+        return Int(rawYear)
+    }
 //  var year: Int? { device.introduction?.date?.year }
     var supportId: String { device.supportId }
     var supportURL: URL {
@@ -404,7 +423,7 @@ public extension DeviceType {
     var capabilities: Capabilities { device.capabilities }
     /// Device part numbers/models like "MGPC3xx/A" or "A2473"
     var models: [String] { device.models }
-    var colors: [MaterialColor] { device.colors }
+    var colors: [AppleMaterialColor] { device.colors }
     
     // Hardware Info
     var cpu: CPU { device.cpu }
@@ -429,13 +448,14 @@ public extension DeviceType {
     /// The primary display, preserving the original single-screen API.
     /// Multi-display devices use their front panel when an active panel cannot be determined.
     /// This is catalog metadata, not a runtime window or connected-monitor query.
-    var screen: Screen? { device.capabilities.screen }
+    @available(*, deprecated, message: "Use screens.first for the primary hardware panel.")
+    var screen: Screen? { screens.first }
 
     /// Fixed, addressable displays in primary/front-first order.
     ///
     /// Single-screen devices return one item. Devices without a fixed addressable
     /// screen return an empty array, including HomePod, Apple TV and visionOS hardware.
-    /// Vision Pro's physical panel specification remains available through `screen`
+    /// Vision Pro's physical panel specification remains in `capabilities.screens`
     /// for compatibility, but those panels are not independently addressable app screens.
     /// A count greater than one denotes multiple panels, not necessarily a foldable device.
     var screens: [Screen] {
@@ -478,7 +498,7 @@ public extension DeviceType {
         return idiomatic
     }
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    var symbolName: String {
+    var symbolName: SFSymbol {
         return idiomatic.symbolName
     }
         
@@ -502,19 +522,21 @@ extension String {
     static let base = "BASE"
 }
 
-protocol HasScreen: DeviceType {}
+// NOTE: Are these protocols actually important to have as separate protocols?
+public protocol HasScreen: DeviceType {}
 extension HasScreen {
+    @available(*, deprecated, message: "Use screens.first for the primary hardware panel.")
     public var screen: Screen {
-        self.capabilities.screen ?? .wUnknown // should never not have screen
+        self.screens.first ?? .wUnknown // preserves the legacy nonoptional fallback
     }
 }
-protocol HasCameras: DeviceType {}
+public protocol HasCameras: DeviceType {}
 extension HasCameras {
     public var cameras: Set<Camera> {
         self.capabilities.cameras
     }
 }
-protocol HasCellular: DeviceType {}
+public protocol HasCellular: DeviceType {}
 extension HasCellular {
     public var cellular: Cellular {
         self.capabilities.cellular ?? .none // should never not have cellular
@@ -579,6 +601,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         case watch
         /// An interface designed for Home Pod
         case homePod
+        /// An interface designed for Apple's display-equipped HomeView accessory.
+        case homeView
         /// An interface designed for visionOS and Apple Vision Pro.
         case vision
         
@@ -600,6 +624,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return ["Apple Watch"]
             case .homePod:
                 return ["HomePod"]
+            case .homeView:
+                return ["HomeView", "Apple HomeView"]
             case .vision:
                 return ["Apple Vision Pro"]
             case .unspecified:
@@ -664,6 +690,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 break
             case .homePod:
                 break
+            case .homeView:
+                break
             }
             // Fallback on earlier versions
             return .unspecified
@@ -686,6 +714,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return "AppleTV"
             case .homePod:
                 return "AudioAccessory"
+            case .homeView:
+                return "HomeAccessory"
             case .watch:
                 return "Watch"
             case .carPlay:
@@ -719,6 +749,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return " Watch"
             case .homePod:
                 return "HomePod"
+            case .homeView:
+                return "HomeView"
             case .vision:
                 return " Vision"
             @unknown default:
@@ -746,6 +778,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return AppleTV.self
             case .homePod:
                 return HomePod.self
+            case .homeView:
+                return HomeView.self
             case .watch:
                 return AppleWatch.self
             case .vision:
@@ -760,7 +794,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         }
         
         /// Return a prototypical symbol for this idiom.
-        public var symbolName: String {
+        public var symbolName: SFSymbol {
             if self == .carPlay {
                 return "carplay"
             }
@@ -793,6 +827,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 return [.pro, .battery, .biometrics(.opticID), .lidar, .cameras([.stereoscopic, .persona]), .screens([.p720]), .appleIntelligence]
             case .homePod:
                 return [.screens([.w38])]
+            case .homeView:
+                return [.screens([.homeView])]
             case .unspecified, .mac, .carPlay:
                 fallthrough
             default:
@@ -827,6 +863,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 "watchOS"
             case .homePod:
                 "audioOS"
+            case .homeView:
+				"homeOS" // guess - unconfirmed
             case .vision:
                 "visionOS"
             }
@@ -852,6 +890,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
                 AppleWatch.allDevices
             case .homePod:
                 HomePod.allDevices
+            case .homeView:
+                HomeView.allDevices
             case .vision:
                 AppleVision.allDevices
             }
@@ -873,7 +913,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     public let capabilities: Capabilities// = []
     /// Device part numbers/models like "MGPC3xx/A" or "A2473"
     public let models: [String]// = []
-    public let colors: [MaterialColor]// = [.silverLight]
+    public let colors: [AppleMaterialColor]// = .silverSet
     
     // Hardware Info
     public let cpu: CPU
@@ -904,7 +944,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         image: String? = nil,
         capabilities: Capabilities,
         models: [String] = [],
-        colors: [MaterialColor],
+        colors: [AppleMaterialColor],
         cpu: CPU
     ) {
         self.idiom = idiom
@@ -1055,7 +1095,7 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
     }
 
     /// An SF Symbol name for an icon representing the device.  If no specific variant exists, uses a generic symbol for device idiom.
-    public var symbolName: String {
+    public var symbolName: SFSymbol {
         return .symbolUnknownDevice
     }
 
@@ -1077,6 +1117,8 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         allKnownDevices += AppleWatch.allDevices
         // HomePods
         allKnownDevices += HomePod.allDevices
+		// HomeViews
+        allKnownDevices += HomeView.allDevices
         //  Vision devices
         allKnownDevices += AppleVision.allDevices
         
@@ -1178,6 +1220,19 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
             // strong fuzzy match so color and support-page imports keep resolving.
             return 0.85
         }
+        // make sure all watches don't match with Apple Watch SE (and SE 2+ doesn't match either).
+        if hint.original == "Apple Watch SE" && (officialName.normalized.contains("ultra") || officialName.normalized.contains("series") || officialName.original.contains("SE ") || officialName.original.contains("1st generation")) {
+            // make sure it's not an SE 2+
+            if officialName.original.contains("SE ") {
+                for i in 2...10 {
+                    if officialName.original.contains("SE \(i)") {
+                        return 0
+                    }
+                }
+            } else {
+                return 0
+            }
+        }
         if officialName.normalized.contains(hint.normalized) {
             // check processor appended
             let stripped = officialName.normalized.replacingOccurrences(of: hint.normalized, with: "").whitespaceCollapsed.replacingCharacters(in: .whitespacesAndNewlines, with: "").trimmed.lowercased()
@@ -1188,6 +1243,10 @@ public struct Device: IdiomType, Hashable, CustomStringConvertible, Identifiable
         }
         if hint.original.contains(officialName.normalized) {
             return 0.3
+        }
+        // Apple Watch has much longer versions than the hint
+        if officialName.normalized.contains(hint.normalized) {
+            return 0.4
         }
         return 0.1
     }

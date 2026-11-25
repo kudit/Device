@@ -4,8 +4,11 @@
 //
 //  Created by Ben Ku on 4/29/25.
 //
-#if DEBUG
+#if canImport(Testing)
 @testable import Device
+#else
+import Device
+#endif
 
 struct MobileDevice: DeviceBridge {
     static var diffIgnoreKeys: [String] {
@@ -261,7 +264,7 @@ struct MobileDeviceLoader: DeviceBridgeLoader {
     }
     
     func generate() -> String {
-        let groups = [Device.Idiom.phone, .pod, .pad, .watch, .mac, .homePod, .tv, .vision]
+        let groups = [Device.Idiom.phone, .pod, .pad, .watch, .mac, .homePod, .homeView, .tv, .vision]
         var results = """
 i386 : iPhone Simulator
 x86_64 : iPhone Simulator
@@ -286,4 +289,3 @@ arm64 : iPhone Simulator
         return results
     }
 }
-#endif
