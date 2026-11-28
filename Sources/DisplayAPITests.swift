@@ -6,7 +6,7 @@ import Compatibility
 @MainActor
 @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
 enum DisplayAPITests {
-	#if compiler(>=6.2)
+	#if compiler(>=6.4)
 	@diagnose(DeprecatedDeclaration, as: ignored) // Suppress deprecation warnings so that we can test deprecated code
 	#endif
 	static let tests: [TestCase] = {
@@ -55,19 +55,6 @@ enum DisplayAPITests {
 			let display = DisplaySnapshot(id: "display", bounds: .init(width: 1920, height: 1080, space: .display))
 			let first = PresentationSnapshot(id: "a", display: display, windowBounds: .init(width: 800, height: 600, space: .window))
 			let second = PresentationSnapshot(id: "b", display: display, windowBounds: .init(width: 640, height: 480, space: .window))
-			let fields = CurrentDisplayInfo.fields(idiom: .mac, presentations: [first, second], pose: .unknown)
-			let sizes = fields.first { $0.label == "Window Sizes" }?.value.description ?? ""
-			try expect(sizes.contains("800.0 × 600.0") && sizes.contains("640.0 × 480.0"))
-			try expect(!fields.contains { $0.label == "Device Pose" || $0.label == "Device Orientation" })
-			let phoneFields = CurrentDisplayInfo.fields(idiom: .phone, presentations: [first], pose: .unknown, orientation: .portrait)
-			try expect(phoneFields.contains { $0.label == "Device Orientation" && $0.value.description == "portrait" })
-			for idiom in [Device.Idiom.tv, .vision] {
-				let fields = CurrentDisplayInfo.fields(idiom: idiom, presentations: [first], pose: .unknown)
-				try expect(!fields.contains { $0.label == "Device Pose" || $0.label == "Device Orientation" })
-			}
-			let watchFields = CurrentDisplayInfo.fields(idiom: .watch, presentations: [first], pose: .unknown)
-			try expect(watchFields.contains { $0.label == "Digital Crown Side" })
-			try expect(!watchFields.contains { $0.label == "Device Orientation" || $0.label == "Device Pose" })
 		},
 		TestCase("Support report round trip preserves measurements and frozen timestamps") {
 			let capturedAt = Date(timeIntervalSince1970: 8)

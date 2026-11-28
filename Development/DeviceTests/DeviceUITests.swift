@@ -85,7 +85,10 @@ final class DeviceUITests: XCTestCase {
 		await scrollIntoView(allTestsLink, in: app.scrollViews.firstMatch)
 		XCTAssertTrue(allTestsLink.waitForExistence(timeout: 10), "Developer mode should expose All Tests.")
 		allTestsLink.clickOrTap()
-		let deviceHeading = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH[c] %@", "Device v")).firstMatch
+		// SwiftUI exposes some static text as `value` instead of `label` on macOS.
+		let deviceHeading = app.staticTexts.matching(NSPredicate(
+			format: "label BEGINSWITH[c] %@ OR value BEGINSWITH[c] %@", "Device v", "Device v"
+		)).firstMatch
 		await scrollIntoView(deviceHeading, in: app.scrollViews.firstMatch)
 		let deviceHeadingAppeared = await waitForElement(deviceHeading, timeout: 10)
 		XCTAssertTrue(deviceHeadingAppeared, "All Tests should display Device's module heading.\n\(app.debugDescription)")

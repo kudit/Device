@@ -120,21 +120,11 @@ public extension Backport where Content: View {
 			if case .active = phase { action(true) } else { action(false) }
 		})
 		#elseif os(visionOS)
-		visionOSOnHover(action)
+		content.onHover(perform: action)
 		#else
 		content
 		#endif
 	}
-	#if os(visionOS)
-	@ViewBuilder
-	private func visionOSOnHover(_ action: @escaping (Bool) -> Void) -> some View {
-		if #available(visionOS 1, *) {
-			content.onHover(perform: action)
-		} else {
-			content
-		}
-	}
-	#endif
 	@ViewBuilder
 	func onContinuousHover(coordinateSpace: CoordinateSpace = .local, perform action: @escaping (BackportHoverPhase) -> Void) -> some View {
 		#if !os(watchOS)
@@ -153,7 +143,7 @@ public extension Backport where Content: View {
 	@ViewBuilder
 	func hoverEffect(_ effect: BackportHoverEffect = .automatic, isEnabled: Bool = true) -> some View {
 		#if os(iOS) || os(tvOS) || os(visionOS)
-		if #available(iOS 14, tvOS 17, visionOS 1, *), isEnabled {
+		if #available(iOS 14, tvOS 17, *), isEnabled {
 			content.hoverEffect(effect == .lift ? .lift : effect == .highlight ? .highlight : .automatic)
 		} else {
 			content

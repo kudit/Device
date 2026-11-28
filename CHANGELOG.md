@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v3.1.0 2026-11-27
+Avoided Swift Playgrounds' manifest crash by skipping PackageDescription.Context.environment reads in its evaluator.
+Added user region, time zone, and preferred language to CurrentDevice and the initial Module fields, keeping immediately available values visible before detailed async module loading.
+Updated Device module fields to include official name and region/local/timezone information.
+Updated the README for variable-aperture capability, multi-panel layouts, live foldable-device reporting, and user locale information.
+Handled unavailable IOKit battery notification sources without failing battery monitoring and added a regression check for the missing-source path.
+Corrected HomeView launch OS versions to 27.2 and updated the README's documented minimum deployment versions.
+Updated Compatibility.
+Used structured Foundation locale APIs on supported OS versions while retaining deprecated accessors only in an explicitly suppressed legacy fallback.
+Code coverage is 44%.
+
 ## v3.0.0 2026-11-24
 Added iPad mini (A20 Pro), iMac M6, HomeView, HomePod 2, and updated Apple TV device entries (Apple TV HD will not support tvOS 27).
 Added multi-panel hardware specifications, live window diagnostics, foldable-device pose/hinge reporting, and scene-based external presentation controls.
@@ -20,6 +31,7 @@ BatteryView now uses fixed battery symbols since they're broken in anyAppleOS 27
 Added a live SF Symbol inspector to the hardware Styles view, with an editable name field and shared default, hierarchical, palette, and multicolor previews.
 Added source badges to the SF Symbol inspector to distinguish native symbols, modern assets, legacy assets, and fallbacks.
 DeviceKit X-series and sensor-housing comparisons now recognize notch and Dynamic Island hardware without Face ID.
+Breaking Change: replaced MaterialColor with AppleMaterialColor which can include multiple color values and named colors.
 **Migration Guide**
 When upgrading from v2.x, replace `MaterialColor` with `AppleMaterialColor`; use `.legacyColor` only where a single `Color` is required and use palette gradient styles when rendering multitone finishes.
 Replace reads of `device.screen` with `device.screens.first` when the primary panel is intended. Replace writes with `screens = [...]`; use the `screens:` initializer for multi-panel hardware. Existing `screen:` initializers remain available for convenience.
@@ -603,6 +615,7 @@ Known issues that need to be addressed.
 ## Roadmap
 Planned features and anticipated API changes.  If you want to contribute, this is a great place to start.
 - [ ] Add Device status widgets. The widget/Watch complication extension remains unimplemented.
+- [ ] Add device framework to check for a paired Apple Watch and report that info
 - [ ] Add in symbols into comparison diff views for capabilities rather than the string representations.
 - [ ] In definition, have a lookup for pre-defined screens like we do for colorsets so it shows the predefined set reather than the full definition.
 - [ ] Create migration export that checks values against defaults primarily to check definitions are in the correct order and that named color sets are being used (test to see if color set is equal to named colorset and if so, replace with the named case rather than the listed colors).

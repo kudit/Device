@@ -44,11 +44,7 @@ public extension Device {
 
 #if canImport(SwiftUI)
 #if !DEVICE_DISABLE_DUO_SDK && (DEVICE_HAS_DUO_SDK || canImport(SwiftUI, _version: 8.0.85.29)) // WHY IS THIS LINE NECESSARY???
-#if compiler(>=6.2)
-@available(anyAppleOS 27.1, *)
-#else
 @available(iOS 27.1, macOS 27.1, tvOS 27.1, watchOS 27.1, visionOS 27.1, *)
-#endif
 public extension Device.Hinge {
     init(_ value: SwiftUI.DeviceHinge) {
         self.status = .init(value.status)
@@ -56,11 +52,7 @@ public extension Device.Hinge {
     }
     // no swiftUIValue because apparently DeviceHinge objects can only be gotten from the system and can't be constructed.
 }
-#if compiler(>=6.2)
-@available(anyAppleOS 27.1, *)
-#else
 @available(iOS 27.1, macOS 27.1, tvOS 27.1, watchOS 27.1, visionOS 27.1, *)
-#endif
 public extension Device.Hinge.Status {
     /// Returns the native SwiftUI hinge status value when the running SDK and OS expose it.
     var swiftUIValue: SwiftUI.DeviceHinge.Status {

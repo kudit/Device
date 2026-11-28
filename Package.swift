@@ -7,9 +7,15 @@
 
 import PackageDescription
 
-let version = "3.0.0"
+let version = "3.1.0"
 let packageLibraryName = "Device"
 
+// Swift Playgrounds' package evaluator does not provide the encoded context
+// argument required by PackageDescription.Context.environment. Avoid touching
+// that API there; Playgrounds always evaluates an Apple platform package.
+#if SwiftPlaygrounds || canImport(PlaygroundSupport)
+let isNonAppleTarget = false
+#else
 // Asset catalogs are meaningful only to Apple platform builds. Use SwiftPM's
 // manifest environment API so old Swift toolchains don't import the host SDK's
 // Foundation module while evaluating this manifest.
@@ -29,6 +35,7 @@ let targetContext = [
 let isNonAppleTarget =
 	Context.environment["DEVICE_NON_APPLE_TARGET"] == "1"
 	|| ["linux", "wasm", "wasi", "android", "aarch64"].contains { targetContext.contains($0) }
+#endif
 #if os(Linux)
 let isLinuxHost = true
 #else

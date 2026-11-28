@@ -299,17 +299,49 @@ extension CurrentDevice {
             }
         }.joined()
 
-        var fields = [
-            Field("Device", officialName),
-            Field("Name", "\"\(name)\""),
-            Field("Model", "\(identifier) running \(systemInfo)\(environmentDescription)"),
-            Field("Thermal State", String(describing: thermalState)),
-        ]
+		var fields = [
+			Field("Device Name", "\"\(name)\""),
+			Field("System Version", "\(systemInfo)\(environmentDescription)"),
+		]
+		// include base module info here
+		fields += Device.moduleInfo
+		fields += [
+			Field("Thermal State", String(describing: thermalState)),
+		]
         if let battery, let batteryInfo = battery.info {
             fields += [batteryInfo]
         }
 		DisplayMonitor.shared.start()
-		fields += CurrentDisplayInfo.fields(idiom: idiom, presentations: DisplayMonitor.shared.presentations, pose: pose, orientation: screenOrientation, isFoldable: device.screens.count > 1)
+		
+		/// Support reports have no owning SwiftUI view, so list every discovered window
+		/// instead of arbitrarily picking a globally "active" one. Unknown values stay explicit.
+		func dimensions(_ bounds: DisplayRect?) -> String? {
+			guard let size = bounds?.size else { return nil }
+			return "\(Int(size.width)) × \(Int(size.height)) points"
+		}
+		//let isFoldable = device.screens.count > 1
+		let presentations = DisplayMonitor.shared.presentations
+		if idiom != .watch && idiom != .tv && idiom != .vision && presentations.count > 0 {
+			let sizes = presentations.compactMap { dimensions($0.windowBounds) }.unique
+			if sizes.count > 0 {
+				fields.append(Field("Window Size\(sizes.count.pluralEnding())", sizes.joined(separator: "; ")))
+			}
+		}
+		if idiom == .watch {
+			fields.append(Field("Digital Crown Side", Device.current.crownSide?.accessibilityDescription ?? "Unavailable"))
+		}
+		// TODO: We need to cache this value if we want to include it since the margins aren't available from the presentations?
+		/*
+		if isFoldable {
+			fields.append(Field("Device Pose", pose.accessibilityDescription))
+			if let windowPlacement = presentations.first?.windowPlacement {
+				fields.append(Field("Window Placement", windowPlacement.rawValue))
+			}
+		}*/
+		if [.phone, .pad, .pod].contains(idiom) {
+			fields.append(Field("Device Orientation", Device.current.deviceOrientation.accessibilityDescription))
+		}
+		
         // volume info
         fields += [
             Field("Volume Total Capacity", volumeTotalCapacity?.byteString(.file) ?? "n/a"),
@@ -325,34 +357,6 @@ extension CurrentDevice {
     public var description: String {
         return info.description
     }
-}
-
-/// Support reports have no owning SwiftUI view, so list every discovered window
-/// instead of arbitrarily picking a globally "active" one. Unknown values stay explicit.
-enum CurrentDisplayInfo {
-	@MainActor static func fields(idiom: Device.Idiom, presentations: [PresentationSnapshot], pose: Device.Pose, orientation: Device.LegacyOrientation? = nil, isFoldable: Bool = false) -> [Field] {
-		func dimensions(_ bounds: DisplayRect?) -> String {
-			guard let size = bounds?.size else { return "Unavailable" }
-			return "\(size.width) × \(size.height) points"
-		}
-		var fields: [Field] = []
-		if idiom != .watch && idiom != .tv && idiom != .vision && presentations.count > 1 {
-			fields.append(Field("Window Sizes", presentations.isEmpty ? "Unavailable" : presentations.map { "\($0.id): \(dimensions($0.windowBounds))" }.joined(separator: "; ")))
-		}
-		if idiom == .watch {
-			fields.append(Field("Digital Crown Side", Device.current.crownSide?.accessibilityDescription ?? "Unavailable"))
-		}
-		if isFoldable {
-			fields.append(Field("Device Pose", pose.accessibilityDescription))
-			if let windowPlacement = presentations.first?.windowPlacement {
-				fields.append(Field("Window Placement", windowPlacement.rawValue))
-			}
-		}
-		if [.phone, .pad, .pod].contains(idiom) {
-			fields.append(Field("Device Orientation", orientation.map { String(describing: $0) } ?? "Unavailable"))
-		}
-		return fields
-	}
 }
 
 // MARK: - Hardware calculations from the system used that can be actor-independent
@@ -378,6 +382,43 @@ public extension Device {
     @available(*, deprecated, renamed: "Build.isMacCatalyst")
     static let isMacCatalyst = Build.isMacCatalyst
     
+	// MARK: - Localization information from the environment
+	/// The user's configured region identifier, when Foundation is available.
+	static var region: String? {
+#if canImport(Foundation)
+		if #available(iOS 16, macOS 13, macCatalyst 16, tvOS 16, watchOS 9, *) {
+			return Locale.current.region?.identifier
+		} else {
+			return Locale.current.regionCode
+		}
+#else
+		nil
+#endif
+	}
+	/// The user's configured time-zone identifier, when Foundation is available.
+	static var timeZone: String? {
+#if canImport(Foundation)
+		TimeZone.current.identifier
+#else
+		nil
+#endif
+	}
+	/// The user's preferred language identifier, when Foundation is available.
+	static var language: String? {
+#if canImport(Foundation)
+		if let preferredLanguage = Locale.preferredLanguages.first {
+			return preferredLanguage
+		}
+		if #available(iOS 16, macOS 13, macCatalyst 16, tvOS 16, watchOS 9, *) {
+			return Locale.current.language.languageCode?.identifier
+		} else {
+			return Locale.current.languageCode
+		}
+#else
+		nil
+#endif
+	}
+	
     // MARK: - Description Device Strings
     /// Gets the identifier from the system, such as "iPhone7,1".
     /// In Designed for iPad on Mac, reads the host product identifier because

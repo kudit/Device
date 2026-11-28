@@ -73,18 +73,20 @@ The `DeviceTests` target wraps the reusable `Compatibility.TestCase` sections ex
     - Identifier (ex: `Mac14,10`)
     - Name (ex: `Ben's iPad` Note: only available on some devices.)
     - Operating System (ex: `iPad OS 17.4`)
-    - Official Name (ex: `MacBook Pro (16-inch, 2023`)
+    - Official Name (ex: `MacBook Pro (16-inch, 2023)`)
     - Image
     - Color
     - CPU (ex: `M2 Pro`)
     - Cellular technology
     - Thermal state
     - Orientation
+    - User region, time zone, and preferred language
     - Screen information
         - Size
         - Diagonal
         - Pixels Per Inch (PPI)
         - Ratio
+        - Multi-panel device layouts, window placement, and live foldable-device pose and hinge state
 - Battery & Power Information
     - Battery availability
     - Battery state changes
@@ -142,6 +144,7 @@ The `DeviceTests` target wraps the reusable `Compatibility.TestCase` sections ex
         -  Pencil Support
     - Sensors
         - Cameras
+        - Variable aperture
         - Compass
         - LIDAR
         - Barometer
@@ -152,8 +155,8 @@ The `DeviceTests` target wraps the reusable `Compatibility.TestCase` sections ex
 
 
 ## Requirements
-- iOS 11+ (15.2+ minimum required for Swift Playgrounds support)
-- macOS 10.5+ (UI only supported on macOS 12.0+)
+- iOS 8+ (13+ for SwiftUI, 15.2+ minimum required for Swift Playgrounds support)
+- macOS 10.10+ (UI only supported on macOS 12.0+)
 - macCatalyst 13.0+ (first version available)
 - tvOS 11.0+ (UI only supported on tvOS 15.0+, 17+ required for most SwiftUI features)
 - watchOS 4.0+ (UI only supported on watchOS 8.0+)
@@ -356,6 +359,7 @@ You need to make sure to request the device name entitlement:
 https://developer.apple.com/contact/request/user-assigned-device-name/
 Then add this to the entitlements file:
 ```xml
+
 ```
 Then simply call:
 ```swift

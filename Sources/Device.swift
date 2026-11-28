@@ -5,6 +5,10 @@
 //  Created by Ben Ku on 9/26/16.
 //  Copyright © 2016 Kudit, LLC. All rights reserved.
 //
+#if canImport(Foundation)
+import Foundation
+#endif
+
 /**
  Device type and structs.
  
@@ -23,7 +27,7 @@
 /// recursively register its direct dependencies.
 extension Device: Module {
     /// The version of the Device Library since cannot get directly from Package.
-    public static let version: Version = "3.0.0"
+    public static let version: Version = "3.1.0"
     
     /// The public source repository used for open-source support and license discovery.
     public static let openSourceRepository: String? = "https://github.com/kudit/Device"
@@ -33,9 +37,21 @@ extension Device: Module {
     
     /// Immediate, portable information that can be displayed without actor isolation or deferred work.
     public static var moduleInfo: [Field] {
-        [
-            Field("Model", "\(Device.identifier)"),
-        ]
+		let device = Device(identifier: Device.identifier)
+        var fields = [
+			Field("Device Model", device.officialName),
+			Field("Device Identifier", Device.identifier),
+			]
+		if let region = Device.region {
+			fields.append(Field("Region", region))
+		}
+		if let timeZone = Device.timeZone {
+			fields.append(Field("Time Zone", timeZone))
+		}
+		if let language = Device.language {
+			fields.append(Field("Language", language))
+		}
+		return fields
     }
     
     /// Loads complete structured information that may require actor isolation, calculation, or deferred work.
@@ -53,6 +69,17 @@ extension Device: Module {
     @available(iOS 13, macOS 10.15, tvOS 13, watchOS 6, *)
     public static let tests: OrderedDictionary<String, [TestCase]> = [
 		"Displays and presentations": DisplayAPITests.tests,
+        "Battery": [
+            TestCase("Missing IOKit notification source is tolerated") {
+                // Battery notification sources are unavailable on some hosts; monitoring
+                // must continue without force-unwrapping or registering a nonexistent source.
+#if os(macOS) || targetEnvironment(macCatalyst)
+                try expect(!DeviceBattery.addNotificationRunLoopSource(nil))
+#else
+                try expect(true, "IOKit notification sources are only used on macOS and Mac Catalyst")
+#endif
+            },
+        ],
         "Device Lookup": [
             TestCase("Known identifier lookup") {
                 let device = Device(identifier: "iPhone16,1")

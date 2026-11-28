@@ -102,7 +102,8 @@ public extension Battery {
         } else {
             symbolName = "battery.0\(percentWord)"
         }
-		if #available(anyAppleOS 27.0, *), percentWord == "percent" {
+		if #available(iOS 27, macOS 27, tvOS 27, watchOS 27, visionOS 27, *), percentWord == "percent" {
+//		if #available(anyAppleOS 27.0, *), percentWord == "percent" { // can't use in earlier xcode builds with swift 6.3?
 			return "\(symbolName).fixed"
 		}
 		return symbolName
@@ -404,15 +405,15 @@ public class DeviceBattery: Battery, ObservableObjectBackport {
         // This way catalyst which also supports UIKit will also post these notifications
 #if os(macOS) || targetEnvironment(macCatalyst)
         // https://stackoverflow.com/questions/51275093/is-there-a-battery-level-did-change-notification-equivalent-for-kiopscurrentcapa
-        let loop = IOPSNotificationCreateRunLoopSource({ _ in
+        let source = IOPSNotificationCreateRunLoopSource({ _ in
             // Perform usual battery status fetching
             // self can't be captured in C function
             DeviceBattery.current._triggerBatteryUpdate(.level)
             // trigger both just in case
             DeviceBattery.current._triggerBatteryUpdate(.state)
 //      print("IOPSNotification for level and state")
-        }, nil).takeRetainedValue() as CFRunLoopSource
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), loop, .defaultMode)
+        }, nil)
+        DeviceBattery.addNotificationRunLoopSource(source)
 #endif
         // MacOS 11 and Linux are the only systems that wouldn't support this notification
 #if canImport(Combine)
@@ -441,6 +442,19 @@ public class DeviceBattery: Battery, ObservableObjectBackport {
     }
     
 #if os(macOS) || targetEnvironment(macCatalyst)
+    /// Adds an IOKit battery notification source when the host provides one.
+    ///
+    /// IOKit may return `nil` on hosts without a usable power-source notification source,
+    /// so monitoring must continue without that optional notification mechanism.
+    @discardableResult
+    nonisolated static func addNotificationRunLoopSource(
+        _ source: Unmanaged<CFRunLoopSource>?,
+        to runLoop: CFRunLoop = CFRunLoopGetCurrent()
+    ) -> Bool {
+        guard let source else { return false }
+        CFRunLoopAddSource(runLoop, source.takeRetainedValue(), .defaultMode)
+        return true
+    }
     // TODO: Clean up unnecessary code.  Figure out "best" way.
     private func _levelPluggedIn() -> (level: Int, pluggedIn: Bool) {
 //    print("IOKit version")
